@@ -1,49 +1,244 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Globe, TrendingUp, Target, Calendar, ExternalLink, Trash2 } from 'lucide-vue-next';
+import { computed } from 'vue';
 
 import AppLayout from '@/layouts/AppLayout.vue';
-import { dashboard } from '@/routes';
-import { type BreadcrumbItem } from '@/types';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { type BreadcrumbItem, type Scan, type DashboardStats } from '@/types';
 
-import PlaceholderPattern from '../components/PlaceholderPattern.vue';
+interface Props {
+    recentScans: Scan[];
+    stats: DashboardStats;
+}
+
+const props = defineProps<Props>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Dashboard',
-        href: dashboard().url,
+        href: '/dashboard',
     },
 ];
+
+const form = useForm({
+    url: '',
+});
+
+const submit = () => {
+    form.post('/scan', {
+        preserveScroll: true,
+    });
+};
+
+const getGradeColor = (grade: string) => {
+    if (grade.startsWith('A')) return 'text-green-600 bg-green-100';
+    if (grade.startsWith('B')) return 'text-blue-600 bg-blue-100';
+    if (grade.startsWith('C')) return 'text-yellow-600 bg-yellow-100';
+    if (grade.startsWith('D')) return 'text-orange-600 bg-orange-100';
+    return 'text-red-600 bg-red-100';
+};
+
+const getScoreColor = (score: number) => {
+    if (score >= 80) return 'text-green-600';
+    if (score >= 60) return 'text-blue-600';
+    if (score >= 40) return 'text-yellow-600';
+    return 'text-red-600';
+};
+
+const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+    });
+};
+
+const truncateUrl = (url: string, maxLength = 50) => {
+    if (url.length <= maxLength) return url;
+    return url.substring(0, maxLength) + '...';
+};
 </script>
 
 <template>
     <Head title="Dashboard" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div
-            class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
-        >
-            <div class="grid auto-rows-min gap-4 md:grid-cols-3">
-                <div
-                    class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"
-                >
-                    <PlaceholderPattern />
-                </div>
-                <div
-                    class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"
-                >
-                    <PlaceholderPattern />
-                </div>
-                <div
-                    class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"
-                >
-                    <PlaceholderPattern />
-                </div>
+        <div class="flex flex-col gap-6 p-6">
+            <!-- Scan Form Card -->
+            <Card class="border-2 border-dashed border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+                <CardHeader>
+                    <CardTitle class="flex items-center gap-2">
+                        <Globe class="h-5 w-5 text-primary" />
+                        Start a GEO Scan
+                    </CardTitle>
+                    <CardDescription>
+                        Enter a URL to analyze its Generative Engine Optimization score
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <form @submit.prevent="submit" class="flex gap-3">
+                        <div class="flex-1">
+                            <Input
+                                v-model="form.url"
+                                type="url"
+                                placeholder="https://example.com/page"
+                                class="h-12 text-base"
+                                :disabled="form.processing"
+                            />
+                        </div>
+                        <Button
+                            type="submit"
+                            size="lg"
+                            :disabled="form.processing || !form.url"
+                            class="h-12 px-8"
+                        >
+                            <svg v-if="form.processing" class="mr-2 h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                            </svg>
+                            {{ form.processing ? 'Scanning...' : 'Scan URL' }}
+                        </Button>
+                    </form>
+                    <Alert v-if="form.errors.url" variant="destructive" class="mt-3">
+                        <AlertDescription>{{ form.errors.url }}</AlertDescription>
+                    </Alert>
+                </CardContent>
+            </Card>
+
+            <!-- Stats Cards -->
+            <div class="grid gap-4 md:grid-cols-4">
+                <Card>
+                    <CardContent class="pt-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-muted-foreground">Total Scans</p>
+                                <p class="text-3xl font-bold">{{ stats.total_scans }}</p>
+                            </div>
+                            <div class="rounded-full bg-primary/10 p-3">
+                                <Globe class="h-6 w-6 text-primary" />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardContent class="pt-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-muted-foreground">Average Score</p>
+                                <p class="text-3xl font-bold" :class="getScoreColor(stats.avg_score)">
+                                    {{ stats.avg_score.toFixed(1) }}
+                                </p>
+                            </div>
+                            <div class="rounded-full bg-blue-100 p-3">
+                                <TrendingUp class="h-6 w-6 text-blue-600" />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardContent class="pt-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-muted-foreground">Best Score</p>
+                                <p class="text-3xl font-bold" :class="getScoreColor(stats.best_score)">
+                                    {{ stats.best_score.toFixed(1) }}
+                                </p>
+                            </div>
+                            <div class="rounded-full bg-green-100 p-3">
+                                <Target class="h-6 w-6 text-green-600" />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardContent class="pt-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-muted-foreground">This Week</p>
+                                <p class="text-3xl font-bold">{{ stats.scans_this_week }}</p>
+                            </div>
+                            <div class="rounded-full bg-purple-100 p-3">
+                                <Calendar class="h-6 w-6 text-purple-600" />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
-            <div
-                class="relative min-h-[100vh] flex-1 rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border"
-            >
-                <PlaceholderPattern />
-            </div>
+
+            <!-- Recent Scans -->
+            <Card>
+                <CardHeader>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <CardTitle>Recent Scans</CardTitle>
+                            <CardDescription>Your latest GEO analysis results</CardDescription>
+                        </div>
+                        <Link v-if="recentScans.length > 0" href="/scans">
+                            <Button variant="outline" size="sm">View All</Button>
+                        </Link>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <div v-if="recentScans.length === 0" class="py-12 text-center">
+                        <Globe class="mx-auto h-12 w-12 text-muted-foreground/50" />
+                        <h3 class="mt-4 text-lg font-medium">No scans yet</h3>
+                        <p class="mt-2 text-sm text-muted-foreground">
+                            Enter a URL above to start analyzing your content
+                        </p>
+                    </div>
+
+                    <div v-else class="space-y-3">
+                        <Link
+                            v-for="scan in recentScans"
+                            :key="scan.id"
+                            :href="`/scans/${scan.id}`"
+                            class="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
+                        >
+                            <div class="flex items-center gap-4">
+                                <!-- Score Badge -->
+                                <div
+                                    class="flex h-12 w-12 items-center justify-center rounded-full text-lg font-bold"
+                                    :class="getGradeColor(scan.grade)"
+                                >
+                                    {{ scan.grade }}
+                                </div>
+
+                                <!-- Info -->
+                                <div>
+                                    <p class="font-medium">{{ scan.title || 'Untitled' }}</p>
+                                    <p class="flex items-center gap-1 text-sm text-muted-foreground">
+                                        <ExternalLink class="h-3 w-3" />
+                                        {{ truncateUrl(scan.url) }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-4">
+                                <!-- Score -->
+                                <div class="text-right">
+                                    <p class="text-2xl font-bold" :class="getScoreColor(scan.score)">
+                                        {{ scan.score.toFixed(1) }}
+                                    </p>
+                                    <p class="text-xs text-muted-foreground">/ 100</p>
+                                </div>
+
+                                <!-- Date -->
+                                <div class="text-right text-sm text-muted-foreground">
+                                    {{ formatDate(scan.created_at) }}
+                                </div>
+                            </div>
+                        </Link>
+                    </div>
+                </CardContent>
+            </Card>
         </div>
     </AppLayout>
 </template>

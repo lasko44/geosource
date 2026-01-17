@@ -10,6 +10,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Fluent;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use App\Services\GEO\GeoScorer;
+use App\Services\GEO\EnhancedGeoScorer;
+use App\Services\RAG\ChunkingService;
+use App\Services\RAG\EmbeddingService;
+use App\Services\RAG\RAGService;
+use App\Services\RAG\VectorStore;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -18,7 +24,30 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // GEO Services
+        $this->app->singleton(GeoScorer::class, fn () => new GeoScorer());
+
+        // RAG Services
+        $this->app->singleton(EmbeddingService::class, fn () => new EmbeddingService());
+        $this->app->singleton(ChunkingService::class, fn () => new ChunkingService());
+
+        $this->app->singleton(VectorStore::class, fn ($app) => new VectorStore(
+            $app->make(EmbeddingService::class),
+            $app->make(ChunkingService::class),
+        ));
+
+        $this->app->singleton(RAGService::class, fn ($app) => new RAGService(
+            $app->make(VectorStore::class),
+            $app->make(EmbeddingService::class),
+        ));
+
+        // Enhanced GEO with RAG
+        $this->app->singleton(EnhancedGeoScorer::class, fn ($app) => new EnhancedGeoScorer(
+            $app->make(GeoScorer::class),
+            $app->make(RAGService::class),
+            $app->make(VectorStore::class),
+            $app->make(EmbeddingService::class),
+        ));
     }
 
     /**

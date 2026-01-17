@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 
-import HeadingSmall from '@/components/HeadingSmall.vue';
 import PlanCard from '@/components/billing/PlanCard.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem, type Plan } from '@/types';
@@ -29,23 +28,24 @@ const breadcrumbs: BreadcrumbItem[] = [
     <Head title="Subscription Plans" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex flex-col gap-6 p-6">
-            <HeadingSmall
-                title="Subscription Plans"
-                description="Choose the plan that best fits your needs"
-            />
+        <div class="flex flex-col gap-8 p-6">
+            <div class="text-center">
+                <h1 class="text-3xl font-bold tracking-tight text-foreground">Choose your plan</h1>
+                <p class="mt-2 text-muted-foreground">Select the plan that best fits your needs. Upgrade or downgrade anytime.</p>
+            </div>
 
-            <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div class="mx-auto grid max-w-4xl gap-8 pt-4 md:grid-cols-2">
                 <PlanCard
                     v-for="(plan, key) in plans"
                     :key="key"
                     :plan="{ ...plan, key: String(key) }"
-                    :is-current="plan.price_id === currentPlan"
+                    :is-current="currentPlan !== null && plan.price_id === currentPlan"
                     :checkout-url="`/billing/checkout/${key}`"
+                    :popular="key === 'agency'"
                 />
             </div>
 
-            <div class="mt-4">
+            <div class="mt-4 text-center">
                 <Link href="/billing" class="text-sm text-muted-foreground hover:text-foreground">
                     &larr; Back to Billing
                 </Link>

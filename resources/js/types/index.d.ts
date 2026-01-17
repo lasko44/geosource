@@ -97,3 +97,56 @@ export interface Invoice {
 }
 
 export type BreadcrumbItemType = BreadcrumbItem;
+
+export interface Scan {
+    id: number;
+    team_id: number | null;
+    url: string;
+    title: string | null;
+    score: number;
+    grade: string;
+    results: ScanResults;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface ScanResults {
+    score: number;
+    max_score: number;
+    percentage: number;
+    grade: string;
+    pillars: Record<string, PillarResult>;
+    recommendations: Record<string, Recommendation>;
+    summary: ScanSummary;
+    scored_at: string;
+}
+
+export interface PillarResult {
+    name: string;
+    score: number;
+    max_score: number;
+    percentage: number;
+    details: Record<string, unknown>;
+    breakdown?: Record<string, number>;
+}
+
+export interface Recommendation {
+    pillar: string;
+    current_score: string;
+    priority: 'high' | 'medium' | 'low';
+    actions: string[];
+}
+
+export interface ScanSummary {
+    overall: string;
+    strengths: string[];
+    weaknesses: string[];
+    focus_area: string | null;
+}
+
+export interface DashboardStats {
+    total_scans: number;
+    avg_score: number;
+    best_score: number;
+    scans_this_week: number;
+}

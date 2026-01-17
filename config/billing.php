@@ -14,65 +14,32 @@ return [
 
     'plans' => [
         'user' => [
-            'basic' => [
-                'name' => 'Basic',
-                'description' => 'Perfect for individuals getting started',
-                'price_id' => env('STRIPE_PRICE_BASIC', 'price_basic'),
-                'price' => 9.99,
-                'currency' => 'USD',
-                'interval' => 'month',
-                'features' => [
-                    '5 projects',
-                    '1GB storage',
-                    'Email support',
-                ],
-            ],
             'pro' => [
                 'name' => 'Pro',
-                'description' => 'For professionals who need more',
-                'price_id' => env('STRIPE_PRICE_PRO', 'price_pro'),
-                'price' => 29.99,
+                'description' => 'For professionals who need more power',
+                'price_id' => env('STRIPE_PRICE_PRO'),
+                'price' => 20.00,
                 'currency' => 'USD',
                 'interval' => 'month',
                 'features' => [
-                    'Unlimited projects',
-                    '10GB storage',
-                    'Priority support',
-                    'Advanced analytics',
+                    // Add your Pro features here
+                ],
+            ],
+            'agency' => [
+                'name' => 'Agency',
+                'description' => 'For agencies and teams',
+                'price_id' => env('STRIPE_PRICE_AGENCY'),
+                'price' => 99.00,
+                'currency' => 'USD',
+                'interval' => 'month',
+                'features' => [
+                    // Add your Agency features here
                 ],
             ],
         ],
 
         'team' => [
-            'team_starter' => [
-                'name' => 'Team Starter',
-                'description' => 'Great for small teams',
-                'price_id' => env('STRIPE_PRICE_TEAM_STARTER', 'price_team_starter'),
-                'price' => 49.99,
-                'currency' => 'USD',
-                'interval' => 'month',
-                'features' => [
-                    'Up to 5 team members',
-                    '25GB storage',
-                    'Team collaboration',
-                    'Priority support',
-                ],
-            ],
-            'team_business' => [
-                'name' => 'Team Business',
-                'description' => 'For growing teams',
-                'price_id' => env('STRIPE_PRICE_TEAM_BUSINESS', 'price_team_business'),
-                'price' => 99.99,
-                'currency' => 'USD',
-                'interval' => 'month',
-                'features' => [
-                    'Up to 25 team members',
-                    '100GB storage',
-                    'Advanced team features',
-                    'Dedicated support',
-                    'Custom integrations',
-                ],
-            ],
+            // Team plans can be added here if needed
         ],
     ],
 
@@ -98,8 +65,7 @@ return [
 
     'team' => [
         'max_members' => [
-            'team_starter' => 5,
-            'team_business' => 25,
+            // Add team member limits here if needed
         ],
     ],
 

@@ -33,21 +33,6 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-      title: 'Start Scan',
-        href: '#',
-        icon: PlayIcon
-    },
-    {
-        title: 'Teams',
-        href: '#',
-        icon: Users,
-    },
-    {
-        title: 'Projects',
-        href: '#',
-        icon: Folder,
-    },
-    {
         title: 'Reports',
         href: '#',
         icon: FileChartColumnIncreasingIcon,
