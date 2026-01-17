@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-vue-next';
+import {
+    BookOpen,
+    FileChartColumnIncreasingIcon,
+    Folder,
+    LayoutGrid,
+    PlayIcon,
+    Users
+} from 'lucide-vue-next';
 
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -25,17 +32,32 @@ const mainNavItems: NavItem[] = [
         href: dashboard(),
         icon: LayoutGrid,
     },
+    {
+      title: 'Start Scan',
+        href: '#',
+        icon: PlayIcon
+    },
+    {
+        title: 'Teams',
+        href: '#',
+        icon: Users,
+    },
+    {
+        title: 'Projects',
+        href: '#',
+        icon: Folder,
+    },
+    {
+        title: 'Reports',
+        href: '#',
+        icon: FileChartColumnIncreasingIcon,
+    }
 ];
 
 const footerNavItems: NavItem[] = [
     {
-        title: 'Github Repo',
+        title: 'GEO Resources',
         href: 'https://github.com/laravel/vue-starter-kit',
-        icon: Folder,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#vue',
         icon: BookOpen,
     },
 ];
