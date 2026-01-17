@@ -5,7 +5,7 @@ import {
     FileChartColumnIncreasingIcon,
     Folder,
     LayoutGrid,
-    PlayIcon,
+    PlayIcon, Receipt,
     Users
 } from 'lucide-vue-next';
 
@@ -51,6 +51,11 @@ const mainNavItems: NavItem[] = [
         title: 'Reports',
         href: '#',
         icon: FileChartColumnIncreasingIcon,
+    },
+    {
+        title: 'Billing',
+        href: '/billing',
+        icon: Receipt,
     }
 ];
 
@@ -60,6 +65,7 @@ const footerNavItems: NavItem[] = [
         href: 'https://github.com/laravel/vue-starter-kit',
         icon: BookOpen,
     },
+
 ];
 </script>
 

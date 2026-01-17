@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Billing;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -149,7 +150,7 @@ class UserBillingController extends Controller
     /**
      * Add a new payment method.
      */
-    public function addPaymentMethod(Request $request)
+    public function addPaymentMethod(Request $request): RedirectResponse
     {
         $request->validate([
             'payment_method' => 'required|string',
@@ -174,7 +175,7 @@ class UserBillingController extends Controller
     /**
      * Set a payment method as default.
      */
-    public function setDefaultPaymentMethod(Request $request)
+    public function setDefaultPaymentMethod(Request $request): RedirectResponse
     {
         $request->validate([
             'payment_method' => 'required|string',
