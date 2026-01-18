@@ -35,18 +35,18 @@ const submit = () => {
 };
 
 const getGradeColor = (grade: string) => {
-    if (grade.startsWith('A')) return 'text-green-600 bg-green-100';
-    if (grade.startsWith('B')) return 'text-blue-600 bg-blue-100';
-    if (grade.startsWith('C')) return 'text-yellow-600 bg-yellow-100';
-    if (grade.startsWith('D')) return 'text-orange-600 bg-orange-100';
-    return 'text-red-600 bg-red-100';
+    if (grade.startsWith('A')) return 'text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-950';
+    if (grade.startsWith('B')) return 'text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-950';
+    if (grade.startsWith('C')) return 'text-yellow-600 bg-yellow-100 dark:text-yellow-400 dark:bg-yellow-950';
+    if (grade.startsWith('D')) return 'text-orange-600 bg-orange-100 dark:text-orange-400 dark:bg-orange-950';
+    return 'text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-950';
 };
 
 const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600';
-    if (score >= 60) return 'text-blue-600';
-    if (score >= 40) return 'text-yellow-600';
-    return 'text-red-600';
+    if (score >= 80) return 'text-green-600 dark:text-green-400';
+    if (score >= 60) return 'text-blue-600 dark:text-blue-400';
+    if (score >= 40) return 'text-yellow-600 dark:text-yellow-400';
+    return 'text-red-600 dark:text-red-400';
 };
 
 const formatDate = (dateString: string) => {

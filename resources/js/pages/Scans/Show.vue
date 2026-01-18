@@ -53,11 +53,11 @@ const deleteScan = () => {
 };
 
 const getGradeColor = (grade: string) => {
-    if (grade.startsWith('A')) return 'text-green-600 bg-green-100 border-green-200';
-    if (grade.startsWith('B')) return 'text-blue-600 bg-blue-100 border-blue-200';
-    if (grade.startsWith('C')) return 'text-yellow-600 bg-yellow-100 border-yellow-200';
-    if (grade.startsWith('D')) return 'text-orange-600 bg-orange-100 border-orange-200';
-    return 'text-red-600 bg-red-100 border-red-200';
+    if (grade.startsWith('A')) return 'text-green-600 bg-green-100 border-green-200 dark:text-green-400 dark:bg-green-950 dark:border-green-800';
+    if (grade.startsWith('B')) return 'text-blue-600 bg-blue-100 border-blue-200 dark:text-blue-400 dark:bg-blue-950 dark:border-blue-800';
+    if (grade.startsWith('C')) return 'text-yellow-600 bg-yellow-100 border-yellow-200 dark:text-yellow-400 dark:bg-yellow-950 dark:border-yellow-800';
+    if (grade.startsWith('D')) return 'text-orange-600 bg-orange-100 border-orange-200 dark:text-orange-400 dark:bg-orange-950 dark:border-orange-800';
+    return 'text-red-600 bg-red-100 border-red-200 dark:text-red-400 dark:bg-red-950 dark:border-red-800';
 };
 
 const getScoreColor = (percentage: number) => {
@@ -68,9 +68,9 @@ const getScoreColor = (percentage: number) => {
 };
 
 const getPriorityColor = (priority: string) => {
-    if (priority === 'high') return 'text-red-600 bg-red-100';
-    if (priority === 'medium') return 'text-yellow-600 bg-yellow-100';
-    return 'text-green-600 bg-green-100';
+    if (priority === 'high') return 'text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-900/50';
+    if (priority === 'medium') return 'text-yellow-600 bg-yellow-100 dark:text-yellow-400 dark:bg-yellow-900/50';
+    return 'text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-900/50';
 };
 
 const pillarIcons: Record<string, any> = {
@@ -250,12 +250,12 @@ const formatDate = (dateString: string) => {
                         v-for="rec in recommendations"
                         :key="rec.key"
                         :class="{
-                            'border-red-200 bg-red-50': rec.priority === 'high',
-                            'border-yellow-200 bg-yellow-50': rec.priority === 'medium',
-                            'border-green-200 bg-green-50': rec.priority === 'low',
+                            'border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-950': rec.priority === 'high',
+                            'border-yellow-300 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950': rec.priority === 'medium',
+                            'border-green-300 bg-green-50 dark:border-green-800 dark:bg-green-950': rec.priority === 'low',
                         }"
                     >
-                        <AlertTitle class="flex items-center gap-2">
+                        <AlertTitle class="flex items-center gap-2 text-foreground">
                             {{ rec.pillar }}
                             <span
                                 class="rounded-full px-2 py-0.5 text-xs font-medium"
@@ -265,7 +265,7 @@ const formatDate = (dateString: string) => {
                             </span>
                             <span class="ml-auto text-sm text-muted-foreground">{{ rec.current_score }}</span>
                         </AlertTitle>
-                        <AlertDescription>
+                        <AlertDescription class="text-muted-foreground">
                             <ul class="mt-2 list-inside list-disc space-y-1">
                                 <li v-for="(action, index) in rec.actions" :key="index">
                                     {{ action }}
