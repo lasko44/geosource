@@ -46,5 +46,7 @@
     </head>
     <body class="font-sans antialiased">
         @inertia
+
+        @includeWhen(isset($page['component']) && $page['component'] === 'Welcome', 'partials.welcome-content')
     </body>
 </html>
