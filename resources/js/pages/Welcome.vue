@@ -182,27 +182,29 @@ const aiEraFeatures = [
             </section>
 
             <!-- What is GEO Section -->
-            <section class="border-t bg-muted/30 py-20">
-                <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <section class="border-t bg-muted/30 py-20" aria-labelledby="what-is-geo">
+                <article class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div class="mx-auto max-w-3xl">
-                        <h2 class="text-center text-3xl font-bold tracking-tight sm:text-4xl">
+                        <h2 id="what-is-geo" class="text-center text-3xl font-bold tracking-tight sm:text-4xl">
                             What Is GEO (Generative Engine Optimization)?
                         </h2>
                         <p class="mt-6 text-center text-lg text-muted-foreground">
-                            Generative Engine Optimization (GEO) is the practice of structuring website content so it can be accurately retrieved, understood, and cited by AI-powered search engines.
+                            <dfn id="geo-definition"><strong>Generative Engine Optimization (GEO)</strong></dfn> is the practice of structuring website content so it can be accurately retrieved, understood, and cited by AI-powered search engines.
                         </p>
                         <p class="mt-4 text-center text-base text-muted-foreground">
                             Unlike traditional SEO, GEO focuses on:
                         </p>
-                        <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                            <Card v-for="item in geoFocusItems" :key="item.text" class="text-center">
-                                <CardContent class="flex flex-col items-center pt-6">
-                                    <component :is="item.icon" class="h-8 w-8 text-primary" />
-                                    <p class="mt-3 font-medium">{{ item.text }}</p>
-                                </CardContent>
-                            </Card>
-                        </div>
-                        <div class="mt-12 rounded-lg border bg-card p-8 text-center">
+                        <ul class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" role="list">
+                            <li v-for="item in geoFocusItems" :key="item.text">
+                                <Card class="text-center h-full">
+                                    <CardContent class="flex flex-col items-center pt-6">
+                                        <component :is="item.icon" class="h-8 w-8 text-primary" aria-hidden="true" />
+                                        <p class="mt-3 font-medium">{{ item.text }}</p>
+                                    </CardContent>
+                                </Card>
+                            </li>
+                        </ul>
+                        <aside class="mt-12 rounded-lg border bg-card p-8 text-center">
                             <p class="text-lg text-muted-foreground">
                                 AI systems do not rank pages.
                             </p>
@@ -212,9 +214,9 @@ const aiEraFeatures = [
                             <p class="mt-4 text-base text-muted-foreground">
                                 GeoSource.ai helps your site become one of them.
                             </p>
-                        </div>
+                        </aside>
                     </div>
-                </div>
+                </article>
             </section>
 
             <!-- Why GEO Matters Section -->
@@ -298,7 +300,7 @@ const aiEraFeatures = [
                                 <CardContent class="pt-6 text-center">
                                     <BarChart3 class="mx-auto h-12 w-12 text-primary" />
                                     <p class="mt-4 text-lg font-medium">
-                                        You receive a clear <span class="text-primary">GEO Score (0–100)</span> with actionable insights.
+                                        You receive a clear <dfn class="text-primary not-italic">GEO Score (0–100)</dfn> with actionable insights.
                                     </p>
                                 </CardContent>
                             </Card>
@@ -432,27 +434,27 @@ const aiEraFeatures = [
             </section>
 
             <!-- How It Works Section -->
-            <section class="border-t bg-muted/30 py-20">
+            <section class="border-t bg-muted/30 py-20" aria-labelledby="how-it-works">
                 <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div class="mx-auto max-w-3xl">
-                        <h2 class="text-center text-3xl font-bold tracking-tight sm:text-4xl">
+                        <h2 id="how-it-works" class="text-center text-3xl font-bold tracking-tight sm:text-4xl">
                             How GeoSource.ai Works
                         </h2>
-                        <div class="mt-12 space-y-6">
-                            <div
+                        <ol class="mt-12 space-y-6" role="list">
+                            <li
                                 v-for="step in howItWorksSteps"
                                 :key="step.step"
                                 class="flex gap-4"
                             >
-                                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold">
+                                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold" aria-hidden="true">
                                     {{ step.step }}
                                 </div>
                                 <div>
                                     <h3 class="font-semibold text-foreground">{{ step.title }}</h3>
                                     <p class="text-muted-foreground">{{ step.description }}</p>
                                 </div>
-                            </div>
-                        </div>
+                            </li>
+                        </ol>
                     </div>
                 </div>
             </section>
