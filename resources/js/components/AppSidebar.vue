@@ -47,7 +47,7 @@ const mainNavItems: NavItem[] = [
 const footerNavItems: NavItem[] = [
     {
         title: 'GEO Resources',
-        href: 'https://github.com/laravel/vue-starter-kit',
+        href: '/resources',
         icon: BookOpen,
     },
 

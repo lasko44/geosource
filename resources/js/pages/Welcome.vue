@@ -128,6 +128,9 @@ const aiEraFeatures = [
                     <span class="text-xl font-bold">GeoSource.ai</span>
                 </div>
                 <nav class="flex items-center gap-4">
+                    <Link href="/resources">
+                        <Button variant="ghost">Resources</Button>
+                    </Link>
                     <Link
                         v-if="$page.props.auth.user"
                         :href="dashboard()"
@@ -175,7 +178,9 @@ const aiEraFeatures = [
                                     <ArrowRight class="h-4 w-4" />
                                 </Button>
                             </Link>
-                            <Button size="lg" variant="outline">Learn More</Button>
+                            <Link href="/resources">
+                                <Button size="lg" variant="outline">Learn More</Button>
+                            </Link>
                         </div>
                     </div>
                 </div>
