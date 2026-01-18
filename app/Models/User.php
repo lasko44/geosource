@@ -54,7 +54,16 @@ class User extends Authenticatable
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
             'trial_ends_at' => 'datetime',
+            'is_admin' => 'boolean',
         ];
+    }
+
+    /**
+     * Get all scans by this user.
+     */
+    public function scans(): HasMany
+    {
+        return $this->hasMany(Scan::class);
     }
 
     /**
