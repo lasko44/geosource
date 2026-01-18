@@ -24,14 +24,8 @@ class ScanController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $teamId = $user->currentTeam?->id ?? $user->ownedTeams()->first()?->id;
 
-        $scanQuery = Scan::query();
-        if ($teamId) {
-            $scanQuery->where('team_id', $teamId);
-        } else {
-            $scanQuery->whereNull('team_id');
-        }
+        $scanQuery = Scan::where('user_id', $user->id);
 
         $recentScans = (clone $scanQuery)
             ->orderByDesc('created_at')
@@ -94,6 +88,7 @@ class ScanController extends Controller
 
             // Save the scan
             $scan = Scan::create([
+                'user_id' => $user->id,
                 'team_id' => $teamId,
                 'url' => $url,
                 'title' => $title,
@@ -147,9 +142,8 @@ class ScanController extends Controller
     public function list(Request $request)
     {
         $user = $request->user();
-        $teamId = $user->currentTeam?->id ?? $user->ownedTeams()->first()?->id;
 
-        $scans = Scan::where('team_id', $teamId)
+        $scans = Scan::where('user_id', $user->id)
             ->orderByDesc('created_at')
             ->paginate(20);
 

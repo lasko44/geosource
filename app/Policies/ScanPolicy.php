@@ -12,7 +12,7 @@ class ScanPolicy
      */
     public function view(User $user, Scan $scan): bool
     {
-        return $this->belongsToUserTeam($user, $scan);
+        return $this->belongsToUser($user, $scan);
     }
 
     /**
@@ -20,7 +20,7 @@ class ScanPolicy
      */
     public function update(User $user, Scan $scan): bool
     {
-        return $this->belongsToUserTeam($user, $scan);
+        return $this->belongsToUser($user, $scan);
     }
 
     /**
@@ -28,20 +28,14 @@ class ScanPolicy
      */
     public function delete(User $user, Scan $scan): bool
     {
-        return $this->belongsToUserTeam($user, $scan);
+        return $this->belongsToUser($user, $scan);
     }
 
     /**
-     * Check if scan belongs to user's team.
+     * Check if scan belongs to user.
      */
-    private function belongsToUserTeam(User $user, Scan $scan): bool
+    private function belongsToUser(User $user, Scan $scan): bool
     {
-        if ($scan->team_id === null) {
-            return true;
-        }
-
-        $userTeamIds = $user->allTeams()->pluck('id')->toArray();
-
-        return in_array($scan->team_id, $userTeamIds);
+        return $scan->user_id === $user->id;
     }
 }
