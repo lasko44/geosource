@@ -169,4 +169,26 @@
     body {
         @apply bg-background text-foreground;
     }
+
+    /* Ensure all interactive elements have pointer cursor */
+    a,
+    button,
+    [role="button"],
+    input[type="submit"],
+    input[type="button"],
+    input[type="reset"],
+    select,
+    summary,
+    [tabindex]:not([tabindex="-1"]) {
+        cursor: pointer;
+    }
+
+    /* Disabled elements should show not-allowed cursor */
+    button:disabled,
+    [role="button"][aria-disabled="true"],
+    input:disabled,
+    select:disabled,
+    textarea:disabled {
+        cursor: not-allowed;
+    }
 }
