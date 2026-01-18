@@ -30,7 +30,7 @@ const props = defineProps<Props>();
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
     { title: 'Scans', href: '/scans' },
-    { title: props.scan.title || 'Scan Results', href: `/scans/${props.scan.id}` },
+    { title: props.scan.title || 'Scan Results', href: `/scans/${props.scan.uuid}` },
 ];
 
 const rescanning = ref(false);
@@ -38,7 +38,7 @@ const deleting = ref(false);
 
 const rescan = () => {
     rescanning.value = true;
-    router.post(`/scans/${props.scan.id}/rescan`, {}, {
+    router.post(`/scans/${props.scan.uuid}/rescan`, {}, {
         onFinish: () => {
             rescanning.value = false;
         },
@@ -48,7 +48,7 @@ const rescan = () => {
 const deleteScan = () => {
     if (confirm('Are you sure you want to delete this scan?')) {
         deleting.value = true;
-        router.delete(`/scans/${props.scan.id}`);
+        router.delete(`/scans/${props.scan.uuid}`);
     }
 };
 

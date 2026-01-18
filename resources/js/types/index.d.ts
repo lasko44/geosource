@@ -100,6 +100,7 @@ export type BreadcrumbItemType = BreadcrumbItem;
 
 export interface Scan {
     id: number;
+    uuid: string;
     team_id: number | null;
     url: string;
     title: string | null;

@@ -30,7 +30,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const deleteScan = (scan: Scan) => {
     if (confirm(`Delete scan for "${scan.title || scan.url}"?`)) {
-        router.delete(`/scans/${scan.id}`, {
+        router.delete(`/scans/${scan.uuid}`, {
             preserveScroll: true,
         });
     }
@@ -111,7 +111,7 @@ const truncateUrl = (url: string, maxLength = 60) => {
                             class="flex items-center justify-between p-4 transition-colors hover:bg-muted/50"
                         >
                             <Link
-                                :href="`/scans/${scan.id}`"
+                                :href="`/scans/${scan.uuid}`"
                                 class="flex flex-1 items-center gap-4"
                             >
                                 <!-- Grade Badge -->
