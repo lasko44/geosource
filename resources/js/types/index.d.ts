@@ -151,3 +151,35 @@ export interface DashboardStats {
     best_score: number;
     scans_this_week: number;
 }
+
+export interface UsageSummary {
+    plan_key: string;
+    plan_name: string;
+    scans_used: number;
+    scans_limit: number;
+    scans_remaining: number;
+    is_unlimited: boolean;
+    can_scan: boolean;
+    features: string[];
+    limits: Record<string, number | boolean>;
+}
+
+export interface PlanLimits {
+    scans_per_month: number;
+    history_days: number;
+    team_members: number;
+    competitor_tracking: number;
+    recommendations_shown?: number;
+    api_access: boolean;
+    white_label: boolean;
+    scheduled_scans: boolean;
+    pdf_export: boolean;
+    csv_export: boolean;
+    bulk_scanning?: boolean;
+}
+
+export interface PlanWithLimits extends Plan {
+    key?: string;
+    limits: PlanLimits;
+    popular?: boolean;
+}

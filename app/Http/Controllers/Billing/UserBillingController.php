@@ -41,11 +41,14 @@ class UserBillingController extends Controller
     /**
      * Show available plans.
      */
-    public function plans(): Response
+    public function plans(Request $request): Response
     {
+        $user = $request->user();
+
         return Inertia::render('billing/Plans', [
             'plans' => config('billing.plans.user'),
-            'currentPlan' => auth()->user()->subscription('default')?->stripe_price,
+            'currentPlan' => $user->subscription('default')?->stripe_price,
+            'usage' => $user->getUsageSummary(),
         ]);
     }
 

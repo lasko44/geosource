@@ -7,8 +7,7 @@ return [
     | Subscription Plans
     |--------------------------------------------------------------------------
     |
-    | Define all available subscription plans. Each plan should have a unique
-    | key that matches the Stripe Price ID. Plans can be for users or teams.
+    | Define all available subscription plans with features and limits.
     |
     */
 
@@ -16,30 +15,103 @@ return [
         'user' => [
             'pro' => [
                 'name' => 'Pro',
-                'description' => 'For professionals who need more power',
+                'description' => 'For professionals who need comprehensive GEO analysis',
                 'price_id' => env('STRIPE_PRICE_PRO'),
-                'price' => 20.00,
+                'price' => 29.00,
                 'currency' => 'USD',
                 'interval' => 'month',
                 'features' => [
-                    // Add your Pro features here
+                    '50 scans per month',
+                    'Full GEO score breakdown',
+                    'All optimization recommendations',
+                    '90-day scan history',
+                    'Email reports',
+                    'Priority support',
+                    'Export to CSV',
+                ],
+                'limits' => [
+                    'scans_per_month' => 50,
+                    'history_days' => 90,
+                    'team_members' => 1,
+                    'competitor_tracking' => 0,
+                    'api_access' => false,
+                    'white_label' => false,
+                    'scheduled_scans' => false,
+                    'pdf_export' => false,
+                    'csv_export' => true,
                 ],
             ],
             'agency' => [
                 'name' => 'Agency',
-                'description' => 'For agencies and teams',
+                'description' => 'For agencies managing multiple clients',
                 'price_id' => env('STRIPE_PRICE_AGENCY'),
                 'price' => 99.00,
                 'currency' => 'USD',
                 'interval' => 'month',
+                'popular' => true,
                 'features' => [
-                    // Add your Agency features here
+                    'Unlimited scans',
+                    'Everything in Pro',
+                    'White-label reports',
+                    'API access',
+                    'Team collaboration (5 seats)',
+                    'Unlimited scan history',
+                    'Competitor tracking (5 domains)',
+                    'Custom branding',
+                    'Dedicated support',
+                    'Export to PDF & CSV',
+                    'Scheduled scans',
+                    'Bulk URL scanning',
+                ],
+                'limits' => [
+                    'scans_per_month' => -1, // unlimited
+                    'history_days' => -1, // unlimited
+                    'team_members' => 5,
+                    'competitor_tracking' => 5,
+                    'api_access' => true,
+                    'white_label' => true,
+                    'scheduled_scans' => true,
+                    'pdf_export' => true,
+                    'csv_export' => true,
+                    'bulk_scanning' => true,
                 ],
             ],
         ],
 
         'team' => [
             // Team plans can be added here if needed
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Free Tier Limits
+    |--------------------------------------------------------------------------
+    |
+    | Limits for users without a subscription.
+    |
+    */
+
+    'free' => [
+        'name' => 'Free',
+        'features' => [
+            '3 scans per month',
+            'Basic GEO score',
+            'Top 3 recommendations',
+            '7-day scan history',
+        ],
+        'limits' => [
+            'scans_per_month' => 3,
+            'history_days' => 7,
+            'team_members' => 1,
+            'competitor_tracking' => 0,
+            'recommendations_shown' => 3,
+            'api_access' => false,
+            'white_label' => false,
+            'scheduled_scans' => false,
+            'pdf_export' => false,
+            'csv_export' => false,
+            'bulk_scanning' => false,
         ],
     ],
 
@@ -65,7 +137,8 @@ return [
 
     'team' => [
         'max_members' => [
-            // Add team member limits here if needed
+            'pro' => 1,
+            'agency' => 5,
         ],
     ],
 

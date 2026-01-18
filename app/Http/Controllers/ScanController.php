@@ -6,6 +6,7 @@ use App\Models\Scan;
 use App\Services\GEO\EnhancedGeoScorer;
 use App\Services\GEO\GeoScorer;
 use App\Services\RAG\VectorStore;
+use App\Services\SubscriptionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Inertia\Inertia;
@@ -16,6 +17,7 @@ class ScanController extends Controller
         private GeoScorer $geoScorer,
         private EnhancedGeoScorer $enhancedGeoScorer,
         private VectorStore $vectorStore,
+        private SubscriptionService $subscriptionService,
     ) {}
 
     /**
@@ -25,7 +27,13 @@ class ScanController extends Controller
     {
         $user = $request->user();
 
+        // Apply history limit based on plan
+        $historyDays = $user->getLimit('history_days');
         $scanQuery = Scan::where('user_id', $user->id);
+
+        if ($historyDays !== -1 && $historyDays !== null) {
+            $scanQuery->where('created_at', '>=', now()->subDays($historyDays));
+        }
 
         $recentScans = (clone $scanQuery)
             ->orderByDesc('created_at')
@@ -41,9 +49,15 @@ class ScanController extends Controller
                 ->count(),
         ];
 
+        // Get usage summary for the subscription widget
+        $usage = $user->getUsageSummary();
+
         return Inertia::render('Dashboard', [
             'recentScans' => $recentScans,
             'stats' => $stats,
+            'usage' => $usage,
+            'showUpgradePrompt' => $user->shouldShowUpgradePrompt(),
+            'plans' => config('billing.plans.user'),
         ]);
     }
 
@@ -57,6 +71,16 @@ class ScanController extends Controller
         ]);
 
         $user = $request->user();
+
+        // Check if user can scan
+        if (! $user->canScan()) {
+            $usage = $user->getUsageSummary();
+
+            return back()->withErrors([
+                'limit' => "You've reached your monthly scan limit ({$usage['scans_limit']} scans). Please upgrade your plan to continue scanning.",
+            ]);
+        }
+
         $teamId = $user->currentTeam?->id ?? $user->ownedTeams()->first()?->id;
         $url = $request->input('url');
 
@@ -131,8 +155,26 @@ class ScanController extends Controller
     {
         $this->authorize('view', $scan);
 
+        $user = auth()->user();
+        $scanData = $scan->toArray();
+
+        // Filter recommendations for free tier users
+        if ($user->isFreeTier()) {
+            $recommendationsLimit = $user->getLimit('recommendations_shown') ?? 3;
+
+            if (isset($scanData['results']['recommendations'])) {
+                $allRecommendations = $scanData['results']['recommendations'];
+                $scanData['results']['recommendations'] = array_slice($allRecommendations, 0, $recommendationsLimit);
+                $scanData['results']['recommendations_limited'] = true;
+                $scanData['results']['recommendations_total'] = count($allRecommendations);
+            }
+        }
+
         return Inertia::render('Scans/Show', [
-            'scan' => $scan,
+            'scan' => $scanData,
+            'usage' => $user->getUsageSummary(),
+            'canExportCsv' => $user->hasFeature('csv_export'),
+            'canExportPdf' => $user->hasFeature('pdf_export'),
         ]);
     }
 

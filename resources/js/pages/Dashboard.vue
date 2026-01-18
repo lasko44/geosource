@@ -1,18 +1,21 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { Globe, TrendingUp, Target, Calendar, ExternalLink, Trash2 } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { Globe, TrendingUp, Target, Calendar, ExternalLink, Zap, ArrowRight } from 'lucide-vue-next';
 
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { type BreadcrumbItem, type Scan, type DashboardStats } from '@/types';
+import { Progress } from '@/components/ui/progress';
+import { type BreadcrumbItem, type Scan, type DashboardStats, type UsageSummary, type PlanWithLimits } from '@/types';
 
 interface Props {
     recentScans: Scan[];
     stats: DashboardStats;
+    usage: UsageSummary;
+    showUpgradePrompt: boolean;
+    plans: Record<string, PlanWithLimits>;
 }
 
 const props = defineProps<Props>();
@@ -62,6 +65,26 @@ const truncateUrl = (url: string, maxLength = 50) => {
     if (url.length <= maxLength) return url;
     return url.substring(0, maxLength) + '...';
 };
+
+const usagePercentage = () => {
+    if (props.usage.is_unlimited) return 0;
+    if (props.usage.scans_limit === 0) return 100;
+    return Math.min(100, Math.round((props.usage.scans_used / props.usage.scans_limit) * 100));
+};
+
+const getUsageColor = () => {
+    const pct = usagePercentage();
+    if (pct >= 90) return 'text-red-600 dark:text-red-400';
+    if (pct >= 70) return 'text-yellow-600 dark:text-yellow-400';
+    return 'text-green-600 dark:text-green-400';
+};
+
+const getProgressColor = () => {
+    const pct = usagePercentage();
+    if (pct >= 90) return '[&>div]:bg-red-500';
+    if (pct >= 70) return '[&>div]:bg-yellow-500';
+    return '[&>div]:bg-green-500';
+};
 </script>
 
 <template>
@@ -69,6 +92,22 @@ const truncateUrl = (url: string, maxLength = 50) => {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex flex-col gap-6 p-6">
+            <!-- Upgrade Banner -->
+            <Alert v-if="showUpgradePrompt && usage.plan_key === 'free'" class="border-primary/50 bg-gradient-to-r from-primary/5 to-primary/10">
+                <Zap class="h-4 w-4 text-primary" />
+                <AlertDescription class="flex items-center justify-between">
+                    <span>
+                        <strong>Unlock more scans!</strong> Upgrade to Pro for 50 scans/month, full GEO breakdown, and CSV export.
+                    </span>
+                    <Link href="/billing/plans">
+                        <Button size="sm" class="ml-4">
+                            View Plans
+                            <ArrowRight class="ml-1 h-4 w-4" />
+                        </Button>
+                    </Link>
+                </AlertDescription>
+            </Alert>
+
             <!-- Scan Form Card -->
             <Card class="border-2 border-dashed border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
                 <CardHeader>
@@ -88,13 +127,13 @@ const truncateUrl = (url: string, maxLength = 50) => {
                                 type="url"
                                 placeholder="https://example.com/page"
                                 class="h-12 text-base"
-                                :disabled="form.processing"
+                                :disabled="form.processing || !usage.can_scan"
                             />
                         </div>
                         <Button
                             type="submit"
                             size="lg"
-                            :disabled="form.processing || !form.url"
+                            :disabled="form.processing || !form.url || !usage.can_scan"
                             class="h-12 px-8"
                         >
                             <svg v-if="form.processing" class="mr-2 h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -107,11 +146,57 @@ const truncateUrl = (url: string, maxLength = 50) => {
                     <Alert v-if="form.errors.url" variant="destructive" class="mt-3">
                         <AlertDescription>{{ form.errors.url }}</AlertDescription>
                     </Alert>
+                    <Alert v-if="form.errors.limit" variant="destructive" class="mt-3">
+                        <AlertDescription>
+                            {{ form.errors.limit }}
+                            <Link href="/billing/plans" class="ml-2 underline">Upgrade now</Link>
+                        </AlertDescription>
+                    </Alert>
+                    <Alert v-if="!usage.can_scan && !form.errors.limit" variant="destructive" class="mt-3">
+                        <AlertDescription>
+                            You've reached your monthly scan limit.
+                            <Link href="/billing/plans" class="ml-1 underline">Upgrade your plan</Link> to continue scanning.
+                        </AlertDescription>
+                    </Alert>
                 </CardContent>
             </Card>
 
             <!-- Stats Cards -->
-            <div class="grid gap-4 md:grid-cols-4">
+            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+                <!-- Usage Card -->
+                <Card class="md:col-span-2 lg:col-span-1">
+                    <CardContent class="pt-6">
+                        <div class="flex flex-col gap-3">
+                            <div class="flex items-center justify-between">
+                                <p class="text-sm font-medium text-muted-foreground">Scans This Month</p>
+                                <span class="rounded-full bg-muted px-2 py-0.5 text-xs font-medium">
+                                    {{ usage.plan_name }}
+                                </span>
+                            </div>
+                            <div class="flex items-baseline gap-1">
+                                <span class="text-3xl font-bold" :class="getUsageColor()">
+                                    {{ usage.scans_used }}
+                                </span>
+                                <span class="text-muted-foreground">
+                                    / {{ usage.is_unlimited ? '∞' : usage.scans_limit }}
+                                </span>
+                            </div>
+                            <Progress
+                                v-if="!usage.is_unlimited"
+                                :model-value="usagePercentage()"
+                                class="h-2"
+                                :class="getProgressColor()"
+                            />
+                            <p v-if="!usage.is_unlimited" class="text-xs text-muted-foreground">
+                                {{ usage.scans_remaining }} scans remaining
+                            </p>
+                            <p v-else class="text-xs text-muted-foreground">
+                                Unlimited scans
+                            </p>
+                        </div>
+                    </CardContent>
+                </Card>
+
                 <Card>
                     <CardContent class="pt-6">
                         <div class="flex items-center justify-between">
@@ -135,8 +220,8 @@ const truncateUrl = (url: string, maxLength = 50) => {
                                     {{ stats.avg_score.toFixed(1) }}
                                 </p>
                             </div>
-                            <div class="rounded-full bg-blue-100 p-3">
-                                <TrendingUp class="h-6 w-6 text-blue-600" />
+                            <div class="rounded-full bg-blue-100 p-3 dark:bg-blue-950">
+                                <TrendingUp class="h-6 w-6 text-blue-600 dark:text-blue-400" />
                             </div>
                         </div>
                     </CardContent>
@@ -151,8 +236,8 @@ const truncateUrl = (url: string, maxLength = 50) => {
                                     {{ stats.best_score.toFixed(1) }}
                                 </p>
                             </div>
-                            <div class="rounded-full bg-green-100 p-3">
-                                <Target class="h-6 w-6 text-green-600" />
+                            <div class="rounded-full bg-green-100 p-3 dark:bg-green-950">
+                                <Target class="h-6 w-6 text-green-600 dark:text-green-400" />
                             </div>
                         </div>
                     </CardContent>
@@ -165,8 +250,8 @@ const truncateUrl = (url: string, maxLength = 50) => {
                                 <p class="text-sm font-medium text-muted-foreground">This Week</p>
                                 <p class="text-3xl font-bold">{{ stats.scans_this_week }}</p>
                             </div>
-                            <div class="rounded-full bg-purple-100 p-3">
-                                <Calendar class="h-6 w-6 text-purple-600" />
+                            <div class="rounded-full bg-purple-100 p-3 dark:bg-purple-950">
+                                <Calendar class="h-6 w-6 text-purple-600 dark:text-purple-400" />
                             </div>
                         </div>
                     </CardContent>

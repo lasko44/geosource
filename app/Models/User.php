@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Services\SubscriptionService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -98,5 +99,101 @@ class User extends Authenticatable
     public function belongsToTeam(Team $team): bool
     {
         return $team->hasMember($this);
+    }
+
+    /**
+     * Get the subscription service instance.
+     */
+    protected function subscriptionService(): SubscriptionService
+    {
+        return app(SubscriptionService::class);
+    }
+
+    /**
+     * Get the user's current plan key.
+     */
+    public function getPlanKey(): string
+    {
+        return $this->subscriptionService()->getPlanKey($this);
+    }
+
+    /**
+     * Get the user's plan configuration.
+     */
+    public function getPlan(): array
+    {
+        return $this->subscriptionService()->getPlan($this);
+    }
+
+    /**
+     * Check if user can perform a scan.
+     */
+    public function canScan(): bool
+    {
+        return $this->subscriptionService()->canScan($this);
+    }
+
+    /**
+     * Get remaining scans for this month.
+     */
+    public function getScansRemaining(): int
+    {
+        return $this->subscriptionService()->getScansRemaining($this);
+    }
+
+    /**
+     * Check if user has a specific feature.
+     */
+    public function hasFeature(string $feature): bool
+    {
+        return $this->subscriptionService()->hasFeature($this, $feature);
+    }
+
+    /**
+     * Get a specific limit for the user.
+     */
+    public function getLimit(string $limit): mixed
+    {
+        return $this->subscriptionService()->getLimit($this, $limit);
+    }
+
+    /**
+     * Get usage summary for the user.
+     */
+    public function getUsageSummary(): array
+    {
+        return $this->subscriptionService()->getUsageSummary($this);
+    }
+
+    /**
+     * Check if user is on free tier.
+     */
+    public function isFreeTier(): bool
+    {
+        return $this->subscriptionService()->isFreeTier($this);
+    }
+
+    /**
+     * Check if user has a paid subscription.
+     */
+    public function hasPaidSubscription(): bool
+    {
+        return $this->subscriptionService()->hasPaidSubscription($this);
+    }
+
+    /**
+     * Check if user should see upgrade prompt.
+     */
+    public function shouldShowUpgradePrompt(): bool
+    {
+        return $this->subscriptionService()->shouldShowUpgradePrompt($this);
+    }
+
+    /**
+     * Check if user has unlimited access (admin or agency).
+     */
+    public function hasUnlimitedAccess(): bool
+    {
+        return $this->is_admin || $this->subscriptionService()->isAgencyTier($this);
     }
 }
