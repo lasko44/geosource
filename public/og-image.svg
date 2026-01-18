@@ -1,0 +1,49 @@
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="100%" style="stop-color:#1e293b"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#3b82f6"/>
+      <stop offset="100%" style="stop-color:#8b5cf6"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Decorative circles -->
+  <circle cx="1100" cy="100" r="200" fill="#3b82f6" opacity="0.1"/>
+  <circle cx="100" cy="530" r="150" fill="#8b5cf6" opacity="0.1"/>
+
+  <!-- Globe icon -->
+  <g transform="translate(100, 200)">
+    <circle cx="60" cy="60" r="55" stroke="url(#accent)" stroke-width="4" fill="none"/>
+    <ellipse cx="60" cy="60" rx="55" ry="25" stroke="url(#accent)" stroke-width="2" fill="none"/>
+    <line x1="60" y1="5" x2="60" y2="115" stroke="url(#accent)" stroke-width="2"/>
+    <line x1="5" y1="60" x2="115" y2="60" stroke="url(#accent)" stroke-width="2"/>
+  </g>
+
+  <!-- Main text -->
+  <text x="240" y="230" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="bold" fill="white">GeoSource.ai</text>
+
+  <!-- Tagline -->
+  <text x="240" y="300" font-family="system-ui, -apple-system, sans-serif" font-size="32" fill="#94a3b8">The GEO Scoring Platform</text>
+  <text x="240" y="345" font-family="system-ui, -apple-system, sans-serif" font-size="32" fill="#94a3b8">for the AI Search Era</text>
+
+  <!-- Feature pills -->
+  <g transform="translate(240, 400)">
+    <rect x="0" y="0" width="200" height="40" rx="20" fill="#3b82f6" opacity="0.2"/>
+    <text x="100" y="27" font-family="system-ui, sans-serif" font-size="16" fill="#60a5fa" text-anchor="middle">AI Visibility Score</text>
+
+    <rect x="220" y="0" width="180" height="40" rx="20" fill="#8b5cf6" opacity="0.2"/>
+    <text x="310" y="27" font-family="system-ui, sans-serif" font-size="16" fill="#a78bfa" text-anchor="middle">Citation Ready</text>
+
+    <rect x="420" y="0" width="200" height="40" rx="20" fill="#10b981" opacity="0.2"/>
+    <text x="520" y="27" font-family="system-ui, sans-serif" font-size="16" fill="#34d399" text-anchor="middle">Free Analysis</text>
+  </g>
+
+  <!-- Bottom URL -->
+  <text x="600" y="580" font-family="system-ui, sans-serif" font-size="24" fill="#64748b" text-anchor="middle">geosource.ai</text>
+</svg>

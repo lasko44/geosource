@@ -1,12 +1,24 @@
 <meta name="description" content="GeoSource.ai analyzes your website's GEO (Generative Engine Optimization) score. Understand how visible and cite-ready your content is for AI systems like ChatGPT, Perplexity, and Claude.">
 <meta name="keywords" content="GEO, Generative Engine Optimization, AI SEO, AI search optimization, ChatGPT visibility, AI citations, content optimization">
-<meta property="og:title" content="GeoSource.ai - The GEO Scoring Platform for the AI Search Era">
-<meta property="og:description" content="Understand how visible, trustworthy, and cite-ready your website is for generative AI systems.">
+
+{{-- Open Graph / Facebook / iMessage / SMS --}}
 <meta property="og:type" content="website">
 <meta property="og:url" content="{{ config('app.url') }}">
+<meta property="og:site_name" content="GeoSource.ai">
+<meta property="og:title" content="GeoSource.ai - The GEO Scoring Platform for the AI Search Era">
+<meta property="og:description" content="Measure how visible your website is to AI systems like ChatGPT, Perplexity, and Claude. Get your free GEO Score today.">
+<meta property="og:image" content="{{ config('app.url') }}/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="GeoSource.ai - Optimize your website for AI search engines">
+
+{{-- Twitter --}}
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@geosourceai">
 <meta name="twitter:title" content="GeoSource.ai - GEO Scoring Platform">
-<meta name="twitter:description" content="Measure your website's AI visibility and citation readiness.">
+<meta name="twitter:description" content="Measure how visible your website is to AI systems. Get your free GEO Score.">
+<meta name="twitter:image" content="{{ config('app.url') }}/og-image.png">
+
 <link rel="canonical" href="{{ config('app.url') }}">
 
 <script type="application/ld+json">
