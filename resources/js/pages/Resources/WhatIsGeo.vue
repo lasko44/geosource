@@ -15,7 +15,14 @@ import {
     CheckCircle,
     FileText,
     Database,
+    Menu,
 } from 'lucide-vue-next';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
 
 const coreGoals = [
@@ -124,7 +131,8 @@ const faqJsonLd = {
                     <Globe class="h-8 w-8 text-primary" />
                     <span class="text-xl font-bold">GeoSource.ai</span>
                 </Link>
-                <nav class="flex items-center gap-2">
+                <!-- Desktop Navigation -->
+                <nav class="hidden items-center gap-2 sm:flex">
                     <Link href="/resources">
                         <Button variant="ghost">Resources</Button>
                     </Link>
@@ -141,6 +149,43 @@ const faqJsonLd = {
                     </template>
                     <ThemeSwitcher />
                 </nav>
+
+                <!-- Mobile Navigation -->
+                <div class="flex items-center gap-2 sm:hidden">
+                    <ThemeSwitcher />
+                    <DropdownMenu>
+                        <DropdownMenuTrigger as-child>
+                            <Button variant="ghost" size="icon">
+                                <Menu class="h-5 w-5" />
+                                <span class="sr-only">Open menu</span>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" class="w-48">
+                            <DropdownMenuItem as-child>
+                                <Link href="/resources" class="w-full">
+                                    Resources
+                                </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem v-if="$page.props.auth.user" as-child>
+                                <Link href="/dashboard" class="w-full">
+                                    Dashboard
+                                </Link>
+                            </DropdownMenuItem>
+                            <template v-else>
+                                <DropdownMenuItem as-child>
+                                    <Link href="/login" class="w-full">
+                                        Log in
+                                    </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem as-child>
+                                    <Link href="/register" class="w-full font-medium text-primary">
+                                        Get Started
+                                    </Link>
+                                </DropdownMenuItem>
+                            </template>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
             </div>
         </header>
 
