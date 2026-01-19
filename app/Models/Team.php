@@ -9,11 +9,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
-use Laravel\Cashier\Billable;
 
 class Team extends Model
 {
-    use Billable, HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -26,29 +25,6 @@ class Team extends Model
         'slug',
         'description',
     ];
-
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
-    protected $hidden = [
-        'stripe_id',
-        'pm_type',
-        'pm_last_four',
-    ];
-
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'trial_ends_at' => 'datetime',
-        ];
-    }
 
     /**
      * Boot the model.
@@ -155,14 +131,6 @@ class Team extends Model
     public function getRouteKeyName(): string
     {
         return 'slug';
-    }
-
-    /**
-     * Get the team's Stripe customer portal URL.
-     */
-    public function billingPortalUrl(?string $returnUrl = null): string
-    {
-        return $this->billingPortalSession($returnUrl)->url;
     }
 
     /**

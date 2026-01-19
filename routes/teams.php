@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\Billing\TeamBillingController;
 use App\Http\Controllers\Teams\TeamController;
 use App\Http\Controllers\Teams\TeamInvitationController;
 use App\Http\Controllers\Teams\TeamMemberController;
@@ -26,22 +25,13 @@ Route::middleware(['auth', 'verified'])->prefix('teams')->name('teams.')->group(
 
     // Team member routes
     Route::get('/{team}/members', [TeamMemberController::class, 'index'])->name('members');
-    Route::post('/{team}/members', [TeamMemberController::class, 'store'])->name('members.store');
     Route::put('/{team}/members/{user}', [TeamMemberController::class, 'update'])->name('members.update');
     Route::delete('/{team}/members/{user}', [TeamMemberController::class, 'destroy'])->name('members.destroy');
     Route::post('/{team}/leave', [TeamMemberController::class, 'leave'])->name('leave');
+    Route::post('/{team}/transfer', [TeamController::class, 'transferOwnership'])->name('transfer');
 
     // Team invitation routes
     Route::post('/{team}/invitations', [TeamInvitationController::class, 'store'])->name('invitations.store');
     Route::delete('/{team}/invitations/{invitation}', [TeamInvitationController::class, 'destroy'])->name('invitations.destroy');
     Route::post('/{team}/invitations/{invitation}/resend', [TeamInvitationController::class, 'resend'])->name('invitations.resend');
-
-    // Team billing routes
-    Route::get('/{team}/billing', [TeamBillingController::class, 'index'])->name('billing');
-    Route::get('/{team}/billing/plans', [TeamBillingController::class, 'plans'])->name('billing.plans');
-    Route::get('/{team}/billing/checkout/{plan}', [TeamBillingController::class, 'checkout'])->name('billing.checkout');
-    Route::post('/{team}/billing/subscribe', [TeamBillingController::class, 'subscribe'])->name('billing.subscribe');
-    Route::post('/{team}/billing/cancel', [TeamBillingController::class, 'cancel'])->name('billing.cancel');
-    Route::post('/{team}/billing/resume', [TeamBillingController::class, 'resume'])->name('billing.resume');
-    Route::get('/{team}/billing/portal', [TeamBillingController::class, 'portal'])->name('billing.portal');
 });

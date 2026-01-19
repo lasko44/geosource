@@ -10,6 +10,12 @@ import { Spinner } from '@/components/ui/spinner';
 import AuthBase from '@/layouts/AuthLayout.vue';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
+
+interface Props {
+    email?: string;
+}
+
+const props = defineProps<Props>();
 </script>
 
 <template>
@@ -51,6 +57,9 @@ import { store } from '@/routes/register';
                         autocomplete="email"
                         name="email"
                         placeholder="email@example.com"
+                        :default-value="props.email"
+                        :readonly="!!props.email"
+                        :class="{ 'bg-muted': props.email }"
                     />
                     <InputError :message="errors.email" />
                 </div>

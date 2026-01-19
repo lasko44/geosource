@@ -25,6 +25,7 @@ return [
                     'Full GEO score breakdown',
                     'All optimization recommendations',
                     '90-day scan history',
+                    '1 team with 5 members',
                     'Email reports',
                     'Priority support',
                     'Export to CSV',
@@ -32,7 +33,8 @@ return [
                 'limits' => [
                     'scans_per_month' => 50,
                     'history_days' => 90,
-                    'team_members' => 1,
+                    'teams_allowed' => 1,
+                    'team_members' => 5,
                     'competitor_tracking' => 0,
                     'api_access' => false,
                     'white_label' => false,
@@ -52,9 +54,9 @@ return [
                 'features' => [
                     'Unlimited scans',
                     'Everything in Pro',
+                    '3 teams with 5 members each',
                     'White-label reports',
                     'API access',
-                    'Team collaboration (5 seats)',
                     'Unlimited scan history',
                     'Competitor tracking (5 domains)',
                     'Custom branding',
@@ -66,6 +68,7 @@ return [
                 'limits' => [
                     'scans_per_month' => -1, // unlimited
                     'history_days' => -1, // unlimited
+                    'teams_allowed' => 3,
                     'team_members' => 5,
                     'competitor_tracking' => 5,
                     'api_access' => true,
@@ -76,10 +79,6 @@ return [
                     'bulk_scanning' => true,
                 ],
             ],
-        ],
-
-        'team' => [
-            // Team plans can be added here if needed
         ],
     ],
 
@@ -103,7 +102,8 @@ return [
         'limits' => [
             'scans_per_month' => 3,
             'history_days' => 7,
-            'team_members' => 1,
+            'teams_allowed' => 0,
+            'team_members' => 0,
             'competitor_tracking' => 0,
             'recommendations_shown' => 3,
             'api_access' => false,

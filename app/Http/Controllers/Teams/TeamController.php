@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Teams;
 
 use App\Http\Controllers\Controller;
 use App\Models\Team;
+use App\Services\SubscriptionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -57,24 +58,47 @@ class TeamController extends Controller
      */
     public function store(Request $request)
     {
+        $user = $request->user();
+        $subscriptionService = app(SubscriptionService::class);
+
+        // Check if user can create teams
+        if (! $subscriptionService->canCreateTeams($user)) {
+            $teamsAllowed = $subscriptionService->getTeamsAllowed($user);
+
+            if ($teamsAllowed === 0) {
+                return back()->withErrors([
+                    'team' => 'Your current plan does not allow creating teams. Please upgrade to Pro or Agency.',
+                ]);
+            }
+
+            return back()->withErrors([
+                'team' => 'You have reached your team limit. Please upgrade your plan to create more teams.',
+            ]);
+        }
+
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('teams', 'name')->where('owner_id', $user->id),
+            ],
             'slug' => [
                 'nullable',
                 'string',
                 'max:255',
                 'regex:/^[a-z0-9-]+$/',
-                Rule::unique('teams', 'slug'),
+                Rule::unique('teams', 'slug')->where('owner_id', $user->id),
             ],
             'description' => ['nullable', 'string', 'max:1000'],
         ]);
 
         $slug = $request->input('slug') ?: Str::slug($request->input('name'));
 
-        // Ensure slug is unique
+        // Ensure slug is unique for this owner
         $originalSlug = $slug;
         $counter = 1;
-        while (Team::where('slug', $slug)->exists()) {
+        while (Team::where('slug', $slug)->where('owner_id', $user->id)->exists()) {
             $slug = $originalSlug.'-'.$counter;
             $counter++;
         }
@@ -119,7 +143,6 @@ class TeamController extends Controller
             'userRole' => $team->getUserRole($user),
             'isOwner' => $team->isOwner($user),
             'isAdmin' => $team->isAdmin($user),
-            'hasSubscription' => $team->subscribed('default'),
         ]);
     }
 
@@ -148,20 +171,35 @@ class TeamController extends Controller
         $this->authorize('update', $team);
 
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('teams', 'name')->where('owner_id', $team->owner_id)->ignore($team->id),
+            ],
             'slug' => [
                 'nullable',
                 'string',
                 'max:255',
                 'regex:/^[a-z0-9-]+$/',
-                Rule::unique('teams', 'slug')->ignore($team->id),
+                Rule::unique('teams', 'slug')->where('owner_id', $team->owner_id)->ignore($team->id),
             ],
             'description' => ['nullable', 'string', 'max:1000'],
         ]);
 
+        $slug = $request->input('slug') ?: Str::slug($request->input('name'));
+
+        // Ensure slug is unique for this owner
+        $originalSlug = $slug;
+        $counter = 1;
+        while (Team::where('slug', $slug)->where('owner_id', $team->owner_id)->where('id', '!=', $team->id)->exists()) {
+            $slug = $originalSlug.'-'.$counter;
+            $counter++;
+        }
+
         $team->update([
             'name' => $request->input('name'),
-            'slug' => $request->input('slug') ?: Str::slug($request->input('name')),
+            'slug' => $slug,
             'description' => $request->input('description'),
         ]);
 
@@ -176,14 +214,40 @@ class TeamController extends Controller
     {
         $this->authorize('delete', $team);
 
-        // Cancel any active subscription first
-        if ($team->subscribed('default')) {
-            $team->subscription('default')->cancelNow();
-        }
-
         $team->delete();
 
         return redirect()->route('teams.index')
             ->with('success', 'Team deleted successfully!');
+    }
+
+    /**
+     * Transfer team ownership to another member.
+     */
+    public function transferOwnership(Request $request, Team $team)
+    {
+        $this->authorize('delete', $team); // Only owner can transfer
+
+        $request->validate([
+            'user_id' => ['required', 'exists:users,id'],
+        ]);
+
+        $newOwnerId = $request->input('user_id');
+
+        // Ensure new owner is a member of the team
+        if (! $team->members()->where('user_id', $newOwnerId)->exists()) {
+            return back()->withErrors(['user_id' => 'The selected user is not a member of this team.']);
+        }
+
+        $currentOwnerId = $team->owner_id;
+
+        // Update the team owner
+        $team->update(['owner_id' => $newOwnerId]);
+
+        // Update roles: new owner becomes 'owner', old owner becomes 'admin'
+        $team->members()->updateExistingPivot($newOwnerId, ['role' => 'owner']);
+        $team->members()->updateExistingPivot($currentOwnerId, ['role' => 'admin']);
+
+        return redirect()->route('teams.show', $team)
+            ->with('success', 'Team ownership transferred successfully!');
     }
 }

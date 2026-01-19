@@ -38,10 +38,14 @@ class HandleInertiaRequests extends Middleware
     {
         $user = $request->user();
         $hasTeams = false;
+        $canCreateTeams = false;
 
         if ($user) {
             $subscriptionService = app(SubscriptionService::class);
+            // User can view teams if they're agency tier (including team members) or admin
             $hasTeams = $user->is_admin || $subscriptionService->isAgencyTier($user);
+            // User can create teams only if they own an Agency subscription (not via team membership)
+            $canCreateTeams = $subscriptionService->canCreateTeams($user);
         }
 
         return [
@@ -51,6 +55,7 @@ class HandleInertiaRequests extends Middleware
                 'user' => $user,
             ],
             'hasTeams' => $hasTeams,
+            'canCreateTeams' => $canCreateTeams,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }

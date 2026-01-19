@@ -8,9 +8,9 @@ use Illuminate\Support\Carbon;
 class SubscriptionService
 {
     /**
-     * Get the user's current plan key.
+     * Get the user's own plan key (not considering team membership).
      */
-    public function getPlanKey(User $user): string
+    public function getOwnPlanKey(User $user): string
     {
         // Admins always have unlimited access
         if ($user->is_admin) {
@@ -36,6 +36,58 @@ class SubscriptionService
     }
 
     /**
+     * Get the user's effective plan key (considering team membership).
+     * Team members inherit Agency features from their team owner.
+     */
+    public function getPlanKey(User $user): string
+    {
+        // First check user's own plan
+        $ownPlan = $this->getOwnPlanKey($user);
+
+        // If already admin or agency, return that
+        if (in_array($ownPlan, ['admin', 'agency'])) {
+            return $ownPlan;
+        }
+
+        // Check if user is a member of an Agency team (not owner)
+        $agencyTeam = $this->getAgencyTeamMembership($user);
+        if ($agencyTeam) {
+            return 'agency_member'; // Special key for team members
+        }
+
+        return $ownPlan;
+    }
+
+    /**
+     * Check if user is a member (not owner) of a team owned by an Agency subscriber.
+     */
+    public function getAgencyTeamMembership(User $user): ?\App\Models\Team
+    {
+        // Get teams where user is a member (not owner)
+        $teams = $user->teams()
+            ->where('owner_id', '!=', $user->id)
+            ->with('owner')
+            ->get();
+
+        foreach ($teams as $team) {
+            $ownerPlan = $this->getOwnPlanKey($team->owner);
+            if (in_array($ownerPlan, ['agency', 'admin'])) {
+                return $team;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Check if user has team-based Agency access.
+     */
+    public function hasTeamAgencyAccess(User $user): bool
+    {
+        return $this->getAgencyTeamMembership($user) !== null;
+    }
+
+    /**
      * Get the user's plan configuration.
      */
     public function getPlan(User $user): array
@@ -48,6 +100,14 @@ class SubscriptionService
 
         if ($planKey === 'free') {
             return config('billing.free');
+        }
+
+        // Team members get Agency features
+        if ($planKey === 'agency_member') {
+            $agencyPlan = config('billing.plans.user.agency');
+            $agencyPlan['name'] = 'Agency (Team Member)';
+
+            return $agencyPlan;
         }
 
         return config("billing.plans.user.{$planKey}");
@@ -166,21 +226,29 @@ class SubscriptionService
     }
 
     /**
-     * Check if user is on Agency tier.
+     * Check if user is on Agency tier (including team members).
      */
     public function isAgencyTier(User $user): bool
     {
-        return $this->getPlanKey($user) === 'agency';
+        return in_array($this->getPlanKey($user), ['agency', 'agency_member']);
     }
 
     /**
-     * Check if user has a paid subscription.
+     * Check if user owns an Agency subscription (not via team membership).
+     */
+    public function ownsAgencySubscription(User $user): bool
+    {
+        return $this->getOwnPlanKey($user) === 'agency';
+    }
+
+    /**
+     * Check if user has a paid subscription (or team member access).
      */
     public function hasPaidSubscription(User $user): bool
     {
         $planKey = $this->getPlanKey($user);
 
-        return in_array($planKey, ['pro', 'agency', 'admin']);
+        return in_array($planKey, ['pro', 'agency', 'agency_member', 'admin']);
     }
 
     /**
@@ -227,7 +295,7 @@ class SubscriptionService
      */
     public function shouldShowUpgradePrompt(User $user): bool
     {
-        // Don't show to admins or agency users
+        // Don't show to admins, agency users, or team members with agency access
         if ($user->is_admin || $this->isAgencyTier($user)) {
             return false;
         }
@@ -246,6 +314,85 @@ class SubscriptionService
         }
 
         return false;
+    }
+
+    /**
+     * Check if user can create teams (needs Pro or Agency subscription with available slots).
+     */
+    public function canCreateTeams(User $user): bool
+    {
+        if ($user->is_admin) {
+            return true;
+        }
+
+        $teamsAllowed = $this->getOwnPlanLimit($user, 'teams_allowed');
+
+        // No teams allowed on this plan
+        if (! $teamsAllowed || $teamsAllowed === 0) {
+            return false;
+        }
+
+        // Unlimited teams
+        if ($teamsAllowed === -1) {
+            return true;
+        }
+
+        // Check if user has remaining team slots
+        return $this->getTeamsRemaining($user) > 0;
+    }
+
+    /**
+     * Get a limit from user's own plan (not considering team membership).
+     */
+    public function getOwnPlanLimit(User $user, string $limit): mixed
+    {
+        $planKey = $this->getOwnPlanKey($user);
+
+        if ($planKey === 'admin') {
+            return $this->getAdminPlan()['limits'][$limit] ?? null;
+        }
+
+        if ($planKey === 'free') {
+            return config("billing.free.limits.{$limit}");
+        }
+
+        return config("billing.plans.user.{$planKey}.limits.{$limit}");
+    }
+
+    /**
+     * Get the number of teams the user is allowed to create.
+     */
+    public function getTeamsAllowed(User $user): int
+    {
+        if ($user->is_admin) {
+            return -1; // unlimited
+        }
+
+        return $this->getOwnPlanLimit($user, 'teams_allowed') ?? 0;
+    }
+
+    /**
+     * Get the number of teams the user has created.
+     */
+    public function getTeamsCreated(User $user): int
+    {
+        return $user->ownedTeams()->count();
+    }
+
+    /**
+     * Get the number of remaining team slots.
+     */
+    public function getTeamsRemaining(User $user): int
+    {
+        $allowed = $this->getTeamsAllowed($user);
+
+        if ($allowed === -1) {
+            return -1; // unlimited
+        }
+
+        $created = $this->getTeamsCreated($user);
+
+        return max(0, $allowed - $created);
     }
 
     /**

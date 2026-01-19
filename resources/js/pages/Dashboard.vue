@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { Globe, TrendingUp, Target, Calendar, ExternalLink, Zap, ArrowRight, Users, Crown, Plus } from 'lucide-vue-next';
+import { computed } from 'vue';
 
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Badge } from '@/components/ui/badge';
@@ -30,6 +31,8 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+const page = usePage();
+const canCreateTeams = computed(() => page.props.canCreateTeams);
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -347,26 +350,27 @@ const getProgressColor = () => {
                             </CardTitle>
                             <CardDescription>Collaborate with your team members</CardDescription>
                         </div>
-                     <Link href="/teams/create" :disabled class="pointer-events-none opacity-60">
-                         <Button size="sm" disabled>
-                             <Plus class="mr-2 h-4 w-4" />
-                             New Team
-                         </Button>
-                     </Link>
+                        <Link v-if="canCreateTeams" href="/teams/create">
+                            <Button size="sm">
+                                <Plus class="mr-2 h-4 w-4" />
+                                New Team
+                            </Button>
+                        </Link>
                     </div>
                 </CardHeader>
                 <CardContent>
                     <div v-if="teams.length === 0" class="py-8 text-center">
                         <Users class="mx-auto h-12 w-12 text-muted-foreground/50" />
                         <h3 class="mt-4 text-lg font-medium">No teams yet</h3>
-                        <p class="mt-2 text-sm text-muted-foreground">
+                        <p v-if="canCreateTeams" class="mt-2 text-sm text-muted-foreground">
                             Create a team to start collaborating with others
                         </p>
-                      <Link href="/teams/create" class="mt-4 inline-block pointer-events-none opacity-60">
-                          <Button disabled>
-                              Create Your First Team
-                          </Button>
-                      </Link>
+                        <p v-else class="mt-2 text-sm text-muted-foreground">
+                            You'll see teams here when you're invited to join one
+                        </p>
+                        <Link v-if="canCreateTeams" href="/teams/create" class="mt-4 inline-block">
+                            <Button>Create Your First Team</Button>
+                        </Link>
                     </div>
 
                     <div v-else class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
