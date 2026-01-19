@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
 import { dashboard, login, register } from '@/routes';
 import {
     Search,
@@ -127,7 +128,7 @@ const aiEraFeatures = [
                     <Globe class="h-8 w-8 text-primary" />
                     <span class="text-xl font-bold">GeoSource.ai</span>
                 </div>
-                <nav class="flex items-center gap-4">
+                <nav class="flex items-center gap-2">
                     <Link href="/resources">
                         <Button variant="ghost">Resources</Button>
                     </Link>
@@ -145,6 +146,7 @@ const aiEraFeatures = [
                             <Button>Get Started</Button>
                         </Link>
                     </template>
+                    <ThemeSwitcher />
                 </nav>
             </div>
         </header>

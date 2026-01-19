@@ -3,6 +3,7 @@ import { Head, Link } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
 import {
     Globe,
     BookOpen,
@@ -140,7 +141,7 @@ const jsonLd = {
                     <Globe class="h-8 w-8 text-primary" />
                     <span class="text-xl font-bold">GeoSource.ai</span>
                 </Link>
-                <nav class="flex items-center gap-4">
+                <nav class="flex items-center gap-2">
                     <Link href="/resources">
                         <Button variant="ghost">Resources</Button>
                     </Link>
@@ -155,6 +156,7 @@ const jsonLd = {
                             <Button>Get Started</Button>
                         </Link>
                     </template>
+                    <ThemeSwitcher />
                 </nav>
             </div>
         </header>

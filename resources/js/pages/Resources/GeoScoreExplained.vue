@@ -21,6 +21,7 @@ import {
     Lightbulb,
     TrendingUp,
 } from 'lucide-vue-next';
+import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
 
 const scoringFactors = [
     {
@@ -174,7 +175,7 @@ const faqJsonLd = {
                     <Globe class="h-8 w-8 text-primary" />
                     <span class="text-xl font-bold">GeoSource.ai</span>
                 </Link>
-                <nav class="flex items-center gap-4">
+                <nav class="flex items-center gap-2">
                     <Link href="/resources">
                         <Button variant="ghost">Resources</Button>
                     </Link>
@@ -189,6 +190,7 @@ const faqJsonLd = {
                             <Button>Get Started</Button>
                         </Link>
                     </template>
+                    <ThemeSwitcher />
                 </nav>
             </div>
         </header>

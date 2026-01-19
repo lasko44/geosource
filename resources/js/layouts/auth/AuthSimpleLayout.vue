@@ -2,6 +2,7 @@
 import { Link } from '@inertiajs/vue3';
 
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
+import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
 import { home } from '@/routes';
 
 defineProps<{
@@ -12,8 +13,11 @@ defineProps<{
 
 <template>
     <div
-        class="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10"
+        class="relative flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10"
     >
+        <div class="absolute right-4 top-4">
+            <ThemeSwitcher />
+        </div>
         <div class="w-full max-w-sm">
             <div class="flex flex-col gap-8">
                 <div class="flex flex-col items-center gap-4">
