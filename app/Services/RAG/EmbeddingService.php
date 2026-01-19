@@ -18,6 +18,13 @@ class EmbeddingService
 
     private int $dimensions;
 
+    /**
+     * Rough token limit and token->char ratio used for safe truncation.
+     * Using conservative ratio of ~3 chars/token for safety with varied content.
+     */
+    private int $maxTokens = 7500; // well below 8192 for safety margin
+    private float $charsPerToken = 3.0; // conservative estimate (actual varies 2.5-4)
+
     public function __construct()
     {
         $this->provider = config('rag.embedding.provider', 'openai');
@@ -37,7 +44,11 @@ class EmbeddingService
         if ($cache) {
             $cacheKey = 'embedding:'.md5($text.$this->model);
 
-            return Cache::remember($cacheKey, now()->addDays(7), fn () => $this->generateEmbedding($text));
+            return Cache::remember(
+                $cacheKey,
+                now()->addDays(7),
+                fn () => $this->generateEmbedding($text)
+            );
         }
 
         return $this->generateEmbedding($text);
@@ -51,6 +62,7 @@ class EmbeddingService
      */
     public function embedBatch(array $texts, bool $cache = true): array
     {
+        // Normalize and truncate all texts first
         $texts = array_map(fn ($text) => $this->prepareText($text), $texts);
 
         if ($cache) {
@@ -113,7 +125,7 @@ class EmbeddingService
         $normB = sqrt($normB);
 
         if ($normA == 0 || $normB == 0) {
-            return 0;
+            return 0.0;
         }
 
         return $dotProduct / ($normA * $normB);
@@ -143,6 +155,9 @@ class EmbeddingService
         return $this->model;
     }
 
+    /**
+     * Provider dispatch for single embedding.
+     */
     private function generateEmbedding(string $text): array
     {
         return match ($this->provider) {
@@ -152,6 +167,12 @@ class EmbeddingService
         };
     }
 
+    /**
+     * Provider dispatch for batch embeddings.
+     *
+     * @param  array<string>  $texts
+     * @return array<array<int, float>>
+     */
     private function generateBatchEmbeddings(array $texts): array
     {
         return match ($this->provider) {
@@ -161,8 +182,15 @@ class EmbeddingService
         };
     }
 
+    /**
+     * OpenAI single embedding with safe truncation.
+     *
+     * @return array<int, float>
+     */
     private function openAIEmbed(string $text): array
     {
+        $text = $this->truncateForModel($text);
+
         $response = Http::withToken(config('rag.openai.api_key'))
             ->timeout(30)
             ->post('https://api.openai.com/v1/embeddings', [
@@ -175,12 +203,21 @@ class EmbeddingService
             throw new \RuntimeException('OpenAI embedding failed: '.$response->body());
         }
 
-        return $response->json('data.0.embedding');
+        return $response->json('data.0.embedding') ?? [];
     }
 
+    /**
+     * OpenAI batch embedding with safe truncation.
+     *
+     * @param  array<string>  $texts
+     * @return array<array<int, float>>
+     */
     private function openAIEmbedBatch(array $texts): array
     {
-        // OpenAI supports up to 2048 inputs per request
+        // Pre\-truncate everything for extra safety
+        $texts = array_map(fn ($t) => $this->truncateForModel($t), $texts);
+
+        // OpenAI supports many inputs per request; we keep batch smallish and predictable
         $chunks = array_chunk($texts, 100);
         $allEmbeddings = [];
 
@@ -197,21 +234,28 @@ class EmbeddingService
                 throw new \RuntimeException('OpenAI batch embedding failed: '.$response->body());
             }
 
-            $data = $response->json('data');
+            $data = $response->json('data') ?? [];
 
             // Sort by index to maintain order
-            usort($data, fn ($a, $b) => $a['index'] <=> $b['index']);
+            usort($data, fn ($a, $b) => ($a['index'] ?? 0) <=> ($b['index'] ?? 0));
 
             foreach ($data as $item) {
-                $allEmbeddings[] = $item['embedding'];
+                $allEmbeddings[] = $item['embedding'] ?? [];
             }
         }
 
         return $allEmbeddings;
     }
 
+    /**
+     * Voyage single embedding with safe truncation.
+     *
+     * @return array<int, float>
+     */
     private function voyageEmbed(string $text): array
     {
+        $text = $this->truncateForModel($text);
+
         $response = Http::withToken(config('rag.voyage.api_key'))
             ->timeout(30)
             ->post('https://api.voyageai.com/v1/embeddings', [
@@ -223,11 +267,19 @@ class EmbeddingService
             throw new \RuntimeException('Voyage AI embedding failed: '.$response->body());
         }
 
-        return $response->json('data.0.embedding');
+        return $response->json('data.0.embedding') ?? [];
     }
 
+    /**
+     * Voyage batch embedding with safe truncation.
+     *
+     * @param  array<string>  $texts
+     * @return array<array<int, float>>
+     */
     private function voyageEmbedBatch(array $texts): array
     {
+        $texts = array_map(fn ($t) => $this->truncateForModel($t), $texts);
+
         $chunks = array_chunk($texts, 128);
         $allEmbeddings = [];
 
@@ -243,27 +295,44 @@ class EmbeddingService
                 throw new \RuntimeException('Voyage AI batch embedding failed: '.$response->body());
             }
 
-            $data = $response->json('data');
+            $data = $response->json('data') ?? [];
 
             foreach ($data as $item) {
-                $allEmbeddings[] = $item['embedding'];
+                $allEmbeddings[] = $item['embedding'] ?? [];
             }
         }
 
         return $allEmbeddings;
     }
 
+    /**
+     * Basic cleanup and normalization, then length\-based truncation.
+     */
     private function prepareText(string $text): string
     {
-        // Clean and normalize text
         $text = strip_tags($text);
         $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
         $text = preg_replace('/\s+/', ' ', $text);
         $text = trim($text);
 
-        // Truncate to max tokens (roughly 8000 tokens = 32000 chars for safety)
-        if (strlen($text) > 32000) {
-            $text = substr($text, 0, 32000);
+        // Initial coarse truncation by chars
+        $maxChars = (int) floor($this->maxTokens * $this->charsPerToken);
+        if (mb_strlen($text) > $maxChars) {
+            $text = mb_substr($text, 0, $maxChars);
+        }
+
+        return $text;
+    }
+
+    /**
+     * Final safety truncation right before hitting a provider.
+     */
+    private function truncateForModel(string $text): string
+    {
+        $maxChars = (int) floor($this->maxTokens * $this->charsPerToken);
+
+        if (mb_strlen($text) > $maxChars) {
+            $text = mb_substr($text, 0, $maxChars);
         }
 
         return $text;
