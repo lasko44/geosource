@@ -347,12 +347,12 @@ const getProgressColor = () => {
                             </CardTitle>
                             <CardDescription>Collaborate with your team members</CardDescription>
                         </div>
-                        <Link href="/teams/create">
-                            <Button size="sm">
-                                <Plus class="mr-2 h-4 w-4" />
-                                New Team
-                            </Button>
-                        </Link>
+                     <Link href="/teams/create" :disabled class="pointer-events-none opacity-60">
+                         <Button size="sm" disabled>
+                             <Plus class="mr-2 h-4 w-4" />
+                             New Team
+                         </Button>
+                     </Link>
                     </div>
                 </CardHeader>
                 <CardContent>
@@ -362,9 +362,11 @@ const getProgressColor = () => {
                         <p class="mt-2 text-sm text-muted-foreground">
                             Create a team to start collaborating with others
                         </p>
-                        <Link href="/teams/create" class="mt-4 inline-block">
-                            <Button>Create Your First Team</Button>
-                        </Link>
+                      <Link href="/teams/create" class="mt-4 inline-block pointer-events-none opacity-60">
+                          <Button disabled>
+                              Create Your First Team
+                          </Button>
+                      </Link>
                     </div>
 
                     <div v-else class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

@@ -47,7 +47,7 @@ const mainNavItems = computed<NavItem[]>(() => {
     if (hasTeams.value) {
         items.push({
             title: 'Teams',
-            href: '/teams',
+            href: undefined,
             icon: Users,
         });
     }
