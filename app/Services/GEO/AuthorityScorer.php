@@ -4,7 +4,6 @@ namespace App\Services\GEO;
 
 use App\Services\GEO\Contracts\ScorerInterface;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 
 /**
  * Scores content based on topic authority.

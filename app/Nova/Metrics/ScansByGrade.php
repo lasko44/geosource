@@ -2,10 +2,10 @@
 
 namespace App\Nova\Metrics;
 
+use App\Models\Scan;
 use DateTimeInterface;
 use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\Metrics\Partition;
-use App\Models\Scan;
 use Laravel\Nova\Metrics\PartitionResult;
 
 class ScansByGrade extends Partition
@@ -35,7 +35,7 @@ class ScansByGrade extends Partition
     /**
      * Determine the amount of time the results of the metric should be cached.
      */
-    public function cacheFor(): DateTimeInterface|null
+    public function cacheFor(): ?DateTimeInterface
     {
         // return now()->addMinutes(5);
 

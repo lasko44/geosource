@@ -301,11 +301,11 @@ class EnhancedGeoScorer
     private function getBenchmarkDescription(string $position, float $diff): string
     {
         return match ($position) {
-            'leader' => "Excellent! Your content scores ".abs($diff)." points above similar content.",
-            'above_average' => "Good performance. You're ".abs($diff)." points above the average.",
+            'leader' => 'Excellent! Your content scores '.abs($diff).' points above similar content.',
+            'above_average' => "Good performance. You're ".abs($diff).' points above the average.',
             'average' => 'Your content performs similarly to comparable content in your knowledge base.',
-            'below_average' => "There's room for improvement. You're ".abs($diff)." points below average.",
-            'needs_improvement' => "Significant optimization needed. You're ".abs($diff)." points below similar content.",
+            'below_average' => "There's room for improvement. You're ".abs($diff).' points below average.',
+            'needs_improvement' => "Significant optimization needed. You're ".abs($diff).' points below similar content.',
             default => 'Unable to determine benchmark position.',
         };
     }

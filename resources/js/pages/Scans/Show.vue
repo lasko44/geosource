@@ -11,7 +11,9 @@ import {
     Layers,
     Award,
     Code,
-    MessageSquare
+    MessageSquare,
+    Download,
+    FileSpreadsheet,
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
@@ -23,9 +25,19 @@ import { type BreadcrumbItem, type Scan, type PillarResult, type Recommendation 
 
 interface Props {
     scan: Scan;
+    canExportCsv: boolean;
+    canExportPdf: boolean;
 }
 
 const props = defineProps<Props>();
+
+const exportCsv = () => {
+    window.location.href = `/scans/${props.scan.uuid}/export/csv`;
+};
+
+const exportPdf = () => {
+    window.location.href = `/scans/${props.scan.uuid}/export/pdf`;
+};
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
@@ -140,7 +152,15 @@ const formatDate = (dateString: string) => {
                     </p>
                 </div>
 
-                <div class="flex gap-2">
+                <div class="flex flex-wrap gap-2">
+                    <Button v-if="canExportCsv" variant="outline" @click="exportCsv">
+                        <FileSpreadsheet class="mr-2 h-4 w-4" />
+                        Export CSV
+                    </Button>
+                    <Button v-if="canExportPdf" variant="outline" @click="exportPdf">
+                        <Download class="mr-2 h-4 w-4" />
+                        Export PDF
+                    </Button>
                     <Button variant="outline" @click="rescan" :disabled="rescanning">
                         <RefreshCw class="mr-2 h-4 w-4" :class="{ 'animate-spin': rescanning }" />
                         {{ rescanning ? 'Rescanning...' : 'Rescan' }}

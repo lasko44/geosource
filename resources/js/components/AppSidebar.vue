@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import {
     BookOpen,
     FileChartColumnIncreasingIcon,
@@ -8,6 +8,7 @@ import {
     PlayIcon, Receipt,
     Users
 } from 'lucide-vue-next';
+import { computed } from 'vue';
 
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -26,23 +27,39 @@ import { type NavItem } from '@/types';
 
 import AppLogo from './AppLogo.vue';
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
-    {
-        title: 'Reports',
-        href: '#',
-        icon: FileChartColumnIncreasingIcon,
-    },
-    {
+const page = usePage();
+const hasTeams = computed(() => page.props.hasTeams);
+
+const mainNavItems = computed<NavItem[]>(() => {
+    const items: NavItem[] = [
+        {
+            title: 'Dashboard',
+            href: dashboard(),
+            icon: LayoutGrid,
+        },
+        {
+            title: 'Reports',
+            href: '/scans',
+            icon: FileChartColumnIncreasingIcon,
+        },
+    ];
+
+    if (hasTeams.value) {
+        items.push({
+            title: 'Teams',
+            href: '/teams',
+            icon: Users,
+        });
+    }
+
+    items.push({
         title: 'Billing',
         href: '/billing',
         icon: Receipt,
-    }
-];
+    });
+
+    return items;
+});
 
 const footerNavItems: NavItem[] = [
     {

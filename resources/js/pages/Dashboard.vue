@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { Globe, TrendingUp, Target, Calendar, ExternalLink, Zap, ArrowRight } from 'lucide-vue-next';
+import { Globe, TrendingUp, Target, Calendar, ExternalLink, Zap, ArrowRight, Users, Crown, Plus } from 'lucide-vue-next';
 
 import AppLayout from '@/layouts/AppLayout.vue';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -10,12 +11,22 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { type BreadcrumbItem, type Scan, type DashboardStats, type UsageSummary, type PlanWithLimits } from '@/types';
 
+interface Team {
+    id: number;
+    name: string;
+    slug: string;
+    is_owner: boolean;
+    members_count: number;
+    role: string;
+}
+
 interface Props {
     recentScans: Scan[];
     stats: DashboardStats;
     usage: UsageSummary;
     showUpgradePrompt: boolean;
     plans: Record<string, PlanWithLimits>;
+    teams: Team[] | null;
 }
 
 const props = defineProps<Props>();
@@ -319,6 +330,69 @@ const getProgressColor = () => {
                                 <div class="text-right text-sm text-muted-foreground">
                                     {{ formatDate(scan.created_at) }}
                                 </div>
+                            </div>
+                        </Link>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <!-- Teams Section (Agency only) -->
+            <Card v-if="teams">
+                <CardHeader>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <CardTitle class="flex items-center gap-2">
+                                <Users class="h-5 w-5" />
+                                Your Teams
+                            </CardTitle>
+                            <CardDescription>Collaborate with your team members</CardDescription>
+                        </div>
+                        <Link href="/teams/create">
+                            <Button size="sm">
+                                <Plus class="mr-2 h-4 w-4" />
+                                New Team
+                            </Button>
+                        </Link>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <div v-if="teams.length === 0" class="py-8 text-center">
+                        <Users class="mx-auto h-12 w-12 text-muted-foreground/50" />
+                        <h3 class="mt-4 text-lg font-medium">No teams yet</h3>
+                        <p class="mt-2 text-sm text-muted-foreground">
+                            Create a team to start collaborating with others
+                        </p>
+                        <Link href="/teams/create" class="mt-4 inline-block">
+                            <Button>Create Your First Team</Button>
+                        </Link>
+                    </div>
+
+                    <div v-else class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        <Link
+                            v-for="team in teams"
+                            :key="team.id"
+                            :href="`/teams/${team.slug}`"
+                            class="group flex flex-col rounded-lg border p-4 transition-colors hover:bg-muted/50"
+                        >
+                            <div class="flex items-start justify-between">
+                                <div class="flex items-center gap-2">
+                                    <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                                        {{ team.name.charAt(0).toUpperCase() }}
+                                    </div>
+                                    <div>
+                                        <p class="font-medium group-hover:text-primary">{{ team.name }}</p>
+                                        <p class="text-xs text-muted-foreground">
+                                            {{ team.members_count }} member{{ team.members_count !== 1 ? 's' : '' }}
+                                        </p>
+                                    </div>
+                                </div>
+                                <Badge v-if="team.is_owner" variant="secondary" class="gap-1">
+                                    <Crown class="h-3 w-3" />
+                                    Owner
+                                </Badge>
+                                <Badge v-else variant="outline" class="capitalize">
+                                    {{ team.role }}
+                                </Badge>
                             </div>
                         </Link>
                     </div>

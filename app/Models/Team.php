@@ -91,6 +91,22 @@ class Team extends Model
     }
 
     /**
+     * Get all invitations for the team.
+     */
+    public function invitations(): HasMany
+    {
+        return $this->hasMany(TeamInvitation::class);
+    }
+
+    /**
+     * Get pending invitations for the team.
+     */
+    public function pendingInvitations(): HasMany
+    {
+        return $this->invitations()->pending();
+    }
+
+    /**
      * Check if a user is the owner of the team.
      */
     public function isOwner(User $user): bool
@@ -144,8 +160,68 @@ class Team extends Model
     /**
      * Get the team's Stripe customer portal URL.
      */
-    public function billingPortalUrl(string $returnUrl = null): string
+    public function billingPortalUrl(?string $returnUrl = null): string
     {
         return $this->billingPortalSession($returnUrl)->url;
+    }
+
+    /**
+     * Get the maximum number of team seats allowed based on owner's plan.
+     */
+    public function getMaxSeats(): int
+    {
+        return $this->owner->getLimit('team_members') ?? 1;
+    }
+
+    /**
+     * Get the current number of seats used (members + pending invitations).
+     */
+    public function getUsedSeats(): int
+    {
+        // Count all members (excluding owner who doesn't take a seat)
+        $membersCount = $this->members()->where('user_id', '!=', $this->owner_id)->count();
+
+        // Count pending invitations
+        $pendingCount = $this->pendingInvitations()->count();
+
+        return $membersCount + $pendingCount;
+    }
+
+    /**
+     * Get the number of available seats.
+     */
+    public function getAvailableSeats(): int
+    {
+        $maxSeats = $this->getMaxSeats();
+
+        // Unlimited seats
+        if ($maxSeats === -1) {
+            return -1;
+        }
+
+        return max(0, $maxSeats - $this->getUsedSeats());
+    }
+
+    /**
+     * Check if the team can add more members.
+     */
+    public function canAddMember(): bool
+    {
+        $maxSeats = $this->getMaxSeats();
+
+        // Unlimited seats
+        if ($maxSeats === -1) {
+            return true;
+        }
+
+        return $this->getUsedSeats() < $maxSeats;
+    }
+
+    /**
+     * Check if the team has collaboration features enabled.
+     */
+    public function hasCollaborationEnabled(): bool
+    {
+        return $this->getMaxSeats() > 1 || $this->getMaxSeats() === -1;
     }
 }

@@ -42,7 +42,7 @@ class Document extends Model
      */
     public function setEmbedding(array $vector): void
     {
-        $vectorString = '[' . implode(',', $vector) . ']';
+        $vectorString = '['.implode(',', $vector).']';
 
         DB::statement(
             'UPDATE documents SET embedding = ? WHERE id = ?',
@@ -78,7 +78,7 @@ class Document extends Model
      */
     public function scopeSimilarTo(Builder $query, array $vector, int $limit = 10): Builder
     {
-        $vectorString = '[' . implode(',', $vector) . ']';
+        $vectorString = '['.implode(',', $vector).']';
 
         return $query
             ->selectRaw('*, 1 - (embedding <=> ?) as similarity', [$vectorString])
@@ -94,9 +94,9 @@ class Document extends Model
      */
     public static function search(array $vector, int $teamId, int $limit = 10, float $threshold = 0.7): \Illuminate\Support\Collection
     {
-        $vectorString = '[' . implode(',', $vector) . ']';
+        $vectorString = '['.implode(',', $vector).']';
 
-        return collect(DB::select("
+        return collect(DB::select('
             SELECT
                 id,
                 title,
@@ -109,6 +109,6 @@ class Document extends Model
               AND 1 - (embedding <=> ?) >= ?
             ORDER BY embedding <=> ?
             LIMIT ?
-        ", [$vectorString, $teamId, $vectorString, $threshold, $vectorString, $limit]));
+        ', [$vectorString, $teamId, $vectorString, $threshold, $vectorString, $limit]));
     }
 }

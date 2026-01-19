@@ -2,8 +2,17 @@
 
 use App\Http\Controllers\Billing\TeamBillingController;
 use App\Http\Controllers\Teams\TeamController;
+use App\Http\Controllers\Teams\TeamInvitationController;
 use App\Http\Controllers\Teams\TeamMemberController;
 use Illuminate\Support\Facades\Route;
+
+// Public invitation acceptance route (no auth required to view)
+Route::get('/invitations/{token}', [TeamInvitationController::class, 'show'])->name('teams.invitations.show');
+
+// Authenticated invitation acceptance
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::post('/invitations/{token}/accept', [TeamInvitationController::class, 'accept'])->name('teams.invitations.accept');
+});
 
 Route::middleware(['auth', 'verified'])->prefix('teams')->name('teams.')->group(function () {
     // Team CRUD routes
@@ -21,6 +30,11 @@ Route::middleware(['auth', 'verified'])->prefix('teams')->name('teams.')->group(
     Route::put('/{team}/members/{user}', [TeamMemberController::class, 'update'])->name('members.update');
     Route::delete('/{team}/members/{user}', [TeamMemberController::class, 'destroy'])->name('members.destroy');
     Route::post('/{team}/leave', [TeamMemberController::class, 'leave'])->name('leave');
+
+    // Team invitation routes
+    Route::post('/{team}/invitations', [TeamInvitationController::class, 'store'])->name('invitations.store');
+    Route::delete('/{team}/invitations/{invitation}', [TeamInvitationController::class, 'destroy'])->name('invitations.destroy');
+    Route::post('/{team}/invitations/{invitation}/resend', [TeamInvitationController::class, 'resend'])->name('invitations.resend');
 
     // Team billing routes
     Route::get('/{team}/billing', [TeamBillingController::class, 'index'])->name('billing');

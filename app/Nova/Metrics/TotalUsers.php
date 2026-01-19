@@ -2,11 +2,11 @@
 
 namespace App\Nova\Metrics;
 
+use App\Models\User;
 use DateTimeInterface;
 use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\Metrics\Value;
 use Laravel\Nova\Metrics\ValueResult;
-use App\Models\User;
 use Laravel\Nova\Nova;
 
 class TotalUsers extends Value
@@ -40,7 +40,7 @@ class TotalUsers extends Value
     /**
      * Determine the amount of time the results of the metric should be cached.
      */
-    public function cacheFor(): DateTimeInterface|null
+    public function cacheFor(): ?DateTimeInterface
     {
         // return now()->addMinutes(5);
 

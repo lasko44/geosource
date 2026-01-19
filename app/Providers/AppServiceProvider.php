@@ -2,21 +2,21 @@
 
 namespace App\Providers;
 
+use App\Services\GEO\EnhancedGeoScorer;
+use App\Services\GEO\GeoScorer;
+use App\Services\RAG\ChunkingService;
+use App\Services\RAG\EmbeddingService;
+use App\Services\RAG\RAGService;
+use App\Services\RAG\VectorStore;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\Grammars\PostgresGrammar;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Fluent;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Fluent;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
-use App\Services\GEO\GeoScorer;
-use App\Services\GEO\EnhancedGeoScorer;
-use App\Services\RAG\ChunkingService;
-use App\Services\RAG\EmbeddingService;
-use App\Services\RAG\RAGService;
-use App\Services\RAG\VectorStore;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -26,11 +26,11 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         // GEO Services
-        $this->app->singleton(GeoScorer::class, fn () => new GeoScorer());
+        $this->app->singleton(GeoScorer::class, fn () => new GeoScorer);
 
         // RAG Services
-        $this->app->singleton(EmbeddingService::class, fn () => new EmbeddingService());
-        $this->app->singleton(ChunkingService::class, fn () => new ChunkingService());
+        $this->app->singleton(EmbeddingService::class, fn () => new EmbeddingService);
+        $this->app->singleton(ChunkingService::class, fn () => new ChunkingService);
 
         $this->app->singleton(VectorStore::class, fn ($app) => new VectorStore(
             $app->make(EmbeddingService::class),

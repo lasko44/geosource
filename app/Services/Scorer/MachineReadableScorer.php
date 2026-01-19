@@ -2,7 +2,4 @@
 
 namespace App\Services\Scorer;
 
-class MachineReadableScorer
-{
-
-}
+class MachineReadableScorer {}

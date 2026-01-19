@@ -385,7 +385,7 @@ PROMPT;
         }
 
         return collect($context)
-            ->map(fn ($doc, $i) => "### Source ".($i + 1).": {$doc['title']}\n{$doc['content']}")
+            ->map(fn ($doc, $i) => '### Source '.($i + 1).": {$doc['title']}\n{$doc['content']}")
             ->join("\n\n---\n\n");
     }
 

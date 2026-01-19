@@ -21,6 +21,7 @@ class VerifyVectorSupport extends Command
 
         if (! $extension) {
             $this->error('pgvector extension is not installed!');
+
             return Command::FAILURE;
         }
         $this->info('   Extension installed.');
@@ -31,6 +32,7 @@ class VerifyVectorSupport extends Command
 
         if (! $tableExists->exists) {
             $this->error('vector_test table does not exist. Run migrations first.');
+
             return Command::FAILURE;
         }
         $this->info('   Table exists.');

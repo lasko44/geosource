@@ -9,4 +9,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/scans/{scan}', [ScanController::class, 'show'])->name('scans.show');
     Route::delete('/scans/{scan}', [ScanController::class, 'destroy'])->name('scans.destroy');
     Route::post('/scans/{scan}/rescan', [ScanController::class, 'rescan'])->name('scans.rescan');
+    Route::get('/scans/{scan}/export/csv', [ScanController::class, 'exportCsv'])->name('scans.export.csv');
+    Route::get('/scans/{scan}/export/pdf', [ScanController::class, 'exportPdf'])->name('scans.export.pdf');
 });

@@ -2,7 +2,6 @@
 
 namespace App\Nova;
 
-use Illuminate\Http\Request;
 use Laravel\Nova\Fields\Badge;
 use Laravel\Nova\Fields\BelongsTo;
 use Laravel\Nova\Fields\DateTime;
@@ -60,7 +59,7 @@ class Scan extends Resource
                 ->rules('nullable', 'max:255'),
 
             URL::make('URL')
-                ->displayUsing(fn ($value) => strlen($value) > 50 ? substr($value, 0, 50) . '...' : $value)
+                ->displayUsing(fn ($value) => strlen($value) > 50 ? substr($value, 0, 50).'...' : $value)
                 ->sortable(),
 
             Number::make('Score')

@@ -150,7 +150,7 @@ class StructureScorer implements ScorerInterface
         for ($i = 1; $i < count($levels); $i++) {
             if ($levels[$i] - $levels[$i - 1] > 1) {
                 $isProperlyNested = false;
-                $violations[] = "Skipped from h{$levels[$i-1]} to h{$levels[$i]}";
+                $violations[] = "Skipped from h{$levels[$i - 1]} to h{$levels[$i]}";
             }
         }
 
