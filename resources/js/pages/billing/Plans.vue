@@ -312,8 +312,8 @@ const planOrder = ['free', 'pro', 'agency'];
                             class="w-full py-6 text-base"
                             as-child
                         >
-                            <Link href="/billing/checkout/agency">
-                                Upgrade to Agency
+                            <Link href="#">
+                               Coming Soon
                             </Link>
                         </Button>
                     </CardContent>
