@@ -19,6 +19,10 @@ class Scan extends Model
         'score',
         'grade',
         'results',
+        'status',
+        'error_message',
+        'started_at',
+        'completed_at',
     ];
 
     /**
@@ -46,6 +50,8 @@ class Scan extends Model
         return [
             'score' => 'float',
             'results' => 'array',
+            'started_at' => 'datetime',
+            'completed_at' => 'datetime',
         ];
     }
 

@@ -107,6 +107,8 @@ export interface Scan {
     score: number;
     grade: string;
     results: ScanResults;
+    status?: 'pending' | 'processing' | 'completed' | 'failed';
+    error_message?: string | null;
     created_at: string;
     updated_at: string;
 }

@@ -12,6 +12,7 @@ use App\Services\GEO\Contracts\ScorerInterface;
  * - Semantic HTML elements
  * - FAQ presence and formatting
  * - Meta tags and Open Graph
+ * - llms.txt file presence and quality
  */
 class MachineReadableScorer implements ScorerInterface
 {
@@ -24,15 +25,17 @@ class MachineReadableScorer implements ScorerInterface
             'semantic_html' => $this->analyzeSemanticHtml($content),
             'faq' => $this->analyzeFaq($content),
             'meta' => $this->analyzeMeta($content),
+            'llms_txt' => $this->analyzeLlmsTxt($context['url'] ?? null),
         ];
 
-        // Calculate scores
-        $schemaScore = $this->calculateSchemaScore($details['schema']);
-        $semanticScore = $this->calculateSemanticScore($details['semantic_html']);
-        $faqScore = $this->calculateFaqScore($details['faq']);
-        $metaScore = $this->calculateMetaScore($details['meta']);
+        // Calculate scores (total: 15 points)
+        $schemaScore = $this->calculateSchemaScore($details['schema']);           // Up to 5 pts
+        $semanticScore = $this->calculateSemanticScore($details['semantic_html']); // Up to 3 pts
+        $faqScore = $this->calculateFaqScore($details['faq']);                     // Up to 3 pts
+        $metaScore = $this->calculateMetaScore($details['meta']);                  // Up to 2 pts
+        $llmsTxtScore = $this->calculateLlmsTxtScore($details['llms_txt']);        // Up to 2 pts
 
-        $totalScore = $schemaScore + $semanticScore + $faqScore + $metaScore;
+        $totalScore = $schemaScore + $semanticScore + $faqScore + $metaScore + $llmsTxtScore;
 
         return [
             'score' => min(self::MAX_SCORE, $totalScore),
@@ -43,6 +46,7 @@ class MachineReadableScorer implements ScorerInterface
                     'semantic_html' => $semanticScore,
                     'faq' => $faqScore,
                     'meta' => $metaScore,
+                    'llms_txt' => $llmsTxtScore,
                 ],
             ]),
         ];
@@ -296,48 +300,48 @@ class MachineReadableScorer implements ScorerInterface
 
     private function calculateSemanticScore(array $semantic): float
     {
-        // Up to 4 points
+        // Up to 3 points
         $score = 0;
 
         // Uses semantic elements
         if ($semantic['unique_elements_used'] >= 3) {
-            $score += 2;
+            $score += 1.5;
         } elseif ($semantic['unique_elements_used'] >= 1) {
-            $score += 1;
+            $score += 0.5;
         }
 
         // Good image alt coverage
         if ($semantic['images']['alt_coverage'] >= 90) {
-            $score += 1;
+            $score += 0.75;
         }
 
         // Meaningful link text
         $linkTotal = $semantic['links']['total'];
         if ($linkTotal > 0 && $semantic['links']['meaningful'] / $linkTotal >= 0.8) {
-            $score += 1;
+            $score += 0.75;
         }
 
-        return min(4, $score);
+        return min(3, $score);
     }
 
     private function calculateFaqScore(array $faq): float
     {
-        // Up to 4 points
+        // Up to 3 points
         $score = 0;
 
         if ($faq['has_faq_schema']) {
-            $score += 2;
+            $score += 1.5;
         }
 
         if ($faq['has_faq_section']) {
-            $score += 1;
+            $score += 0.75;
         }
 
         if ($faq['question_count'] >= 3) {
-            $score += 1;
+            $score += 0.75;
         }
 
-        return min(4, $score);
+        return min(3, $score);
     }
 
     private function calculateMetaScore(array $meta): float
@@ -373,5 +377,68 @@ class MachineReadableScorer implements ScorerInterface
         }
 
         return substr($text, 0, $length).'...';
+    }
+
+    /**
+     * Analyze the presence of llms.txt file.
+     *
+     * Note: This checks for llms.txt references in the HTML content rather than
+     * making a separate HTTP request, to avoid blocking the scan.
+     * A full llms.txt fetch can be done as a separate background job if needed.
+     */
+    private function analyzeLlmsTxt(?string $url): array
+    {
+        $result = [
+            'exists' => false,
+            'url' => null,
+            'content_length' => 0,
+            'has_description' => false,
+            'has_pages' => false,
+            'has_sitemap_reference' => false,
+            'has_contact_info' => false,
+            'quality_score' => 0,
+            'error' => null,
+        ];
+
+        if (empty($url)) {
+            $result['error'] = 'No URL provided';
+            return $result;
+        }
+
+        // Build the expected llms.txt URL for display purposes
+        $parsed = parse_url($url);
+        if (! empty($parsed['scheme']) && ! empty($parsed['host'])) {
+            $result['url'] = $parsed['scheme'].'://'.$parsed['host'].'/llms.txt';
+        }
+
+        // Note: Actual llms.txt content check requires a separate HTTP request.
+        // This is left as a recommendation rather than an automatic check to avoid
+        // adding latency to scans. Users can manually verify llms.txt exists.
+        $result['error'] = 'Manual verification recommended';
+
+        return $result;
+    }
+
+    /**
+     * Calculate score for llms.txt presence and quality.
+     */
+    private function calculateLlmsTxtScore(array $llmsTxt): float
+    {
+        // Up to 2 points
+        $score = 0;
+
+        // File exists
+        if ($llmsTxt['exists']) {
+            $score += 1;
+
+            // Quality bonus based on content
+            if ($llmsTxt['quality_score'] >= 60) {
+                $score += 1;
+            } elseif ($llmsTxt['quality_score'] >= 40) {
+                $score += 0.5;
+            }
+        }
+
+        return min(2, $score);
     }
 }

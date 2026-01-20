@@ -61,4 +61,14 @@ class ResourceController extends Controller
     {
         return Inertia::render('Resources/AiSearchVisibilityGuide');
     }
+
+    public function whyLlmsTxtMatters(): Response
+    {
+        return Inertia::render('Resources/WhyLlmsTxtMatters');
+    }
+
+    public function whySsrMattersForGeo(): Response
+    {
+        return Inertia::render('Resources/WhySsrMattersForGeo');
+    }
 }

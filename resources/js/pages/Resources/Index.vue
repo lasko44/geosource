@@ -19,6 +19,7 @@ import {
     Library,
     Menu,
     Mail,
+    Server,
 } from 'lucide-vue-next';
 import {
     DropdownMenu,
@@ -69,6 +70,20 @@ const articles = [
         description: 'A structured framework designed specifically for generative AI systems.',
         icon: FileText,
         badge: 'Framework',
+    },
+    {
+        slug: 'why-llms-txt-matters',
+        title: 'Why llms.txt Matters for GEO',
+        description: 'Learn how llms.txt files help AI systems understand, discover, and cite your website content.',
+        icon: FileText,
+        badge: 'Technical',
+    },
+    {
+        slug: 'why-ssr-matters-for-geo',
+        title: 'Why Server-Side Rendering (SSR) Matters for GEO',
+        description: 'Understand why SSR is essential for AI visibility and how LLMs access your content.',
+        icon: Server,
+        badge: 'Technical',
     },
 ];
 

@@ -758,6 +758,7 @@ function safeNumber($value, $default = 0) {
                     $semantic = $details['semantic_html'] ?? [];
                     $faq = $details['faq'] ?? [];
                     $meta = $details['meta'] ?? [];
+                    $llmsTxt = $details['llms_txt'] ?? [];
                 @endphp
                 <div class="metrics-grid">
                     <div class="metrics-column">
@@ -795,6 +796,31 @@ function safeNumber($value, $default = 0) {
                             <span class="metric-label">Questions Found</span>
                             <span class="metric-value">{{ safeNumber($faq['question_count'] ?? 0) }}</span>
                         </div>
+                        <h4>llms.txt (AI Crawler File)</h4>
+                        <div class="metric-item">
+                            <span class="metric-label">File Exists</span>
+                            <span class="metric-value {{ ($llmsTxt['exists'] ?? false) ? 'check-yes' : 'check-no' }}">
+                                {{ ($llmsTxt['exists'] ?? false) ? '✓ Yes' : '✗ No' }}
+                            </span>
+                        </div>
+                        @if($llmsTxt['exists'] ?? false)
+                        <div class="metric-item">
+                            <span class="metric-label">Quality Score</span>
+                            <span class="metric-value {{ ($llmsTxt['quality_score'] ?? 0) >= 60 ? 'good' : 'warning' }}">{{ $llmsTxt['quality_score'] ?? 0 }}%</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Has Description</span>
+                            <span class="metric-value {{ ($llmsTxt['has_description'] ?? false) ? 'check-yes' : 'check-no' }}">
+                                {{ ($llmsTxt['has_description'] ?? false) ? '✓' : '✗' }}
+                            </span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Has Page URLs</span>
+                            <span class="metric-value {{ ($llmsTxt['has_pages'] ?? false) ? 'check-yes' : 'check-no' }}">
+                                {{ ($llmsTxt['has_pages'] ?? false) ? '✓' : '✗' }}
+                            </span>
+                        </div>
+                        @endif
                     </div>
                     <div class="metrics-column">
                         <h4>Semantic HTML</h4>

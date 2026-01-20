@@ -130,7 +130,16 @@ const getPlanLimit = (planKey: string, limitKey: string) => {
 </script>
 
 <template>
-    <Head title="Pricing - GeoSource.ai">
+    <Head title="Pricing - GEO Analysis Plans | GeoSource.ai">
+        <meta name="description" content="Simple, transparent pricing for GEO analysis. Start free with 3 scans per month, or upgrade to Pro at $39/month for comprehensive Generative Engine Optimization features." />
+        <meta property="og:title" content="Pricing - GEO Analysis Plans | GeoSource.ai" />
+        <meta property="og:description" content="Simple, transparent pricing for GEO analysis. Start free or upgrade to Pro for comprehensive AI search optimization features." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://geosource.ai/pricing" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Pricing - GEO Analysis Plans | GeoSource.ai" />
+        <meta name="twitter:description" content="Simple, transparent pricing for GEO analysis. Start free or upgrade to Pro." />
+        <link rel="canonical" href="https://geosource.ai/pricing" />
         <link rel="preconnect" href="https://rsms.me/" />
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     </Head>

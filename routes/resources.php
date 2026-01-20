@@ -12,6 +12,8 @@ Route::prefix('resources')->group(function () {
     Route::get('/how-llms-cite-sources', [ResourceController::class, 'howLlmsCiteSources'])->name('resources.how-llms-cite-sources');
     Route::get('/what-is-a-geo-score', [ResourceController::class, 'whatIsGeoScore'])->name('resources.what-is-a-geo-score');
     Route::get('/geo-content-framework', [ResourceController::class, 'geoContentFramework'])->name('resources.geo-content-framework');
+    Route::get('/why-llms-txt-matters', [ResourceController::class, 'whyLlmsTxtMatters'])->name('resources.why-llms-txt-matters');
+    Route::get('/why-ssr-matters-for-geo', [ResourceController::class, 'whySsrMattersForGeo'])->name('resources.why-ssr-matters-for-geo');
 });
 
 // Programmatic GEO pages (root level for maximum AI visibility)

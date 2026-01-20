@@ -14,8 +14,9 @@ import {
     MessageSquare,
     Download,
     FileSpreadsheet,
+    Loader2,
 } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
 
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
@@ -30,6 +31,47 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+const scanStatus = ref(props.scan.status || 'completed');
+const errorMessage = ref(props.scan.error_message);
+let pollInterval: ReturnType<typeof setInterval> | null = null;
+
+const isPending = computed(() => scanStatus.value === 'pending' || scanStatus.value === 'processing');
+const isFailed = computed(() => scanStatus.value === 'failed');
+const isCompleted = computed(() => scanStatus.value === 'completed');
+
+const pollStatus = async () => {
+    try {
+        const response = await fetch(`/scans/${props.scan.uuid}/status`);
+        const data = await response.json();
+        scanStatus.value = data.status;
+        errorMessage.value = data.error_message;
+
+        if (data.status === 'completed' || data.status === 'failed') {
+            if (pollInterval) {
+                clearInterval(pollInterval);
+                pollInterval = null;
+            }
+            if (data.status === 'completed') {
+                router.reload();
+            }
+        }
+    } catch {
+        // Silent fail, will retry on next interval
+    }
+};
+
+onMounted(() => {
+    if (isPending.value) {
+        pollInterval = setInterval(pollStatus, 2000);
+    }
+});
+
+onUnmounted(() => {
+    if (pollInterval) {
+        clearInterval(pollInterval);
+    }
+});
 
 const exportCsv = () => {
     window.location.href = `/scans/${props.scan.uuid}/export/csv`;
@@ -153,27 +195,54 @@ const formatDate = (dateString: string) => {
                 </div>
 
                 <div class="flex flex-wrap gap-2">
-                    <Button v-if="canExportCsv" variant="outline" @click="exportCsv">
-                        <FileSpreadsheet class="mr-2 h-4 w-4" />
-                        Export CSV
-                    </Button>
-                    <Button v-if="canExportPdf" variant="outline" @click="exportPdf">
-                        <Download class="mr-2 h-4 w-4" />
-                        Export PDF
-                    </Button>
-                    <Button variant="outline" @click="rescan" :disabled="rescanning">
-                        <RefreshCw class="mr-2 h-4 w-4" :class="{ 'animate-spin': rescanning }" />
-                        {{ rescanning ? 'Rescanning...' : 'Rescan' }}
-                    </Button>
-                    <Button variant="destructive" @click="deleteScan" :disabled="deleting">
+                    <template v-if="isCompleted">
+                        <Button v-if="canExportCsv" variant="outline" @click="exportCsv">
+                            <FileSpreadsheet class="mr-2 h-4 w-4" />
+                            Export CSV
+                        </Button>
+                        <Button v-if="canExportPdf" variant="outline" @click="exportPdf">
+                            <Download class="mr-2 h-4 w-4" />
+                            Export PDF
+                        </Button>
+                        <Button variant="outline" @click="rescan" :disabled="rescanning">
+                            <RefreshCw class="mr-2 h-4 w-4" :class="{ 'animate-spin': rescanning }" />
+                            {{ rescanning ? 'Rescanning...' : 'Rescan' }}
+                        </Button>
+                    </template>
+                    <Button v-if="!isPending" variant="destructive" @click="deleteScan" :disabled="deleting">
                         <Trash2 class="mr-2 h-4 w-4" />
                         Delete
                     </Button>
                 </div>
             </div>
 
-            <!-- Main Score Card -->
-            <Card class="overflow-hidden">
+            <!-- Pending/Processing State -->
+            <Card v-if="isPending" class="overflow-hidden">
+                <CardContent class="flex flex-col items-center justify-center py-16">
+                    <Loader2 class="h-16 w-16 animate-spin text-primary" />
+                    <h3 class="mt-6 text-xl font-semibold">Scanning in Progress</h3>
+                    <p class="mt-2 text-muted-foreground">Analyzing {{ scan.url }}</p>
+                    <p class="mt-4 text-sm text-muted-foreground">This may take up to a minute...</p>
+                </CardContent>
+            </Card>
+
+            <!-- Failed State -->
+            <Alert v-else-if="isFailed" variant="destructive" class="border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-950">
+                <AlertCircle class="h-5 w-5" />
+                <AlertTitle>Scan Failed</AlertTitle>
+                <AlertDescription>
+                    {{ errorMessage || 'An unexpected error occurred while scanning the URL.' }}
+                    <div class="mt-4">
+                        <Button variant="outline" @click="rescan" :disabled="rescanning">
+                            <RefreshCw class="mr-2 h-4 w-4" :class="{ 'animate-spin': rescanning }" />
+                            {{ rescanning ? 'Retrying...' : 'Try Again' }}
+                        </Button>
+                    </div>
+                </AlertDescription>
+            </Alert>
+
+            <!-- Main Score Card (only show when completed) -->
+            <Card v-else class="overflow-hidden">
                 <div class="flex flex-col md:flex-row">
                     <!-- Score Display -->
                     <div class="flex flex-col items-center justify-center border-b bg-muted/30 p-8 md:border-b-0 md:border-r md:px-16">
@@ -220,8 +289,8 @@ const formatDate = (dateString: string) => {
                 </div>
             </Card>
 
-            <!-- Pillar Scores -->
-            <div>
+            <!-- Pillar Scores (only show when completed) -->
+            <div v-if="isCompleted">
                 <h2 class="mb-4 text-xl font-semibold">Score Breakdown</h2>
                 <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     <Card v-for="pillar in pillars" :key="pillar.key">
@@ -262,8 +331,8 @@ const formatDate = (dateString: string) => {
                 </div>
             </div>
 
-            <!-- Recommendations -->
-            <div v-if="recommendations.length > 0">
+            <!-- Recommendations (only show when completed) -->
+            <div v-if="isCompleted && recommendations.length > 0">
                 <h2 class="mb-4 text-xl font-semibold">Recommendations</h2>
                 <div class="space-y-4">
                     <Alert
@@ -296,8 +365,8 @@ const formatDate = (dateString: string) => {
                 </div>
             </div>
 
-            <!-- Raw Details (Collapsible) -->
-            <details class="group">
+            <!-- Raw Details (Collapsible, only show when completed) -->
+            <details v-if="isCompleted" class="group">
                 <summary class="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
                     View raw scan data
                 </summary>

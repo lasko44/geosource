@@ -1,2 +1,18 @@
+# GeoSource.ai Robots.txt
+# https://geosource.ai
+
 User-agent: *
-Disallow:
+Allow: /
+
+# Sitemap
+Sitemap: https://geosource.ai/sitemap.xml
+
+# LLMs.txt for AI crawlers
+# https://geosource.ai/llms.txt
+
+# Disallow authenticated areas
+Disallow: /dashboard
+Disallow: /billing
+Disallow: /settings
+Disallow: /teams
+Disallow: /scans

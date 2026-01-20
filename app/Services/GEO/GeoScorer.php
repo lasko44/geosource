@@ -288,6 +288,26 @@ class GeoScorer
             $recs[] = 'Add descriptive alt text to all images';
         }
 
+        // llms.txt recommendations
+        $llmsTxt = $details['llms_txt'] ?? [];
+        if (! ($llmsTxt['exists'] ?? false)) {
+            $recs[] = 'Add an llms.txt file to your site root to help AI systems understand your content - include site description, key pages, and contact info';
+        } elseif (($llmsTxt['quality_score'] ?? 0) < 60) {
+            $missingElements = [];
+            if (! ($llmsTxt['has_description'] ?? false)) {
+                $missingElements[] = 'about/description section';
+            }
+            if (! ($llmsTxt['has_pages'] ?? false)) {
+                $missingElements[] = 'key page URLs';
+            }
+            if (! ($llmsTxt['has_sitemap_reference'] ?? false)) {
+                $missingElements[] = 'sitemap reference';
+            }
+            if (! empty($missingElements)) {
+                $recs[] = 'Improve your llms.txt file by adding: '.implode(', ', $missingElements);
+            }
+        }
+
         return $recs;
     }
 

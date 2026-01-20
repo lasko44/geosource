@@ -124,6 +124,15 @@ const aiEraFeatures = [
 
 <template>
     <Head title="GeoSource.ai - The GEO Scoring Platform for the AI Search Era">
+        <meta name="description" content="GeoSource.ai helps you measure and improve your website's visibility to AI search systems like ChatGPT, Perplexity, and Claude. Get your GEO Score and actionable optimization recommendations." />
+        <meta property="og:title" content="GeoSource.ai - The GEO Scoring Platform for the AI Search Era" />
+        <meta property="og:description" content="Measure and improve your website's visibility to AI search systems. Get your GEO Score and actionable optimization recommendations." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://geosource.ai/" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="GeoSource.ai - The GEO Scoring Platform for the AI Search Era" />
+        <meta name="twitter:description" content="Measure and improve your website's visibility to AI search systems." />
+        <link rel="canonical" href="https://geosource.ai/" />
         <link rel="preconnect" href="https://rsms.me/" />
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     </Head>

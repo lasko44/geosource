@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\ScanWebsiteJob;
 use App\Models\Scan;
 use App\Services\GEO\EnhancedGeoScorer;
 use App\Services\GEO\GeoScorer;
@@ -9,7 +10,6 @@ use App\Services\RAG\VectorStore;
 use App\Services\SubscriptionService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -100,68 +100,34 @@ class ScanController extends Controller
         $teamId = $user->currentTeam?->id ?? $user->ownedTeams()->first()?->id;
         $url = $request->input('url');
 
-        try {
-            // Fetch the webpage content
-            $response = Http::timeout(30)
-                ->withHeaders([
-                    'User-Agent' => 'GeoSource Scanner/1.0',
-                ])
-                ->get($url);
+        // Create scan record with pending status
+        $scan = Scan::create([
+            'user_id' => $user->id,
+            'team_id' => $teamId,
+            'url' => $url,
+            'title' => parse_url($url, PHP_URL_HOST),
+            'status' => 'pending',
+        ]);
 
-            if (! $response->successful()) {
-                return back()->withErrors(['url' => 'Failed to fetch URL. Status: '.$response->status()]);
-            }
+        // Dispatch the scan job to run asynchronously
+        ScanWebsiteJob::dispatch($scan);
 
-            $html = $response->body();
+        return redirect()->route('scans.show', $scan);
+    }
 
-            // Extract page title
-            $title = $this->extractTitle($html) ?? parse_url($url, PHP_URL_HOST);
+    /**
+     * Get scan status for polling.
+     */
+    public function status(Scan $scan)
+    {
+        $this->authorize('view', $scan);
 
-            // Run GEO analysis
-            $useEnhanced = config('rag.geo.use_rag_analysis', false) && ! empty(config('rag.openai.api_key'));
-
-            if ($useEnhanced && $teamId) {
-                $result = $this->enhancedGeoScorer->analyze($html, $teamId, ['url' => $url]);
-            } else {
-                $result = $this->geoScorer->score($html, ['url' => $url]);
-            }
-
-            // Save the scan
-            $scan = Scan::create([
-                'user_id' => $user->id,
-                'team_id' => $teamId,
-                'url' => $url,
-                'title' => $title,
-                'score' => $result['score'],
-                'grade' => $result['grade'],
-                'results' => $result,
-            ]);
-
-            // Optionally store in vector database for future comparisons
-            if ($teamId && config('rag.geo.use_rag_analysis', false)) {
-                try {
-                    $this->vectorStore->addDocument(
-                        $teamId,
-                        $title,
-                        $html,
-                        [
-                            'type' => 'scanned_page',
-                            'url' => $url,
-                            'scan_id' => $scan->id,
-                            'geo_score' => $result['score'],
-                        ],
-                        chunk: true
-                    );
-                } catch (\Exception $e) {
-                    // Log but don't fail
-                    logger()->warning('Failed to store scan in vector DB: '.$e->getMessage());
-                }
-            }
-
-            return redirect()->route('scans.show', $scan);
-        } catch (\Exception $e) {
-            return back()->withErrors(['url' => 'Error scanning URL: '.$e->getMessage()]);
-        }
+        return response()->json([
+            'status' => $scan->status,
+            'error_message' => $scan->error_message,
+            'score' => $scan->score,
+            'grade' => $scan->grade,
+        ]);
     }
 
     /**
@@ -568,6 +534,23 @@ class ScanController extends Controller
         fputcsv($handle, ['  Has Canonical', ($meta['has_canonical'] ?? false) ? 'Yes' : 'No']);
         fputcsv($handle, ['  Has Open Graph', ($meta['has_og'] ?? false) ? 'Yes' : 'No']);
         fputcsv($handle, ['  Has Twitter Cards', ($meta['has_twitter'] ?? false) ? 'Yes' : 'No']);
+
+        // llms.txt
+        $llmsTxt = $details['llms_txt'] ?? [];
+        fputcsv($handle, []);
+        fputcsv($handle, ['llms.txt (AI Crawler File)']);
+        fputcsv($handle, ['  File Exists', ($llmsTxt['exists'] ?? false) ? 'Yes' : 'No']);
+        if ($llmsTxt['exists'] ?? false) {
+            fputcsv($handle, ['  URL', $llmsTxt['url'] ?? 'N/A']);
+            fputcsv($handle, ['  Content Length', ($llmsTxt['content_length'] ?? 0).' bytes']);
+            fputcsv($handle, ['  Has Description', ($llmsTxt['has_description'] ?? false) ? 'Yes' : 'No']);
+            fputcsv($handle, ['  Has Page Listings', ($llmsTxt['has_pages'] ?? false) ? 'Yes' : 'No']);
+            fputcsv($handle, ['  Has Sitemap Reference', ($llmsTxt['has_sitemap_reference'] ?? false) ? 'Yes' : 'No']);
+            fputcsv($handle, ['  Has Contact Info', ($llmsTxt['has_contact_info'] ?? false) ? 'Yes' : 'No']);
+            fputcsv($handle, ['  Quality Score', ($llmsTxt['quality_score'] ?? 0).'%']);
+        } else {
+            fputcsv($handle, ['  Status', $llmsTxt['error'] ?? 'Not found']);
+        }
         fputcsv($handle, []);
     }
 

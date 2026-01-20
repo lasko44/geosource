@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ScanController;
+use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -17,6 +18,16 @@ Route::get('/pricing', function () {
         'canRegister' => Features::enabled(Features::registration()),
     ]);
 })->name('pricing');
+
+// Sitemap
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+
+// LLMs.txt for AI crawlers
+Route::get('/llms.txt', function () {
+    return response()->file(public_path('llms.txt'), [
+        'Content-Type' => 'text/plain',
+    ]);
+})->name('llms');
 
 Route::get('dashboard', [ScanController::class, 'index'])
     ->middleware(['auth', 'verified'])
