@@ -16,8 +16,8 @@ return [
             'pro' => [
                 'name' => 'Pro',
                 'description' => 'For professionals who need comprehensive GEO analysis',
-                'price_id' => env('STRIPE_PRICE_PRO'),
-                'price' => 29.00,
+                'price_id' => env('STRIPE_PRICE_PRO', 'price_1SrTlpPAXrN2W8mrSqD4nLoj'),
+                'price' => 39.00,
                 'currency' => 'USD',
                 'interval' => 'month',
                 'features' => [

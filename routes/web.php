@@ -11,6 +11,13 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
+Route::get('/pricing', function () {
+    return Inertia::render('Pricing', [
+        'plans' => config('billing.plans.user'),
+        'canRegister' => Features::enabled(Features::registration()),
+    ]);
+})->name('pricing');
+
 Route::get('dashboard', [ScanController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');

@@ -138,6 +138,9 @@ const aiEraFeatures = [
 
                 <!-- Desktop Navigation -->
                 <nav class="hidden items-center gap-2 sm:flex">
+                    <Link href="/pricing">
+                        <Button variant="ghost">Pricing</Button>
+                    </Link>
                     <Link href="/resources">
                         <Button variant="ghost">Resources</Button>
                     </Link>
@@ -169,6 +172,11 @@ const aiEraFeatures = [
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" class="w-48">
+                            <DropdownMenuItem as-child>
+                                <Link href="/pricing" class="w-full">
+                                    Pricing
+                                </Link>
+                            </DropdownMenuItem>
                             <DropdownMenuItem as-child>
                                 <Link href="/resources" class="w-full">
                                     Resources

@@ -202,13 +202,18 @@ const planOrder = ['free', 'pro', 'agency'];
                     v-if="plans.pro"
                     class="relative flex flex-col"
                     :class="{
-                        'border-primary ring-2 ring-primary': isCurrentPlan('pro'),
-                        'border-border': !isCurrentPlan('pro'),
+                        'border-green-500 ring-2 ring-green-500': isCurrentPlan('pro'),
+                        'border-primary ring-2 ring-primary': !isCurrentPlan('pro'),
                     }"
                 >
                     <div v-if="isCurrentPlan('pro')" class="absolute -top-3 left-1/2 -translate-x-1/2">
                         <span class="rounded-full bg-green-500 px-4 py-1 text-xs font-semibold text-white">
                             Current Plan
+                        </span>
+                    </div>
+                    <div v-else class="absolute -top-3 left-1/2 -translate-x-1/2">
+                        <span class="rounded-full bg-primary px-4 py-1 text-xs font-semibold text-primary-foreground">
+                            Most Popular
                         </span>
                     </div>
                     <CardHeader class="pb-4">
@@ -259,25 +264,17 @@ const planOrder = ['free', 'pro', 'agency'];
                 <!-- Agency Plan -->
                 <Card
                     v-if="plans.agency"
-                    class="relative flex flex-col border-primary ring-2 ring-primary"
-                    :class="{
-                        'border-green-500 ring-green-500': isCurrentPlan('agency'),
-                    }"
+                    class="relative flex flex-col border-border opacity-75"
                 >
-                    <div v-if="isCurrentPlan('agency')" class="absolute -top-3 left-1/2 -translate-x-1/2">
-                        <span class="rounded-full bg-green-500 px-4 py-1 text-xs font-semibold text-white">
-                            Current Plan
-                        </span>
-                    </div>
-                    <div v-else class="absolute -top-3 left-1/2 -translate-x-1/2">
-                        <span class="rounded-full bg-primary px-4 py-1 text-xs font-semibold text-primary-foreground">
-                            Most Popular
+                    <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+                        <span class="rounded-full bg-muted px-4 py-1 text-xs font-semibold text-muted-foreground">
+                            Coming Soon
                         </span>
                     </div>
                     <CardHeader class="pb-4">
                         <div class="flex items-center gap-2">
-                            <div class="rounded-lg bg-primary/10 p-2">
-                                <Building2 class="h-5 w-5 text-primary" />
+                            <div class="rounded-lg bg-muted p-2">
+                                <Building2 class="h-5 w-5 text-muted-foreground" />
                             </div>
                             <CardTitle class="text-xl">{{ plans.agency.name }}</CardTitle>
                         </div>
@@ -292,29 +289,18 @@ const planOrder = ['free', 'pro', 'agency'];
                         </div>
                         <ul class="mb-8 flex-1 space-y-3">
                             <li v-for="feature in plans.agency.features" :key="feature" class="flex items-start gap-3">
-                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                                    <Check class="h-3 w-3 text-primary" />
+                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted">
+                                    <Check class="h-3 w-3 text-muted-foreground" />
                                 </div>
                                 <span class="text-sm text-muted-foreground">{{ feature }}</span>
                             </li>
                         </ul>
                         <Button
-                            v-if="isCurrentPlan('agency')"
                             variant="outline"
                             class="w-full py-6 text-base"
                             disabled
                         >
-                            Current Plan
-                        </Button>
-                        <Button
-                            v-else
-                            variant="default"
-                            class="w-full py-6 text-base"
-                            as-child
-                        >
-                            <Link href="#">
-                               Coming Soon
-                            </Link>
+                            Coming Soon
                         </Button>
                     </CardContent>
                 </Card>
