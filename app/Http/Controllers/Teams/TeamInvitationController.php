@@ -35,8 +35,13 @@ class TeamInvitationController extends Controller
         }
 
         // Check if there's already a pending invitation for this email
-        if ($team->pendingInvitations()->where('email', $email)->exists()) {
-            return back()->withErrors(['email' => 'An invitation has already been sent to this email address.']);
+        $existingInvitation = $team->invitations()->where('email', $email)->first();
+        if ($existingInvitation) {
+            if ($existingInvitation->isPending()) {
+                return back()->withErrors(['email' => 'An invitation has already been sent to this email address.']);
+            }
+            // Delete old expired or accepted invitations to allow re-inviting
+            $existingInvitation->delete();
         }
 
         // Check seat limits
