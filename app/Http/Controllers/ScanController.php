@@ -199,10 +199,32 @@ class ScanController extends Controller
     {
         $this->authorize('update', $scan);
 
-        // Create new request with the URL
-        $request->merge(['url' => $scan->url]);
+        $user = $request->user();
 
-        return $this->scan($request);
+        // Check if user can scan
+        if (! $user->canScan()) {
+            $usage = $user->getUsageSummary();
+
+            return redirect()->route('scans.show', $scan)->withErrors([
+                'limit' => "You've reached your monthly scan limit ({$usage['scans_limit']} scans). Please upgrade your plan to continue scanning.",
+            ]);
+        }
+
+        $teamId = $user->currentTeam?->id ?? $user->ownedTeams()->first()?->id;
+
+        // Create new scan record with pending status
+        $newScan = Scan::create([
+            'user_id' => $user->id,
+            'team_id' => $teamId,
+            'url' => $scan->url,
+            'title' => $scan->title ?? parse_url($scan->url, PHP_URL_HOST),
+            'status' => 'pending',
+        ]);
+
+        // Dispatch the scan job to run asynchronously
+        ScanWebsiteJob::dispatch($newScan);
+
+        return redirect()->route('scans.show', $newScan);
     }
 
     /**
