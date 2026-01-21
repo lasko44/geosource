@@ -21,6 +21,17 @@ import {
     Lightbulb,
     TrendingUp,
     Menu,
+    Award,
+    Layers,
+    Code,
+    MessageSquare,
+    UserCheck,
+    Quote,
+    Bot,
+    Clock,
+    Type,
+    Image,
+    Mail,
 } from 'lucide-vue-next';
 import {
     DropdownMenu,
@@ -30,56 +41,115 @@ import {
 } from '@/components/ui/dropdown-menu';
 import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
 
-const scoringFactors = [
+// Free Tier Pillars (100 points max)
+const freePillars = [
     {
-        factor: 'Structured Knowledge Clarity',
-        weight: 'High',
-        description: 'How clearly your content organizes and presents information in a machine-readable format.',
-        examples: ['Clear heading hierarchy', 'Logical content sections', 'Consistent formatting'],
+        name: 'Clear Definitions',
+        points: 20,
+        icon: BookOpen,
+        description: 'Presence of explicit "X is..." definitions early in your content.',
+        examples: ['Early definition placement', 'Entity name in definition', 'Clear definitional patterns'],
     },
     {
-        factor: 'Definition Quality',
-        weight: 'High',
-        description: 'The presence and clarity of explicit definitions for key terms and concepts.',
-        examples: ['"X is defined as..." patterns', 'Glossary sections', 'Inline definitions'],
+        name: 'Structured Knowledge',
+        points: 20,
+        icon: Layers,
+        description: 'How well your content is organized with proper heading hierarchy and lists.',
+        examples: ['Single H1 heading', 'Multiple H2 subheadings', 'Bullet/numbered lists'],
     },
     {
-        factor: 'Topic Hierarchy',
-        weight: 'Medium',
-        description: 'How well your content establishes relationships between concepts and subtopics.',
-        examples: ['Parent-child topic relationships', 'Breadcrumb navigation', 'Internal linking'],
+        name: 'Topic Authority',
+        points: 25,
+        icon: Award,
+        description: 'Depth of coverage and expertise indicators in your content.',
+        examples: ['800-1500+ word count', 'Internal links', 'Examples and evidence'],
     },
     {
-        factor: 'Entity Consistency',
-        weight: 'Medium',
-        description: 'Whether you use the same terminology consistently throughout your content.',
-        examples: ['Consistent naming', 'No synonym confusion', 'Clear entity references'],
-    },
-    {
-        factor: 'FAQ Coverage',
-        weight: 'Medium',
-        description: 'Direct answers to common questions in a question-and-answer format.',
-        examples: ['FAQ sections', 'Direct question headings', 'Structured Q&A'],
-    },
-    {
-        factor: 'Machine-Readable Formatting',
-        weight: 'High',
+        name: 'Machine-Readable Formatting',
+        points: 15,
+        icon: Code,
         description: 'Technical optimization including schema markup and semantic HTML.',
-        examples: ['JSON-LD structured data', 'Semantic HTML tags', 'Proper meta tags'],
+        examples: ['JSON-LD structured data', 'Semantic HTML elements', 'Alt text on images', 'llms.txt file'],
+    },
+    {
+        name: 'High-Confidence Answerability',
+        points: 20,
+        icon: MessageSquare,
+        description: 'Declarative statements that AI can confidently quote and cite.',
+        examples: ['Declarative sentences', 'Quotable snippets (50-150 chars)', 'Direct answers without preamble'],
+    },
+];
+
+// Pro Tier Pillars (+35 points)
+const proPillars = [
+    {
+        name: 'E-E-A-T Signals',
+        points: 15,
+        icon: UserCheck,
+        description: 'Experience, Expertise, Authoritativeness, and Trustworthiness indicators.',
+        examples: ['Author attribution', 'Author bio with credentials', 'Reviews/testimonials', 'Contact information'],
+    },
+    {
+        name: 'Citations & Sources',
+        points: 12,
+        icon: Quote,
+        description: 'External authoritative links and proper citation practices.',
+        examples: ['Links to .gov/.edu sources', 'Inline citations', 'Statistics with sources', 'Reference sections'],
+    },
+    {
+        name: 'AI Crawler Access',
+        points: 8,
+        icon: Bot,
+        description: 'Technical accessibility for AI crawlers and systems.',
+        examples: ['robots.txt allows AI bots', 'No noindex/nosnippet', 'Sitemap reference'],
+    },
+];
+
+// Agency Tier Pillars (+40 points)
+const agencyPillars = [
+    {
+        name: 'Content Freshness',
+        points: 10,
+        icon: Clock,
+        description: 'Recency signals and regular content updates.',
+        examples: ['Visible publish date', 'Last updated date', 'Current year references', 'datePublished in schema'],
+    },
+    {
+        name: 'Readability',
+        points: 10,
+        icon: Type,
+        description: 'Clear, accessible writing that AI can easily parse.',
+        examples: ['8th-9th grade reading level', '15-20 word sentences', '50-100 word paragraphs', 'Simple vocabulary'],
+    },
+    {
+        name: 'Question Coverage',
+        points: 10,
+        icon: HelpCircle,
+        description: 'Direct answers to common questions users ask AI.',
+        examples: ['FAQ sections', 'Question-format headings', 'FAQPage schema', 'What/How/Why coverage'],
+    },
+    {
+        name: 'Multimedia Content',
+        points: 10,
+        icon: Image,
+        description: 'Visual elements that enhance content understanding.',
+        examples: ['Images with alt text', 'Figure captions', 'Tables for data', 'Visual variety'],
     },
 ];
 
 const gradeBreakdown = [
-    { grade: 'A+ (97-100)', color: 'text-green-500', bgColor: 'bg-green-500/10', description: 'Exceptional. Content is fully optimized for AI citation.' },
-    { grade: 'A (93-96)', color: 'text-green-500', bgColor: 'bg-green-500/10', description: 'Excellent. Minor improvements possible.' },
-    { grade: 'A- (90-92)', color: 'text-green-500', bgColor: 'bg-green-500/10', description: 'Very good. Well-structured with clear definitions.' },
-    { grade: 'B+ (87-89)', color: 'text-blue-500', bgColor: 'bg-blue-500/10', description: 'Good. Some optimization gaps to address.' },
-    { grade: 'B (83-86)', color: 'text-blue-500', bgColor: 'bg-blue-500/10', description: 'Above average. Needs structural improvements.' },
-    { grade: 'B- (80-82)', color: 'text-blue-500', bgColor: 'bg-blue-500/10', description: 'Decent foundation. Multiple areas need work.' },
-    { grade: 'C+ (77-79)', color: 'text-amber-500', bgColor: 'bg-amber-500/10', description: 'Average. Significant optimization needed.' },
-    { grade: 'C (73-76)', color: 'text-amber-500', bgColor: 'bg-amber-500/10', description: 'Below average. Missing key GEO elements.' },
-    { grade: 'C- (70-72)', color: 'text-amber-500', bgColor: 'bg-amber-500/10', description: 'Poor. Unlikely to be cited by AI.' },
-    { grade: 'D/F (0-69)', color: 'text-red-500', bgColor: 'bg-red-500/10', description: 'Failing. Content is not AI-readable.' },
+    { grade: 'A+ (90%+)', color: 'text-green-500', bgColor: 'bg-green-500/10', description: 'Exceptional. Content is fully optimized for AI citation.' },
+    { grade: 'A (85-89%)', color: 'text-green-500', bgColor: 'bg-green-500/10', description: 'Excellent. Minor improvements possible.' },
+    { grade: 'A- (80-84%)', color: 'text-green-500', bgColor: 'bg-green-500/10', description: 'Very good. Well-structured with clear definitions.' },
+    { grade: 'B+ (75-79%)', color: 'text-blue-500', bgColor: 'bg-blue-500/10', description: 'Good. Some optimization gaps to address.' },
+    { grade: 'B (70-74%)', color: 'text-blue-500', bgColor: 'bg-blue-500/10', description: 'Above average. Needs structural improvements.' },
+    { grade: 'B- (65-69%)', color: 'text-blue-500', bgColor: 'bg-blue-500/10', description: 'Decent foundation. Multiple areas need work.' },
+    { grade: 'C+ (60-64%)', color: 'text-amber-500', bgColor: 'bg-amber-500/10', description: 'Average. Significant optimization needed.' },
+    { grade: 'C (55-59%)', color: 'text-amber-500', bgColor: 'bg-amber-500/10', description: 'Below average. Missing key GEO elements.' },
+    { grade: 'C- (50-54%)', color: 'text-amber-500', bgColor: 'bg-amber-500/10', description: 'Poor. Unlikely to be cited by AI.' },
+    { grade: 'D+ (45-49%)', color: 'text-orange-500', bgColor: 'bg-orange-500/10', description: 'Weak. Major improvements needed.' },
+    { grade: 'D (40-44%)', color: 'text-orange-500', bgColor: 'bg-orange-500/10', description: 'Very weak. Content barely AI-readable.' },
+    { grade: 'F (<40%)', color: 'text-red-500', bgColor: 'bg-red-500/10', description: 'Failing. Content is not optimized for AI.' },
 ];
 
 const geoVsSeoComparison = [
@@ -128,7 +198,7 @@ const faqJsonLd = {
             name: 'What is a GEO Score?',
             acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'A GEO Score is a quantitative measurement (0-100) of how well a website or webpage is optimized for generative AI understanding and citation. Unlike SEO scores, it measures citation readiness rather than search rankings.',
+                text: 'A GEO Score is a quantitative measurement of how well a website or webpage is optimized for generative AI understanding and citation. Unlike SEO scores, it measures citation readiness rather than search rankings. The maximum score depends on your plan tier: Free (100 points), Pro (135 points), Agency (175 points).',
             },
         },
         {
@@ -136,7 +206,7 @@ const faqJsonLd = {
             name: 'What factors determine a GEO Score?',
             acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'GEO Scores are determined by six main factors: Structured Knowledge Clarity, Definition Quality, Topic Hierarchy, Entity Consistency, FAQ Coverage, and Machine-Readable Formatting.',
+                text: 'GEO Scores are determined by up to 12 pillars across three tiers. Free tier includes: Clear Definitions (20 pts), Structured Knowledge (20 pts), Topic Authority (25 pts), Machine-Readable Formatting (15 pts), and High-Confidence Answerability (20 pts). Pro adds E-E-A-T, Citations, and AI Accessibility. Agency adds Freshness, Readability, Question Coverage, and Multimedia.',
             },
         },
         {
@@ -152,7 +222,7 @@ const faqJsonLd = {
             name: 'What is a good GEO Score?',
             acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'An A grade (90-100) indicates excellent AI comprehension readiness. B grades (80-89) show good foundation with room for improvement. C grades (70-79) indicate significant optimization is needed. Below 70 means content is unlikely to be cited by AI systems.',
+                text: 'An A+ grade (90%+) indicates exceptional AI comprehension readiness. A grades (80-89%) show excellent optimization. B grades (65-79%) indicate good foundation with room for improvement. C grades (50-64%) suggest significant optimization is needed. Below 50% means content needs substantial work to be cited by AI systems.',
             },
         },
     ],
@@ -283,10 +353,13 @@ const faqJsonLd = {
                         <Card class="border-primary/50 bg-primary/5">
                             <CardContent class="pt-6">
                                 <p class="text-lg leading-relaxed">
-                                    A <dfn id="geo-score-definition" class="font-semibold not-italic"><strong>GEO Score</strong></dfn> is a quantitative measurement (0-100) of how well a website or webpage is optimized for generative AI understanding and citation.
+                                    A <dfn id="geo-score-definition" class="font-semibold not-italic"><strong>GEO Score</strong></dfn> is a quantitative measurement of how well a website or webpage is optimized for <Link href="/resources/what-is-geo" class="text-primary hover:underline">Generative Engine Optimization (GEO)</Link> — the practice of making content visible and citable by AI systems.
                                 </p>
                                 <p class="mt-4 text-muted-foreground">
-                                    Unlike SEO scores, a GEO Score does not measure rankings or traffic. It measures <strong class="text-foreground">citation readiness</strong> — how likely AI systems are to understand, trust, and reference your content.
+                                    Unlike SEO scores, a GEO Score does not measure rankings or traffic. It measures <strong class="text-foreground">citation readiness</strong> — how likely AI systems like ChatGPT, Claude, and Perplexity are to understand, trust, and reference your content.
+                                </p>
+                                <p class="mt-4 text-muted-foreground">
+                                    The <Link href="/" class="text-primary hover:underline">GeoSource.ai platform</Link> calculates your GEO Score across up to 12 pillars, with the maximum score depending on your plan tier: <strong class="text-foreground">Free (100 pts)</strong>, <strong class="text-foreground">Pro (135 pts)</strong>, or <strong class="text-foreground">Agency (175 pts)</strong>.
                                 </p>
                             </CardContent>
                         </Card>
@@ -294,38 +367,154 @@ const faqJsonLd = {
 
                     <Separator class="my-12" />
 
-                    <!-- Scoring Factors -->
-                    <section class="mb-12" aria-labelledby="factors">
-                        <h2 id="factors" class="text-2xl font-bold mb-6">GEO Score Factors</h2>
+                    <!-- Scoring Pillars -->
+                    <section class="mb-12" aria-labelledby="pillars">
+                        <h2 id="pillars" class="text-2xl font-bold mb-6">GEO Score Pillars</h2>
                         <p class="text-muted-foreground mb-8">
-                            Your GEO Score is calculated based on six key factors:
+                            Your GEO Score is calculated based on up to 12 pillars, organized by plan tier. Each pillar measures a specific aspect of AI optimization.
                         </p>
 
-                        <div class="space-y-4">
-                            <Card v-for="item in scoringFactors" :key="item.factor">
-                                <CardHeader class="pb-2">
-                                    <div class="flex items-center justify-between">
-                                        <CardTitle class="text-lg">{{ item.factor }}</CardTitle>
-                                        <Badge :variant="item.weight === 'High' ? 'default' : 'secondary'">
-                                            {{ item.weight }} Weight
-                                        </Badge>
-                                    </div>
-                                </CardHeader>
-                                <CardContent>
-                                    <p class="text-muted-foreground mb-3">{{ item.description }}</p>
-                                    <div class="flex flex-wrap gap-2">
-                                        <span
-                                            v-for="example in item.examples"
-                                            :key="example"
-                                            class="inline-flex items-center gap-1 px-2 py-1 rounded bg-muted text-sm"
-                                        >
-                                            <CheckCircle class="h-3 w-3 text-green-500" />
-                                            {{ example }}
-                                        </span>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                        <!-- Free Tier -->
+                        <div class="mb-10">
+                            <div class="flex items-center gap-3 mb-4">
+                                <h3 class="text-xl font-semibold">Free Tier</h3>
+                                <Badge variant="secondary">100 points max</Badge>
+                            </div>
+                            <p class="text-muted-foreground mb-4 text-sm">Core pillars available to all users.</p>
+                            <div class="space-y-4">
+                                <Card v-for="pillar in freePillars" :key="pillar.name">
+                                    <CardHeader class="pb-2">
+                                        <div class="flex items-center justify-between">
+                                            <CardTitle class="text-lg flex items-center gap-2">
+                                                <component :is="pillar.icon" class="h-5 w-5 text-primary" />
+                                                {{ pillar.name }}
+                                            </CardTitle>
+                                            <Badge variant="default">{{ pillar.points }} pts</Badge>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p class="text-muted-foreground mb-3">{{ pillar.description }}</p>
+                                        <div class="flex flex-wrap gap-2">
+                                            <span
+                                                v-for="example in pillar.examples"
+                                                :key="example"
+                                                class="inline-flex items-center gap-1 px-2 py-1 rounded bg-muted text-sm"
+                                            >
+                                                <CheckCircle class="h-3 w-3 text-green-500" />
+                                                {{ example }}
+                                            </span>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </div>
                         </div>
+
+                        <!-- Pro Tier -->
+                        <div class="mb-10">
+                            <div class="flex items-center gap-3 mb-4">
+                                <h3 class="text-xl font-semibold">Pro Tier</h3>
+                                <Badge class="bg-blue-500 hover:bg-blue-600">+35 points</Badge>
+                            </div>
+                            <p class="text-muted-foreground mb-4 text-sm">Advanced pillars for Pro subscribers (135 points max total).</p>
+                            <div class="space-y-4">
+                                <Card v-for="pillar in proPillars" :key="pillar.name" class="border-blue-500/30">
+                                    <CardHeader class="pb-2">
+                                        <div class="flex items-center justify-between">
+                                            <CardTitle class="text-lg flex items-center gap-2">
+                                                <component :is="pillar.icon" class="h-5 w-5 text-blue-500" />
+                                                {{ pillar.name }}
+                                            </CardTitle>
+                                            <Badge class="bg-blue-500 hover:bg-blue-600">{{ pillar.points }} pts</Badge>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p class="text-muted-foreground mb-3">{{ pillar.description }}</p>
+                                        <div class="flex flex-wrap gap-2">
+                                            <span
+                                                v-for="example in pillar.examples"
+                                                :key="example"
+                                                class="inline-flex items-center gap-1 px-2 py-1 rounded bg-blue-500/10 text-sm"
+                                            >
+                                                <CheckCircle class="h-3 w-3 text-blue-500" />
+                                                {{ example }}
+                                            </span>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        </div>
+
+                        <!-- Agency Tier -->
+                        <div class="mb-10">
+                            <div class="flex items-center gap-3 mb-4">
+                                <h3 class="text-xl font-semibold">Agency Tier</h3>
+                                <Badge class="bg-purple-500 hover:bg-purple-600">+40 points</Badge>
+                            </div>
+                            <p class="text-muted-foreground mb-4 text-sm">Enterprise pillars for Agency subscribers (175 points max total).</p>
+                            <div class="space-y-4">
+                                <Card v-for="pillar in agencyPillars" :key="pillar.name" class="border-purple-500/30">
+                                    <CardHeader class="pb-2">
+                                        <div class="flex items-center justify-between">
+                                            <CardTitle class="text-lg flex items-center gap-2">
+                                                <component :is="pillar.icon" class="h-5 w-5 text-purple-500" />
+                                                {{ pillar.name }}
+                                            </CardTitle>
+                                            <Badge class="bg-purple-500 hover:bg-purple-600">{{ pillar.points }} pts</Badge>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p class="text-muted-foreground mb-3">{{ pillar.description }}</p>
+                                        <div class="flex flex-wrap gap-2">
+                                            <span
+                                                v-for="example in pillar.examples"
+                                                :key="example"
+                                                class="inline-flex items-center gap-1 px-2 py-1 rounded bg-purple-500/10 text-sm"
+                                            >
+                                                <CheckCircle class="h-3 w-3 text-purple-500" />
+                                                {{ example }}
+                                            </span>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        </div>
+
+                        <!-- Summary Table -->
+                        <Card class="mt-8">
+                            <CardHeader>
+                                <CardTitle>Scoring Summary by Plan</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full border-collapse text-sm">
+                                        <thead>
+                                            <tr class="border-b">
+                                                <th class="py-2 px-3 text-left font-semibold">Plan</th>
+                                                <th class="py-2 px-3 text-left font-semibold">Pillars</th>
+                                                <th class="py-2 px-3 text-left font-semibold">Max Score</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr class="border-b">
+                                                <td class="py-2 px-3"><Badge variant="secondary">Free</Badge></td>
+                                                <td class="py-2 px-3">5 pillars (Definitions, Structure, Authority, Machine-Readable, Answerability)</td>
+                                                <td class="py-2 px-3 font-mono font-bold">100 pts</td>
+                                            </tr>
+                                            <tr class="border-b">
+                                                <td class="py-2 px-3"><Badge class="bg-blue-500">Pro</Badge></td>
+                                                <td class="py-2 px-3">8 pillars (+E-E-A-T, Citations, AI Accessibility)</td>
+                                                <td class="py-2 px-3 font-mono font-bold">135 pts</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="py-2 px-3"><Badge class="bg-purple-500">Agency</Badge></td>
+                                                <td class="py-2 px-3">12 pillars (+Freshness, Readability, Question Coverage, Multimedia)</td>
+                                                <td class="py-2 px-3 font-mono font-bold">175 pts</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </CardContent>
+                        </Card>
                     </section>
 
                     <Separator class="my-12" />
@@ -396,68 +585,166 @@ const faqJsonLd = {
                     <section class="mb-12" aria-labelledby="improve">
                         <h2 id="improve" class="text-2xl font-bold mb-6">How to Improve Your GEO Score</h2>
 
-                        <div class="grid gap-4 sm:grid-cols-2">
+                        <p class="text-muted-foreground mb-6">
+                            Each pillar has specific optimization strategies. Here are the key areas to focus on:
+                        </p>
+
+                        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                             <Card>
-                                <CardHeader>
-                                    <CardTitle class="text-lg flex items-center gap-2">
-                                        <FileText class="h-5 w-5 text-primary" />
-                                        Add Clear Definitions
+                                <CardHeader class="pb-2">
+                                    <CardTitle class="text-base flex items-center gap-2">
+                                        <BookOpen class="h-4 w-4 text-primary" />
+                                        Clear Definitions
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     <p class="text-sm text-muted-foreground">
-                                        Start key sections with explicit definitions using patterns like "X is defined as..."
+                                        Start with explicit "X is..." definitions in the first paragraph.
                                     </p>
                                 </CardContent>
                             </Card>
 
                             <Card>
-                                <CardHeader>
-                                    <CardTitle class="text-lg flex items-center gap-2">
-                                        <Database class="h-5 w-5 text-primary" />
-                                        Structure Your Content
+                                <CardHeader class="pb-2">
+                                    <CardTitle class="text-base flex items-center gap-2">
+                                        <Layers class="h-4 w-4 text-primary" />
+                                        Structure
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     <p class="text-sm text-muted-foreground">
-                                        Use clear heading hierarchies, bullet points, and consistent formatting throughout.
+                                        Use one H1, multiple H2s, and bullet/numbered lists.
                                     </p>
                                 </CardContent>
                             </Card>
 
                             <Card>
-                                <CardHeader>
-                                    <CardTitle class="text-lg flex items-center gap-2">
-                                        <HelpCircle class="h-5 w-5 text-primary" />
-                                        Include FAQ Sections
+                                <CardHeader class="pb-2">
+                                    <CardTitle class="text-base flex items-center gap-2">
+                                        <Code class="h-4 w-4 text-primary" />
+                                        Machine-Readable
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     <p class="text-sm text-muted-foreground">
-                                        Add direct answers to common questions in a structured Q&A format.
+                                        Add JSON-LD schema and <Link href="/resources/why-llms-txt-matters" class="text-primary hover:underline">llms.txt</Link>.
                                     </p>
                                 </CardContent>
                             </Card>
 
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle class="text-lg flex items-center gap-2">
-                                        <Target class="h-5 w-5 text-primary" />
-                                        Add Schema Markup
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <p class="text-sm text-muted-foreground">
-                                        Implement JSON-LD structured data for articles, FAQs, and definitions.
-                                    </p>
-                                </CardContent>
-                            </Card>
+                            <Link href="/resources/e-e-a-t-and-geo" class="block">
+                                <Card class="h-full border-blue-500/30 hover:border-blue-500/50 transition-colors">
+                                    <CardHeader class="pb-2">
+                                        <CardTitle class="text-base flex items-center gap-2">
+                                            <UserCheck class="h-4 w-4 text-blue-500" />
+                                            E-E-A-T Signals
+                                            <Badge class="bg-blue-500 text-xs">Pro</Badge>
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p class="text-sm text-muted-foreground">
+                                            Add author bios, credentials, and trust indicators.
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            </Link>
+
+                            <Link href="/resources/ai-citations-and-geo" class="block">
+                                <Card class="h-full border-blue-500/30 hover:border-blue-500/50 transition-colors">
+                                    <CardHeader class="pb-2">
+                                        <CardTitle class="text-base flex items-center gap-2">
+                                            <Quote class="h-4 w-4 text-blue-500" />
+                                            Citations
+                                            <Badge class="bg-blue-500 text-xs">Pro</Badge>
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p class="text-sm text-muted-foreground">
+                                            Link to authoritative sources with inline citations.
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            </Link>
+
+                            <Link href="/resources/ai-accessibility-for-geo" class="block">
+                                <Card class="h-full border-blue-500/30 hover:border-blue-500/50 transition-colors">
+                                    <CardHeader class="pb-2">
+                                        <CardTitle class="text-base flex items-center gap-2">
+                                            <Bot class="h-4 w-4 text-blue-500" />
+                                            AI Access
+                                            <Badge class="bg-blue-500 text-xs">Pro</Badge>
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p class="text-sm text-muted-foreground">
+                                            Allow AI crawlers in robots.txt.
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            </Link>
+
+                            <Link href="/resources/content-freshness-for-geo" class="block">
+                                <Card class="h-full border-purple-500/30 hover:border-purple-500/50 transition-colors">
+                                    <CardHeader class="pb-2">
+                                        <CardTitle class="text-base flex items-center gap-2">
+                                            <Clock class="h-4 w-4 text-purple-500" />
+                                            Freshness
+                                            <Badge class="bg-purple-500 text-xs">Agency</Badge>
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p class="text-sm text-muted-foreground">
+                                            Show publish and update dates.
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            </Link>
+
+                            <Link href="/resources/readability-and-geo" class="block">
+                                <Card class="h-full border-purple-500/30 hover:border-purple-500/50 transition-colors">
+                                    <CardHeader class="pb-2">
+                                        <CardTitle class="text-base flex items-center gap-2">
+                                            <Type class="h-4 w-4 text-purple-500" />
+                                            Readability
+                                            <Badge class="bg-purple-500 text-xs">Agency</Badge>
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p class="text-sm text-muted-foreground">
+                                            Write at 8th-9th grade level with short sentences.
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            </Link>
+
+                            <Link href="/resources/question-coverage-for-geo" class="block">
+                                <Card class="h-full border-purple-500/30 hover:border-purple-500/50 transition-colors">
+                                    <CardHeader class="pb-2">
+                                        <CardTitle class="text-base flex items-center gap-2">
+                                            <HelpCircle class="h-4 w-4 text-purple-500" />
+                                            Questions
+                                            <Badge class="bg-purple-500 text-xs">Agency</Badge>
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p class="text-sm text-muted-foreground">
+                                            Add FAQ sections with FAQPage schema.
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            </Link>
                         </div>
 
-                        <div class="mt-8">
+                        <div class="mt-8 flex flex-wrap gap-4">
                             <Link href="/geo-optimization-checklist">
                                 <Button variant="outline" class="gap-2">
                                     View Complete Optimization Checklist
+                                    <ArrowRight class="h-4 w-4" />
+                                </Button>
+                            </Link>
+                            <Link href="/resources/multimedia-and-geo">
+                                <Button variant="ghost" class="gap-2">
+                                    Learn About Multimedia & GEO
                                     <ArrowRight class="h-4 w-4" />
                                 </Button>
                             </Link>
