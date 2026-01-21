@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "fab367ae48a450178d080e80f7c0a32f",
+    "content-hash": "5e5c60bded8bf48ba363b83f9a7ab256",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -1115,6 +1115,47 @@
                 }
             ],
             "time": "2025-12-03T09:33:47+00:00"
+        },
+        {
+            "name": "geosource/documentation",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "./nova-components/Documentation",
+                "reference": "043b368419eeac0b349ffdcb934fe8e89825fa2f"
+            },
+            "require": {
+                "illuminate/support": "^10.0|^11.0|^12.0",
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "laravel/nova": "^5.0",
+                "laravel/nova-devtool": "^1.7"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Geosource\\Documentation\\ToolServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Geosource\\Documentation\\": "src/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "A Laravel Nova tool.",
+            "keywords": [
+                "laravel",
+                "nova"
+            ],
+            "transport-options": {
+                "relative": true
+            }
         },
         {
             "name": "graham-campbell/result-type",
@@ -11169,7 +11210,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "geosource/documentation": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
