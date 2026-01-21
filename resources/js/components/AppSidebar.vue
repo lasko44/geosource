@@ -2,10 +2,10 @@
 import { Link, usePage } from '@inertiajs/vue3';
 import {
     BookOpen,
+    CircleHelp,
     FileChartColumnIncreasingIcon,
-    Folder,
     LayoutGrid,
-    PlayIcon, Receipt,
+    Receipt,
     Users
 } from 'lucide-vue-next';
 import { computed } from 'vue';
@@ -66,8 +66,14 @@ const footerNavItems: NavItem[] = [
         title: 'GEO Resources',
         href: '/resources',
         icon: BookOpen,
+        target: '_blank',
     },
-
+    {
+        title: 'Help Guide',
+        href: '/help',
+        icon: CircleHelp,
+        target: '_blank',
+    },
 ];
 </script>
 

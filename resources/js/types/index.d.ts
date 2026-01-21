@@ -15,6 +15,7 @@ export interface NavItem {
     href: NonNullable<InertiaLinkProps['href']>;
     icon?: LucideIcon;
     isActive?: boolean;
+    target?: '_blank' | '_self';
 }
 
 export type AppPageProps<
@@ -31,6 +32,7 @@ export interface User {
     name: string;
     email: string;
     avatar?: string;
+    timezone?: string;
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;
@@ -105,6 +107,7 @@ export type BreadcrumbItemType = BreadcrumbItem;
 export interface Scan {
     id: number;
     uuid: string;
+    user_id: number;
     team_id: number | null;
     url: string;
     title: string | null;
@@ -117,6 +120,10 @@ export interface Scan {
     error_message?: string | null;
     created_at: string;
     updated_at: string;
+    user?: {
+        id: number;
+        name: string;
+    };
 }
 
 export interface ScanResults {
@@ -184,7 +191,6 @@ export interface PlanLimits {
     white_label: boolean;
     scheduled_scans: boolean;
     pdf_export: boolean;
-    csv_export: boolean;
     bulk_scanning?: boolean;
 }
 

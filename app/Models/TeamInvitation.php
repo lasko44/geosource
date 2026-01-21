@@ -32,12 +32,41 @@ class TeamInvitation extends Model
 
         static::creating(function (TeamInvitation $invitation) {
             if (empty($invitation->token)) {
-                $invitation->token = Str::random(64);
+                // Generate cryptographically secure unique token
+                // Uses bin2hex(random_bytes()) for better security than Str::random()
+                $invitation->token = static::generateUniqueToken();
             }
             if (empty($invitation->expires_at)) {
                 $invitation->expires_at = now()->addDays(7);
             }
         });
+    }
+
+    /**
+     * Generate a cryptographically secure unique token.
+     *
+     * Uses random_bytes for secure generation and checks for collisions
+     * to ensure uniqueness even with the database constraint.
+     */
+    public static function generateUniqueToken(): string
+    {
+        $maxAttempts = 5;
+        $attempts = 0;
+
+        do {
+            // 32 bytes = 64 hex characters, cryptographically secure
+            $token = bin2hex(random_bytes(32));
+            $attempts++;
+
+            // Check if token exists (very unlikely but possible)
+            $exists = static::where('token', $token)->exists();
+        } while ($exists && $attempts < $maxAttempts);
+
+        if ($attempts >= $maxAttempts) {
+            throw new \RuntimeException('Failed to generate unique invitation token after multiple attempts.');
+        }
+
+        return $token;
     }
 
     /**

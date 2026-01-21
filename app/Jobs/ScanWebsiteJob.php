@@ -3,9 +3,11 @@
 namespace App\Jobs;
 
 use App\Models\Scan;
+use App\Models\Team;
 use App\Services\GEO\EnhancedGeoScorer;
 use App\Services\GEO\GeoScorer;
 use App\Services\RAG\VectorStore;
+use App\Services\SubscriptionService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -37,8 +39,17 @@ class ScanWebsiteJob implements ShouldQueue
     public function handle(
         GeoScorer $geoScorer,
         EnhancedGeoScorer $enhancedGeoScorer,
-        VectorStore $vectorStore
+        VectorStore $vectorStore,
+        SubscriptionService $subscriptionService
     ): void {
+        // Re-verify subscription before completing the scan
+        // This prevents downgraded users from completing queued scans
+        if (! $this->verifySubscriptionStillValid($subscriptionService)) {
+            $this->markFailed('Your subscription has changed and this scan cannot be completed. Please try again.');
+
+            return;
+        }
+
         $this->updateProgress('fetching');
 
         try {
@@ -177,5 +188,49 @@ class ScanWebsiteJob implements ShouldQueue
             'pro' => GeoScorer::TIER_PRO,
             default => GeoScorer::TIER_FREE,
         };
+    }
+
+    /**
+     * Verify the user's subscription is still valid for this scan.
+     *
+     * This prevents users who downgrade their subscription while scans
+     * are queued from completing scans they no longer have quota for.
+     */
+    private function verifySubscriptionStillValid(SubscriptionService $subscriptionService): bool
+    {
+        $user = $this->scan->user;
+
+        if (! $user) {
+            return false;
+        }
+
+        // Refresh the user model to get current subscription state
+        $user->refresh();
+
+        // Admins always pass
+        if ($user->is_admin) {
+            return true;
+        }
+
+        $teamId = $this->scan->team_id;
+
+        if ($teamId) {
+            // For team scans, verify the team still exists and owner has valid subscription
+            $team = Team::find($teamId);
+            if (! $team) {
+                return false;
+            }
+
+            // Verify user still has access to the team
+            if (! $user->allTeams()->contains('id', $teamId)) {
+                return false;
+            }
+
+            // Verify team owner still has quota (re-check at execution time)
+            return $subscriptionService->canScanForTeam($team);
+        }
+
+        // For personal scans, verify user still has quota
+        return $subscriptionService->canScan($user);
     }
 }

@@ -4,6 +4,8 @@ namespace App\Services\RAG;
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
 
 /**
  * Service for generating vector embeddings from text.
@@ -23,33 +25,90 @@ class EmbeddingService
      * Using conservative ratio of ~3 chars/token for safety with varied content.
      */
     private int $maxTokens = 7500; // well below 8192 for safety margin
+
     private float $charsPerToken = 3.0; // conservative estimate (actual varies 2.5-4)
+
+    /**
+     * Rate limiting configuration for embedding API calls.
+     * Prevents cost exhaustion attacks on OpenAI API.
+     */
+    private int $rateLimitPerMinute = 60; // Max embedding requests per minute per team
+
+    private int $rateLimitBatchPerMinute = 10; // Max batch requests per minute per team
 
     public function __construct()
     {
         $this->provider = config('rag.embedding.provider', 'openai');
         $this->model = config('rag.embedding.model', 'text-embedding-3-small');
         $this->dimensions = config('rag.embedding.dimensions', 1536);
+        $this->rateLimitPerMinute = config('rag.embedding.rate_limit_per_minute', 60);
+        $this->rateLimitBatchPerMinute = config('rag.embedding.rate_limit_batch_per_minute', 10);
+    }
+
+    /**
+     * Check rate limit for embedding requests.
+     *
+     * @throws \App\Exceptions\RateLimitExceededException
+     */
+    private function checkRateLimit(?int $teamId, bool $isBatch = false): void
+    {
+        // Use team ID for rate limiting, or fall back to IP-based limiting
+        $key = $teamId
+            ? "embedding_rate_limit:team:{$teamId}"
+            : 'embedding_rate_limit:global:'.request()?->ip();
+
+        $limit = $isBatch ? $this->rateLimitBatchPerMinute : $this->rateLimitPerMinute;
+
+        if (RateLimiter::tooManyAttempts($key, $limit)) {
+            $seconds = RateLimiter::availableIn($key);
+            Log::warning('Embedding rate limit exceeded', [
+                'team_id' => $teamId,
+                'key' => $key,
+                'retry_after' => $seconds,
+            ]);
+            throw new \App\Exceptions\RateLimitExceededException(
+                "Embedding rate limit exceeded. Please wait {$seconds} seconds before trying again.",
+                $seconds
+            );
+        }
+
+        RateLimiter::hit($key, 60); // 60 second decay
     }
 
     /**
      * Generate embedding for a single text.
      *
+     * @param  int|null  $teamId  Optional team ID for cache isolation (prevents cross-team data inference)
      * @return array<int, float>
+     *
+     * @throws \App\Exceptions\RateLimitExceededException
      */
-    public function embed(string $text, bool $cache = true): array
+    public function embed(string $text, bool $cache = true, ?int $teamId = null): array
     {
         $text = $this->prepareText($text);
 
         if ($cache) {
-            $cacheKey = 'embedding:'.md5($text.$this->model);
+            // Include teamId in cache key to prevent cross-team data inference attacks
+            // This ensures teams can't infer what content other teams have analyzed via cache timing
+            $cacheKey = 'embedding:'.hash('sha256', $text.$this->model.($teamId ? ":team:{$teamId}" : ''));
 
-            return Cache::remember(
-                $cacheKey,
-                now()->addDays(7),
-                fn () => $this->generateEmbedding($text)
-            );
+            // Check if we have a cached result before applying rate limit
+            $cached = Cache::get($cacheKey);
+            if ($cached !== null) {
+                return $cached;
+            }
+
+            // Only apply rate limit for actual API calls
+            $this->checkRateLimit($teamId, false);
+
+            $embedding = $this->generateEmbedding($text);
+            Cache::put($cacheKey, $embedding, now()->addDays(7));
+
+            return $embedding;
         }
+
+        // Apply rate limit for non-cached requests
+        $this->checkRateLimit($teamId, false);
 
         return $this->generateEmbedding($text);
     }
@@ -58,12 +117,24 @@ class EmbeddingService
      * Generate embeddings for multiple texts in batch.
      *
      * @param  array<string>  $texts
+     * @param  int|null  $teamId  Optional team ID for cache isolation (prevents cross-team data inference)
      * @return array<array<int, float>>
+     *
+     * @throws \App\Exceptions\RateLimitExceededException
      */
-    public function embedBatch(array $texts, bool $cache = true): array
+    public function embedBatch(array $texts, bool $cache = true, ?int $teamId = null): array
     {
+        // Enforce maximum batch size to prevent resource exhaustion
+        $maxBatchSize = 100;
+        if (count($texts) > $maxBatchSize) {
+            throw new \InvalidArgumentException("Batch size exceeds maximum of {$maxBatchSize} texts.");
+        }
+
         // Normalize and truncate all texts first
         $texts = array_map(fn ($text) => $this->prepareText($text), $texts);
+
+        // Cache suffix for team isolation
+        $teamSuffix = $teamId ? ":team:{$teamId}" : '';
 
         if ($cache) {
             $results = [];
@@ -71,7 +142,8 @@ class EmbeddingService
             $uncachedIndices = [];
 
             foreach ($texts as $index => $text) {
-                $cacheKey = 'embedding:'.md5($text.$this->model);
+                // Include teamId in cache key to prevent cross-team data inference
+                $cacheKey = 'embedding:'.hash('sha256', $text.$this->model.$teamSuffix);
                 $cached = Cache::get($cacheKey);
 
                 if ($cached !== null) {
@@ -83,13 +155,16 @@ class EmbeddingService
             }
 
             if (! empty($uncached)) {
+                // Apply rate limit only when making actual API calls
+                $this->checkRateLimit($teamId, true);
+
                 $newEmbeddings = $this->generateBatchEmbeddings($uncached);
 
                 foreach ($newEmbeddings as $i => $embedding) {
                     $originalIndex = $uncachedIndices[$i];
                     $results[$originalIndex] = $embedding;
 
-                    $cacheKey = 'embedding:'.md5($texts[$originalIndex].$this->model);
+                    $cacheKey = 'embedding:'.hash('sha256', $texts[$originalIndex].$this->model.$teamSuffix);
                     Cache::put($cacheKey, $embedding, now()->addDays(7));
                 }
             }
@@ -98,6 +173,9 @@ class EmbeddingService
 
             return array_values($results);
         }
+
+        // Apply rate limit for non-cached batch requests
+        $this->checkRateLimit($teamId, true);
 
         return $this->generateBatchEmbeddings($texts);
     }
@@ -200,7 +278,11 @@ class EmbeddingService
             ]);
 
         if (! $response->successful()) {
-            throw new \RuntimeException('OpenAI embedding failed: '.$response->body());
+            Log::error('OpenAI embedding failed', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+            throw new \RuntimeException('Embedding generation failed. Please try again later.');
         }
 
         return $response->json('data.0.embedding') ?? [];
@@ -231,7 +313,11 @@ class EmbeddingService
                 ]);
 
             if (! $response->successful()) {
-                throw new \RuntimeException('OpenAI batch embedding failed: '.$response->body());
+                Log::error('OpenAI batch embedding failed', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                throw new \RuntimeException('Batch embedding generation failed. Please try again later.');
             }
 
             $data = $response->json('data') ?? [];
@@ -264,7 +350,11 @@ class EmbeddingService
             ]);
 
         if (! $response->successful()) {
-            throw new \RuntimeException('Voyage AI embedding failed: '.$response->body());
+            Log::error('Voyage AI embedding failed', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+            throw new \RuntimeException('Embedding generation failed. Please try again later.');
         }
 
         return $response->json('data.0.embedding') ?? [];
@@ -292,7 +382,11 @@ class EmbeddingService
                 ]);
 
             if (! $response->successful()) {
-                throw new \RuntimeException('Voyage AI batch embedding failed: '.$response->body());
+                Log::error('Voyage AI batch embedding failed', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                throw new \RuntimeException('Batch embedding generation failed. Please try again later.');
             }
 
             $data = $response->json('data') ?? [];

@@ -24,6 +24,13 @@ class Team extends Model
         'name',
         'slug',
         'description',
+        'company_name',
+        'logo_path',
+        'primary_color',
+        'secondary_color',
+        'report_footer',
+        'contact_email',
+        'website_url',
     ];
 
     /**
@@ -191,5 +198,85 @@ class Team extends Model
     public function hasCollaborationEnabled(): bool
     {
         return $this->getMaxSeats() > 1 || $this->getMaxSeats() === -1;
+    }
+
+    /**
+     * Check if the team is over its seat limit (e.g., after subscription downgrade).
+     */
+    public function isOverSeatLimit(): bool
+    {
+        $maxSeats = $this->getMaxSeats();
+
+        // Unlimited seats
+        if ($maxSeats === -1) {
+            return false;
+        }
+
+        return $this->getUsedSeats() > $maxSeats;
+    }
+
+    /**
+     * Get the number of seats over the limit.
+     */
+    public function getSeatsOverLimit(): int
+    {
+        $maxSeats = $this->getMaxSeats();
+
+        // Unlimited seats
+        if ($maxSeats === -1) {
+            return 0;
+        }
+
+        return max(0, $this->getUsedSeats() - $maxSeats);
+    }
+
+    /**
+     * Check if team has white label enabled (based on owner's plan).
+     */
+    public function hasWhiteLabel(): bool
+    {
+        return $this->owner->hasFeature('white_label');
+    }
+
+    /**
+     * Get white label settings for reports.
+     */
+    public function getWhiteLabelSettings(): array
+    {
+        if (! $this->hasWhiteLabel()) {
+            return [
+                'enabled' => false,
+                'company_name' => config('app.name'),
+                'logo_url' => null,
+                'primary_color' => '#3b82f6',
+                'secondary_color' => '#1e40af',
+                'report_footer' => null,
+                'contact_email' => null,
+                'website_url' => config('app.url'),
+            ];
+        }
+
+        return [
+            'enabled' => true,
+            'company_name' => $this->company_name ?: $this->name,
+            'logo_url' => $this->logo_path ? asset('storage/'.$this->logo_path) : null,
+            'primary_color' => $this->primary_color ?: '#3b82f6',
+            'secondary_color' => $this->secondary_color ?: '#1e40af',
+            'report_footer' => $this->report_footer,
+            'contact_email' => $this->contact_email ?: $this->owner->email,
+            'website_url' => $this->website_url,
+        ];
+    }
+
+    /**
+     * Get the logo URL for reports.
+     */
+    public function getLogoUrl(): ?string
+    {
+        if ($this->logo_path) {
+            return asset('storage/'.$this->logo_path);
+        }
+
+        return null;
     }
 }

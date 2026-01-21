@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use App\Models\User;
+use App\Nova\Tools\Documentation;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 use Laravel\Nova\Nova;
 use Laravel\Nova\NovaApplicationServiceProvider;
@@ -17,7 +19,13 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
     {
         parent::boot();
 
-        //
+        Nova::withBreadcrumbs();
+
+        Nova::footer(function () {
+            return \Illuminate\Support\Facades\Blade::render('
+                <p class="text-center">GEOSource Admin &copy; {{ date("Y") }}</p>
+            ');
+        });
     }
 
     /**
@@ -44,6 +52,14 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
             ->withPasswordResetRoutes()
             ->withoutEmailVerificationRoutes()
             ->register();
+
+        // Custom documentation route
+        Route::middleware(['web', \Laravel\Nova\Http\Middleware\Authenticate::class, \Laravel\Nova\Http\Middleware\Authorize::class])
+            ->prefix('nova')
+            ->group(function () {
+                Route::get('/documentation', [\App\Http\Controllers\Nova\DocumentationController::class, 'index'])
+                    ->name('nova.documentation');
+            });
     }
 
     /**
@@ -77,7 +93,9 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
      */
     public function tools(): array
     {
-        return [];
+        return [
+            new Documentation,
+        ];
     }
 
     /**

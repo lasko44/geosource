@@ -168,12 +168,53 @@ class SubscriptionService
     }
 
     /**
-     * Get the number of scans used this month.
+     * Get the number of scans used this month by a user (personal scans only).
+     * Includes soft-deleted scans to prevent quota bypass via deletion.
+     * Uses user's timezone for accurate month boundary calculation.
      */
     public function getScansUsedThisMonth(User $user): int
     {
+        $startOfMonth = $this->getStartOfMonthForUser($user);
+
         return $user->scans()
-            ->where('created_at', '>=', Carbon::now()->startOfMonth())
+            ->withTrashed() // Include deleted scans to prevent quota bypass
+            ->where('created_at', '>=', $startOfMonth)
+            ->count();
+    }
+
+    /**
+     * Get the start of month in UTC, based on user's timezone.
+     * This ensures quota resets at midnight in the user's local timezone.
+     */
+    private function getStartOfMonthForUser(User $user): \Carbon\Carbon
+    {
+        $timezone = $user->timezone ?? 'UTC';
+
+        return Carbon::now($timezone)->startOfMonth()->utc();
+    }
+
+    /**
+     * Get the number of scans used this month for a team owner (all their teams' scans + personal scans).
+     * Includes soft-deleted scans to prevent quota bypass via deletion.
+     * Includes personal scans to prevent quota bypass by mixing personal and team scans.
+     * Uses owner's timezone for accurate month boundary calculation.
+     */
+    public function getOwnerScansUsedThisMonth(User $owner): int
+    {
+        // Get all teams owned by this user
+        $teamIds = $owner->ownedTeams()->pluck('id');
+        $startOfMonth = $this->getStartOfMonthForUser($owner);
+
+        // Count all scans from these teams this month (including deleted)
+        // PLUS the owner's personal scans (to prevent mixing personal + team to bypass quota)
+        return \App\Models\Scan::withTrashed()
+            ->where('created_at', '>=', $startOfMonth)
+            ->where(function ($query) use ($owner, $teamIds) {
+                $query->whereIn('team_id', $teamIds)
+                    ->orWhere(function ($q) use ($owner) {
+                        $q->where('user_id', $owner->id)->whereNull('team_id');
+                    });
+            })
             ->count();
     }
 
@@ -195,6 +236,23 @@ class SubscriptionService
     }
 
     /**
+     * Get the remaining scans for a team owner (considering all team scans).
+     */
+    public function getOwnerScansRemaining(User $owner): int
+    {
+        $limit = $this->getLimit($owner, 'scans_per_month');
+
+        // Unlimited
+        if ($limit === -1) {
+            return -1;
+        }
+
+        $used = $this->getOwnerScansUsedThisMonth($owner);
+
+        return max(0, $limit - $used);
+    }
+
+    /**
      * Check if user can perform a scan.
      */
     public function canScan(User $user): bool
@@ -207,6 +265,109 @@ class SubscriptionService
         $remaining = $this->getScansRemaining($user);
 
         return $remaining === -1 || $remaining > 0;
+    }
+
+    /**
+     * Check if a scan can be performed for a specific team (checks owner's quota).
+     */
+    public function canScanForTeam(\App\Models\Team $team): bool
+    {
+        $owner = $team->owner;
+
+        // Admins can always scan
+        if ($owner->is_admin) {
+            return true;
+        }
+
+        $remaining = $this->getOwnerScansRemaining($owner);
+
+        return $remaining === -1 || $remaining > 0;
+    }
+
+    /**
+     * Get the number of scans a specific member has made for a team this month.
+     * Includes soft-deleted scans to prevent quota bypass via deletion.
+     */
+    public function getMemberScansUsedThisMonth(User $member, \App\Models\Team $team): int
+    {
+        return \App\Models\Scan::withTrashed()
+            ->where('user_id', $member->id)
+            ->where('team_id', $team->id)
+            ->where('created_at', '>=', Carbon::now()->startOfMonth())
+            ->count();
+    }
+
+    /**
+     * Get the per-member scan limit for a team (based on owner's plan).
+     */
+    public function getMemberScanLimit(\App\Models\Team $team): int
+    {
+        $owner = $team->owner;
+
+        return $this->getLimit($owner, 'member_scans_per_month') ?? 50;
+    }
+
+    /**
+     * Check if a team member can scan (within their per-member limit).
+     */
+    public function canMemberScanForTeam(User $member, \App\Models\Team $team): bool
+    {
+        // Team owners are not subject to per-member limits
+        if ($team->owner_id === $member->id) {
+            return true;
+        }
+
+        // Admins can always scan
+        if ($member->is_admin) {
+            return true;
+        }
+
+        $limit = $this->getMemberScanLimit($team);
+        $used = $this->getMemberScansUsedThisMonth($member, $team);
+
+        return $used < $limit;
+    }
+
+    /**
+     * Get member's remaining scans for a team this month.
+     */
+    public function getMemberScansRemaining(User $member, \App\Models\Team $team): int
+    {
+        // Team owners are not subject to per-member limits
+        if ($team->owner_id === $member->id) {
+            return -1; // Unlimited (subject to team limit)
+        }
+
+        $limit = $this->getMemberScanLimit($team);
+        $used = $this->getMemberScansUsedThisMonth($member, $team);
+
+        return max(0, $limit - $used);
+    }
+
+    /**
+     * Get usage summary for a team context (uses owner's quota).
+     */
+    public function getTeamUsageSummary(\App\Models\Team $team): array
+    {
+        $owner = $team->owner;
+        $plan = $this->getPlan($owner);
+        $planKey = $this->getPlanKey($owner);
+        $scansUsed = $this->getOwnerScansUsedThisMonth($owner);
+        $scansLimit = $this->getLimit($owner, 'scans_per_month');
+        $scansRemaining = $this->getOwnerScansRemaining($owner);
+
+        return [
+            'plan_key' => $planKey,
+            'plan_name' => $plan['name'],
+            'scans_used' => $scansUsed,
+            'scans_limit' => $scansLimit,
+            'scans_remaining' => $scansRemaining,
+            'is_unlimited' => $scansLimit === -1,
+            'can_scan' => $this->canScanForTeam($team),
+            'features' => $plan['features'] ?? [],
+            'limits' => $plan['limits'] ?? [],
+            'owner_name' => $owner->name,
+        ];
     }
 
     /**

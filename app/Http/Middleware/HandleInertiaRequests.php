@@ -52,7 +52,13 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $user,
+                'user' => $user ? [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'is_admin' => $user->is_admin,
+                    'timezone' => $user->timezone ?? 'UTC',
+                ] : null,
             ],
             'hasTeams' => $hasTeams,
             'canCreateTeams' => $canCreateTeams,

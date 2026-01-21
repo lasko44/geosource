@@ -33,6 +33,11 @@ Route::get('dashboard', [ScanController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
+// User Guide / Help
+Route::get('/help', function () {
+    return view('help.guide');
+})->name('help');
+
 require __DIR__.'/settings.php';
 require __DIR__.'/billing.php';
 require __DIR__.'/teams.php';

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Form, Head, Link, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import DeleteUser from '@/components/DeleteUser.vue';
@@ -29,7 +30,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
 ];
 
 const page = usePage();
-const user = page.props.auth.user;
+const user = computed(() => page.props.auth.user);
 </script>
 
 <template>
@@ -77,6 +78,55 @@ const user = page.props.auth.user;
                             placeholder="Email address"
                         />
                         <InputError class="mt-2" :message="errors.email" />
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="timezone">Timezone</Label>
+                        <select
+                            id="timezone"
+                            name="timezone"
+                            class="mt-1 block w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                            :value="user.timezone || 'UTC'"
+                        >
+                            <option value="UTC">UTC</option>
+                            <option value="America/New_York">Eastern Time (US & Canada)</option>
+                            <option value="America/Chicago">Central Time (US & Canada)</option>
+                            <option value="America/Denver">Mountain Time (US & Canada)</option>
+                            <option value="America/Los_Angeles">Pacific Time (US & Canada)</option>
+                            <option value="America/Anchorage">Alaska</option>
+                            <option value="Pacific/Honolulu">Hawaii</option>
+                            <option value="America/Phoenix">Arizona</option>
+                            <option value="America/Toronto">Toronto</option>
+                            <option value="America/Vancouver">Vancouver</option>
+                            <option value="America/Mexico_City">Mexico City</option>
+                            <option value="America/Sao_Paulo">Brasilia</option>
+                            <option value="America/Buenos_Aires">Buenos Aires</option>
+                            <option value="Europe/London">London</option>
+                            <option value="Europe/Paris">Paris</option>
+                            <option value="Europe/Berlin">Berlin</option>
+                            <option value="Europe/Amsterdam">Amsterdam</option>
+                            <option value="Europe/Madrid">Madrid</option>
+                            <option value="Europe/Rome">Rome</option>
+                            <option value="Europe/Zurich">Zurich</option>
+                            <option value="Europe/Stockholm">Stockholm</option>
+                            <option value="Europe/Moscow">Moscow</option>
+                            <option value="Africa/Johannesburg">Johannesburg</option>
+                            <option value="Africa/Cairo">Cairo</option>
+                            <option value="Asia/Dubai">Dubai</option>
+                            <option value="Asia/Kolkata">Mumbai, Kolkata</option>
+                            <option value="Asia/Bangkok">Bangkok</option>
+                            <option value="Asia/Singapore">Singapore</option>
+                            <option value="Asia/Hong_Kong">Hong Kong</option>
+                            <option value="Asia/Shanghai">Beijing, Shanghai</option>
+                            <option value="Asia/Tokyo">Tokyo</option>
+                            <option value="Asia/Seoul">Seoul</option>
+                            <option value="Australia/Sydney">Sydney</option>
+                            <option value="Australia/Melbourne">Melbourne</option>
+                            <option value="Australia/Perth">Perth</option>
+                            <option value="Australia/Brisbane">Brisbane</option>
+                            <option value="Pacific/Auckland">Auckland</option>
+                        </select>
+                        <InputError class="mt-2" :message="errors.timezone" />
                     </div>
 
                     <div v-if="mustVerifyEmail && !user.email_verified_at">

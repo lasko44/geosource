@@ -88,17 +88,17 @@ class TeamController extends Controller
                 'string',
                 'max:255',
                 'regex:/^[a-z0-9-]+$/',
-                Rule::unique('teams', 'slug')->where('owner_id', $user->id),
+                'unique:teams,slug', // Globally unique slug for route resolution
             ],
             'description' => ['nullable', 'string', 'max:1000'],
         ]);
 
         $slug = $request->input('slug') ?: Str::slug($request->input('name'));
 
-        // Ensure slug is unique for this owner
+        // Ensure slug is globally unique for route resolution
         $originalSlug = $slug;
         $counter = 1;
-        while (Team::where('slug', $slug)->where('owner_id', $user->id)->exists()) {
+        while (Team::where('slug', $slug)->exists()) {
             $slug = $originalSlug.'-'.$counter;
             $counter++;
         }
@@ -136,13 +136,14 @@ class TeamController extends Controller
                 'owner' => [
                     'id' => $team->owner->id,
                     'name' => $team->owner->name,
-                    'email' => $team->owner->email,
                 ],
                 'members_count' => $team->members->count(),
             ],
             'userRole' => $team->getUserRole($user),
             'isOwner' => $team->isOwner($user),
             'isAdmin' => $team->isAdmin($user),
+            'hasWhiteLabel' => $team->hasWhiteLabel(),
+            'hasSubscription' => $team->owner->subscribed(),
         ]);
     }
 
@@ -182,17 +183,17 @@ class TeamController extends Controller
                 'string',
                 'max:255',
                 'regex:/^[a-z0-9-]+$/',
-                Rule::unique('teams', 'slug')->where('owner_id', $team->owner_id)->ignore($team->id),
+                Rule::unique('teams', 'slug')->ignore($team->id), // Globally unique slug
             ],
             'description' => ['nullable', 'string', 'max:1000'],
         ]);
 
         $slug = $request->input('slug') ?: Str::slug($request->input('name'));
 
-        // Ensure slug is unique for this owner
+        // Ensure slug is globally unique for route resolution
         $originalSlug = $slug;
         $counter = 1;
-        while (Team::where('slug', $slug)->where('owner_id', $team->owner_id)->where('id', '!=', $team->id)->exists()) {
+        while (Team::where('slug', $slug)->where('id', '!=', $team->id)->exists()) {
             $slug = $originalSlug.'-'.$counter;
             $counter++;
         }
@@ -214,6 +215,14 @@ class TeamController extends Controller
     {
         $this->authorize('delete', $team);
 
+        // Clean up related resources before soft delete
+        // Delete pending invitations (they become invalid)
+        $team->invitations()->delete();
+
+        // Detach all members from the team
+        $team->members()->detach();
+
+        // Soft delete the team
         $team->delete();
 
         return redirect()->route('teams.index')
@@ -236,6 +245,24 @@ class TeamController extends Controller
         // Ensure new owner is a member of the team
         if (! $team->members()->where('user_id', $newOwnerId)->exists()) {
             return back()->withErrors(['user_id' => 'The selected user is not a member of this team.']);
+        }
+
+        // Verify new owner has a subscription that allows team ownership
+        $newOwner = \App\Models\User::find($newOwnerId);
+        $subscriptionService = app(SubscriptionService::class);
+
+        if (! $subscriptionService->canCreateTeams($newOwner)) {
+            $teamsAllowed = $subscriptionService->getTeamsAllowed($newOwner);
+
+            if ($teamsAllowed === 0) {
+                return back()->withErrors([
+                    'user_id' => 'This user does not have a subscription that allows team ownership. They must upgrade to Pro or Agency first.',
+                ]);
+            }
+
+            return back()->withErrors([
+                'user_id' => 'This user has reached their team limit and cannot take ownership of another team.',
+            ]);
         }
 
         $currentOwnerId = $team->owner_id;

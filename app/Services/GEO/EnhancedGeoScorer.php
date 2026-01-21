@@ -5,6 +5,7 @@ namespace App\Services\GEO;
 use App\Services\RAG\EmbeddingService;
 use App\Services\RAG\RAGService;
 use App\Services\RAG\VectorStore;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Enhanced GEO Scorer with RAG Integration
@@ -38,8 +39,8 @@ class EnhancedGeoScorer
             'url' => $options['url'] ?? null,
         ];
 
-        // Generate embedding for similarity search
-        $embedding = $this->embeddingService->embed($content);
+        // Generate embedding for similarity search (with team isolation for cache)
+        $embedding = $this->embeddingService->embed($content, true, $teamId);
         $context['embedding'] = $embedding;
 
         $baseScore = $this->baseScorer->score($content, $context);
@@ -94,7 +95,8 @@ class EnhancedGeoScorer
      */
     public function quickAnalyze(string $content, int $teamId): array
     {
-        $embedding = $this->embeddingService->embed($content);
+        // Generate embedding with team isolation for cache
+        $embedding = $this->embeddingService->embed($content, true, $teamId);
 
         $baseScore = $this->baseScorer->quickScore($content, [
             'team_id' => $teamId,
@@ -117,6 +119,9 @@ class EnhancedGeoScorer
 
     /**
      * Compare content against competitors.
+     *
+     * Only compares against documents belonging to the same team to prevent
+     * cross-team data leakage (benchmark data exposure vulnerability).
      */
     public function compareWithCompetitors(
         string $content,
@@ -128,13 +133,19 @@ class EnhancedGeoScorer
         $comparisons = [];
 
         // Compare with similar content in database
+        // Security: Verify each document belongs to the same team to prevent data leakage
         foreach ($myScore['similar_content'] as $similar) {
-            $doc = \App\Models\Document::find($similar['id']);
+            // Explicitly query with team_id constraint to prevent cross-team access
+            $doc = \App\Models\Document::where('id', $similar['id'])
+                ->where('team_id', $teamId)
+                ->first();
+
             if ($doc) {
                 $competitorScore = $this->baseScorer->quickScore($doc->content, [
                     'team_id' => $teamId,
                 ]);
 
+                // Only include title, not content details, to minimize exposure
                 $comparisons[] = [
                     'title' => $similar['title'],
                     'similarity' => $similar['similarity'],
@@ -432,7 +443,11 @@ PROMPT;
             ]);
 
         if (! $response->successful()) {
-            throw new \RuntimeException('LLM API error: '.$response->body());
+            Log::error('LLM API error', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+            throw new \RuntimeException('LLM API request failed. Please try again later.');
         }
 
         $data = $response->json();

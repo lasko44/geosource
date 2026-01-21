@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
-import { Globe, TrendingUp, Target, Calendar, ExternalLink, Zap, ArrowRight, Users, Crown, Plus } from 'lucide-vue-next';
+import { Head, Link, useForm, usePage, router } from '@inertiajs/vue3';
+import { Globe, TrendingUp, Target, Calendar, ExternalLink, Zap, ArrowRight, Users, Crown, Plus, Building2, User, ChevronDown } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -10,7 +10,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useDateFormat } from '@/composables/useDateFormat';
 import { type BreadcrumbItem, type Scan, type DashboardStats, type UsageSummary, type PlanWithLimits } from '@/types';
+
+const { formatDate } = useDateFormat();
 
 interface Team {
     id: number;
@@ -21,6 +32,12 @@ interface Team {
     role: string;
 }
 
+interface CurrentTeam {
+    id: number;
+    name: string;
+    slug: string;
+}
+
 interface Props {
     recentScans: Scan[];
     stats: DashboardStats;
@@ -28,11 +45,25 @@ interface Props {
     showUpgradePrompt: boolean;
     plans: Record<string, PlanWithLimits>;
     teams: Team[] | null;
+    currentTeamId: number | null;
+    currentTeam: CurrentTeam | null;
+    hasPersonalOption: boolean;
 }
 
 const props = defineProps<Props>();
 const page = usePage();
 const canCreateTeams = computed(() => page.props.canCreateTeams);
+
+const switchTeam = (teamId: number | 'personal') => {
+    router.get('/dashboard', { team: teamId }, { preserveState: false });
+};
+
+const currentContextName = computed(() => {
+    if (props.currentTeam) {
+        return props.currentTeam.name;
+    }
+    return 'Personal';
+});
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -43,9 +74,12 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const form = useForm({
     url: '',
+    team_id: props.currentTeamId ?? null,
 });
 
 const submit = () => {
+    // Ensure team_id is synced with current context before submitting
+    form.team_id = props.currentTeamId ?? null;
     form.post('/scan', {
         preserveScroll: true,
     });
@@ -64,15 +98,6 @@ const getScoreColor = (score: number) => {
     if (score >= 60) return 'text-blue-600 dark:text-blue-400';
     if (score >= 40) return 'text-yellow-600 dark:text-yellow-400';
     return 'text-red-600 dark:text-red-400';
-};
-
-const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-    });
 };
 
 const truncateUrl = (url: string, maxLength = 50) => {
@@ -111,7 +136,7 @@ const getProgressColor = () => {
                 <Zap class="h-4 w-4 text-primary" />
                 <AlertDescription class="flex items-center justify-between">
                     <span>
-                        <strong>Unlock more scans!</strong> Upgrade to Pro for 50 scans/month, full GEO breakdown, and CSV export.
+                        <strong>Unlock more scans!</strong> Upgrade to Pro for 50 scans/month, full GEO breakdown, and PDF export.
                     </span>
                     <Link href="/billing/plans">
                         <Button size="sm" class="ml-4">
@@ -121,6 +146,58 @@ const getProgressColor = () => {
                     </Link>
                 </AlertDescription>
             </Alert>
+
+            <!-- Team Switcher (for users with multiple teams) -->
+            <div v-if="teams && teams.length > 0" class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <span class="text-sm text-muted-foreground">Viewing:</span>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger as-child>
+                            <Button variant="outline" class="gap-2">
+                                <Building2 v-if="currentTeam" class="h-4 w-4" />
+                                <User v-else class="h-4 w-4" />
+                                {{ currentContextName }}
+                                <ChevronDown class="h-4 w-4 opacity-50" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" class="w-56">
+                            <DropdownMenuLabel>Switch Context</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <template v-if="hasPersonalOption">
+                                <DropdownMenuItem
+                                    class="cursor-pointer gap-2"
+                                    :class="{ 'bg-accent': !currentTeamId }"
+                                    @click="switchTeam('personal')"
+                                >
+                                    <User class="h-4 w-4" />
+                                    Personal
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                            </template>
+                            <DropdownMenuLabel class="text-xs font-normal text-muted-foreground">Teams</DropdownMenuLabel>
+                            <DropdownMenuItem
+                                v-for="team in teams"
+                                :key="team.id"
+                                class="cursor-pointer gap-2"
+                                :class="{ 'bg-accent': currentTeamId === team.id }"
+                                @click="switchTeam(team.id)"
+                            >
+                                <Building2 class="h-4 w-4" />
+                                <span class="flex-1">{{ team.name }}</span>
+                                <Badge v-if="team.is_owner" variant="secondary" class="ml-2 text-xs">Owner</Badge>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+                <p class="text-sm text-muted-foreground">
+                    <template v-if="currentTeam">
+                        Showing scans from <strong>{{ currentTeam.name }}</strong>
+                    </template>
+                    <template v-else>
+                        Showing your personal scans
+                    </template>
+                </p>
+            </div>
 
             <!-- Scan Form Card -->
             <Card class="border-2 border-dashed border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
@@ -311,11 +388,14 @@ const getProgressColor = () => {
                                 </div>
 
                                 <!-- Info -->
-                                <div>
+                                <div class="flex-1">
                                     <p class="font-medium">{{ scan.title || 'Untitled' }}</p>
                                     <p class="flex items-center gap-1 text-sm text-muted-foreground">
                                         <ExternalLink class="h-3 w-3" />
                                         {{ truncateUrl(scan.url) }}
+                                    </p>
+                                    <p v-if="scan.user && currentTeam" class="mt-1 text-xs text-muted-foreground">
+                                        by {{ scan.user.name }}
                                     </p>
                                 </div>
                             </div>

@@ -48,7 +48,6 @@ const freeTier = {
         white_label: false,
         scheduled_scans: false,
         pdf_export: false,
-        csv_export: false,
         bulk_scanning: false,
     },
 };
@@ -75,7 +74,6 @@ const featureCategories = [
     {
         name: 'Export & Integration',
         features: [
-            { name: 'CSV export', key: 'csv_export', format: 'boolean' },
             { name: 'PDF export', key: 'pdf_export', format: 'boolean' },
             { name: 'API access', key: 'api_access', format: 'boolean' },
         ],

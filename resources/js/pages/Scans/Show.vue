@@ -13,7 +13,6 @@ import {
     Code,
     MessageSquare,
     Download,
-    FileSpreadsheet,
     Loader2,
     UserCheck,
     Quote,
@@ -22,6 +21,7 @@ import {
     BookOpen,
     HelpCircle,
     Image,
+    Mail,
 } from 'lucide-vue-next';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 
@@ -29,12 +29,25 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useDateFormat } from '@/composables/useDateFormat';
 import { type BreadcrumbItem, type Scan, type PillarResult, type Recommendation } from '@/types';
+
+const { formatDate } = useDateFormat();
 
 interface Props {
     scan: Scan;
-    canExportCsv: boolean;
     canExportPdf: boolean;
+    canEmailReport: boolean;
 }
 
 const props = defineProps<Props>();
@@ -106,12 +119,49 @@ onUnmounted(() => {
     }
 });
 
-const exportCsv = () => {
-    window.location.href = `/scans/${props.scan.uuid}/export/csv`;
-};
-
 const exportPdf = () => {
     window.location.href = `/scans/${props.scan.uuid}/export/pdf`;
+};
+
+// Email report modal state
+const showEmailModal = ref(false);
+const emailAddress = ref('');
+const sendingEmail = ref(false);
+const emailError = ref('');
+const emailSuccess = ref('');
+
+const openEmailModal = () => {
+    emailAddress.value = '';
+    emailError.value = '';
+    emailSuccess.value = '';
+    showEmailModal.value = true;
+};
+
+const sendEmailReport = () => {
+    sendingEmail.value = true;
+    emailError.value = '';
+    emailSuccess.value = '';
+
+    router.post(`/scans/${props.scan.uuid}/email`, {
+        email: emailAddress.value || undefined,
+    }, {
+        preserveScroll: true,
+        onSuccess: () => {
+            emailSuccess.value = emailAddress.value
+                ? `Report sent to ${emailAddress.value}`
+                : 'Report sent to your email';
+            setTimeout(() => {
+                showEmailModal.value = false;
+                emailSuccess.value = '';
+            }, 2000);
+        },
+        onError: (errors) => {
+            emailError.value = errors.email || 'Failed to send email. Please try again.';
+        },
+        onFinish: () => {
+            sendingEmail.value = false;
+        },
+    });
 };
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -208,17 +258,6 @@ const recommendations = computed(() => {
 });
 
 const summary = computed(() => props.scan.results?.summary);
-
-const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-    });
-};
 </script>
 
 <template>
@@ -248,18 +287,19 @@ const formatDate = (dateString: string) => {
                     </a>
                     <p class="mt-1 text-xs text-muted-foreground">
                         Scanned {{ formatDate(scan.created_at) }}
+                        <span v-if="scan.user"> by {{ scan.user.name }}</span>
                     </p>
                 </div>
 
                 <div class="flex flex-wrap gap-2">
                     <template v-if="isCompleted">
-                        <Button v-if="canExportCsv" variant="outline" @click="exportCsv">
-                            <FileSpreadsheet class="mr-2 h-4 w-4" />
-                            Export CSV
-                        </Button>
                         <Button v-if="canExportPdf" variant="outline" @click="exportPdf">
                             <Download class="mr-2 h-4 w-4" />
                             Export PDF
+                        </Button>
+                        <Button v-if="canEmailReport" variant="outline" @click="openEmailModal">
+                            <Mail class="mr-2 h-4 w-4" />
+                            Email Report
                         </Button>
                         <Button variant="outline" @click="rescan" :disabled="rescanning">
                             <RefreshCw class="mr-2 h-4 w-4" :class="{ 'animate-spin': rescanning }" />
@@ -499,5 +539,56 @@ const formatDate = (dateString: string) => {
                 </Card>
             </details>
         </div>
+
+        <!-- Email Report Modal -->
+        <Dialog v-model:open="showEmailModal">
+            <DialogContent class="sm:max-w-md">
+                <DialogHeader>
+                    <DialogTitle>Email Report</DialogTitle>
+                    <DialogDescription>
+                        Send the GEO scan report as a PDF attachment. Leave blank to send to your registered email.
+                    </DialogDescription>
+                </DialogHeader>
+
+                <div class="space-y-4 py-4">
+                    <div class="space-y-2">
+                        <Label for="email">Email Address (optional)</Label>
+                        <Input
+                            id="email"
+                            v-model="emailAddress"
+                            type="email"
+                            placeholder="recipient@example.com"
+                            :disabled="sendingEmail"
+                        />
+                        <p class="text-xs text-muted-foreground">
+                            Leave empty to send to your account email.
+                        </p>
+                    </div>
+
+                    <!-- Error message -->
+                    <Alert v-if="emailError" variant="destructive">
+                        <AlertCircle class="h-4 w-4" />
+                        <AlertDescription>{{ emailError }}</AlertDescription>
+                    </Alert>
+
+                    <!-- Success message -->
+                    <Alert v-if="emailSuccess" class="border-green-500 bg-green-50 dark:bg-green-950">
+                        <CheckCircle2 class="h-4 w-4 text-green-600" />
+                        <AlertDescription class="text-green-600">{{ emailSuccess }}</AlertDescription>
+                    </Alert>
+                </div>
+
+                <DialogFooter>
+                    <Button variant="outline" @click="showEmailModal = false" :disabled="sendingEmail">
+                        Cancel
+                    </Button>
+                    <Button @click="sendEmailReport" :disabled="sendingEmail">
+                        <Loader2 v-if="sendingEmail" class="mr-2 h-4 w-4 animate-spin" />
+                        <Mail v-else class="mr-2 h-4 w-4" />
+                        {{ sendingEmail ? 'Sending...' : 'Send Report' }}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     </AppLayout>
 </template>

@@ -19,6 +19,17 @@ function safeNumber($value, $default = 0) {
     if (is_numeric($value)) return $value;
     return $default;
 }
+
+// Get white label settings with defaults
+$wl = $whiteLabel ?? [];
+$primaryColor = $wl['primary_color'] ?? '#6366f1';
+$secondaryColor = $wl['secondary_color'] ?? '#8b5cf6';
+$companyName = $wl['company_name'] ?? config('app.name', 'GeoSource.ai');
+$logoPath = $wl['logo_path'] ?? null;
+$reportFooter = $wl['report_footer'] ?? null;
+$contactEmail = $wl['contact_email'] ?? null;
+$websiteUrl = $wl['website_url'] ?? null;
+$isWhiteLabeled = $wl['enabled'] ?? false;
 @endphp
 <!DOCTYPE html>
 <html>
@@ -42,12 +53,17 @@ function safeNumber($value, $default = 0) {
             text-align: center;
             margin-bottom: 25px;
             padding-bottom: 15px;
-            border-bottom: 3px solid #6366f1;
+            border-bottom: 3px solid {{ $primaryColor }};
+        }
+        .header-logo {
+            max-height: 50px;
+            max-width: 200px;
+            margin-bottom: 8px;
         }
         .logo {
             font-size: 28px;
             font-weight: bold;
-            color: #6366f1;
+            color: {{ $primaryColor }};
             margin-bottom: 3px;
         }
         .tagline {
@@ -68,7 +84,7 @@ function safeNumber($value, $default = 0) {
             margin-bottom: 10px;
             padding: 8px 12px;
             background-color: #f3f4f6;
-            border-left: 4px solid #6366f1;
+            border-left: 4px solid {{ $primaryColor }};
         }
         h3 {
             font-size: 12px;
@@ -113,7 +129,7 @@ function safeNumber($value, $default = 0) {
             width: 35%;
             text-align: center;
             padding: 20px;
-            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            background: linear-gradient(135deg, {{ $primaryColor }} 0%, {{ $secondaryColor }} 100%);
             border-radius: 10px;
             color: white;
             vertical-align: middle;
@@ -253,7 +269,7 @@ function safeNumber($value, $default = 0) {
         .pillar-header-score {
             float: right;
             font-weight: bold;
-            color: #6366f1;
+            color: {{ $primaryColor }};
         }
         .pillar-body {
             padding: 12px;
@@ -314,7 +330,7 @@ function safeNumber($value, $default = 0) {
             font-size: 9px;
         }
         .breakdown-item strong {
-            color: #6366f1;
+            color: {{ $primaryColor }};
         }
         .recommendation {
             padding: 10px 12px;
@@ -439,7 +455,15 @@ function safeNumber($value, $default = 0) {
 <body>
     <!-- Header -->
     <div class="header">
-        <div class="logo">GeoSource.ai</div>
+        @if($logoPath && file_exists($logoPath))
+            @php
+                $logoData = base64_encode(file_get_contents($logoPath));
+                $logoMime = mime_content_type($logoPath);
+            @endphp
+            <img src="data:{{ $logoMime }};base64,{{ $logoData }}" alt="{{ $companyName }}" class="header-logo">
+        @else
+            <div class="logo">{{ $companyName }}</div>
+        @endif
         <div class="tagline">Generative Engine Optimization Analysis</div>
         <h1>Comprehensive GEO Scan Report</h1>
     </div>
@@ -959,6 +983,15 @@ function safeNumber($value, $default = 0) {
         The following recommendations are prioritized based on their potential impact on your GEO score.
     </p>
 
+    @if(!empty($recommendationsLimited) && $recommendationsLimited)
+    <div style="background-color: #fef3c7; border: 1px solid #f59e0b; padding: 10px 12px; border-radius: 4px; margin-bottom: 15px;">
+        <p style="color: #92400e; font-size: 10px; margin: 0;">
+            <strong>Note:</strong> Showing {{ count($recommendations) }} of {{ $recommendationsTotal ?? count($recommendations) }} recommendations.
+            Upgrade to Pro or Agency plan to see all recommendations.
+        </p>
+    </div>
+    @endif
+
     @foreach($recommendations as $rec)
     <div class="recommendation {{ $rec['priority'] ?? 'medium' }}">
         <div class="recommendation-header">
@@ -981,8 +1014,22 @@ function safeNumber($value, $default = 0) {
 
     <!-- Footer -->
     <div class="footer">
-        <p><strong>GeoSource.ai</strong> - Generative Engine Optimization Platform</p>
-        <p>Report generated on {{ now()->format('F j, Y \a\t g:i A') }}</p>
+        @if($isWhiteLabeled)
+            <p><strong>{{ $companyName }}</strong></p>
+            @if($contactEmail || $websiteUrl)
+            <p>
+                @if($contactEmail){{ $contactEmail }}@endif
+                @if($contactEmail && $websiteUrl) | @endif
+                @if($websiteUrl){{ $websiteUrl }}@endif
+            </p>
+            @endif
+            @if($reportFooter)
+            <p style="margin-top: 8px; font-style: italic;">{{ $reportFooter }}</p>
+            @endif
+        @else
+            <p><strong>GeoSource.ai</strong> - Generative Engine Optimization Platform</p>
+        @endif
+        <p style="margin-top: 5px;">Report generated on {{ now()->format('F j, Y \a\t g:i A') }}</p>
         <p style="margin-top: 8px;">This report provides actionable insights for improving your content's visibility in AI-powered search engines including ChatGPT, Perplexity, Claude, and Google AI Overviews.</p>
     </div>
 </body>

@@ -46,4 +46,22 @@ class TeamPolicy
     {
         return $team->isAdmin($user);
     }
+
+    /**
+     * Determine whether the user can invite new members.
+     * Blocked when team is over seat limit due to subscription downgrade.
+     */
+    public function inviteMembers(User $user, Team $team): bool
+    {
+        if (! $team->isAdmin($user)) {
+            return false;
+        }
+
+        // Block invitations when team is over seat limit
+        if ($team->isOverSeatLimit()) {
+            return false;
+        }
+
+        return true;
+    }
 }

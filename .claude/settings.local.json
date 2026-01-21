@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(composer lint:*)"
+      "Bash(composer lint:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)"
     ]
   }
 }

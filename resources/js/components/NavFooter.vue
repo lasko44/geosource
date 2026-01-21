@@ -30,6 +30,7 @@ defineProps<Props>();
                     >
                         <a
                             :href="toUrl(item.href)"
+                            :target="item.target || '_self'"
                             rel="noopener noreferrer"
                         >
                             <component :is="item.icon" />

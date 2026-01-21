@@ -26,6 +26,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'timezone',
     ];
 
     /**
@@ -37,10 +38,16 @@ class User extends Authenticatable
         'password',
         'two_factor_secret',
         'two_factor_recovery_codes',
+        'two_factor_confirmed_at',
         'remember_token',
         'stripe_id',
         'pm_type',
         'pm_last_four',
+        'trial_ends_at',
+        'email_verified_at',
+        'is_admin',
+        'created_at',
+        'updated_at',
     ];
 
     /**

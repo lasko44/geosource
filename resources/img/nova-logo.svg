@@ -1,0 +1,8 @@
+<svg width="200" height="40" viewBox="0 0 200 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Globe Icon -->
+    <circle cx="20" cy="20" r="14" stroke="#8B5CF6" stroke-width="2.5"/>
+    <path d="M20 6a20 20 0 0 0 0 28 20 20 0 0 0 0-28" stroke="#8B5CF6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M6 20h28" stroke="#8B5CF6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- GEOSource Text -->
+    <text x="45" y="26" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="600" fill="#8B5CF6">GEOSource</text>
+</svg>
