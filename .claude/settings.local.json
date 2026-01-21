@@ -3,7 +3,10 @@
     "allow": [
       "Bash(composer lint:*)",
       "Bash(grep:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(php artisan cache:clear:*)",
+      "Bash(php artisan config:clear:*)",
+      "Bash(php artisan:*)"
     ]
   }
 }
