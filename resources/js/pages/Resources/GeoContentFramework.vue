@@ -17,6 +17,7 @@ import {
     Layers,
     Brain,
     Menu,
+    Calendar,
 } from 'lucide-vue-next';
 import {
     DropdownMenu,
@@ -25,6 +26,8 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
+
+const publishedDate = new Date('2026-01-18').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
 const frameworkPillars = [
     {
@@ -77,8 +80,8 @@ const jsonLd = {
     headline: 'The GeoSource.ai GEO Content Framework',
     description: 'A structured framework designed specifically for generative AI systems. Learn the four pillars: Structured Knowledge, Topic Authority, Machine-Readable Formatting, and High-Confidence Answerability.',
     url: 'https://geosource.ai/resources/geo-content-framework',
-    datePublished: '2025-01-18',
-    dateModified: '2025-01-18',
+    datePublished: '2026-01-18',
+    dateModified: '2026-01-18',
     author: {
         '@type': 'Organization',
         name: 'GeoSource.ai',
@@ -243,6 +246,10 @@ const faqJsonLd = {
                         <p class="mt-4 text-lg text-muted-foreground">
                             A structured approach designed specifically for generative AI systems.
                         </p>
+                        <div class="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+                            <Calendar class="h-4 w-4" />
+                            <span>{{ publishedDate }}</span>
+                        </div>
                     </header>
 
                     <!-- Introduction -->

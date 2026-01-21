@@ -15,6 +15,7 @@ import {
     Mail,
     MessageCircleQuestion,
     ListChecks,
+    Calendar,
 } from 'lucide-vue-next';
 import {
     DropdownMenu,
@@ -23,6 +24,8 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
+
+const publishedDate = new Date('2026-01-20').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
 const aiRetrievalBasis = [
     'Implied questions',
@@ -64,8 +67,8 @@ const jsonLd = {
     headline: 'Question Coverage and GEO',
     description: 'Learn how comprehensive question coverage improves AI retrieval and how to structure content that answers what users and AI systems are asking.',
     url: 'https://geosource.ai/resources/question-coverage-for-geo',
-    datePublished: '2025-01-20',
-    dateModified: '2025-01-20',
+    datePublished: '2026-01-20',
+    dateModified: '2026-01-20',
     author: {
         '@type': 'Organization',
         name: 'GeoSource.ai',
@@ -216,6 +219,10 @@ const faqJsonLd = {
                         <p class="mt-4 text-lg text-muted-foreground">
                             How answering user questions directly improves AI retrieval and citation probability.
                         </p>
+                        <div class="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+                            <Calendar class="h-4 w-4" />
+                            <span>{{ publishedDate }}</span>
+                        </div>
                     </header>
 
                     <!-- Intro with required links -->

@@ -29,6 +29,7 @@ import {
     Type,
     Image,
     Mail,
+    Calendar,
 } from 'lucide-vue-next';
 import {
     DropdownMenu,
@@ -37,6 +38,8 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
+
+const publishedDate = new Date('2026-01-18').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
 // Free Tier Pillars (100 points)
 const freePillars = [
@@ -246,8 +249,8 @@ const articleJsonLd = {
     headline: 'GEO Optimization Checklist - Step-by-Step Guide',
     description: 'A comprehensive checklist for optimizing your website for generative AI systems. Improve your GEO Score across 12 pillars with actionable steps.',
     url: 'https://geosource.ai/geo-optimization-checklist',
-    datePublished: '2025-01-18',
-    dateModified: '2025-01-20',
+    datePublished: '2026-01-18',
+    dateModified: '2026-01-20',
     author: {
         '@type': 'Organization',
         name: 'GeoSource.ai',
@@ -417,6 +420,10 @@ const faqJsonLd = {
                         <p class="mt-4 text-lg text-muted-foreground">
                             A step-by-step guide to optimizing your website for generative AI systems.
                         </p>
+                        <div class="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+                            <Calendar class="h-4 w-4" />
+                            <span>{{ publishedDate }}</span>
+                        </div>
                     </header>
 
                     <!-- Introduction -->

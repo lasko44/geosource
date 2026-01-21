@@ -15,6 +15,7 @@ import {
     XCircle,
     Lightbulb,
     Menu,
+    Calendar,
 } from 'lucide-vue-next';
 import {
     DropdownMenu,
@@ -23,6 +24,8 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
+
+const publishedDate = new Date('2026-01-18').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
 const keyDifferences = [
     { area: 'Output', seo: 'Ranked links', geo: 'Generated answers' },
@@ -52,8 +55,8 @@ const jsonLd = {
     headline: 'GEO vs SEO: What\'s the Difference?',
     description: 'Understand the key differences between traditional SEO and Generative Engine Optimization. Learn why SEO alone is no longer enough.',
     url: 'https://geosource.ai/resources/geo-vs-seo',
-    datePublished: '2025-01-18',
-    dateModified: '2025-01-18',
+    datePublished: '2026-01-18',
+    dateModified: '2026-01-18',
     author: {
         '@type': 'Organization',
         name: 'GeoSource.ai',
@@ -218,6 +221,10 @@ const faqJsonLd = {
                         <p class="mt-4 text-lg text-muted-foreground">
                             Understanding why traditional search optimization is no longer enough.
                         </p>
+                        <div class="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+                            <Calendar class="h-4 w-4" />
+                            <span>{{ publishedDate }}</span>
+                        </div>
                     </header>
 
                     <!-- Core Difference -->

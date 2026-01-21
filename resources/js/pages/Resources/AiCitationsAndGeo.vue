@@ -14,6 +14,7 @@ import {
     Menu,
     Mail,
     XCircle,
+    Calendar,
 } from 'lucide-vue-next';
 import {
     DropdownMenu,
@@ -22,6 +23,8 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
+
+const publishedDate = new Date('2026-01-20').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
 const citationFactors = [
     'Clear explanations',
@@ -58,8 +61,8 @@ const jsonLd = {
     headline: 'Citations and GEO: How AI Chooses Sources',
     description: 'Learn how AI systems decide which sources to cite in generated answers and how to optimize your content for citation readiness in GEO.',
     url: 'https://geosource.ai/resources/ai-citations-and-geo',
-    datePublished: '2025-01-20',
-    dateModified: '2025-01-20',
+    datePublished: '2026-01-20',
+    dateModified: '2026-01-20',
     author: {
         '@type': 'Organization',
         name: 'GeoSource.ai',
@@ -210,6 +213,10 @@ const faqJsonLd = {
                         <p class="mt-4 text-lg text-muted-foreground">
                             Understanding what makes AI systems cite your content in generated answers.
                         </p>
+                        <div class="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+                            <Calendar class="h-4 w-4" />
+                            <span>{{ publishedDate }}</span>
+                        </div>
                     </header>
 
                     <!-- Intro with required links -->

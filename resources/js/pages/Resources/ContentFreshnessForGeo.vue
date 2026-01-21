@@ -24,6 +24,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
 
+const publishedDate = new Date('2026-01-20').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
 const aiPreferences = [
     'Updated explanations',
     'Recent examples',
@@ -57,8 +59,8 @@ const jsonLd = {
     headline: 'Content Freshness and GEO',
     description: 'Learn how content freshness signals reliability to AI systems and how to maintain your content for better GEO performance.',
     url: 'https://geosource.ai/resources/content-freshness-for-geo',
-    datePublished: '2025-01-20',
-    dateModified: '2025-01-20',
+    datePublished: '2026-01-20',
+    dateModified: '2026-01-20',
     author: {
         '@type': 'Organization',
         name: 'GeoSource.ai',
@@ -209,6 +211,10 @@ const faqJsonLd = {
                         <p class="mt-4 text-lg text-muted-foreground">
                             How maintaining current content signals reliability and credibility to AI systems.
                         </p>
+                        <div class="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+                            <Calendar class="h-4 w-4" />
+                            <span>{{ publishedDate }}</span>
+                        </div>
                     </header>
 
                     <!-- Intro with required links -->

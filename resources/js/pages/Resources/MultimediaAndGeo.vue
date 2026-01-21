@@ -16,6 +16,7 @@ import {
     Video,
     FileText,
     XCircle,
+    Calendar,
 } from 'lucide-vue-next';
 import {
     DropdownMenu,
@@ -24,6 +25,8 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
+
+const publishedDate = new Date('2026-01-20').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
 const multimediaBenefits = [
     'Reinforcing topical relevance',
@@ -58,8 +61,8 @@ const jsonLd = {
     headline: 'Multimedia and GEO',
     description: 'Learn how multimedia content supports GEO and how to optimize images, videos, and other media for AI systems.',
     url: 'https://geosource.ai/resources/multimedia-and-geo',
-    datePublished: '2025-01-20',
-    dateModified: '2025-01-20',
+    datePublished: '2026-01-20',
+    dateModified: '2026-01-20',
     author: {
         '@type': 'Organization',
         name: 'GeoSource.ai',
@@ -210,6 +213,10 @@ const faqJsonLd = {
                         <p class="mt-4 text-lg text-muted-foreground">
                             How images, videos, and other media support AI understanding when paired with text.
                         </p>
+                        <div class="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+                            <Calendar class="h-4 w-4" />
+                            <span>{{ publishedDate }}</span>
+                        </div>
                     </header>
 
                     <!-- Intro with required links -->

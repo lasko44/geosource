@@ -32,6 +32,7 @@ import {
     Type,
     Image,
     Mail,
+    Calendar,
 } from 'lucide-vue-next';
 import {
     DropdownMenu,
@@ -40,6 +41,8 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
+
+const publishedDate = new Date('2026-01-18').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
 // Free Tier Pillars (100 points max)
 const freePillars = [
@@ -166,8 +169,8 @@ const jsonLd = {
     headline: 'GEO Score Explained - How GeoSource.ai Measures AI Readiness',
     description: 'A comprehensive guide to understanding GEO Scores. Learn what factors determine your score, how grades are calculated, and why GEO differs from SEO.',
     url: 'https://geosource.ai/geo-score-explained',
-    datePublished: '2025-01-18',
-    dateModified: '2025-01-18',
+    datePublished: '2026-01-18',
+    dateModified: '2026-01-18',
     author: {
         '@type': 'Organization',
         name: 'GeoSource.ai',
@@ -345,6 +348,10 @@ const faqJsonLd = {
                         <p class="mt-4 text-lg text-muted-foreground">
                             How GeoSource.ai measures your website's AI comprehension readiness.
                         </p>
+                        <div class="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+                            <Calendar class="h-4 w-4" />
+                            <span>{{ publishedDate }}</span>
+                        </div>
                     </header>
 
                     <!-- Definition -->

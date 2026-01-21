@@ -17,6 +17,7 @@ import {
     Code,
     Search,
     Zap,
+    Calendar,
 } from 'lucide-vue-next';
 import {
     DropdownMenu,
@@ -25,6 +26,8 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
+
+const publishedDate = new Date('2026-01-20').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
 const keyBenefits = [
     {
@@ -78,8 +81,8 @@ const jsonLd = {
     headline: 'Why llms.txt Matters for Generative Engine Optimization (GEO)',
     description: 'Learn how llms.txt files help AI systems understand, discover, and cite your website content. A comprehensive guide to implementing llms.txt for better AI visibility.',
     url: 'https://geosource.ai/resources/why-llms-txt-matters',
-    datePublished: '2025-01-20',
-    dateModified: '2025-01-20',
+    datePublished: '2026-01-20',
+    dateModified: '2026-01-20',
     author: {
         '@type': 'Organization',
         name: 'GeoSource.ai',
@@ -257,6 +260,10 @@ const faqJsonLd = {
                         <p class="mt-4 text-lg text-muted-foreground">
                             How a simple text file can dramatically improve your site's AI discoverability and citation potential.
                         </p>
+                        <div class="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+                            <Calendar class="h-4 w-4" />
+                            <span>{{ publishedDate }}</span>
+                        </div>
                     </header>
 
                     <!-- Definition Section -->

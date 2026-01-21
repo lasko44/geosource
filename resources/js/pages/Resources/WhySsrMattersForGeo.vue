@@ -19,6 +19,7 @@ import {
     Zap,
     XCircle,
     AlertTriangle,
+    Calendar,
 } from 'lucide-vue-next';
 import {
     DropdownMenu,
@@ -27,6 +28,8 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
+
+const publishedDate = new Date('2026-01-20').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
 const howLlmsAccessContent = [
     {
@@ -115,8 +118,8 @@ const jsonLd = {
     headline: 'Why Server-Side Rendering (SSR) Matters for GEO and AI Visibility',
     description: 'Learn why Server-Side Rendering is essential for Generative Engine Optimization. Understand how LLMs access content and why CSR sites are invisible to AI search.',
     url: 'https://geosource.ai/resources/why-ssr-matters-for-geo',
-    datePublished: '2025-01-20',
-    dateModified: '2025-01-20',
+    datePublished: '2026-01-20',
+    dateModified: '2026-01-20',
     author: {
         '@type': 'Organization',
         name: 'GeoSource.ai',
@@ -303,6 +306,10 @@ const faqJsonLd = {
                         <p class="mt-4 text-lg text-muted-foreground">
                             Understanding why your rendering strategy is critical for AI discoverability and citation.
                         </p>
+                        <div class="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+                            <Calendar class="h-4 w-4" />
+                            <span>{{ publishedDate }}</span>
+                        </div>
                     </header>
 
                     <!-- Definition Section -->

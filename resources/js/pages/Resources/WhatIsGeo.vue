@@ -16,7 +16,9 @@ import {
     FileText,
     Database,
     Menu,
+    Calendar,
 } from 'lucide-vue-next';
+
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -24,6 +26,11 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
+
+const publishedDate = new Date('2026-01-18').toLocaleDateString('en-US', {
+    month: 'long',
+    year: 'numeric',
+});
 
 const coreGoals = [
     'Improve AI comprehension',
@@ -52,8 +59,8 @@ const jsonLd = {
     headline: 'What Is Generative Engine Optimization (GEO)?',
     description: 'Generative Engine Optimization (GEO) is the practice of optimizing digital content so it can be accurately understood, trusted, and cited by generative AI systems.',
     url: 'https://geosource.ai/resources/what-is-geo',
-    datePublished: '2025-01-18',
-    dateModified: '2025-01-18',
+    datePublished: '2026-01-18',
+    dateModified: '2026-01-18',
     author: {
         '@type': 'Organization',
         name: 'GeoSource.ai',
@@ -224,6 +231,10 @@ const faqJsonLd = {
                         <p class="mt-4 text-lg text-muted-foreground">
                             The complete guide to understanding GEO and why it matters for AI visibility.
                         </p>
+                        <div class="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+                            <Calendar class="h-4 w-4" />
+                            <span>{{ publishedDate }}</span>
+                        </div>
                     </header>
 
                     <!-- Definition Section -->

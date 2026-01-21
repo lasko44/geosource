@@ -17,6 +17,7 @@ import {
     Lightbulb,
     Target,
     Menu,
+    Calendar,
 } from 'lucide-vue-next';
 import {
     DropdownMenu,
@@ -25,6 +26,8 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
+
+const publishedDate = new Date('2026-01-18').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
 const citationSignals = [
     { signal: 'Direct definitions', description: '"X is defined as…"' },
@@ -59,8 +62,8 @@ const jsonLd = {
     headline: 'How Large Language Models Choose Which Sources to Cite',
     description: 'Discover the signals LLMs use to select high-confidence sources for citations. Learn why smaller sites can outperform big brands.',
     url: 'https://geosource.ai/resources/how-llms-cite-sources',
-    datePublished: '2025-01-18',
-    dateModified: '2025-01-18',
+    datePublished: '2026-01-18',
+    dateModified: '2026-01-18',
     author: {
         '@type': 'Organization',
         name: 'GeoSource.ai',
@@ -225,6 +228,10 @@ const faqJsonLd = {
                         <p class="mt-4 text-lg text-muted-foreground">
                             Understanding the citation selection process of AI systems.
                         </p>
+                        <div class="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+                            <Calendar class="h-4 w-4" />
+                            <span>{{ publishedDate }}</span>
+                        </div>
                     </header>
 
                     <!-- Key Point -->

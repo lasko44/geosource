@@ -24,6 +24,7 @@ import {
     MessageSquare,
     Building2,
     Menu,
+    Calendar,
 } from 'lucide-vue-next';
 import {
     DropdownMenu,
@@ -32,6 +33,8 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
+
+const publishedDate = new Date('2026-01-18').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
 const visibilitySignals = [
     { signal: 'Content clarity', description: 'How clearly your content explains concepts', icon: FileText },
@@ -73,8 +76,8 @@ const jsonLd = {
     headline: 'AI Search Visibility Guide - The Complete Resource',
     description: 'A comprehensive guide to AI search visibility. Learn how AI search works, the difference between GEO and SEO, visibility signals, and how to optimize for AI citation.',
     url: 'https://geosource.ai/ai-search-visibility-guide',
-    datePublished: '2025-01-18',
-    dateModified: '2025-01-18',
+    datePublished: '2026-01-18',
+    dateModified: '2026-01-18',
     author: {
         '@type': 'Organization',
         name: 'GeoSource.ai',
@@ -257,6 +260,10 @@ const faqJsonLd = {
                         <p class="mt-4 text-lg text-muted-foreground">
                             The complete resource for understanding and optimizing your presence in AI-generated answers.
                         </p>
+                        <div class="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+                            <Calendar class="h-4 w-4" />
+                            <span>{{ publishedDate }}</span>
+                        </div>
                     </header>
 
                     <!-- Table of Contents -->

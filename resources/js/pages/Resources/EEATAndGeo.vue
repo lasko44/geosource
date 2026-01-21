@@ -17,6 +17,7 @@ import {
     Shield,
     BookOpen,
     Target,
+    Calendar,
 } from 'lucide-vue-next';
 import {
     DropdownMenu,
@@ -25,6 +26,8 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
+
+const publishedDate = new Date('2026-01-20').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
 const eeatSignals = [
     {
@@ -84,8 +87,8 @@ const jsonLd = {
     headline: 'E-E-A-T and Generative Engine Optimization (GEO)',
     description: 'Learn how Experience, Expertise, Authoritativeness, and Trustworthiness (E-E-A-T) signals impact AI citation decisions and how to optimize for them in GEO.',
     url: 'https://geosource.ai/resources/e-e-a-t-and-geo',
-    datePublished: '2025-01-20',
-    dateModified: '2025-01-20',
+    datePublished: '2026-01-20',
+    dateModified: '2026-01-20',
     author: {
         '@type': 'Organization',
         name: 'GeoSource.ai',
@@ -241,6 +244,10 @@ const faqJsonLd = {
                         <p class="mt-4 text-lg text-muted-foreground">
                             How Experience, Expertise, Authoritativeness, and Trustworthiness signals help AI systems determine citation confidence.
                         </p>
+                        <div class="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+                            <Calendar class="h-4 w-4" />
+                            <span>{{ publishedDate }}</span>
+                        </div>
                     </header>
 
                     <!-- Intro with required links -->

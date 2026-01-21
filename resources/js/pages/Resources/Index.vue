@@ -26,6 +26,7 @@ import {
     Type,
     HelpCircle,
     Image,
+    Calendar,
 } from 'lucide-vue-next';
 import {
     DropdownMenu,
@@ -41,6 +42,7 @@ const articles = [
         description: 'Learn the definition, core principles, and goals of GEO — the practice of optimizing content for AI systems.',
         icon: Brain,
         badge: 'Foundation',
+        date: 'January 2026',
     },
     {
         slug: 'geo-vs-seo',
@@ -48,6 +50,7 @@ const articles = [
         description: 'Understand the key differences between traditional SEO and Generative Engine Optimization.',
         icon: Scale,
         badge: 'Comparison',
+        date: 'January 2026',
     },
     {
         slug: 'how-ai-search-works',
@@ -55,6 +58,7 @@ const articles = [
         description: 'Explore the mechanics of generative AI search including RAG, vector embeddings, and source selection.',
         icon: Search,
         badge: 'Technical',
+        date: 'January 2026',
     },
     {
         slug: 'how-llms-cite-sources',
@@ -62,6 +66,7 @@ const articles = [
         description: 'Discover the signals LLMs use to select high-confidence sources for citations.',
         icon: Quote,
         badge: 'Deep Dive',
+        date: 'January 2026',
     },
     {
         slug: 'what-is-a-geo-score',
@@ -69,6 +74,7 @@ const articles = [
         description: 'Learn how GEO Scores measure AI comprehension readiness and what factors are evaluated.',
         icon: BarChart3,
         badge: 'Metrics',
+        date: 'January 2026',
     },
     {
         slug: 'geo-content-framework',
@@ -76,6 +82,7 @@ const articles = [
         description: 'A structured framework designed specifically for generative AI systems.',
         icon: FileText,
         badge: 'Framework',
+        date: 'January 2026',
     },
     {
         slug: 'why-llms-txt-matters',
@@ -83,6 +90,7 @@ const articles = [
         description: 'Learn how llms.txt files help AI systems understand, discover, and cite your website content.',
         icon: FileText,
         badge: 'Technical',
+        date: 'January 2026',
     },
     {
         slug: 'why-ssr-matters-for-geo',
@@ -90,6 +98,7 @@ const articles = [
         description: 'Understand why SSR is essential for AI visibility and how LLMs access your content.',
         icon: Server,
         badge: 'Technical',
+        date: 'January 2026',
     },
     {
         slug: 'e-e-a-t-and-geo',
@@ -97,6 +106,7 @@ const articles = [
         description: 'Learn how Experience, Expertise, Authoritativeness, and Trustworthiness influence AI citation decisions.',
         icon: UserCheck,
         badge: 'Trust Signals',
+        date: 'January 2026',
     },
     {
         slug: 'ai-citations-and-geo',
@@ -104,6 +114,7 @@ const articles = [
         description: 'Discover how to optimize your content structure to become a preferred citation source for AI systems.',
         icon: Quote,
         badge: 'Citations',
+        date: 'January 2026',
     },
     {
         slug: 'ai-accessibility-for-geo',
@@ -111,6 +122,7 @@ const articles = [
         description: 'Ensure your content is technically accessible and easily consumable by AI crawlers and LLMs.',
         icon: Bot,
         badge: 'Technical',
+        date: 'January 2026',
     },
     {
         slug: 'content-freshness-for-geo',
@@ -118,6 +130,7 @@ const articles = [
         description: 'Understand how content freshness and regular updates impact your visibility in AI-generated responses.',
         icon: Clock,
         badge: 'Content Strategy',
+        date: 'January 2026',
     },
     {
         slug: 'readability-and-geo',
@@ -125,6 +138,7 @@ const articles = [
         description: 'Learn how clear, structured writing helps LLMs understand and accurately represent your content.',
         icon: Type,
         badge: 'Content Quality',
+        date: 'January 2026',
     },
     {
         slug: 'question-coverage-for-geo',
@@ -132,6 +146,7 @@ const articles = [
         description: 'Optimize your content to directly answer the questions users ask AI search engines.',
         icon: HelpCircle,
         badge: 'Content Strategy',
+        date: 'January 2026',
     },
     {
         slug: 'multimedia-and-geo',
@@ -139,6 +154,7 @@ const articles = [
         description: 'Learn how images, videos, and other media can enhance your GEO through proper optimization.',
         icon: Image,
         badge: 'Media',
+        date: 'January 2026',
     },
 ];
 
@@ -369,10 +385,16 @@ const jsonLd = {
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <span class="inline-flex items-center text-sm font-medium text-primary">
-                                        Read article
-                                        <ArrowRight class="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                                    </span>
+                                    <div class="flex items-center justify-between">
+                                        <span class="inline-flex items-center text-sm font-medium text-primary">
+                                            Read article
+                                            <ArrowRight class="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                                        </span>
+                                        <span class="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                                            <Calendar class="h-3 w-3" />
+                                            {{ article.date }}
+                                        </span>
+                                    </div>
                                 </CardContent>
                             </Card>
                         </Link>

@@ -18,6 +18,7 @@ import {
     CheckCircle,
     XCircle,
     Menu,
+    Calendar,
 } from 'lucide-vue-next';
 import {
     DropdownMenu,
@@ -26,6 +27,8 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
+
+const publishedDate = new Date('2026-01-18').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
 const aiComponents = [
     { icon: Database, title: 'Pre-trained data', description: 'Knowledge learned during model training' },
@@ -64,8 +67,8 @@ const jsonLd = {
     headline: 'How AI Search Engines Actually Work',
     description: 'Explore the mechanics of generative AI search including RAG, vector embeddings, and source selection. Learn why keyword ranking does not apply.',
     url: 'https://geosource.ai/resources/how-ai-search-works',
-    datePublished: '2025-01-18',
-    dateModified: '2025-01-18',
+    datePublished: '2026-01-18',
+    dateModified: '2026-01-18',
     author: {
         '@type': 'Organization',
         name: 'GeoSource.ai',
@@ -230,6 +233,10 @@ const faqJsonLd = {
                         <p class="mt-4 text-lg text-muted-foreground">
                             Understanding the technology behind generative AI search systems.
                         </p>
+                        <div class="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+                            <Calendar class="h-4 w-4" />
+                            <span>{{ publishedDate }}</span>
+                        </div>
                     </header>
 
                     <!-- Key Difference -->

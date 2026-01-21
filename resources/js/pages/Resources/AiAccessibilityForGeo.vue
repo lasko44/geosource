@@ -15,6 +15,7 @@ import {
     Mail,
     XCircle,
     AlertTriangle,
+    Calendar,
 } from 'lucide-vue-next';
 import {
     DropdownMenu,
@@ -23,6 +24,8 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
+
+const publishedDate = new Date('2026-01-20').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
 const accessibilityBarriers = [
     'Client-side rendering (JavaScript-only content)',
@@ -59,8 +62,8 @@ const jsonLd = {
     headline: 'AI Accessibility and GEO',
     description: 'Learn how AI accessibility affects your GEO performance and how to ensure AI systems can properly access and understand your content.',
     url: 'https://geosource.ai/resources/ai-accessibility-for-geo',
-    datePublished: '2025-01-20',
-    dateModified: '2025-01-20',
+    datePublished: '2026-01-20',
+    dateModified: '2026-01-20',
     author: {
         '@type': 'Organization',
         name: 'GeoSource.ai',
@@ -211,6 +214,10 @@ const faqJsonLd = {
                         <p class="mt-4 text-lg text-muted-foreground">
                             Ensuring AI systems can access and understand your content is the foundation of GEO success.
                         </p>
+                        <div class="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+                            <Calendar class="h-4 w-4" />
+                            <span>{{ publishedDate }}</span>
+                        </div>
                     </header>
 
                     <!-- Intro with required links -->
