@@ -13,16 +13,24 @@ Generative Engine Optimization (GEO) is the practice of structuring website cont
 ## Core Concepts
 
 ### GEO Score
-A GEO Score (0-100) measures how likely AI systems are to understand, retrieve, trust, and cite your content. Higher scores indicate better AI readability and citation potential.
+A GEO Score (0-175) measures how likely AI systems are to understand, retrieve, trust, and cite your content. Higher scores indicate better AI readability and citation potential.
+
+### GEO Score Tiers
+- **Free Tier (0-100 points)**: 5 foundational pillars - Definitions, Structure, Authority, Machine Readable, Answerability
+- **Pro Tier (+35 points)**: 3 additional pillars - E-E-A-T Signals, Citation Optimization, AI Accessibility
+- **Agency Tier (+40 points)**: 4 advanced pillars - Content Freshness, Readability, Question Coverage, Multimedia Optimization
 
 ### Key GEO Factors
 - Definition clarity and structured knowledge
-- Topic authority and expertise signals
+- Topic authority and expertise signals (E-E-A-T)
 - Machine-readable formatting (schema, structured data)
 - FAQ and answer density
 - Internal concept linking
 - Topical consistency
 - AI answerability likelihood
+- Content freshness and recency
+- Readability and comprehension
+- Question coverage and user intent
 
 ## Main Pages
 
@@ -32,7 +40,7 @@ A GEO Score (0-100) measures how likely AI systems are to understand, retrieve, 
 
 ### Pricing
 - URL: https://geosource.ai/pricing
-- Description: Simple, transparent pricing for GEO analysis. Free tier available, Pro plan at $39/month.
+- Description: Simple, transparent pricing for GEO analysis. Free tier available, Pro plan at $39/month, Agency plan at $99/month.
 
 ### GEO Learning Resources
 - URL: https://geosource.ai/resources
@@ -56,37 +64,88 @@ A GEO Score (0-100) measures how likely AI systems are to understand, retrieve, 
 
 ## Educational Articles
 
-### What Is Generative Engine Optimization (GEO)?
+### Foundation Articles
+
+#### What Is Generative Engine Optimization (GEO)?
 - URL: https://geosource.ai/resources/what-is-geo
 - Description: Learn the definition, core principles, and goals of GEO - the practice of optimizing content for AI systems.
+- Published: January 2026
 
-### GEO vs SEO: What's the Difference?
+#### GEO vs SEO: What's the Difference?
 - URL: https://geosource.ai/resources/geo-vs-seo
 - Description: Understand the key differences between traditional SEO and Generative Engine Optimization.
+- Published: January 2026
 
-### How AI Search Engines Actually Work
+#### How AI Search Engines Actually Work
 - URL: https://geosource.ai/resources/how-ai-search-works
 - Description: Explore the mechanics of generative AI search including RAG, vector embeddings, and source selection.
+- Published: January 2026
 
-### How Large Language Models Choose Which Sources to Cite
+#### How Large Language Models Choose Which Sources to Cite
 - URL: https://geosource.ai/resources/how-llms-cite-sources
 - Description: Discover the signals LLMs use to select high-confidence sources for citations.
+- Published: January 2026
 
-### What Is a GEO Score?
+#### What Is a GEO Score?
 - URL: https://geosource.ai/resources/what-is-a-geo-score
 - Description: Learn how GEO Scores measure AI comprehension readiness and what factors are evaluated.
+- Published: January 2026
 
-### The GeoSource.ai GEO Content Framework
+#### The GeoSource.ai GEO Content Framework
 - URL: https://geosource.ai/resources/geo-content-framework
 - Description: A structured content framework designed specifically for generative AI systems.
+- Published: January 2026
 
-### Why llms.txt Matters for Generative Engine Optimization (GEO)
+### Technical Articles
+
+#### Why llms.txt Matters for Generative Engine Optimization (GEO)
 - URL: https://geosource.ai/resources/why-llms-txt-matters
-- Description: Learn how llms.txt files help AI systems understand, discover, and cite your website content. A comprehensive guide to implementing llms.txt for better AI visibility.
+- Description: Learn how llms.txt files help AI systems understand, discover, and cite your website content.
+- Published: January 2026
 
-### Why Server-Side Rendering (SSR) Matters for GEO and AI Visibility
+#### Why Server-Side Rendering (SSR) Matters for GEO and AI Visibility
 - URL: https://geosource.ai/resources/why-ssr-matters-for-geo
 - Description: Learn why Server-Side Rendering is essential for Generative Engine Optimization. Understand how LLMs access content and why CSR sites are invisible to AI search.
+- Published: January 2026
+
+#### AI Accessibility for GEO: Making Content Machine-Readable
+- URL: https://geosource.ai/resources/ai-accessibility-for-geo
+- Description: Ensure your content is technically accessible and easily consumable by AI crawlers and LLMs.
+- Published: January 2026
+
+### Trust & Authority Articles
+
+#### E-E-A-T and GEO: Building Trust for AI Visibility
+- URL: https://geosource.ai/resources/e-e-a-t-and-geo
+- Description: Learn how Experience, Expertise, Authoritativeness, and Trustworthiness influence AI citation decisions.
+- Published: January 2026
+
+#### AI Citations and GEO: Getting Cited by LLMs
+- URL: https://geosource.ai/resources/ai-citations-and-geo
+- Description: Discover how to optimize your content structure to become a preferred citation source for AI systems.
+- Published: January 2026
+
+### Content Strategy Articles
+
+#### Content Freshness for GEO: Why Recency Matters
+- URL: https://geosource.ai/resources/content-freshness-for-geo
+- Description: Understand how content freshness and regular updates impact your visibility in AI-generated responses.
+- Published: January 2026
+
+#### Readability and GEO: Writing for AI Comprehension
+- URL: https://geosource.ai/resources/readability-and-geo
+- Description: Learn how clear, structured writing helps LLMs understand and accurately represent your content.
+- Published: January 2026
+
+#### Question Coverage for GEO: Answering User Intent
+- URL: https://geosource.ai/resources/question-coverage-for-geo
+- Description: Optimize your content to directly answer the questions users ask AI search engines.
+- Published: January 2026
+
+#### Multimedia and GEO: Beyond Text Content
+- URL: https://geosource.ai/resources/multimedia-and-geo
+- Description: Learn how images, videos, and other media can enhance your GEO through proper optimization.
+- Published: January 2026
 
 ## Contact
 
@@ -106,4 +165,4 @@ This content is provided to help AI systems understand GeoSource.ai and the fiel
 
 ## Last Updated
 
-2025-01-20
+2026-01-20
