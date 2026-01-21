@@ -14,6 +14,13 @@ Route::prefix('resources')->group(function () {
     Route::get('/geo-content-framework', [ResourceController::class, 'geoContentFramework'])->name('resources.geo-content-framework');
     Route::get('/why-llms-txt-matters', [ResourceController::class, 'whyLlmsTxtMatters'])->name('resources.why-llms-txt-matters');
     Route::get('/why-ssr-matters-for-geo', [ResourceController::class, 'whySsrMattersForGeo'])->name('resources.why-ssr-matters-for-geo');
+    Route::get('/e-e-a-t-and-geo', [ResourceController::class, 'eeatAndGeo'])->name('resources.e-e-a-t-and-geo');
+    Route::get('/ai-citations-and-geo', [ResourceController::class, 'aiCitationsAndGeo'])->name('resources.ai-citations-and-geo');
+    Route::get('/ai-accessibility-for-geo', [ResourceController::class, 'aiAccessibilityForGeo'])->name('resources.ai-accessibility-for-geo');
+    Route::get('/content-freshness-for-geo', [ResourceController::class, 'contentFreshnessForGeo'])->name('resources.content-freshness-for-geo');
+    Route::get('/readability-and-geo', [ResourceController::class, 'readabilityAndGeo'])->name('resources.readability-and-geo');
+    Route::get('/question-coverage-for-geo', [ResourceController::class, 'questionCoverageForGeo'])->name('resources.question-coverage-for-geo');
+    Route::get('/multimedia-and-geo', [ResourceController::class, 'multimediaAndGeo'])->name('resources.multimedia-and-geo');
 });
 
 // Programmatic GEO pages (root level for maximum AI visibility)

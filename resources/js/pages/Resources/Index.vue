@@ -20,6 +20,12 @@ import {
     Menu,
     Mail,
     Server,
+    UserCheck,
+    Bot,
+    Clock,
+    Type,
+    HelpCircle,
+    Image,
 } from 'lucide-vue-next';
 import {
     DropdownMenu,
@@ -84,6 +90,55 @@ const articles = [
         description: 'Understand why SSR is essential for AI visibility and how LLMs access your content.',
         icon: Server,
         badge: 'Technical',
+    },
+    {
+        slug: 'e-e-a-t-and-geo',
+        title: 'E-E-A-T and GEO: Building Trust for AI Visibility',
+        description: 'Learn how Experience, Expertise, Authoritativeness, and Trustworthiness influence AI citation decisions.',
+        icon: UserCheck,
+        badge: 'Trust Signals',
+    },
+    {
+        slug: 'ai-citations-and-geo',
+        title: 'AI Citations and GEO: Getting Cited by LLMs',
+        description: 'Discover how to optimize your content structure to become a preferred citation source for AI systems.',
+        icon: Quote,
+        badge: 'Citations',
+    },
+    {
+        slug: 'ai-accessibility-for-geo',
+        title: 'AI Accessibility for GEO: Making Content Machine-Readable',
+        description: 'Ensure your content is technically accessible and easily consumable by AI crawlers and LLMs.',
+        icon: Bot,
+        badge: 'Technical',
+    },
+    {
+        slug: 'content-freshness-for-geo',
+        title: 'Content Freshness for GEO: Why Recency Matters',
+        description: 'Understand how content freshness and regular updates impact your visibility in AI-generated responses.',
+        icon: Clock,
+        badge: 'Content Strategy',
+    },
+    {
+        slug: 'readability-and-geo',
+        title: 'Readability and GEO: Writing for AI Comprehension',
+        description: 'Learn how clear, structured writing helps LLMs understand and accurately represent your content.',
+        icon: Type,
+        badge: 'Content Quality',
+    },
+    {
+        slug: 'question-coverage-for-geo',
+        title: 'Question Coverage for GEO: Answering User Intent',
+        description: 'Optimize your content to directly answer the questions users ask AI search engines.',
+        icon: HelpCircle,
+        badge: 'Content Strategy',
+    },
+    {
+        slug: 'multimedia-and-geo',
+        title: 'Multimedia and GEO: Beyond Text Content',
+        description: 'Learn how images, videos, and other media can enhance your GEO through proper optimization.',
+        icon: Image,
+        badge: 'Media',
     },
 ];
 

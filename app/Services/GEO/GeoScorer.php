@@ -8,18 +8,37 @@ use App\Services\GEO\Contracts\ScorerInterface;
  * GEO (Generative Engine Optimization) Scorer
  *
  * Orchestrates all scoring pillars to produce a comprehensive
- * GEO score (0-100) with explainable, actionable insights.
+ * GEO score with explainable, actionable insights.
  *
- * Pillars:
+ * Base Pillars (Free tier):
  * - Clear Definitions (20 points)
  * - Structured Knowledge (20 points)
  * - Topic Authority (25 points)
  * - Machine-Readable Formatting (15 points)
  * - High-Confidence Answerability (20 points)
+ *
+ * Pro Pillars (+35 points):
+ * - E-E-A-T Signals (15 points)
+ * - Citations & Sources (12 points)
+ * - AI Crawler Access (8 points)
+ *
+ * Agency Pillars (+40 points):
+ * - Content Freshness (10 points)
+ * - Readability (10 points)
+ * - Question Coverage (10 points)
+ * - Multimedia Content (10 points)
  */
 class GeoScorer
 {
     private array $scorers = [];
+
+    private array $pillarTiers = [];
+
+    public const TIER_FREE = 'free';
+
+    public const TIER_PRO = 'pro';
+
+    public const TIER_AGENCY = 'agency';
 
     public function __construct(
         ?DefinitionScorer $definitionScorer = null,
@@ -28,6 +47,7 @@ class GeoScorer
         ?MachineReadableScorer $machineReadableScorer = null,
         ?AnswerabilityScorer $answerabilityScorer = null,
     ) {
+        // Base pillars (Free tier)
         $this->scorers = [
             'definitions' => $definitionScorer ?? new DefinitionScorer,
             'structure' => $structureScorer ?? new StructureScorer,
@@ -35,6 +55,47 @@ class GeoScorer
             'machine_readable' => $machineReadableScorer ?? new MachineReadableScorer,
             'answerability' => $answerabilityScorer ?? new AnswerabilityScorer,
         ];
+
+        // Track which tier each pillar belongs to
+        $this->pillarTiers = [
+            'definitions' => self::TIER_FREE,
+            'structure' => self::TIER_FREE,
+            'authority' => self::TIER_FREE,
+            'machine_readable' => self::TIER_FREE,
+            'answerability' => self::TIER_FREE,
+        ];
+    }
+
+    /**
+     * Configure scorer for a specific plan tier.
+     */
+    public function forTier(string $tier): self
+    {
+        // Pro tier adds E-E-A-T, Citations, AI Accessibility
+        if (in_array($tier, [self::TIER_PRO, self::TIER_AGENCY])) {
+            $this->scorers['eeat'] = new EEATScorer;
+            $this->scorers['citations'] = new CitationScorer;
+            $this->scorers['ai_accessibility'] = new AIAccessibilityScorer;
+
+            $this->pillarTiers['eeat'] = self::TIER_PRO;
+            $this->pillarTiers['citations'] = self::TIER_PRO;
+            $this->pillarTiers['ai_accessibility'] = self::TIER_PRO;
+        }
+
+        // Agency tier adds Freshness, Readability, Question Coverage, Multimedia
+        if ($tier === self::TIER_AGENCY) {
+            $this->scorers['freshness'] = new FreshnessScorer;
+            $this->scorers['readability'] = new ReadabilityScorer;
+            $this->scorers['question_coverage'] = new QuestionCoverageScorer;
+            $this->scorers['multimedia'] = new MultimediaScorer;
+
+            $this->pillarTiers['freshness'] = self::TIER_AGENCY;
+            $this->pillarTiers['readability'] = self::TIER_AGENCY;
+            $this->pillarTiers['question_coverage'] = self::TIER_AGENCY;
+            $this->pillarTiers['multimedia'] = self::TIER_AGENCY;
+        }
+
+        return $this;
     }
 
     /**
@@ -58,6 +119,7 @@ class GeoScorer
                 'max_score' => $result['max_score'],
                 'percentage' => round(($result['score'] / $result['max_score']) * 100, 1),
                 'details' => $result['details'],
+                'tier' => $this->pillarTiers[$key] ?? self::TIER_FREE,
             ];
 
             $totalScore += $result['score'];
@@ -74,7 +136,7 @@ class GeoScorer
             'grade' => $this->getGrade($overallPercentage),
             'pillars' => $pillarResults,
             'recommendations' => $this->generateRecommendations($pillarResults),
-            'summary' => $this->generateSummary($overallScore, $pillarResults),
+            'summary' => $this->generateSummary($overallPercentage, $pillarResults),
             'scored_at' => now()->toISOString(),
         ];
     }
@@ -96,6 +158,7 @@ class GeoScorer
                     'max_score' => $result['max_score'],
                     'percentage' => round(($result['score'] / $result['max_score']) * 100, 1),
                     'details' => $result['details'],
+                    'tier' => $this->pillarTiers[$pillar] ?? self::TIER_FREE,
                 ];
             }
         }
@@ -117,6 +180,7 @@ class GeoScorer
             $pillarScores[$key] = [
                 'score' => $result['score'],
                 'max' => $result['max_score'],
+                'tier' => $this->pillarTiers[$key] ?? self::TIER_FREE,
             ];
             $totalScore += $result['score'];
             $maxPossible += $result['max_score'];
@@ -172,6 +236,13 @@ class GeoScorer
                 'authority' => $this->getAuthorityRecommendations($pillar),
                 'machine_readable' => $this->getMachineReadableRecommendations($pillar),
                 'answerability' => $this->getAnswerabilityRecommendations($pillar),
+                'eeat' => $this->getEEATRecommendations($pillar),
+                'citations' => $this->getCitationRecommendations($pillar),
+                'ai_accessibility' => $this->getAIAccessibilityRecommendations($pillar),
+                'freshness' => $this->getFreshnessRecommendations($pillar),
+                'readability' => $this->getReadabilityRecommendations($pillar),
+                'question_coverage' => $this->getQuestionCoverageRecommendations($pillar),
+                'multimedia' => $this->getMultimediaRecommendations($pillar),
                 default => [],
             };
 
@@ -181,6 +252,7 @@ class GeoScorer
                     'current_score' => $pillar['percentage'].'%',
                     'priority' => $percentage < 40 ? 'high' : ($percentage < 55 ? 'medium' : 'low'),
                     'actions' => $recs,
+                    'tier' => $pillar['tier'] ?? self::TIER_FREE,
                 ];
             }
         }
@@ -288,23 +360,19 @@ class GeoScorer
             $recs[] = 'Add descriptive alt text to all images';
         }
 
-        // llms.txt recommendations
         $llmsTxt = $details['llms_txt'] ?? [];
         if (! ($llmsTxt['exists'] ?? false)) {
-            $recs[] = 'Add an llms.txt file to your site root to help AI systems understand your content - include site description, key pages, and contact info';
+            $recs[] = 'Add an llms.txt file to your site root to help AI systems understand your content';
         } elseif (($llmsTxt['quality_score'] ?? 0) < 60) {
             $missingElements = [];
             if (! ($llmsTxt['has_description'] ?? false)) {
-                $missingElements[] = 'about/description section';
+                $missingElements[] = 'description';
             }
             if (! ($llmsTxt['has_pages'] ?? false)) {
-                $missingElements[] = 'key page URLs';
-            }
-            if (! ($llmsTxt['has_sitemap_reference'] ?? false)) {
-                $missingElements[] = 'sitemap reference';
+                $missingElements[] = 'page URLs';
             }
             if (! empty($missingElements)) {
-                $recs[] = 'Improve your llms.txt file by adding: '.implode(', ', $missingElements);
+                $recs[] = 'Improve llms.txt by adding: '.implode(', ', $missingElements);
             }
         }
 
@@ -339,13 +407,243 @@ class GeoScorer
         return $recs;
     }
 
+    // Pro tier recommendations
+
+    private function getEEATRecommendations(array $pillar): array
+    {
+        $recs = [];
+        $details = $pillar['details'];
+
+        $author = $details['author'] ?? [];
+        if (! ($author['has_author'] ?? false)) {
+            $recs[] = 'Add author attribution with name and link to author bio';
+        }
+        if (! ($author['has_author_bio'] ?? false)) {
+            $recs[] = 'Include an author bio section with credentials and expertise';
+        }
+
+        $trust = $details['trust_signals'] ?? [];
+        if (! ($trust['has_reviews'] ?? false) && ! ($trust['has_testimonials'] ?? false)) {
+            $recs[] = 'Add social proof like reviews, testimonials, or case studies';
+        }
+
+        $contact = $details['contact'] ?? [];
+        if (! ($contact['has_contact_page_link'] ?? false)) {
+            $recs[] = 'Ensure visible contact information or link to contact page';
+        }
+
+        $credentials = $details['credentials'] ?? [];
+        if (! ($credentials['has_expertise_claims'] ?? false)) {
+            $recs[] = 'Highlight relevant expertise, experience, or qualifications';
+        }
+
+        return $recs;
+    }
+
+    private function getCitationRecommendations(array $pillar): array
+    {
+        $recs = [];
+        $details = $pillar['details'];
+
+        $links = $details['external_links'] ?? [];
+        if (($links['authoritative_count'] ?? 0) < 2) {
+            $recs[] = 'Add links to authoritative sources (.gov, .edu, research papers, reputable publications)';
+        }
+
+        $citations = $details['citations'] ?? [];
+        if (! ($citations['has_inline_citations'] ?? false)) {
+            $recs[] = 'Use inline citations like "according to [source]" or "research shows that..."';
+        }
+
+        $stats = $details['statistics'] ?? [];
+        if (! ($stats['has_statistics'] ?? false)) {
+            $recs[] = 'Include relevant statistics and data points with sources';
+        }
+
+        $refs = $details['references'] ?? [];
+        if (! ($refs['has_reference_section'] ?? false) && ($links['total_external'] ?? 0) > 3) {
+            $recs[] = 'Consider adding a References or Sources section for credibility';
+        }
+
+        return $recs;
+    }
+
+    private function getAIAccessibilityRecommendations(array $pillar): array
+    {
+        $recs = [];
+        $details = $pillar['details'];
+
+        $robots = $details['robots_txt'] ?? [];
+        if (! ($robots['allows_all_ai'] ?? true)) {
+            $blockedBots = $robots['blocked_bots'] ?? [];
+            if (! empty($blockedBots)) {
+                $recs[] = 'Your robots.txt blocks AI crawlers: '.implode(', ', array_slice($blockedBots, 0, 3)).'. Consider allowing them for better AI visibility.';
+            }
+        }
+
+        if (! ($robots['has_sitemap'] ?? false)) {
+            $recs[] = 'Add a Sitemap reference to your robots.txt';
+        }
+
+        $meta = $details['meta_robots'] ?? [];
+        if ($meta['noindex'] ?? false) {
+            $recs[] = 'Remove noindex directive to allow indexing by AI systems';
+        }
+        if ($meta['nosnippet'] ?? false) {
+            $recs[] = 'Remove nosnippet directive to allow AI systems to use content in responses';
+        }
+
+        return $recs;
+    }
+
+    // Agency tier recommendations
+
+    private function getFreshnessRecommendations(array $pillar): array
+    {
+        $recs = [];
+        $details = $pillar['details'];
+
+        $dates = $details['dates'] ?? [];
+        if (! ($dates['has_publish_date'] ?? false)) {
+            $recs[] = 'Add a visible publication date to your content';
+        }
+
+        if (! ($dates['has_modified_date'] ?? false)) {
+            $recs[] = 'Show "Last updated" date, especially for evergreen content';
+        }
+
+        $age = $dates['age_category'] ?? 'unknown';
+        if (in_array($age, ['aging', 'stale'])) {
+            $recs[] = 'Content appears outdated - review and update with current information';
+        }
+
+        $schema = $details['schema_dates'] ?? [];
+        if (! ($schema['has_date_published'] ?? false)) {
+            $recs[] = 'Add datePublished to your Schema.org structured data';
+        }
+
+        $temporal = $details['temporal_references'] ?? [];
+        if (! ($temporal['current_year_mentioned'] ?? false)) {
+            $recs[] = 'Include current year references where appropriate (e.g., "in 2024")';
+        }
+
+        return $recs;
+    }
+
+    private function getReadabilityRecommendations(array $pillar): array
+    {
+        $recs = [];
+        $details = $pillar['details'];
+
+        $fk = $details['flesch_kincaid'] ?? [];
+        $readingLevel = $fk['reading_level'] ?? 'unknown';
+
+        if (in_array($readingLevel, ['hard', 'very_hard'])) {
+            $recs[] = 'Simplify language - aim for 8th-9th grade reading level for broader accessibility';
+        }
+
+        $sentences = $details['sentence_analysis'] ?? [];
+        if (($sentences['avg_length'] ?? 0) > 25) {
+            $recs[] = 'Break up long sentences - aim for 15-20 words per sentence on average';
+        }
+
+        if (($sentences['very_long_sentences'] ?? 0) > 3) {
+            $recs[] = 'Reduce very long sentences (35+ words) - they\'re harder for AI to parse';
+        }
+
+        $paragraphs = $details['paragraph_analysis'] ?? [];
+        if (($paragraphs['avg_length'] ?? 0) > 150) {
+            $recs[] = 'Break up long paragraphs - aim for 50-100 words per paragraph for web readability';
+        }
+
+        $words = $details['word_analysis'] ?? [];
+        if (($words['complex_ratio'] ?? 0) > 30) {
+            $recs[] = 'Reduce complex words (3+ syllables) - use simpler alternatives where possible';
+        }
+
+        return $recs;
+    }
+
+    private function getQuestionCoverageRecommendations(array $pillar): array
+    {
+        $recs = [];
+        $details = $pillar['details'];
+
+        $questions = $details['questions'] ?? [];
+        if (count($questions['heading_questions'] ?? []) < 2) {
+            $recs[] = 'Use question-format headings (e.g., "What is X?" or "How do I Y?")';
+        }
+
+        $patterns = $details['qa_patterns'] ?? [];
+        if (! ($patterns['has_faq_section'] ?? false)) {
+            $recs[] = 'Add a FAQ section to address common questions';
+        }
+
+        if (! ($patterns['has_qa_schema'] ?? false) && ($patterns['has_question_headings'] ?? false)) {
+            $recs[] = 'Add FAQPage schema markup for your Q&A content';
+        }
+
+        $anticipation = $details['anticipation'] ?? [];
+        $coverage = $anticipation['coverage_score'] ?? 0;
+        if ($coverage < 50) {
+            $missing = [];
+            if (! ($anticipation['covers_what'] ?? false)) {
+                $missing[] = '"What is..."';
+            }
+            if (! ($anticipation['covers_how'] ?? false)) {
+                $missing[] = '"How to..."';
+            }
+            if (! ($anticipation['covers_why'] ?? false)) {
+                $missing[] = '"Why..."';
+            }
+            if (! empty($missing)) {
+                $recs[] = 'Cover more question types: '.implode(', ', $missing);
+            }
+        }
+
+        return $recs;
+    }
+
+    private function getMultimediaRecommendations(array $pillar): array
+    {
+        $recs = [];
+        $details = $pillar['details'];
+
+        $images = $details['images'] ?? [];
+        if (($images['total_images'] ?? 0) < 2) {
+            $recs[] = 'Add relevant images to break up text and illustrate concepts';
+        }
+
+        if (($images['alt_quality'] ?? 'none') === 'poor' || ($images['alt_quality'] ?? 'none') === 'none') {
+            $recs[] = 'Add descriptive alt text to all images for accessibility and AI understanding';
+        }
+
+        if (($images['images_with_caption'] ?? 0) === 0 && ($images['total_images'] ?? 0) > 0) {
+            $recs[] = 'Add captions to images using <figure> and <figcaption> elements';
+        }
+
+        $tables = $details['tables'] ?? [];
+        if (! ($tables['has_tables'] ?? false)) {
+            $recs[] = 'Consider using tables to present comparative data or structured information';
+        }
+
+        $visuals = $details['visual_elements'] ?? [];
+        if (($visuals['visual_variety'] ?? 0) < 2) {
+            $recs[] = 'Add visual variety: consider diagrams, callouts, or code blocks where appropriate';
+        }
+
+        return $recs;
+    }
+
     /**
      * Generate a human-readable summary.
      */
-    private function generateSummary(float $score, array $pillarResults): array
+    private function generateSummary(float $percentage, array $pillarResults): array
     {
-        // Find strongest and weakest pillars
-        $sorted = $pillarResults;
+        // Find strongest and weakest pillars (only from base pillars for consistency)
+        $basePillars = array_filter($pillarResults, fn ($p) => ($p['tier'] ?? self::TIER_FREE) === self::TIER_FREE);
+
+        $sorted = $basePillars;
         uasort($sorted, fn ($a, $b) => $b['percentage'] <=> $a['percentage']);
 
         $strongest = array_slice($sorted, 0, 2);
@@ -355,20 +653,20 @@ class GeoScorer
         $weakestNames = array_map(fn ($p) => $p['name'], $weakest);
 
         return [
-            'overall' => $this->getOverallSummary($score),
+            'overall' => $this->getOverallSummary($percentage),
             'strengths' => $strongestNames,
             'weaknesses' => $weakestNames,
             'focus_area' => $weakestNames[0] ?? null,
         ];
     }
 
-    private function getOverallSummary(float $score): string
+    private function getOverallSummary(float $percentage): string
     {
         return match (true) {
-            $score >= 85 => 'Excellent GEO optimization. Your content is well-positioned for AI search engines.',
-            $score >= 70 => 'Good GEO score. Some improvements can further boost AI visibility.',
-            $score >= 55 => 'Moderate GEO score. Focus on the recommended improvements.',
-            $score >= 40 => 'Below average GEO score. Significant improvements needed.',
+            $percentage >= 85 => 'Excellent GEO optimization. Your content is well-positioned for AI search engines.',
+            $percentage >= 70 => 'Good GEO score. Some improvements can further boost AI visibility.',
+            $percentage >= 55 => 'Moderate GEO score. Focus on the recommended improvements.',
+            $percentage >= 40 => 'Below average GEO score. Significant improvements needed.',
             default => 'Low GEO score. Content needs substantial optimization for AI engines.',
         };
     }
@@ -384,10 +682,19 @@ class GeoScorer
     /**
      * Add a custom scorer.
      */
-    public function addScorer(string $key, ScorerInterface $scorer): self
+    public function addScorer(string $key, ScorerInterface $scorer, string $tier = self::TIER_FREE): self
     {
         $this->scorers[$key] = $scorer;
+        $this->pillarTiers[$key] = $tier;
 
         return $this;
+    }
+
+    /**
+     * Get the tier for a specific pillar.
+     */
+    public function getPillarTier(string $key): string
+    {
+        return $this->pillarTiers[$key] ?? self::TIER_FREE;
     }
 }

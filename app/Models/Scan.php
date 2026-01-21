@@ -20,6 +20,8 @@ class Scan extends Model
         'grade',
         'results',
         'status',
+        'progress_step',
+        'progress_percent',
         'error_message',
         'started_at',
         'completed_at',

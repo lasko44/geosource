@@ -108,6 +108,8 @@ export interface Scan {
     grade: string;
     results: ScanResults;
     status?: 'pending' | 'processing' | 'completed' | 'failed';
+    progress_step?: string | null;
+    progress_percent?: number;
     error_message?: string | null;
     created_at: string;
     updated_at: string;
@@ -131,6 +133,7 @@ export interface PillarResult {
     percentage: number;
     details: Record<string, unknown>;
     breakdown?: Record<string, number>;
+    tier?: 'free' | 'pro' | 'agency';
 }
 
 export interface Recommendation {
@@ -138,6 +141,7 @@ export interface Recommendation {
     current_score: string;
     priority: 'high' | 'medium' | 'low';
     actions: string[];
+    tier?: 'free' | 'pro' | 'agency';
 }
 
 export interface ScanSummary {

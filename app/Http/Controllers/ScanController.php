@@ -124,6 +124,9 @@ class ScanController extends Controller
 
         return response()->json([
             'status' => $scan->status,
+            'progress_step' => $scan->progress_step,
+            'progress_percent' => $scan->progress_percent,
+            'title' => $scan->title,
             'error_message' => $scan->error_message,
             'score' => $scan->score,
             'grade' => $scan->grade,

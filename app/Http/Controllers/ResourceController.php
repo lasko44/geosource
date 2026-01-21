@@ -71,4 +71,39 @@ class ResourceController extends Controller
     {
         return Inertia::render('Resources/WhySsrMattersForGeo');
     }
+
+    public function eeatAndGeo(): Response
+    {
+        return Inertia::render('Resources/EEATAndGeo');
+    }
+
+    public function aiCitationsAndGeo(): Response
+    {
+        return Inertia::render('Resources/AiCitationsAndGeo');
+    }
+
+    public function aiAccessibilityForGeo(): Response
+    {
+        return Inertia::render('Resources/AiAccessibilityForGeo');
+    }
+
+    public function contentFreshnessForGeo(): Response
+    {
+        return Inertia::render('Resources/ContentFreshnessForGeo');
+    }
+
+    public function readabilityAndGeo(): Response
+    {
+        return Inertia::render('Resources/ReadabilityAndGeo');
+    }
+
+    public function questionCoverageForGeo(): Response
+    {
+        return Inertia::render('Resources/QuestionCoverageForGeo');
+    }
+
+    public function multimediaAndGeo(): Response
+    {
+        return Inertia::render('Resources/MultimediaAndGeo');
+    }
 }

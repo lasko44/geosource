@@ -3,6 +3,7 @@
 namespace App\Services\GEO;
 
 use App\Services\GEO\Contracts\ScorerInterface;
+use Illuminate\Support\Facades\Http;
 
 /**
  * Scores content based on machine-readable formatting.
@@ -380,11 +381,7 @@ class MachineReadableScorer implements ScorerInterface
     }
 
     /**
-     * Analyze the presence of llms.txt file.
-     *
-     * Note: This checks for llms.txt references in the HTML content rather than
-     * making a separate HTTP request, to avoid blocking the scan.
-     * A full llms.txt fetch can be done as a separate background job if needed.
+     * Analyze the presence and quality of llms.txt file.
      */
     private function analyzeLlmsTxt(?string $url): array
     {
@@ -392,29 +389,114 @@ class MachineReadableScorer implements ScorerInterface
             'exists' => false,
             'url' => null,
             'content_length' => 0,
+            'has_title' => false,
             'has_description' => false,
             'has_pages' => false,
             'has_sitemap_reference' => false,
             'has_contact_info' => false,
+            'sections_found' => [],
             'quality_score' => 0,
             'error' => null,
         ];
 
         if (empty($url)) {
             $result['error'] = 'No URL provided';
+
             return $result;
         }
 
-        // Build the expected llms.txt URL for display purposes
+        // Build the llms.txt URL
         $parsed = parse_url($url);
-        if (! empty($parsed['scheme']) && ! empty($parsed['host'])) {
-            $result['url'] = $parsed['scheme'].'://'.$parsed['host'].'/llms.txt';
+        if (empty($parsed['scheme']) || empty($parsed['host'])) {
+            $result['error'] = 'Invalid URL';
+
+            return $result;
         }
 
-        // Note: Actual llms.txt content check requires a separate HTTP request.
-        // This is left as a recommendation rather than an automatic check to avoid
-        // adding latency to scans. Users can manually verify llms.txt exists.
-        $result['error'] = 'Manual verification recommended';
+        $llmsTxtUrl = $parsed['scheme'].'://'.$parsed['host'].'/llms.txt';
+        $result['url'] = $llmsTxtUrl;
+
+        try {
+            $response = Http::timeout(10)
+                ->withHeaders(['User-Agent' => 'GeoSource Scanner/1.0'])
+                ->get($llmsTxtUrl);
+
+            if (! $response->successful()) {
+                $result['error'] = 'File not found (HTTP '.$response->status().')';
+
+                return $result;
+            }
+
+            $content = $response->body();
+            $result['exists'] = true;
+            $result['content_length'] = strlen($content);
+
+            // Analyze content quality
+            $result = $this->analyzeLlmsTxtContent($content, $result);
+
+        } catch (\Exception $e) {
+            $result['error'] = 'Failed to fetch: '.$e->getMessage();
+        }
+
+        return $result;
+    }
+
+    /**
+     * Analyze the content of llms.txt file for quality scoring.
+     */
+    private function analyzeLlmsTxtContent(string $content, array $result): array
+    {
+        $lines = explode("\n", $content);
+        $qualityPoints = 0;
+        $maxPoints = 100;
+
+        // Check for title (# at the start)
+        if (preg_match('/^#\s+(.+)$/m', $content, $titleMatch)) {
+            $result['has_title'] = true;
+            $result['title'] = trim($titleMatch[1]);
+            $qualityPoints += 15;
+        }
+
+        // Check for description (> blockquote after title)
+        if (preg_match('/^>\s*(.+)$/m', $content, $descMatch)) {
+            $result['has_description'] = true;
+            $result['description'] = trim($descMatch[1]);
+            $qualityPoints += 20;
+        }
+
+        // Check for sections (## headers)
+        preg_match_all('/^##\s+(.+)$/m', $content, $sectionMatches);
+        if (! empty($sectionMatches[1])) {
+            $result['sections_found'] = array_map('trim', $sectionMatches[1]);
+            $qualityPoints += min(20, count($sectionMatches[1]) * 5);
+        }
+
+        // Check for page listings (markdown links)
+        preg_match_all('/^-\s*\[([^\]]+)\]\(([^)]+)\)/m', $content, $pageMatches);
+        if (! empty($pageMatches[0])) {
+            $result['has_pages'] = true;
+            $result['page_count'] = count($pageMatches[0]);
+            $qualityPoints += min(25, count($pageMatches[0]) * 3);
+        }
+
+        // Check for sitemap reference
+        if (preg_match('/sitemap/i', $content)) {
+            $result['has_sitemap_reference'] = true;
+            $qualityPoints += 10;
+        }
+
+        // Check for contact info
+        if (preg_match('/contact|email|support/i', $content)) {
+            $result['has_contact_info'] = true;
+            $qualityPoints += 10;
+        }
+
+        // Minimum content length check
+        if ($result['content_length'] > 200) {
+            $qualityPoints += 10;
+        }
+
+        $result['quality_score'] = min($maxPoints, $qualityPoints);
 
         return $result;
     }

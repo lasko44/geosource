@@ -15,6 +15,13 @@ import {
     Download,
     FileSpreadsheet,
     Loader2,
+    UserCheck,
+    Quote,
+    Bot,
+    Clock,
+    BookOpen,
+    HelpCircle,
+    Image,
 } from 'lucide-vue-next';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 
@@ -33,6 +40,9 @@ interface Props {
 const props = defineProps<Props>();
 
 const scanStatus = ref(props.scan.status || 'completed');
+const progressStep = ref(props.scan.progress_step || 'Initializing');
+const progressPercent = ref(props.scan.progress_percent || 0);
+const scanTitle = ref(props.scan.title);
 const errorMessage = ref(props.scan.error_message);
 let pollInterval: ReturnType<typeof setInterval> | null = null;
 
@@ -40,12 +50,35 @@ const isPending = computed(() => scanStatus.value === 'pending' || scanStatus.va
 const isFailed = computed(() => scanStatus.value === 'failed');
 const isCompleted = computed(() => scanStatus.value === 'completed');
 
+// Progress steps for visual display
+const progressSteps = [
+    { key: 'fetching', label: 'Fetching webpage', percent: 10 },
+    { key: 'analyzing', label: 'Analyzing page structure', percent: 30 },
+    { key: 'llms', label: 'Checking llms.txt', percent: 50 },
+    { key: 'scoring', label: 'Scoring content', percent: 70 },
+    { key: 'recommendations', label: 'Generating recommendations', percent: 90 },
+];
+
+const currentStepIndex = computed(() => {
+    const percent = progressPercent.value;
+    if (percent >= 90) return 4;
+    if (percent >= 70) return 3;
+    if (percent >= 50) return 2;
+    if (percent >= 30) return 1;
+    return 0;
+});
+
 const pollStatus = async () => {
     try {
         const response = await fetch(`/scans/${props.scan.uuid}/status`);
         const data = await response.json();
         scanStatus.value = data.status;
+        progressStep.value = data.progress_step || 'Processing';
+        progressPercent.value = data.progress_percent || 0;
         errorMessage.value = data.error_message;
+        if (data.title) {
+            scanTitle.value = data.title;
+        }
 
         if (data.status === 'completed' || data.status === 'failed') {
             if (pollInterval) {
@@ -63,7 +96,7 @@ const pollStatus = async () => {
 
 onMounted(() => {
     if (isPending.value) {
-        pollInterval = setInterval(pollStatus, 2000);
+        pollInterval = setInterval(pollStatus, 1000);
     }
 });
 
@@ -128,26 +161,50 @@ const getPriorityColor = (priority: string) => {
 };
 
 const pillarIcons: Record<string, any> = {
+    // Base pillars (Free)
     definitions: FileText,
     structure: Layers,
     authority: Award,
     machine_readable: Code,
     answerability: MessageSquare,
+    // Pro pillars
+    eeat: UserCheck,
+    citations: Quote,
+    ai_accessibility: Bot,
+    // Agency pillars
+    freshness: Clock,
+    readability: BookOpen,
+    question_coverage: HelpCircle,
+    multimedia: Image,
+};
+
+const getTierBadge = (tier: string) => {
+    if (tier === 'pro') return { label: 'Pro', class: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' };
+    if (tier === 'agency') return { label: 'Agency', class: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300' };
+    return null;
 };
 
 const pillars = computed(() => {
-    return Object.entries(props.scan.results?.pillars || {}).map(([key, value]) => ({
-        key,
-        ...(value as PillarResult),
-        icon: pillarIcons[key] || FileText,
-    }));
+    return Object.entries(props.scan.results?.pillars || {}).map(([key, value]) => {
+        const pillarData = value as PillarResult;
+        return {
+            key,
+            ...pillarData,
+            icon: pillarIcons[key] || FileText,
+            tierBadge: getTierBadge(pillarData.tier || 'free'),
+        };
+    });
 });
 
 const recommendations = computed(() => {
-    return Object.entries(props.scan.results?.recommendations || {}).map(([key, value]) => ({
-        key,
-        ...(value as Recommendation),
-    }));
+    return Object.entries(props.scan.results?.recommendations || {}).map(([key, value]) => {
+        const recData = value as Recommendation;
+        return {
+            key,
+            ...recData,
+            tierBadge: getTierBadge(recData.tier || 'free'),
+        };
+    });
 });
 
 const summary = computed(() => props.scan.results?.summary);
@@ -218,11 +275,62 @@ const formatDate = (dateString: string) => {
 
             <!-- Pending/Processing State -->
             <Card v-if="isPending" class="overflow-hidden">
-                <CardContent class="flex flex-col items-center justify-center py-16">
-                    <Loader2 class="h-16 w-16 animate-spin text-primary" />
-                    <h3 class="mt-6 text-xl font-semibold">Scanning in Progress</h3>
-                    <p class="mt-2 text-muted-foreground">Analyzing {{ scan.url }}</p>
-                    <p class="mt-4 text-sm text-muted-foreground">This may take up to a minute...</p>
+                <CardContent class="py-12">
+                    <div class="mx-auto max-w-md">
+                        <!-- Title and URL -->
+                        <div class="mb-8 text-center">
+                            <h3 class="text-xl font-semibold">{{ scanTitle || 'Scanning...' }}</h3>
+                            <p class="mt-1 text-sm text-muted-foreground truncate">{{ scan.url }}</p>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="mb-8">
+                            <div class="flex justify-between text-sm mb-2">
+                                <span class="font-medium">{{ progressStep }}</span>
+                                <span class="text-muted-foreground">{{ progressPercent }}%</span>
+                            </div>
+                            <div class="h-2 w-full overflow-hidden rounded-full bg-muted">
+                                <div
+                                    class="h-full rounded-full bg-primary transition-all duration-500"
+                                    :style="{ width: `${progressPercent}%` }"
+                                />
+                            </div>
+                        </div>
+
+                        <!-- Step Indicators -->
+                        <div class="space-y-3">
+                            <div
+                                v-for="(step, index) in progressSteps"
+                                :key="step.key"
+                                class="flex items-center gap-3"
+                            >
+                                <!-- Step Icon -->
+                                <div
+                                    class="flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all"
+                                    :class="{
+                                        'border-primary bg-primary text-primary-foreground': index < currentStepIndex,
+                                        'border-primary bg-primary/10 text-primary': index === currentStepIndex,
+                                        'border-muted bg-muted/50 text-muted-foreground': index > currentStepIndex,
+                                    }"
+                                >
+                                    <CheckCircle2 v-if="index < currentStepIndex" class="h-4 w-4" />
+                                    <Loader2 v-else-if="index === currentStepIndex" class="h-4 w-4 animate-spin" />
+                                    <span v-else class="text-xs font-medium">{{ index + 1 }}</span>
+                                </div>
+
+                                <!-- Step Label -->
+                                <span
+                                    class="text-sm transition-colors"
+                                    :class="{
+                                        'font-medium text-foreground': index <= currentStepIndex,
+                                        'text-muted-foreground': index > currentStepIndex,
+                                    }"
+                                >
+                                    {{ step.label }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
 
@@ -299,6 +407,13 @@ const formatDate = (dateString: string) => {
                                 <CardTitle class="flex items-center gap-2 text-base">
                                     <component :is="pillar.icon" class="h-5 w-5 text-muted-foreground" />
                                     {{ pillar.name }}
+                                    <span
+                                        v-if="pillar.tierBadge"
+                                        class="rounded-full px-2 py-0.5 text-xs font-medium"
+                                        :class="pillar.tierBadge.class"
+                                    >
+                                        {{ pillar.tierBadge.label }}
+                                    </span>
                                 </CardTitle>
                                 <span class="text-2xl font-bold">{{ pillar.score.toFixed(1) }}</span>
                             </div>
@@ -346,6 +461,13 @@ const formatDate = (dateString: string) => {
                     >
                         <AlertTitle class="flex items-center gap-2 text-foreground">
                             {{ rec.pillar }}
+                            <span
+                                v-if="rec.tierBadge"
+                                class="rounded-full px-2 py-0.5 text-xs font-medium"
+                                :class="rec.tierBadge.class"
+                            >
+                                {{ rec.tierBadge.label }}
+                            </span>
                             <span
                                 class="rounded-full px-2 py-0.5 text-xs font-medium"
                                 :class="getPriorityColor(rec.priority)"
