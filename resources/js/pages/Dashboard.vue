@@ -19,9 +19,12 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useDateFormat } from '@/composables/useDateFormat';
-import { type BreadcrumbItem, type Scan, type DashboardStats, type UsageSummary, type PlanWithLimits } from '@/types';
+import { type BreadcrumbItem, type Scan, type DashboardStats, type UsageSummary, type PlanWithLimits, type TeamBranding } from '@/types';
 
 const { formatDate } = useDateFormat();
+
+// Get team branding from shared props
+const teamBranding = computed(() => usePage().props.teamBranding as TeamBranding | null);
 
 interface Team {
     id: number;
@@ -131,6 +134,32 @@ const getProgressColor = () => {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex flex-col gap-6 p-6">
+            <!-- Team Branding Banner -->
+            <div
+                v-if="teamBranding?.enabled"
+                class="flex items-center gap-4 rounded-lg p-4 text-white"
+                :style="{
+                    background: `linear-gradient(135deg, ${teamBranding.primaryColor} 0%, ${teamBranding.secondaryColor} 100%)`
+                }"
+            >
+                <img
+                    v-if="teamBranding.logoUrl"
+                    :src="teamBranding.logoUrl"
+                    :alt="teamBranding.companyName"
+                    class="h-10 w-auto object-contain bg-white/20 rounded p-1"
+                />
+                <div
+                    v-else
+                    class="flex h-10 w-10 items-center justify-center rounded bg-white/20 text-xl font-bold"
+                >
+                    {{ teamBranding.companyName.charAt(0).toUpperCase() }}
+                </div>
+                <div>
+                    <h2 class="font-semibold">{{ teamBranding.companyName }}</h2>
+                    <p class="text-sm opacity-90">{{ teamBranding.teamName }} Dashboard</p>
+                </div>
+            </div>
+
             <!-- Upgrade Banner -->
             <Alert v-if="showUpgradePrompt && usage.plan_key === 'free'" class="border-primary/50 bg-gradient-to-r from-primary/5 to-primary/10">
                 <Zap class="h-4 w-4 text-primary" />
@@ -200,10 +229,21 @@ const getProgressColor = () => {
             </div>
 
             <!-- Scan Form Card -->
-            <Card class="border-2 border-dashed border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+            <Card
+                class="border-2 border-dashed bg-gradient-to-br to-transparent"
+                :class="teamBranding?.enabled ? '' : 'border-primary/20 from-primary/5'"
+                :style="teamBranding?.enabled ? {
+                    borderColor: `${teamBranding.primaryColor}33`,
+                    background: `linear-gradient(to bottom right, ${teamBranding.primaryColor}0D, transparent)`
+                } : {}"
+            >
                 <CardHeader>
                     <CardTitle class="flex items-center gap-2">
-                        <Globe class="h-5 w-5 text-primary" />
+                        <Globe
+                            class="h-5 w-5"
+                            :class="teamBranding?.enabled ? '' : 'text-primary'"
+                            :style="teamBranding?.enabled ? { color: teamBranding.primaryColor } : {}"
+                        />
                         Start a GEO Scan
                     </CardTitle>
                     <CardDescription>

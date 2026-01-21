@@ -18,12 +18,26 @@ export interface NavItem {
     target?: '_blank' | '_self';
 }
 
+export interface TeamBranding {
+    enabled: boolean;
+    teamName: string;
+    companyName: string;
+    logoUrl: string | null;
+    primaryColor: string;
+    secondaryColor: string;
+    contactEmail: string | null;
+    websiteUrl: string | null;
+}
+
 export type AppPageProps<
     T extends Record<string, unknown> = Record<string, unknown>,
 > = T & {
     name: string;
     auth: Auth;
     sidebarOpen: boolean;
+    hasTeams: boolean;
+    canCreateTeams: boolean;
+    teamBranding: TeamBranding | null;
     [key: string]: unknown;
 };
 

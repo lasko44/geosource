@@ -23,12 +23,14 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
-import { type NavItem } from '@/types';
+import { type NavItem, type TeamBranding } from '@/types';
 
 import AppLogo from './AppLogo.vue';
+import AppLogoIcon from './AppLogoIcon.vue';
 
 const page = usePage();
 const hasTeams = computed(() => page.props.hasTeams);
+const teamBranding = computed(() => page.props.teamBranding as TeamBranding | null);
 
 const mainNavItems = computed<NavItem[]>(() => {
     const items: NavItem[] = [
@@ -84,7 +86,36 @@ const footerNavItems: NavItem[] = [
                 <SidebarMenuItem>
                     <SidebarMenuButton size="lg" as-child>
                         <Link :href="dashboard()">
-                            <AppLogo />
+                            <!-- Team branding logo -->
+                            <template v-if="teamBranding?.enabled">
+                                <div
+                                    v-if="teamBranding.logoUrl"
+                                    class="flex aspect-square size-8 items-center justify-center rounded-md overflow-hidden"
+                                    :style="{ backgroundColor: teamBranding.primaryColor }"
+                                >
+                                    <img
+                                        :src="teamBranding.logoUrl"
+                                        :alt="teamBranding.companyName"
+                                        class="size-6 object-contain"
+                                    />
+                                </div>
+                                <div
+                                    v-else
+                                    class="flex aspect-square size-8 items-center justify-center rounded-md text-white font-bold text-sm"
+                                    :style="{ backgroundColor: teamBranding.primaryColor }"
+                                >
+                                    {{ teamBranding.companyName.charAt(0).toUpperCase() }}
+                                </div>
+                                <div class="ml-1 grid flex-1 text-left text-sm">
+                                    <span class="mb-0.5 truncate leading-tight font-semibold">
+                                        {{ teamBranding.companyName }}
+                                    </span>
+                                </div>
+                            </template>
+                            <!-- Default app logo -->
+                            <template v-else>
+                                <AppLogo />
+                            </template>
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
