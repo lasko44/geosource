@@ -69,7 +69,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                                 </Link>
                             </Button>
                             <Button
-                                v-if="subscription?.cancelled && subscription?.on_grace_period"
+                                v-if="subscription?.canceled && subscription?.on_grace_period"
                                 variant="outline"
                                 as-child
                             >
@@ -82,7 +82,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                                 </Link>
                             </Button>
                             <Button
-                                v-if="subscription?.active && !subscription?.cancelled"
+                                v-if="subscription?.active && !subscription?.canceled"
                                 variant="outline"
                                 as-child
                             >

@@ -35,7 +35,7 @@ const statusInfo = computed(() => {
         };
     }
 
-    if (props.subscription.cancelled) {
+    if (props.subscription.canceled) {
         if (props.subscription.on_grace_period && props.subscription.ends_at) {
             return {
                 label: 'Cancelled',
@@ -87,8 +87,8 @@ const statusInfo = computed(() => {
             </span>
         </div>
         <p class="mt-2 text-sm text-muted-foreground">{{ statusInfo.message }}</p>
-        <p v-if="subscription?.stripe_price" class="mt-1 text-xs text-muted-foreground">
-            Plan: {{ subscription.stripe_price }}
+        <p v-if="subscription?.plan_name" class="mt-1 text-xs text-muted-foreground">
+            {{ subscription.plan_name }} - ${{ subscription.plan_price }}/{{ subscription.plan_interval }}
         </p>
     </div>
 </template>

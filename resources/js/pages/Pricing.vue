@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { Check, X, Sparkles, Zap, Building2, Globe, ArrowRight, Menu, Mail } from 'lucide-vue-next';
+import { Check, X, Sparkles, Zap, Building2, Globe, ArrowRight, Menu, Mail, BookOpen, Layers, Award, Code, MessageSquare, UserCheck, Quote, Bot, Clock, Type, HelpCircle, Image } from 'lucide-vue-next';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
 import { dashboard, login, register } from '@/routes';
 import {
@@ -32,6 +33,28 @@ const props = withDefaults(defineProps<Props>(), {
     canRegister: true,
 });
 
+// GEO Score Pillars by tier
+const freePillars = [
+    { name: 'Clear Definitions', points: 20, icon: BookOpen },
+    { name: 'Structured Knowledge', points: 20, icon: Layers },
+    { name: 'Topic Authority', points: 25, icon: Award },
+    { name: 'Machine-Readable', points: 15, icon: Code },
+    { name: 'Answerability', points: 20, icon: MessageSquare },
+];
+
+const proPillars = [
+    { name: 'E-E-A-T Signals', points: 15, icon: UserCheck },
+    { name: 'Citations & Sources', points: 12, icon: Quote },
+    { name: 'AI Crawler Access', points: 8, icon: Bot },
+];
+
+const agencyPillars = [
+    { name: 'Content Freshness', points: 10, icon: Clock },
+    { name: 'Readability', points: 10, icon: Type },
+    { name: 'Question Coverage', points: 10, icon: HelpCircle },
+    { name: 'Multimedia', points: 10, icon: Image },
+];
+
 // Define the free tier for display
 const freeTier = {
     name: 'Free',
@@ -40,7 +63,7 @@ const freeTier = {
     interval: 'month' as const,
     features: [
         '3 scans per month',
-        'Basic GEO score',
+        '5 GEO pillars (100 pts max)',
         'Top 3 recommendations',
         '7-day scan history',
     ],
@@ -62,20 +85,20 @@ const freeTier = {
 // Feature comparison data
 const featureCategories = [
     {
+        name: 'GEO Score Analysis',
+        features: [
+            { name: 'GEO Score pillars', key: 'geo_pillars', format: 'pillars' },
+            { name: 'Maximum score', key: 'max_score', format: 'points' },
+            { name: 'Recommendations shown', key: 'recommendations_shown', format: 'number' },
+        ],
+    },
+    {
         name: 'Scanning',
         features: [
             { name: 'Scans per month', key: 'scans_per_month', format: 'number' },
             { name: 'Scan history', key: 'history_days', format: 'days' },
             { name: 'Bulk URL scanning', key: 'bulk_scanning', format: 'boolean' },
             { name: 'Scheduled scans', key: 'scheduled_scans', format: 'boolean' },
-        ],
-    },
-    {
-        name: 'Analysis',
-        features: [
-            { name: 'GEO Score breakdown', key: 'full_breakdown', format: 'text' },
-            { name: 'Recommendations shown', key: 'recommendations_shown', format: 'number' },
-            { name: 'Competitor tracking', key: 'competitor_tracking', format: 'domains' },
         ],
     },
     {
@@ -95,7 +118,7 @@ const featureCategories = [
     },
 ];
 
-const formatValue = (value: number | boolean | undefined, format: string, planKey: string) => {
+const formatValue = (value: number | boolean | string | undefined, format: string, planKey: string) => {
     if (format === 'boolean') {
         return value;
     }
@@ -113,6 +136,18 @@ const formatValue = (value: number | boolean | undefined, format: string, planKe
         if (value === 0) return '—';
         return `${value} domains`;
     }
+    if (format === 'pillars') {
+        if (planKey === 'free') return '5 pillars';
+        if (planKey === 'pro') return '8 pillars';
+        if (planKey === 'agency') return '12 pillars';
+        return value;
+    }
+    if (format === 'points') {
+        if (planKey === 'free') return '100 pts';
+        if (planKey === 'pro') return '135 pts';
+        if (planKey === 'agency') return '175 pts';
+        return value;
+    }
     if (format === 'text') {
         if (planKey === 'free') return 'Basic';
         return 'Full';
@@ -121,6 +156,18 @@ const formatValue = (value: number | boolean | undefined, format: string, planKe
 };
 
 const getPlanLimit = (planKey: string, limitKey: string) => {
+    // Handle special GEO score keys
+    if (limitKey === 'geo_pillars') {
+        if (planKey === 'free') return 5;
+        if (planKey === 'pro') return 8;
+        if (planKey === 'agency') return 12;
+    }
+    if (limitKey === 'max_score') {
+        if (planKey === 'free') return 100;
+        if (planKey === 'pro') return 135;
+        if (planKey === 'agency') return 175;
+    }
+
     if (planKey === 'free') {
         return freeTier.limits[limitKey as keyof typeof freeTier.limits];
     }
@@ -363,6 +410,94 @@ const getPlanLimit = (planKey: string, limitKey: string) => {
                             </Button>
                         </CardContent>
                     </Card>
+                </div>
+
+                <!-- GEO Score Pillars Section -->
+                <div class="mx-auto mt-20 w-full max-w-5xl">
+                    <h2 class="mb-4 text-center text-2xl font-bold">GEO Score Pillars by Plan</h2>
+                    <p class="mb-8 text-center text-muted-foreground">
+                        Each plan unlocks additional scoring pillars for deeper AI optimization insights.
+                        <Link href="/geo-score-explained" class="text-primary hover:underline">Learn more about GEO scoring →</Link>
+                    </p>
+
+                    <div class="grid gap-6 md:grid-cols-3">
+                        <!-- Free Pillars -->
+                        <Card>
+                            <CardHeader class="pb-4">
+                                <div class="flex items-center justify-between">
+                                    <CardTitle class="text-lg">Free</CardTitle>
+                                    <Badge variant="secondary">100 pts max</Badge>
+                                </div>
+                                <CardDescription>5 core pillars</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <ul class="space-y-2">
+                                    <li v-for="pillar in freePillars" :key="pillar.name" class="flex items-center gap-2 text-sm">
+                                        <component :is="pillar.icon" class="h-4 w-4 text-primary" />
+                                        <span class="flex-1">{{ pillar.name }}</span>
+                                        <span class="text-muted-foreground">{{ pillar.points }} pts</span>
+                                    </li>
+                                </ul>
+                            </CardContent>
+                        </Card>
+
+                        <!-- Pro Pillars -->
+                        <Card class="border-blue-500/50">
+                            <CardHeader class="pb-4">
+                                <div class="flex items-center justify-between">
+                                    <CardTitle class="text-lg">Pro</CardTitle>
+                                    <Badge class="bg-blue-500">135 pts max</Badge>
+                                </div>
+                                <CardDescription>All Free pillars + 3 more</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <ul class="space-y-2">
+                                    <li v-for="pillar in freePillars" :key="pillar.name" class="flex items-center gap-2 text-sm text-muted-foreground">
+                                        <Check class="h-4 w-4 text-muted-foreground/50" />
+                                        <span class="flex-1">{{ pillar.name }}</span>
+                                        <span>{{ pillar.points }} pts</span>
+                                    </li>
+                                    <li class="border-t pt-2 mt-2"></li>
+                                    <li v-for="pillar in proPillars" :key="pillar.name" class="flex items-center gap-2 text-sm">
+                                        <component :is="pillar.icon" class="h-4 w-4 text-blue-500" />
+                                        <span class="flex-1 font-medium">{{ pillar.name }}</span>
+                                        <span class="text-blue-500">+{{ pillar.points }} pts</span>
+                                    </li>
+                                </ul>
+                            </CardContent>
+                        </Card>
+
+                        <!-- Agency Pillars -->
+                        <Card class="border-purple-500/50">
+                            <CardHeader class="pb-4">
+                                <div class="flex items-center justify-between">
+                                    <CardTitle class="text-lg">Agency</CardTitle>
+                                    <Badge class="bg-purple-500">175 pts max</Badge>
+                                </div>
+                                <CardDescription>All Pro pillars + 4 more</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <ul class="space-y-2">
+                                    <li class="flex items-center gap-2 text-sm text-muted-foreground">
+                                        <Check class="h-4 w-4 text-muted-foreground/50" />
+                                        <span class="flex-1">All Free pillars</span>
+                                        <span>100 pts</span>
+                                    </li>
+                                    <li class="flex items-center gap-2 text-sm text-muted-foreground">
+                                        <Check class="h-4 w-4 text-muted-foreground/50" />
+                                        <span class="flex-1">All Pro pillars</span>
+                                        <span>+35 pts</span>
+                                    </li>
+                                    <li class="border-t pt-2 mt-2"></li>
+                                    <li v-for="pillar in agencyPillars" :key="pillar.name" class="flex items-center gap-2 text-sm">
+                                        <component :is="pillar.icon" class="h-4 w-4 text-purple-500" />
+                                        <span class="flex-1 font-medium">{{ pillar.name }}</span>
+                                        <span class="text-purple-500">+{{ pillar.points }} pts</span>
+                                    </li>
+                                </ul>
+                            </CardContent>
+                        </Card>
+                    </div>
                 </div>
 
                 <!-- Feature Comparison Table -->

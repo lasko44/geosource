@@ -73,10 +73,14 @@ export interface Subscription {
     name: string;
     stripe_status: string;
     stripe_price: string | null;
+    plan_name: string | null;
+    plan_price: number | null;
+    plan_currency: string;
+    plan_interval: string;
     ends_at: string | null;
     trial_ends_at: string | null;
     on_grace_period: boolean;
-    cancelled: boolean;
+    canceled: boolean;
     active: boolean;
 }
 
