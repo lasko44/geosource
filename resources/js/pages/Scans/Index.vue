@@ -130,6 +130,14 @@ const getGradeColor = (grade: string) => {
     return 'text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-950';
 };
 
+const getScoreColorByGrade = (grade: string) => {
+    if (grade.startsWith('A')) return 'text-green-600 dark:text-green-400';
+    if (grade.startsWith('B')) return 'text-blue-600 dark:text-blue-400';
+    if (grade.startsWith('C')) return 'text-yellow-600 dark:text-yellow-400';
+    if (grade.startsWith('D')) return 'text-orange-600 dark:text-orange-400';
+    return 'text-red-600 dark:text-red-400';
+};
+
 const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-green-600 dark:text-green-400';
     if (score >= 60) return 'text-blue-600 dark:text-blue-400';
@@ -327,10 +335,10 @@ const truncateUrl = (url: string, maxLength = 60) => {
 
                                 <!-- Score -->
                                 <div class="text-right">
-                                    <p class="text-2xl font-bold" :class="getScoreColor(scan.score)">
+                                    <p class="text-2xl font-bold" :class="getScoreColorByGrade(scan.grade)">
                                         {{ scan.score.toFixed(1) }}
                                     </p>
-                                    <p class="text-xs text-muted-foreground">/ 100</p>
+                                    <p class="text-xs text-muted-foreground">/ {{ scan.results?.max_score ?? 100 }}</p>
                                 </div>
 
                                 <!-- Date -->
