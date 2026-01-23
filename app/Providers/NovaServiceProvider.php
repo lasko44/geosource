@@ -3,10 +3,11 @@
 namespace App\Providers;
 
 use App\Models\User;
-use Geosource\Documentation\Documentation;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
+use Laravel\Nova\Menu\MenuItem;
+use Laravel\Nova\Menu\MenuSection;
 use Laravel\Nova\Nova;
 use Laravel\Nova\NovaApplicationServiceProvider;
 
@@ -20,6 +21,21 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
         parent::boot();
 
         Nova::withBreadcrumbs();
+
+        Nova::mainMenu(function () {
+            return [
+                MenuSection::dashboard(\App\Nova\Dashboards\Main::class)->icon('chart-bar'),
+
+                MenuSection::make('Resources', [
+                    MenuItem::resource(\App\Nova\User::class),
+                    MenuItem::resource(\App\Nova\Scan::class),
+                ])->icon('users')->collapsable(),
+
+                MenuSection::make('Documentation', [
+                    MenuItem::externalLink('Developer Docs', '/nova/documentation'),
+                ])->icon('book-open')->collapsable(),
+            ];
+        });
 
         Nova::footer(function () {
             return \Illuminate\Support\Facades\Blade::render('
@@ -93,9 +109,7 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
      */
     public function tools(): array
     {
-        return [
-            new Documentation,
-        ];
+        return [];
     }
 
     /**

@@ -150,6 +150,7 @@ A GEO Score (0-175) measures how likely AI systems are to understand, retrieve, 
 ## Contact
 
 - Support Email: support@geosource.ai
+- X (Twitter): https://x.com/geosource_ai
 - Website: https://geosource.ai
 
 ## Sitemap

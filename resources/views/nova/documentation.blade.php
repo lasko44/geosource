@@ -42,7 +42,9 @@
                             <li><a href="#env-vars" class="text-gray-600 hover:text-purple-600">Environment Variables</a></li>
                             <li><a href="#geo-scoring" class="text-gray-600 hover:text-purple-600">GEO Scoring System</a></li>
                             <li><a href="#scoring-pillars" class="text-gray-600 hover:text-purple-600">Scoring Pillars</a></li>
+                            <li><a href="#scorer-reference" class="text-gray-600 hover:text-purple-600">Scorer Technical Reference</a></li>
                             <li><a href="#rag-embeddings" class="text-gray-600 hover:text-purple-600">RAG & Embeddings</a></li>
+                            <li><a href="#rag-reference" class="text-gray-600 hover:text-purple-600">RAG Technical Reference</a></li>
                             <li><a href="#jobs" class="text-gray-600 hover:text-purple-600">Jobs & Queue</a></li>
                             <li><a href="#services" class="text-gray-600 hover:text-purple-600">Key Services</a></li>
                             <li><a href="#models" class="text-gray-600 hover:text-purple-600">Database Models</a></li>
@@ -426,6 +428,455 @@
                             </div>
                         </div>
 
+                        <!-- Scorer Technical Reference -->
+                        <h2 id="scorer-reference" class="text-2xl font-bold text-gray-900 border-b pb-4 mt-12">GEO Scorer Technical Reference</h2>
+
+                        <p>This section provides detailed technical documentation for each GEO scorer, including scoring breakdowns, pattern matching, and implementation details.</p>
+
+                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 my-4">
+                            <h4 class="font-semibold text-gray-900 mb-2">File Location</h4>
+                            <p class="text-sm text-gray-700">All scorers are located in <code>app/Services/GEO/</code> and implement <code>ScorerInterface</code>.</p>
+                        </div>
+
+                        <!-- DefinitionScorer -->
+                        <h3 id="scorer-definition" class="text-lg font-semibold mt-8 flex items-center gap-2">
+                            <span class="bg-gray-200 text-gray-700 px-2 py-1 rounded text-xs">FREE</span>
+                            DefinitionScorer
+                        </h3>
+                        <p class="text-sm text-gray-600"><strong>File:</strong> <code>app/Services/GEO/DefinitionScorer.php</code> | <strong>Max Score:</strong> 20 points</p>
+                        <p class="text-sm mt-2">Evaluates how well content defines key terms and concepts. Clear definitions help AI systems extract accurate information for responses.</p>
+
+                        <h4 class="text-sm font-semibold mt-4">Score Breakdown</h4>
+                        <table class="w-full text-sm mt-2">
+                            <thead class="bg-gray-50">
+                                <tr><th class="text-left p-2">Component</th><th class="text-left p-2">Points</th><th class="text-left p-2">Criteria</th></tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="p-2">Definition Phrases</td><td class="p-2">Up to 8</td><td class="p-2">2 points per definition found (diminishing returns)</td></tr>
+                                <tr><td class="p-2">Early Definition</td><td class="p-2">6</td><td class="p-2">Definition appears in first 20% of content</td></tr>
+                                <tr><td class="p-2">Entity in Definition</td><td class="p-2">6</td><td class="p-2">Main topic/entity mentioned in definition sentence</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="text-sm font-semibold mt-4">Definition Patterns Detected</h4>
+                        <ul class="text-sm text-gray-600 mt-2 list-disc list-inside">
+                            <li><code>"is a"</code> / <code>"is an"</code> / <code>"is the"</code></li>
+                            <li><code>"refers to"</code> / <code>"refer to"</code></li>
+                            <li><code>"means"</code> / <code>"mean"</code></li>
+                            <li><code>"is defined as"</code></li>
+                            <li><code>"can be described as"</code></li>
+                            <li><code>"is known as"</code> / <code>"is called"</code></li>
+                            <li><code>"represents"</code> / <code>"describes"</code></li>
+                        </ul>
+
+                        <!-- StructureScorer -->
+                        <h3 id="scorer-structure" class="text-lg font-semibold mt-8 flex items-center gap-2">
+                            <span class="bg-gray-200 text-gray-700 px-2 py-1 rounded text-xs">FREE</span>
+                            StructureScorer
+                        </h3>
+                        <p class="text-sm text-gray-600"><strong>File:</strong> <code>app/Services/GEO/StructureScorer.php</code> | <strong>Max Score:</strong> 20 points</p>
+                        <p class="text-sm mt-2">Analyzes content organization, heading hierarchy, and structural elements. Well-structured content helps AI understand information architecture.</p>
+
+                        <h4 class="text-sm font-semibold mt-4">Score Breakdown</h4>
+                        <table class="w-full text-sm mt-2">
+                            <thead class="bg-gray-50">
+                                <tr><th class="text-left p-2">Component</th><th class="text-left p-2">Points</th><th class="text-left p-2">Criteria</th></tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="p-2">Headings</td><td class="p-2">Up to 6</td><td class="p-2">2 pts for single H1, up to 4 pts for H2/H3 subheadings</td></tr>
+                                <tr><td class="p-2">Lists</td><td class="p-2">Up to 5</td><td class="p-2">2 pts for having lists, +1.5 for 3+ items, +1.5 for 6+ items</td></tr>
+                                <tr><td class="p-2">Sections</td><td class="p-2">Up to 4</td><td class="p-2">2 pts for semantic HTML, 2 pts for good content density (2-10 paragraphs/section)</td></tr>
+                                <tr><td class="p-2">Hierarchy</td><td class="p-2">Up to 5</td><td class="p-2">2 pts for proper H1, 2 pts for proper nesting, 1 pt for 2-4 heading levels</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="text-sm font-semibold mt-4">Hierarchy Violations Detected</h4>
+                        <ul class="text-sm text-gray-600 mt-2 list-disc list-inside">
+                            <li>Missing H1 heading</li>
+                            <li>Multiple H1 headings</li>
+                            <li>Skipping heading levels (e.g., H1 → H3 without H2)</li>
+                        </ul>
+
+                        <!-- AuthorityScorer -->
+                        <h3 id="scorer-authority" class="text-lg font-semibold mt-8 flex items-center gap-2">
+                            <span class="bg-gray-200 text-gray-700 px-2 py-1 rounded text-xs">FREE</span>
+                            AuthorityScorer
+                        </h3>
+                        <p class="text-sm text-gray-600"><strong>File:</strong> <code>app/Services/GEO/AuthorityScorer.php</code> | <strong>Max Score:</strong> 25 points</p>
+                        <p class="text-sm mt-2">Measures topical authority through content depth, coherence, keyword consistency, and internal linking. Uses pgvector for semantic similarity analysis when embedding context is available.</p>
+
+                        <h4 class="text-sm font-semibold mt-4">Score Breakdown</h4>
+                        <table class="w-full text-sm mt-2">
+                            <thead class="bg-gray-50">
+                                <tr><th class="text-left p-2">Component</th><th class="text-left p-2">Points</th><th class="text-left p-2">Criteria</th></tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="p-2">Topic Coherence</td><td class="p-2">Up to 6</td><td class="p-2">6 pts for ≥15% coherence ratio, 4 pts for ≥10%, 2 pts for ≥5%</td></tr>
+                                <tr><td class="p-2">Keyword Density</td><td class="p-2">Up to 5</td><td class="p-2">3 pts for 1-3% density, 2 pts for good distribution across content</td></tr>
+                                <tr><td class="p-2">Topic Depth</td><td class="p-2">Up to 6</td><td class="p-2">2 pts for 1500+ words (1 for 800+), 4 pts for 10+ depth indicators</td></tr>
+                                <tr><td class="p-2">Internal Links</td><td class="p-2">Up to 4</td><td class="p-2">4 pts for 5+ internal links, 2.5 for 3+, 1 for 1+</td></tr>
+                                <tr><td class="p-2">Semantic Similarity</td><td class="p-2">Up to 4</td><td class="p-2">4 pts for ≥0.8 avg similarity, 3 for ≥0.6, 2 for ≥0.4 (requires embedding)</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="text-sm font-semibold mt-4">Depth Indicators</h4>
+                        <ul class="text-sm text-gray-600 mt-2 list-disc list-inside">
+                            <li><strong>Examples:</strong> "for example", "for instance", "such as", "e.g.", "i.e."</li>
+                            <li><strong>Explanations:</strong> "because", "therefore", "thus", "hence", "consequently"</li>
+                            <li><strong>Comparisons:</strong> "compared to", "in contrast", "similarly", "unlike", "whereas"</li>
+                            <li><strong>Evidence:</strong> "according to", "research shows", "studies indicate", "data suggests"</li>
+                            <li><strong>Specifics:</strong> "specifically", "particularly", "especially", "notably"</li>
+                        </ul>
+
+                        <!-- MachineReadableScorer -->
+                        <h3 id="scorer-machine-readable" class="text-lg font-semibold mt-8 flex items-center gap-2">
+                            <span class="bg-gray-200 text-gray-700 px-2 py-1 rounded text-xs">FREE</span>
+                            MachineReadableScorer
+                        </h3>
+                        <p class="text-sm text-gray-600"><strong>File:</strong> <code>app/Services/GEO/MachineReadableScorer.php</code> | <strong>Max Score:</strong> 15 points</p>
+                        <p class="text-sm mt-2">Evaluates technical AI accessibility including Schema.org markup, semantic HTML, FAQ formatting, meta tags, and llms.txt file presence.</p>
+
+                        <h4 class="text-sm font-semibold mt-4">Score Breakdown</h4>
+                        <table class="w-full text-sm mt-2">
+                            <thead class="bg-gray-50">
+                                <tr><th class="text-left p-2">Component</th><th class="text-left p-2">Points</th><th class="text-left p-2">Criteria</th></tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="p-2">Schema.org</td><td class="p-2">Up to 5</td><td class="p-2">2 pts for any schema, 1 pt for JSON-LD, 2 pts for valuable types</td></tr>
+                                <tr><td class="p-2">Semantic HTML</td><td class="p-2">Up to 3</td><td class="p-2">1.5 pts for 3+ semantic elements, 0.75 for 90%+ alt coverage, 0.75 for meaningful links</td></tr>
+                                <tr><td class="p-2">FAQ</td><td class="p-2">Up to 3</td><td class="p-2">1.5 pts for FAQPage schema, 0.75 for FAQ section, 0.75 for 3+ questions</td></tr>
+                                <tr><td class="p-2">Meta Tags</td><td class="p-2">Up to 2</td><td class="p-2">1 pt for title + description, 1 pt for OG/Twitter cards</td></tr>
+                                <tr><td class="p-2">llms.txt</td><td class="p-2">Up to 2</td><td class="p-2">1 pt for file exists, 1 pt for quality score ≥60%</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="text-sm font-semibold mt-4">Valuable Schema Types</h4>
+                        <p class="text-sm text-gray-600 mt-2"><code>Article</code>, <code>FAQPage</code>, <code>HowTo</code>, <code>Product</code>, <code>Organization</code>, <code>Person</code>, <code>LocalBusiness</code>, <code>BreadcrumbList</code>, <code>WebPage</code>, <code>BlogPosting</code></p>
+
+                        <h4 class="text-sm font-semibold mt-4">Semantic HTML Elements Tracked</h4>
+                        <p class="text-sm text-gray-600 mt-2"><code>&lt;article&gt;</code>, <code>&lt;section&gt;</code>, <code>&lt;aside&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;header&gt;</code>, <code>&lt;footer&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;figure&gt;</code>, <code>&lt;figcaption&gt;</code>, <code>&lt;time&gt;</code>, <code>&lt;address&gt;</code>, <code>&lt;mark&gt;</code>, <code>&lt;details&gt;</code>, <code>&lt;summary&gt;</code></p>
+
+                        <!-- AnswerabilityScorer -->
+                        <h3 id="scorer-answerability" class="text-lg font-semibold mt-8 flex items-center gap-2">
+                            <span class="bg-gray-200 text-gray-700 px-2 py-1 rounded text-xs">FREE</span>
+                            AnswerabilityScorer
+                        </h3>
+                        <p class="text-sm text-gray-600"><strong>File:</strong> <code>app/Services/GEO/AnswerabilityScorer.php</code> | <strong>Max Score:</strong> 20 points</p>
+                        <p class="text-sm mt-2">Measures how easily AI can extract high-confidence answers from content. Evaluates declarative language, uncertainty, and quotable snippets.</p>
+
+                        <h4 class="text-sm font-semibold mt-4">Score Breakdown</h4>
+                        <table class="w-full text-sm mt-2">
+                            <thead class="bg-gray-50">
+                                <tr><th class="text-left p-2">Component</th><th class="text-left p-2">Points</th><th class="text-left p-2">Criteria</th></tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="p-2">Declarative Language</td><td class="p-2">Up to 5</td><td class="p-2">5 pts for ≥70% declarative ratio, 4 for ≥50%, 2.5 for ≥30%</td></tr>
+                                <tr><td class="p-2">Low Uncertainty</td><td class="p-2">Up to 4</td><td class="p-2">4 pts for ≤0.1% hedging density, 3 for ≤0.3%, 2 for ≤0.5%</td></tr>
+                                <tr><td class="p-2">Confidence Indicators</td><td class="p-2">Up to 4</td><td class="p-2">4 pts for 10+ indicators, 3 for 5+, 2 for 3+, 1 for 1+</td></tr>
+                                <tr><td class="p-2">Quotable Snippets</td><td class="p-2">Up to 4</td><td class="p-2">4 pts for 3+ snippets, 3 for 2+, 2 for 1+ (40-250 chars, definition-style)</td></tr>
+                                <tr><td class="p-2">Directness</td><td class="p-2">Up to 3</td><td class="p-2">1.5 pts for starting with answer, 1.5 for 5+ direct elements</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="text-sm font-semibold mt-4">Hedging Words (Penalized)</h4>
+                        <p class="text-sm text-gray-600 mt-2">"maybe", "perhaps", "possibly", "probably", "might", "could be", "it seems", "appears to", "sort of", "kind of", "somewhat", "in some cases", "sometimes", "often", "usually", "generally", "tend to", "likely", "unlikely", "uncertain", "unclear", "it depends", "varies", "may or may not", "not always"</p>
+
+                        <h4 class="text-sm font-semibold mt-4">Confidence Indicators (Rewarded)</h4>
+                        <p class="text-sm text-gray-600 mt-2">"is defined as", "means", "refers to", "consists of", "the answer is", "the solution is", "the key is", "specifically", "exactly", "precisely", "always", "never", "must", "should", "the best", "the most", "the only", "according to", "research shows", "studies confirm", "in conclusion", "therefore", "thus", "as a result"</p>
+
+                        <!-- EEATScorer -->
+                        <h3 id="scorer-eeat" class="text-lg font-semibold mt-8 flex items-center gap-2">
+                            <span class="bg-blue-200 text-blue-700 px-2 py-1 rounded text-xs">PRO</span>
+                            EEATScorer
+                        </h3>
+                        <p class="text-sm text-gray-600"><strong>File:</strong> <code>app/Services/GEO/EEATScorer.php</code> | <strong>Max Score:</strong> 15 points</p>
+                        <p class="text-sm mt-2">Evaluates Experience, Expertise, Authoritativeness, and Trustworthiness signals. Critical for Google's quality guidelines and AI trust.</p>
+
+                        <h4 class="text-sm font-semibold mt-4">Score Breakdown</h4>
+                        <table class="w-full text-sm mt-2">
+                            <thead class="bg-gray-50">
+                                <tr><th class="text-left p-2">Component</th><th class="text-left p-2">Points</th><th class="text-left p-2">Criteria</th></tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="p-2">Author</td><td class="p-2">Up to 5</td><td class="p-2">2 pts for author present, 1.5 for bio, 0.75 for image, 0.75 for author link</td></tr>
+                                <tr><td class="p-2">Trust Signals</td><td class="p-2">Up to 4</td><td class="p-2">2 pts for reviews/testimonials, 1 pt for ratings, 1 pt for certifications/awards</td></tr>
+                                <tr><td class="p-2">Contact Info</td><td class="p-2">Up to 3</td><td class="p-2">1 pt each for contact page link, email/phone, social links</td></tr>
+                                <tr><td class="p-2">Credentials</td><td class="p-2">Up to 3</td><td class="p-2">1 pt each for expertise claims, experience mentions, qualifications</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="text-sm font-semibold mt-4">Author Detection Patterns</h4>
+                        <ul class="text-sm text-gray-600 mt-2 list-disc list-inside">
+                            <li>Schema.org Person type</li>
+                            <li><code>&lt;meta name="author"&gt;</code> tag</li>
+                            <li>CSS class containing "author"</li>
+                            <li>"written by", "posted by", "published by" phrases</li>
+                            <li><code>rel="author"</code> links</li>
+                            <li><code>itemprop="author"</code> microdata</li>
+                        </ul>
+
+                        <h4 class="text-sm font-semibold mt-4">Qualification Patterns</h4>
+                        <p class="text-sm text-gray-600 mt-2">PhD, Ph.D, M.D., MBA, CPA, JD, MD, BSc, MSc, BA, MA, MS, "board certified", "licensed", "registered", "university of", "college of", "institute of"</p>
+
+                        <!-- CitationScorer -->
+                        <h3 id="scorer-citation" class="text-lg font-semibold mt-8 flex items-center gap-2">
+                            <span class="bg-blue-200 text-blue-700 px-2 py-1 rounded text-xs">PRO</span>
+                            CitationScorer
+                        </h3>
+                        <p class="text-sm text-gray-600"><strong>File:</strong> <code>app/Services/GEO/CitationScorer.php</code> | <strong>Max Score:</strong> 12 points</p>
+                        <p class="text-sm mt-2">Analyzes external citations, source quality, and reference formatting. High-quality citations improve AI confidence in content accuracy.</p>
+
+                        <h4 class="text-sm font-semibold mt-4">Score Breakdown</h4>
+                        <table class="w-full text-sm mt-2">
+                            <thead class="bg-gray-50">
+                                <tr><th class="text-left p-2">Component</th><th class="text-left p-2">Points</th><th class="text-left p-2">Criteria</th></tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="p-2">External Links</td><td class="p-2">Up to 5</td><td class="p-2">1 pt for 3+ external, 2.5 for 3+ authoritative, 1 for 2+ reputable, 0.5 for 5+ unique domains</td></tr>
+                                <tr><td class="p-2">Citations</td><td class="p-2">Up to 3</td><td class="p-2">1.5 pts for inline citations, 1 for 3+ citation instances, 0.5 for blockquotes</td></tr>
+                                <tr><td class="p-2">Statistics</td><td class="p-2">Up to 2</td><td class="p-2">1 pt for having statistics, 0.5 for 3+ stats, 0.5 for numbers with context</td></tr>
+                                <tr><td class="p-2">References</td><td class="p-2">Up to 2</td><td class="p-2">1 pt for reference section, 0.5 for footnotes/bibliography, 0.5 for 3+ reference links</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="text-sm font-semibold mt-4">Authoritative Domains</h4>
+                        <p class="text-sm text-gray-600 mt-2"><strong>Government:</strong> .gov, .gov.uk, .gov.au, .gc.ca</p>
+                        <p class="text-sm text-gray-600"><strong>Education:</strong> .edu, .ac.uk, .edu.au</p>
+                        <p class="text-sm text-gray-600"><strong>Institutions:</strong> who.int, un.org, europa.eu</p>
+                        <p class="text-sm text-gray-600"><strong>Research:</strong> pubmed.ncbi.nlm.nih.gov, scholar.google.com, arxiv.org, nature.com, sciencedirect.com, springer.com, wiley.com, jstor.org, researchgate.net</p>
+                        <p class="text-sm text-gray-600"><strong>News:</strong> reuters.com, apnews.com, bbc.com, nytimes.com</p>
+                        <p class="text-sm text-gray-600"><strong>Reference:</strong> wikipedia.org, britannica.com</p>
+                        <p class="text-sm text-gray-600"><strong>Standards:</strong> w3.org, ietf.org, iso.org</p>
+
+                        <!-- AIAccessibilityScorer -->
+                        <h3 id="scorer-ai-accessibility" class="text-lg font-semibold mt-8 flex items-center gap-2">
+                            <span class="bg-blue-200 text-blue-700 px-2 py-1 rounded text-xs">PRO</span>
+                            AIAccessibilityScorer
+                        </h3>
+                        <p class="text-sm text-gray-600"><strong>File:</strong> <code>app/Services/GEO/AIAccessibilityScorer.php</code> | <strong>Max Score:</strong> 8 points</p>
+                        <p class="text-sm mt-2">Checks if AI crawlers can access and index content. Analyzes robots.txt rules, meta robots directives, and AI-specific meta tags.</p>
+
+                        <h4 class="text-sm font-semibold mt-4">Score Breakdown</h4>
+                        <table class="w-full text-sm mt-2">
+                            <thead class="bg-gray-50">
+                                <tr><th class="text-left p-2">Component</th><th class="text-left p-2">Points</th><th class="text-left p-2">Criteria</th></tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="p-2">robots.txt</td><td class="p-2">Up to 5</td><td class="p-2">1 pt for file exists, 3 pts for allowing all AI bots (partial access = weighted), 1 pt for sitemap reference</td></tr>
+                                <tr><td class="p-2">Meta Robots</td><td class="p-2">Up to 2</td><td class="p-2">Start with 2 pts, -1 for noindex, -0.5 for nosnippet, -0.25 for noarchive</td></tr>
+                                <tr><td class="p-2">AI Meta Tags</td><td class="p-2">Up to 1</td><td class="p-2">1 pt for AI-specific meta tags present, 0.5 pt base if not blocking</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="text-sm font-semibold mt-4">AI Bots Monitored</h4>
+                        <table class="w-full text-sm mt-2">
+                            <thead class="bg-gray-50">
+                                <tr><th class="text-left p-2">Bot Name</th><th class="text-left p-2">Service</th></tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="p-2"><code>GPTBot</code></td><td class="p-2">OpenAI (ChatGPT)</td></tr>
+                                <tr><td class="p-2"><code>ChatGPT-User</code></td><td class="p-2">ChatGPT Browse</td></tr>
+                                <tr><td class="p-2"><code>Google-Extended</code></td><td class="p-2">Google AI/Bard</td></tr>
+                                <tr><td class="p-2"><code>anthropic-ai</code></td><td class="p-2">Anthropic (Claude)</td></tr>
+                                <tr><td class="p-2"><code>Claude-Web</code></td><td class="p-2">Claude Browse</td></tr>
+                                <tr><td class="p-2"><code>CCBot</code></td><td class="p-2">Common Crawl</td></tr>
+                                <tr><td class="p-2"><code>PerplexityBot</code></td><td class="p-2">Perplexity AI</td></tr>
+                                <tr><td class="p-2"><code>Amazonbot</code></td><td class="p-2">Amazon/Alexa</td></tr>
+                                <tr><td class="p-2"><code>FacebookBot</code></td><td class="p-2">Meta AI</td></tr>
+                                <tr><td class="p-2"><code>Bytespider</code></td><td class="p-2">ByteDance AI</td></tr>
+                                <tr><td class="p-2"><code>Applebot-Extended</code></td><td class="p-2">Apple AI</td></tr>
+                                <tr><td class="p-2"><code>cohere-ai</code></td><td class="p-2">Cohere</td></tr>
+                            </tbody>
+                        </table>
+
+                        <!-- FreshnessScorer -->
+                        <h3 id="scorer-freshness" class="text-lg font-semibold mt-8 flex items-center gap-2">
+                            <span class="bg-purple-200 text-purple-700 px-2 py-1 rounded text-xs">AGENCY</span>
+                            FreshnessScorer
+                        </h3>
+                        <p class="text-sm text-gray-600"><strong>File:</strong> <code>app/Services/GEO/FreshnessScorer.php</code> | <strong>Max Score:</strong> 10 points</p>
+                        <p class="text-sm mt-2">Evaluates content recency and update signals. Fresh content is prioritized by AI systems for time-sensitive queries.</p>
+
+                        <h4 class="text-sm font-semibold mt-4">Score Breakdown</h4>
+                        <table class="w-full text-sm mt-2">
+                            <thead class="bg-gray-50">
+                                <tr><th class="text-left p-2">Component</th><th class="text-left p-2">Points</th><th class="text-left p-2">Criteria</th></tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="p-2">Dates</td><td class="p-2">Up to 4</td><td class="p-2">2 pts for publish date, 1 for modified date, up to 1 for content age</td></tr>
+                                <tr><td class="p-2">Update Signals</td><td class="p-2">Up to 3</td><td class="p-2">2 pts for update notice, 0.5 for revision history, 0.5 for changelog</td></tr>
+                                <tr><td class="p-2">Temporal References</td><td class="p-2">Up to 2</td><td class="p-2">1.5 pts for current year mentioned, 0.5 for temporal context phrases</td></tr>
+                                <tr><td class="p-2">Schema Dates</td><td class="p-2">Up to 1</td><td class="p-2">0.5 pts each for datePublished and dateModified in schema</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="text-sm font-semibold mt-4">Content Age Categories</h4>
+                        <table class="w-full text-sm mt-2">
+                            <thead class="bg-gray-50">
+                                <tr><th class="text-left p-2">Category</th><th class="text-left p-2">Age</th><th class="text-left p-2">Age Score</th></tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="p-2">very_fresh</td><td class="p-2">≤30 days</td><td class="p-2">1 pt</td></tr>
+                                <tr><td class="p-2">fresh</td><td class="p-2">≤90 days</td><td class="p-2">0.75 pts</td></tr>
+                                <tr><td class="p-2">recent</td><td class="p-2">≤180 days</td><td class="p-2">0.5 pts</td></tr>
+                                <tr><td class="p-2">moderate</td><td class="p-2">≤365 days</td><td class="p-2">0.25 pts</td></tr>
+                                <tr><td class="p-2">aging</td><td class="p-2">≤730 days</td><td class="p-2">0 pts</td></tr>
+                                <tr><td class="p-2">stale</td><td class="p-2">&gt;730 days</td><td class="p-2">0 pts</td></tr>
+                            </tbody>
+                        </table>
+
+                        <!-- ReadabilityScorer -->
+                        <h3 id="scorer-readability" class="text-lg font-semibold mt-8 flex items-center gap-2">
+                            <span class="bg-purple-200 text-purple-700 px-2 py-1 rounded text-xs">AGENCY</span>
+                            ReadabilityScorer
+                        </h3>
+                        <p class="text-sm text-gray-600"><strong>File:</strong> <code>app/Services/GEO/ReadabilityScorer.php</code> | <strong>Max Score:</strong> 10 points</p>
+                        <p class="text-sm mt-2">Analyzes content readability using Flesch-Kincaid metrics. AI systems prefer content that's clear and accessible to broad audiences.</p>
+
+                        <h4 class="text-sm font-semibold mt-4">Score Breakdown</h4>
+                        <table class="w-full text-sm mt-2">
+                            <thead class="bg-gray-50">
+                                <tr><th class="text-left p-2">Component</th><th class="text-left p-2">Points</th><th class="text-left p-2">Criteria</th></tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="p-2">Flesch-Kincaid</td><td class="p-2">Up to 4</td><td class="p-2">4 pts for 60-80 reading ease (optimal), 3 for 50-60 or 80+, 2 for 40-50</td></tr>
+                                <tr><td class="p-2">Sentence Structure</td><td class="p-2">Up to 3</td><td class="p-2">1.5 for 12-22 avg words/sentence, 1 for variety, 0.5 for few very long sentences</td></tr>
+                                <tr><td class="p-2">Paragraph Structure</td><td class="p-2">Up to 2</td><td class="p-2">1.5 for 80%+ optimal length paragraphs, 0.5 for 40-120 avg words</td></tr>
+                                <tr><td class="p-2">Word Complexity</td><td class="p-2">Up to 1</td><td class="p-2">1 pt for 10-25% complex words (good balance)</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="text-sm font-semibold mt-4">Reading Levels</h4>
+                        <table class="w-full text-sm mt-2">
+                            <thead class="bg-gray-50">
+                                <tr><th class="text-left p-2">Reading Ease</th><th class="text-left p-2">Level</th><th class="text-left p-2">Grade</th></tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="p-2">90-100</td><td class="p-2">very_easy</td><td class="p-2">5th grade</td></tr>
+                                <tr><td class="p-2">80-89</td><td class="p-2">easy</td><td class="p-2">6th grade</td></tr>
+                                <tr><td class="p-2">70-79</td><td class="p-2">fairly_easy</td><td class="p-2">7th grade</td></tr>
+                                <tr><td class="p-2">60-69</td><td class="p-2">standard</td><td class="p-2">8th-9th grade (target)</td></tr>
+                                <tr><td class="p-2">50-59</td><td class="p-2">fairly_hard</td><td class="p-2">10th-12th grade</td></tr>
+                                <tr><td class="p-2">30-49</td><td class="p-2">hard</td><td class="p-2">College</td></tr>
+                                <tr><td class="p-2">&lt;30</td><td class="p-2">very_hard</td><td class="p-2">College graduate</td></tr>
+                            </tbody>
+                        </table>
+
+                        <!-- QuestionCoverageScorer -->
+                        <h3 id="scorer-question-coverage" class="text-lg font-semibold mt-8 flex items-center gap-2">
+                            <span class="bg-purple-200 text-purple-700 px-2 py-1 rounded text-xs">AGENCY</span>
+                            QuestionCoverageScorer
+                        </h3>
+                        <p class="text-sm text-gray-600"><strong>File:</strong> <code>app/Services/GEO/QuestionCoverageScorer.php</code> | <strong>Max Score:</strong> 10 points</p>
+                        <p class="text-sm mt-2">Analyzes how well content addresses common questions. "People Also Ask" style coverage improves AI discoverability.</p>
+
+                        <h4 class="text-sm font-semibold mt-4">Score Breakdown</h4>
+                        <table class="w-full text-sm mt-2">
+                            <thead class="bg-gray-50">
+                                <tr><th class="text-left p-2">Component</th><th class="text-left p-2">Points</th><th class="text-left p-2">Criteria</th></tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="p-2">Questions</td><td class="p-2">Up to 3</td><td class="p-2">2 pts for 5+ heading questions (1.5 for 3+, 1 for 1+), 1 for 4+ question types</td></tr>
+                                <tr><td class="p-2">Answers</td><td class="p-2">Up to 3</td><td class="p-2">1.5 for 5+ answers, 1 for 2+ answer patterns, 0.5 for immediate answers after questions</td></tr>
+                                <tr><td class="p-2">Q&A Patterns</td><td class="p-2">Up to 2</td><td class="p-2">0.75 for FAQ section, 0.5 for QA schema, 0.25 for accordion, 0.5 for question headings</td></tr>
+                                <tr><td class="p-2">Anticipation</td><td class="p-2">Up to 2</td><td class="p-2">1.5 for 75%+ question type coverage, 0.5 for anticipation phrases</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="text-sm font-semibold mt-4">Question Types Tracked</h4>
+                        <ul class="text-sm text-gray-600 mt-2 list-disc list-inside">
+                            <li><strong>What:</strong> "What is...", definitions</li>
+                            <li><strong>How:</strong> "How to...", instructions, guides</li>
+                            <li><strong>Why:</strong> "Why...", explanations, reasons</li>
+                            <li><strong>When/Where:</strong> Timing and location questions</li>
+                            <li><strong>Who/Which:</strong> People and selection questions</li>
+                            <li><strong>Yes/No:</strong> "Is...", "Are...", "Can...", "Should..."</li>
+                        </ul>
+
+                        <!-- MultimediaScorer -->
+                        <h3 id="scorer-multimedia" class="text-lg font-semibold mt-8 flex items-center gap-2">
+                            <span class="bg-purple-200 text-purple-700 px-2 py-1 rounded text-xs">AGENCY</span>
+                            MultimediaScorer
+                        </h3>
+                        <p class="text-sm text-gray-600"><strong>File:</strong> <code>app/Services/GEO/MultimediaScorer.php</code> | <strong>Max Score:</strong> 10 points</p>
+                        <p class="text-sm mt-2">Evaluates multimedia richness including images, videos, tables, and visual elements. Rich media improves engagement and AI understanding.</p>
+
+                        <h4 class="text-sm font-semibold mt-4">Score Breakdown</h4>
+                        <table class="w-full text-sm mt-2">
+                            <thead class="bg-gray-50">
+                                <tr><th class="text-left p-2">Component</th><th class="text-left p-2">Points</th><th class="text-left p-2">Criteria</th></tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="p-2">Images</td><td class="p-2">Up to 4</td><td class="p-2">1.5 for 3+ images (1 for 1+), 1.5 for excellent alt text, 0.5 for captions, 0.5 for featured/schema images</td></tr>
+                                <tr><td class="p-2">Videos</td><td class="p-2">Up to 2</td><td class="p-2">1.5 for having video, 0.5 for video schema</td></tr>
+                                <tr><td class="p-2">Tables</td><td class="p-2">Up to 2</td><td class="p-2">1 pt for having tables, 0.5 for tables with headers, 0.5 for comparison tables</td></tr>
+                                <tr><td class="p-2">Visual Variety</td><td class="p-2">Up to 2</td><td class="p-2">2 pts for 4+ visual element types, 1.5 for 2+, 1 for 1+</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="text-sm font-semibold mt-4">Alt Text Quality Levels</h4>
+                        <table class="w-full text-sm mt-2">
+                            <thead class="bg-gray-50">
+                                <tr><th class="text-left p-2">Quality</th><th class="text-left p-2">Coverage</th><th class="text-left p-2">Score</th></tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="p-2">excellent</td><td class="p-2">≥95%</td><td class="p-2">1.5 pts</td></tr>
+                                <tr><td class="p-2">good</td><td class="p-2">≥80%</td><td class="p-2">1 pt</td></tr>
+                                <tr><td class="p-2">fair</td><td class="p-2">≥50%</td><td class="p-2">0.5 pts</td></tr>
+                                <tr><td class="p-2">poor</td><td class="p-2">&gt;0%</td><td class="p-2">0 pts</td></tr>
+                                <tr><td class="p-2">none</td><td class="p-2">0%</td><td class="p-2">0 pts</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="text-sm font-semibold mt-4">Visual Elements Tracked</h4>
+                        <ul class="text-sm text-gray-600 mt-2 list-disc list-inside">
+                            <li>Diagrams / Flowcharts</li>
+                            <li>Infographics</li>
+                            <li>Charts (Chart.js, D3, Highcharts)</li>
+                            <li>Icons (Font Awesome, Bootstrap Icons, Material Icons)</li>
+                            <li>Code Blocks</li>
+                            <li>Callouts / Alerts / Highlights</li>
+                        </ul>
+
+                        <h4 class="text-sm font-semibold mt-4">Video Platforms Detected</h4>
+                        <p class="text-sm text-gray-600 mt-2">YouTube, Vimeo, Wistia, and generic <code>&lt;video&gt;</code> elements</p>
+
+                        <!-- EnhancedGeoScorer -->
+                        <h3 id="scorer-enhanced" class="text-lg font-semibold mt-8 flex items-center gap-2">
+                            <span class="bg-indigo-200 text-indigo-700 px-2 py-1 rounded text-xs">RAG</span>
+                            EnhancedGeoScorer
+                        </h3>
+                        <p class="text-sm text-gray-600"><strong>File:</strong> <code>app/Services/GEO/EnhancedGeoScorer.php</code></p>
+                        <p class="text-sm mt-2">Extends the base GeoScorer with RAG-powered features for semantic analysis, competitive benchmarking, and AI-generated suggestions.</p>
+
+                        <h4 class="text-sm font-semibold mt-4">Key Methods</h4>
+                        <table class="w-full text-sm mt-2">
+                            <thead class="bg-gray-50">
+                                <tr><th class="text-left p-2">Method</th><th class="text-left p-2">Purpose</th></tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="p-2"><code>analyze($content, $teamId)</code></td><td class="p-2">Full analysis with base scoring + RAG benchmarking + AI suggestions</td></tr>
+                                <tr><td class="p-2"><code>quickAnalyze($content, $teamId)</code></td><td class="p-2">Fast analysis without LLM calls</td></tr>
+                                <tr><td class="p-2"><code>compareWithCompetitors($content, $teamId)</code></td><td class="p-2">Pillar-by-pillar comparison with similar content</td></tr>
+                                <tr><td class="p-2"><code>trackProgress($contentId, $content, $teamId)</code></td><td class="p-2">Historical score tracking and trend analysis</td></tr>
+                                <tr><td class="p-2"><code>generateOptimizedContent($topic, $teamId)</code></td><td class="p-2">AI-generated GEO-optimized content</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="text-sm font-semibold mt-4">Benchmark Positions</h4>
+                        <table class="w-full text-sm mt-2">
+                            <thead class="bg-gray-50">
+                                <tr><th class="text-left p-2">Position</th><th class="text-left p-2">Score Difference</th></tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="p-2">leader</td><td class="p-2">≥10 points above average</td></tr>
+                                <tr><td class="p-2">above_average</td><td class="p-2">≥5 points above</td></tr>
+                                <tr><td class="p-2">average</td><td class="p-2">Within ±5 points</td></tr>
+                                <tr><td class="p-2">below_average</td><td class="p-2">≥5 points below</td></tr>
+                                <tr><td class="p-2">needs_improvement</td><td class="p-2">&gt;10 points below</td></tr>
+                            </tbody>
+                        </table>
+
                         <!-- RAG & Embeddings -->
                         <h2 id="rag-embeddings" class="text-2xl font-bold text-gray-900 border-b pb-4 mt-12">RAG & Embeddings System</h2>
 
@@ -627,6 +1078,416 @@ php artisan migrate
 php artisan vector:verify</code></pre>
                             <p class="text-sm text-yellow-700 mt-2">The <code>vector:verify</code> command tests INSERT, SELECT, cosine similarity, and L2 distance operations.</p>
                         </div>
+
+                        <!-- RAG Technical Reference -->
+                        <h2 id="rag-reference" class="text-2xl font-bold text-gray-900 border-b pb-4 mt-12">RAG Services Technical Reference</h2>
+
+                        <p>This section provides detailed technical documentation for each RAG service, including methods, parameters, and implementation details.</p>
+
+                        <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4 my-4">
+                            <h4 class="font-semibold text-indigo-900 mb-2">File Location</h4>
+                            <p class="text-sm text-indigo-700">All RAG services are located in <code>app/Services/RAG/</code></p>
+                        </div>
+
+                        <!-- RAGService -->
+                        <h3 id="rag-service" class="text-lg font-semibold mt-8">RAGService</h3>
+                        <p class="text-sm text-gray-600"><strong>File:</strong> <code>app/Services/RAG/RAGService.php</code></p>
+                        <p class="text-sm mt-2">Main orchestrator for Retrieval-Augmented Generation. Combines vector search with LLM generation for intelligent content analysis, question answering, and GEO optimization suggestions.</p>
+
+                        <h4 class="text-sm font-semibold mt-4">Dependencies</h4>
+                        <ul class="text-sm text-gray-600 mt-2 list-disc list-inside">
+                            <li><code>VectorStore</code> - For document storage and similarity search</li>
+                            <li><code>EmbeddingService</code> - For generating query embeddings</li>
+                        </ul>
+
+                        <h4 class="text-sm font-semibold mt-4">Public Methods</h4>
+                        <table class="w-full text-sm mt-2">
+                            <thead class="bg-gray-50">
+                                <tr><th class="text-left p-2">Method</th><th class="text-left p-2">Parameters</th><th class="text-left p-2">Description</th></tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr>
+                                    <td class="p-2"><code>retrieve()</code></td>
+                                    <td class="p-2">query, teamId, limit=5, threshold=0.5, filters=[]</td>
+                                    <td class="p-2">Retrieve relevant context documents for a query</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2"><code>retrieveContext()</code></td>
+                                    <td class="p-2">query, teamId, limit=5, filters=[]</td>
+                                    <td class="p-2">Hybrid search with formatted context for LLM prompts (70% semantic, 30% keyword)</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2"><code>generate()</code></td>
+                                    <td class="p-2">query, teamId, options=[]</td>
+                                    <td class="p-2">Generate LLM response using retrieved context</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2"><code>analyzeForGEO()</code></td>
+                                    <td class="p-2">content, teamId, options=[]</td>
+                                    <td class="p-2">Analyze content for GEO optimization with competitor comparison</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2"><code>suggestImprovements()</code></td>
+                                    <td class="p-2">content, geoScore, teamId</td>
+                                    <td class="p-2">Generate improvement suggestions based on GEO scores and high-scoring reference content</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2"><code>answerQuestion()</code></td>
+                                    <td class="p-2">question, teamId, options=[]</td>
+                                    <td class="p-2">Answer questions based on indexed content with source citations</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2"><code>summarizeTopic()</code></td>
+                                    <td class="p-2">topic, teamId, documentLimit=10</td>
+                                    <td class="p-2">Synthesize summary from multiple documents on a topic</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2"><code>findContentGaps()</code></td>
+                                    <td class="p-2">topic, teamId</td>
+                                    <td class="p-2">Identify missing subtopics vs. existing content (returns JSON)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="text-sm font-semibold mt-4">generate() Options</h4>
+                        <table class="w-full text-sm mt-2">
+                            <thead class="bg-gray-50">
+                                <tr><th class="text-left p-2">Option</th><th class="text-left p-2">Default</th><th class="text-left p-2">Description</th></tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="p-2"><code>context_limit</code></td><td class="p-2">5</td><td class="p-2">Number of context documents to retrieve</td></tr>
+                                <tr><td class="p-2"><code>max_tokens</code></td><td class="p-2">1000</td><td class="p-2">Maximum tokens in LLM response</td></tr>
+                                <tr><td class="p-2"><code>temperature</code></td><td class="p-2">0.3</td><td class="p-2">LLM temperature (lower = more focused)</td></tr>
+                                <tr><td class="p-2"><code>system_prompt</code></td><td class="p-2">null</td><td class="p-2">Custom system prompt for LLM</td></tr>
+                                <tr><td class="p-2"><code>filters</code></td><td class="p-2">[]</td><td class="p-2">Metadata filters for context retrieval</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="text-sm font-semibold mt-4">LLM Providers</h4>
+                        <table class="w-full text-sm mt-2">
+                            <thead class="bg-gray-50">
+                                <tr><th class="text-left p-2">Provider</th><th class="text-left p-2">Config Key</th><th class="text-left p-2">Default Model</th></tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="p-2">OpenAI</td><td class="p-2"><code>rag.llm.provider = 'openai'</code></td><td class="p-2">gpt-4o-mini</td></tr>
+                                <tr><td class="p-2">Anthropic</td><td class="p-2"><code>rag.llm.provider = 'anthropic'</code></td><td class="p-2">claude-3-haiku-20240307</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="text-sm font-semibold mt-4">Security Features</h4>
+                        <ul class="text-sm text-gray-600 mt-2 list-disc list-inside">
+                            <li><strong>Prompt Injection Protection:</strong> User content is sanitized via <code>sanitizeForPrompt()</code> which escapes XML-like tags and removes common injection patterns</li>
+                            <li><strong>Content Delimiting:</strong> User content is wrapped in <code>&lt;user-context&gt;</code> and <code>&lt;user-query&gt;</code> tags with explicit instructions to treat as data, not instructions</li>
+                            <li><strong>Filtered Patterns:</strong> "ignore previous instructions", "disregard all", "new instructions:", "[INST]", etc.</li>
+                        </ul>
+
+                        <!-- EmbeddingService -->
+                        <h3 id="embedding-service" class="text-lg font-semibold mt-8">EmbeddingService</h3>
+                        <p class="text-sm text-gray-600"><strong>File:</strong> <code>app/Services/RAG/EmbeddingService.php</code></p>
+                        <p class="text-sm mt-2">Generates vector embeddings from text using OpenAI or Voyage AI. Includes caching, rate limiting, and safe truncation.</p>
+
+                        <h4 class="text-sm font-semibold mt-4">Public Methods</h4>
+                        <table class="w-full text-sm mt-2">
+                            <thead class="bg-gray-50">
+                                <tr><th class="text-left p-2">Method</th><th class="text-left p-2">Parameters</th><th class="text-left p-2">Description</th></tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr>
+                                    <td class="p-2"><code>embed()</code></td>
+                                    <td class="p-2">text, cache=true, teamId=null</td>
+                                    <td class="p-2">Generate embedding for single text. Returns float array.</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2"><code>embedBatch()</code></td>
+                                    <td class="p-2">texts[], cache=true, teamId=null</td>
+                                    <td class="p-2">Generate embeddings for multiple texts (max 100). Returns array of float arrays.</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2"><code>cosineSimilarity()</code></td>
+                                    <td class="p-2">vectorA[], vectorB[]</td>
+                                    <td class="p-2">Calculate cosine similarity between two vectors (0.0 to 1.0)</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2"><code>getDimensions()</code></td>
+                                    <td class="p-2">-</td>
+                                    <td class="p-2">Get configured vector dimensions</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2"><code>getProvider()</code></td>
+                                    <td class="p-2">-</td>
+                                    <td class="p-2">Get current embedding provider name</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2"><code>getModel()</code></td>
+                                    <td class="p-2">-</td>
+                                    <td class="p-2">Get current embedding model name</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="text-sm font-semibold mt-4">Configuration</h4>
+                        <table class="w-full text-sm mt-2">
+                            <thead class="bg-gray-50">
+                                <tr><th class="text-left p-2">Setting</th><th class="text-left p-2">Config Key</th><th class="text-left p-2">Default</th></tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="p-2">Provider</td><td class="p-2"><code>rag.embedding.provider</code></td><td class="p-2">openai</td></tr>
+                                <tr><td class="p-2">Model</td><td class="p-2"><code>rag.embedding.model</code></td><td class="p-2">text-embedding-3-small</td></tr>
+                                <tr><td class="p-2">Dimensions</td><td class="p-2"><code>rag.embedding.dimensions</code></td><td class="p-2">1536</td></tr>
+                                <tr><td class="p-2">Rate Limit (per minute)</td><td class="p-2"><code>rag.embedding.rate_limit_per_minute</code></td><td class="p-2">60</td></tr>
+                                <tr><td class="p-2">Batch Rate Limit</td><td class="p-2"><code>rag.embedding.rate_limit_batch_per_minute</code></td><td class="p-2">10</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="text-sm font-semibold mt-4">Supported Providers</h4>
+                        <table class="w-full text-sm mt-2">
+                            <thead class="bg-gray-50">
+                                <tr><th class="text-left p-2">Provider</th><th class="text-left p-2">API Endpoint</th><th class="text-left p-2">Batch Size</th></tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="p-2">OpenAI</td><td class="p-2"><code>api.openai.com/v1/embeddings</code></td><td class="p-2">100 texts/request</td></tr>
+                                <tr><td class="p-2">Voyage AI</td><td class="p-2"><code>api.voyageai.com/v1/embeddings</code></td><td class="p-2">128 texts/request</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="text-sm font-semibold mt-4">Security Features</h4>
+                        <ul class="text-sm text-gray-600 mt-2 list-disc list-inside">
+                            <li><strong>Rate Limiting:</strong> Per-team rate limits prevent API cost exhaustion attacks (60 requests/min single, 10 batch/min)</li>
+                            <li><strong>Team Cache Isolation:</strong> Cache keys include teamId to prevent cross-team data inference via cache timing attacks</li>
+                            <li><strong>Max Batch Size:</strong> Enforced 100 text limit prevents resource exhaustion</li>
+                            <li><strong>Token Truncation:</strong> Text is truncated to ~7500 tokens (22,500 chars at 3 chars/token) before API calls</li>
+                        </ul>
+
+                        <h4 class="text-sm font-semibold mt-4">Caching</h4>
+                        <div class="bg-gray-50 rounded-lg p-4 mt-2">
+                            <ul class="text-sm text-gray-600 space-y-1">
+                                <li><strong>Cache Key:</strong> <code>embedding:{sha256(text + model + team_suffix)}</code></li>
+                                <li><strong>TTL:</strong> 7 days</li>
+                                <li><strong>Team Isolation:</strong> Keys include <code>:team:{teamId}</code> suffix when teamId provided</li>
+                            </ul>
+                        </div>
+
+                        <!-- VectorStore -->
+                        <h3 id="vector-store" class="text-lg font-semibold mt-8">VectorStore</h3>
+                        <p class="text-sm text-gray-600"><strong>File:</strong> <code>app/Services/RAG/VectorStore.php</code></p>
+                        <p class="text-sm mt-2">Manages document embeddings with PostgreSQL pgvector. Provides storage, similarity search, hybrid search, and metadata filtering with team-based access control.</p>
+
+                        <h4 class="text-sm font-semibold mt-4">Constants</h4>
+                        <table class="w-full text-sm mt-2">
+                            <thead class="bg-gray-50">
+                                <tr><th class="text-left p-2">Constant</th><th class="text-left p-2">Value</th><th class="text-left p-2">Purpose</th></tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="p-2"><code>MAX_SEARCH_LIMIT</code></td><td class="p-2">100</td><td class="p-2">Maximum documents returned per search to prevent resource exhaustion</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="text-sm font-semibold mt-4">Public Methods</h4>
+                        <table class="w-full text-sm mt-2">
+                            <thead class="bg-gray-50">
+                                <tr><th class="text-left p-2">Method</th><th class="text-left p-2">Parameters</th><th class="text-left p-2">Description</th></tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr>
+                                    <td class="p-2"><code>addDocument()</code></td>
+                                    <td class="p-2">teamId, title, content, metadata=[], chunk=true, user=null</td>
+                                    <td class="p-2">Add document with auto-chunking and embedding. Returns array of Document models.</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2"><code>search()</code></td>
+                                    <td class="p-2">query, teamId, limit=10, threshold=0.5, filters=[], user=null</td>
+                                    <td class="p-2">Pure semantic similarity search using cosine distance</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2"><code>searchByVector()</code></td>
+                                    <td class="p-2">vector[], teamId, limit=10, threshold=0.5, filters=[], user=null</td>
+                                    <td class="p-2">Search using pre-computed embedding vector</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2"><code>hybridSearch()</code></td>
+                                    <td class="p-2">query, teamId, limit=10, semanticWeight=0.7, filters=[], user=null</td>
+                                    <td class="p-2">Combined semantic + keyword search (PostgreSQL ts_rank)</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2"><code>findSimilar()</code></td>
+                                    <td class="p-2">documentId, limit=5, threshold=0.6, user=null</td>
+                                    <td class="p-2">Find documents similar to existing document</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2"><code>getByMetadata()</code></td>
+                                    <td class="p-2">teamId, filters[], limit=100, user=null</td>
+                                    <td class="p-2">Retrieve documents by metadata filters</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2"><code>updateEmbedding()</code></td>
+                                    <td class="p-2">document, user=null</td>
+                                    <td class="p-2">Regenerate embedding for existing document</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2"><code>deleteByMetadata()</code></td>
+                                    <td class="p-2">teamId, filters[], user=null</td>
+                                    <td class="p-2">Delete documents matching metadata filters</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2"><code>getCluster()</code></td>
+                                    <td class="p-2">teamId, centroidDocumentId, threshold=0.7, limit=50, user=null</td>
+                                    <td class="p-2">Get semantically similar document cluster around centroid</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2"><code>calculateTopicCoherence()</code></td>
+                                    <td class="p-2">teamId, documentIds[], user=null</td>
+                                    <td class="p-2">Calculate average pairwise similarity (0.0-1.0). Max 50 documents.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="text-sm font-semibold mt-4">Similarity Formula</h4>
+                        <div class="bg-gray-50 rounded-lg p-4 mt-2">
+                            <p class="text-sm font-mono">similarity = 1 - (embedding &lt;=&gt; query_vector)</p>
+                            <p class="text-sm text-gray-600 mt-2">Uses pgvector's <code>&lt;=&gt;</code> cosine distance operator. Result is converted to similarity (1 = identical, 0 = orthogonal).</p>
+                        </div>
+
+                        <h4 class="text-sm font-semibold mt-4">Hybrid Search Formula</h4>
+                        <div class="bg-gray-50 rounded-lg p-4 mt-2">
+                            <p class="text-sm font-mono">combined_score = (semantic_weight × semantic_score) + ((1 - semantic_weight) × keyword_score)</p>
+                            <p class="text-sm text-gray-600 mt-2">Default: 70% semantic, 30% keyword (PostgreSQL <code>ts_rank</code> with <code>plainto_tsquery</code>)</p>
+                        </div>
+
+                        <h4 class="text-sm font-semibold mt-4">Security Features</h4>
+                        <ul class="text-sm text-gray-600 mt-2 list-disc list-inside">
+                            <li><strong>Team Authorization:</strong> All operations validate user access to team via <code>authorizeTeamAccess()</code></li>
+                            <li><strong>Admin Bypass:</strong> Users with <code>is_admin=true</code> can access all teams</li>
+                            <li><strong>Search Limit Enforcement:</strong> All search operations capped at 100 results</li>
+                            <li><strong>Coherence Limit:</strong> <code>calculateTopicCoherence()</code> limited to 50 documents to prevent O(n²) exhaustion</li>
+                            <li><strong>Filter Key Validation:</strong> Metadata filter keys must match <code>/^[a-zA-Z_][a-zA-Z0-9_]*$/</code> to prevent SQL injection</li>
+                        </ul>
+
+                        <h4 class="text-sm font-semibold mt-4">Metadata Filters</h4>
+                        <p class="text-sm text-gray-600 mt-2">Filters are applied to the <code>metadata</code> JSONB column using PostgreSQL's <code>-&gt;&gt;</code> operator:</p>
+                        <pre class="text-xs mt-2"><code>// Single value
+$filters = ['type' => 'scan_chunk']
+// SQL: metadata->>'type' = 'scan_chunk'
+
+// Array value (ANY match)
+$filters = ['status' => ['active', 'pending']]
+// SQL: metadata->>'status' = ANY('{active,pending}')</code></pre>
+
+                        <!-- ChunkingService -->
+                        <h3 id="chunking-service" class="text-lg font-semibold mt-8">ChunkingService</h3>
+                        <p class="text-sm text-gray-600"><strong>File:</strong> <code>app/Services/RAG/ChunkingService.php</code></p>
+                        <p class="text-sm mt-2">Intelligently splits content into chunks for embedding. Supports multiple strategies optimized for different content types.</p>
+
+                        <h4 class="text-sm font-semibold mt-4">Configuration</h4>
+                        <table class="w-full text-sm mt-2">
+                            <thead class="bg-gray-50">
+                                <tr><th class="text-left p-2">Setting</th><th class="text-left p-2">Config Key</th><th class="text-left p-2">Default</th></tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="p-2">Chunk Size</td><td class="p-2"><code>rag.chunking.size</code></td><td class="p-2">1000 characters</td></tr>
+                                <tr><td class="p-2">Chunk Overlap</td><td class="p-2"><code>rag.chunking.overlap</code></td><td class="p-2">200 characters</td></tr>
+                                <tr><td class="p-2">Strategy</td><td class="p-2"><code>rag.chunking.strategy</code></td><td class="p-2">semantic</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="text-sm font-semibold mt-4">Public Methods</h4>
+                        <table class="w-full text-sm mt-2">
+                            <thead class="bg-gray-50">
+                                <tr><th class="text-left p-2">Method</th><th class="text-left p-2">Parameters</th><th class="text-left p-2">Description</th></tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr>
+                                    <td class="p-2"><code>chunk()</code></td>
+                                    <td class="p-2">content, metadata=[]</td>
+                                    <td class="p-2">Chunk using configured strategy. Returns array of {content, metadata}.</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2"><code>semanticChunk()</code></td>
+                                    <td class="p-2">content, metadata=[]</td>
+                                    <td class="p-2">Split by HTML headings (h1-h6), preserving document structure</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2"><code>fixedChunk()</code></td>
+                                    <td class="p-2">content, metadata=[]</td>
+                                    <td class="p-2">Split by character count with overlap for context preservation</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2"><code>sentenceChunk()</code></td>
+                                    <td class="p-2">content, metadata=[]</td>
+                                    <td class="p-2">Split by sentences, grouping to target chunk size</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2"><code>paragraphChunk()</code></td>
+                                    <td class="p-2">content, metadata=[]</td>
+                                    <td class="p-2">Split by paragraphs (&lt;p&gt; tags or double newlines)</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2"><code>createSummaryChunk()</code></td>
+                                    <td class="p-2">content, metadata=[]</td>
+                                    <td class="p-2">Create summary chunk for hierarchical retrieval (title + first 3 sentences + headings)</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2"><code>setChunkSize()</code></td>
+                                    <td class="p-2">size</td>
+                                    <td class="p-2">Override default chunk size. Returns $this for chaining.</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2"><code>setOverlap()</code></td>
+                                    <td class="p-2">overlap</td>
+                                    <td class="p-2">Override default overlap. Returns $this for chaining.</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2"><code>setStrategy()</code></td>
+                                    <td class="p-2">strategy</td>
+                                    <td class="p-2">Override default strategy. Returns $this for chaining.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="text-sm font-semibold mt-4">Chunking Strategies</h4>
+                        <div class="grid grid-cols-2 gap-4 mt-2">
+                            <div class="border rounded-lg p-4">
+                                <h5 class="font-semibold text-sm">Semantic (Default)</h5>
+                                <p class="text-xs text-gray-600 mt-1">Splits by HTML headings (h1-h6). Preserves document hierarchy. Large sections are sub-chunked with overlap. Falls back to fixed chunking if no headings found.</p>
+                                <p class="text-xs text-gray-500 mt-2"><strong>Best for:</strong> Structured articles, documentation, blog posts</p>
+                            </div>
+                            <div class="border rounded-lg p-4">
+                                <h5 class="font-semibold text-sm">Fixed</h5>
+                                <p class="text-xs text-gray-600 mt-1">Character-based splitting with configurable overlap. Uses word boundaries to avoid mid-word breaks.</p>
+                                <p class="text-xs text-gray-500 mt-2"><strong>Best for:</strong> Unstructured content, plain text</p>
+                            </div>
+                            <div class="border rounded-lg p-4">
+                                <h5 class="font-semibold text-sm">Sentence</h5>
+                                <p class="text-xs text-gray-600 mt-1">Groups complete sentences to target size. Splits on sentence boundaries (<code>/(?&lt;=[.!?])\s+(?=[A-Z])/</code>).</p>
+                                <p class="text-xs text-gray-500 mt-2"><strong>Best for:</strong> Natural language content, narratives</p>
+                            </div>
+                            <div class="border rounded-lg p-4">
+                                <h5 class="font-semibold text-sm">Paragraph</h5>
+                                <p class="text-xs text-gray-600 mt-1">Splits by paragraph boundaries (&lt;/p&gt; tags or double newlines). Groups small paragraphs together.</p>
+                                <p class="text-xs text-gray-500 mt-2"><strong>Best for:</strong> Well-formatted articles, essays</p>
+                            </div>
+                        </div>
+
+                        <h4 class="text-sm font-semibold mt-4">Chunk Metadata</h4>
+                        <p class="text-sm text-gray-600 mt-2">Each chunk includes metadata for retrieval context:</p>
+                        <pre class="text-xs mt-2"><code>{
+    "chunk_index": 0,              // Position in document
+    "chunk_type": "section",       // section, section_part, fixed, sentence, paragraph, summary
+    "section_heading": "Overview", // Parent heading (semantic only)
+    "section_level": 2,            // Heading level h1-h6 (semantic only)
+    "sub_chunk_index": 0,          // Position within section (large sections)
+    "is_summary": true,            // True for summary chunks
+    "source_title": "Page Title",  // Original document title
+    "source_type": "document"      // Content type
+}</code></pre>
+
+                        <h4 class="text-sm font-semibold mt-4">Summary Chunks</h4>
+                        <p class="text-sm text-gray-600 mt-2">The <code>createSummaryChunk()</code> method creates a hierarchical summary containing:</p>
+                        <ul class="text-sm text-gray-600 mt-2 list-disc list-inside">
+                            <li>H1 title (if present)</li>
+                            <li>First 3 sentences of content</li>
+                            <li>List of H2/H3 section headings (up to 10)</li>
+                        </ul>
+                        <p class="text-sm text-gray-600 mt-2">Summary chunks are prepended to the chunk array and marked with <code>is_summary: true</code> for hierarchical retrieval.</p>
 
                         <!-- Jobs & Queue -->
                         <h2 id="jobs" class="text-2xl font-bold text-gray-900 border-b pb-4 mt-12">Jobs & Queue System</h2>

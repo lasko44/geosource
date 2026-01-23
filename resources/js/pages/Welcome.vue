@@ -130,6 +130,8 @@ const aiEraFeatures = [
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://geosource.ai/" />
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@geosource_ai" />
+        <meta name="twitter:creator" content="@geosource_ai" />
         <meta name="twitter:title" content="GeoSource.ai - The GEO Scoring Platform for the AI Search Era" />
         <meta name="twitter:description" content="Measure and improve your website's visibility to AI search systems." />
         <link rel="canonical" href="https://geosource.ai/" />
@@ -640,11 +642,19 @@ const aiEraFeatures = [
         <footer class="border-t py-12">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="flex flex-col items-center gap-6">
-                    <div class="flex items-center gap-2 rounded-lg bg-primary/10 px-4 py-2">
-                        <Mail class="h-5 w-5 text-primary" />
-                        <span class="text-sm font-medium">Need help?</span>
-                        <a href="mailto:support@geosource.ai" class="text-sm font-semibold text-primary hover:underline">
-                            support@geosource.ai
+                    <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-2 rounded-lg bg-primary/10 px-4 py-2">
+                            <Mail class="h-5 w-5 text-primary" />
+                            <span class="text-sm font-medium">Need help?</span>
+                            <a href="mailto:support@geosource.ai" class="text-sm font-semibold text-primary hover:underline">
+                                support@geosource.ai
+                            </a>
+                        </div>
+                        <a href="https://x.com/geosource_ai" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 rounded-lg bg-primary/10 px-4 py-2 text-sm font-semibold text-primary hover:bg-primary/20 transition-colors">
+                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                            </svg>
+                            <span>Follow us</span>
                         </a>
                     </div>
                     <div class="flex w-full flex-col items-center justify-between gap-4 sm:flex-row">

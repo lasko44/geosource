@@ -23,7 +23,7 @@ class Documentation extends Tool
     public function menu(Request $request): MenuSection
     {
         return MenuSection::make('Documentation')
-            ->path('/documentation')
-            ->icon('server');
+            ->path('/nova/documentation')
+            ->icon('book-open');
     }
 }

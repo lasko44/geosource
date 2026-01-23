@@ -15,9 +15,10 @@ class ToolServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->app->booted(function () {
-            $this->routes();
-        });
+        // Routes disabled - using custom route in NovaServiceProvider instead
+        // $this->app->booted(function () {
+        //     $this->routes();
+        // });
 
         Nova::serving(function (ServingNova $event) {
             //

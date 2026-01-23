@@ -14,7 +14,8 @@
 
 {{-- Twitter --}}
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:site" content="@geosourceai">
+<meta name="twitter:site" content="@geosource_ai">
+<meta name="twitter:creator" content="@geosource_ai">
 <meta name="twitter:title" content="GeoSource.ai - GEO Scoring Platform">
 <meta name="twitter:description" content="Measure how visible your website is to AI systems. Get your free GEO Score.">
 <meta name="twitter:image" content="{{ config('app.url') }}/og-image.png">
@@ -36,7 +37,10 @@ $schemaData = [
                 '@type' => 'ImageObject',
                 'url' => $appUrl . '/favicon.svg'
             ],
-            'description' => 'GeoSource.ai is a GEO (Generative Engine Optimization) scoring platform that helps websites become visible and citable by AI search systems.'
+            'description' => 'GeoSource.ai is a GEO (Generative Engine Optimization) scoring platform that helps websites become visible and citable by AI search systems.',
+            'sameAs' => [
+                'https://x.com/geosource_ai'
+            ]
         ],
         [
             '@type' => 'WebSite',
