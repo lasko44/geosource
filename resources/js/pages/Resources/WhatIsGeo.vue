@@ -17,6 +17,7 @@ import {
     Database,
     Menu,
     Calendar,
+    Mail,
 } from 'lucide-vue-next';
 
 import {

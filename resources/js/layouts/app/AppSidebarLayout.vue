@@ -30,11 +30,12 @@ const brandingStyles = computed(() => {
     };
 });
 
-const contactEmail = computed(() => {
-    if (teamBranding.value?.enabled && teamBranding.value.contactEmail) {
-        return teamBranding.value.contactEmail;
-    }
-    return 'support@geosource.ai';
+const contactEmail = 'support@geosource.ai';
+
+// Only show contact footer on billing pages
+const showContactFooter = computed(() => {
+    const url = page.url;
+    return url.startsWith('/billing');
 });
 </script>
 
@@ -44,7 +45,7 @@ const contactEmail = computed(() => {
         <AppContent variant="sidebar" class="overflow-x-hidden">
             <AppSidebarHeader :breadcrumbs="breadcrumbs" />
             <slot />
-            <footer class="mt-auto border-t py-6">
+            <footer v-if="showContactFooter" class="mt-auto border-t py-6">
                 <div
                     class="flex items-center justify-center gap-2 rounded-lg px-4 py-2 mx-auto w-fit"
                     :class="teamBranding?.enabled ? 'bg-[var(--team-primary)]/10' : 'bg-primary/10'"

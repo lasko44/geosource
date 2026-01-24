@@ -25,6 +25,7 @@ import {
     Building2,
     Menu,
     Calendar,
+    Mail,
 } from 'lucide-vue-next';
 import {
     DropdownMenu,

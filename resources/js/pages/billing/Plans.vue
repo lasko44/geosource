@@ -68,14 +68,12 @@ const featureCategories = [
         features: [
             { name: 'GEO Score breakdown', key: 'full_breakdown', format: 'text' },
             { name: 'Recommendations shown', key: 'recommendations_shown', format: 'number' },
-            { name: 'Competitor tracking', key: 'competitor_tracking', format: 'domains' },
         ],
     },
     {
-        name: 'Export & Integration',
+        name: 'Export',
         features: [
             { name: 'PDF export', key: 'pdf_export', format: 'boolean' },
-            { name: 'API access', key: 'api_access', format: 'boolean' },
         ],
     },
     {

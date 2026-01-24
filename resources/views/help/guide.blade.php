@@ -40,6 +40,7 @@
                             <li><a href="#score-pillars" class="text-gray-600 hover:text-purple-600">Score Pillars Explained</a></li>
                             <li><a href="#recommendations" class="text-gray-600 hover:text-purple-600">Using Recommendations</a></li>
                             <li><a href="#teams" class="text-gray-600 hover:text-purple-600">Managing Teams</a></li>
+                            <li><a href="#citation-tracking" class="text-gray-600 hover:text-purple-600">Citation Tracking</a></li>
                             <li><a href="#billing" class="text-gray-600 hover:text-purple-600">Billing & Plans</a></li>
                             <li><a href="#exports" class="text-gray-600 hover:text-purple-600">Exporting Reports</a></li>
                             <li><a href="#faq" class="text-gray-600 hover:text-purple-600">FAQ</a></li>
@@ -284,6 +285,180 @@
                         <h3 class="text-lg font-semibold mt-6">Switching Team Context</h3>
                         <p>When running scans, you can choose whether to scan under your personal account or a team. Use the context switcher on the Dashboard to select where your scan will be saved and which quota to use.</p>
 
+                        <!-- Citation Tracking -->
+                        <h2 id="citation-tracking" class="text-2xl font-bold text-gray-900 border-b pb-4 mt-12">Citation Tracking</h2>
+
+                        <div class="bg-purple-100 border border-purple-300 rounded-lg p-4 my-4 flex items-center gap-3">
+                            <span class="bg-purple-600 text-white text-xs font-bold px-2 py-1 rounded">AGENCY ONLY</span>
+                            <p class="text-purple-800 text-sm font-medium">Citation Tracking is an exclusive feature available only on the Agency plan.</p>
+                        </div>
+
+                        <p>Citation Tracking monitors whether AI search engines (like ChatGPT, Claude, and Perplexity) are citing your website when answering user questions.</p>
+
+                        <div class="bg-orange-50 border border-orange-200 rounded-lg p-4 my-4">
+                            <h4 class="font-semibold text-orange-900 mb-2">Why Track Citations?</h4>
+                            <p class="text-orange-800 text-sm">AI search engines are becoming a primary way people find information. When ChatGPT or Perplexity answers a question and cites your website, that's valuable traffic and credibility. Citation tracking helps you understand your AI search visibility.</p>
+                        </div>
+
+                        <h3 class="text-lg font-semibold mt-6">Getting Started with Citation Tracking</h3>
+                        <ol class="list-decimal list-inside space-y-2 mt-2">
+                            <li>Navigate to <strong>Citation Tracking</strong> in the sidebar</li>
+                            <li>Click <strong>New Query</strong> to create your first tracking query</li>
+                            <li>Enter a search query that relates to your content (e.g., "best project management tools")</li>
+                            <li>Enter your domain (e.g., "example.com")</li>
+                            <li>Optionally add a brand name if different from your domain</li>
+                            <li>Select a check frequency (manual, weekly, or daily)</li>
+                            <li>Save and run your first check</li>
+                        </ol>
+
+                        <h3 class="text-lg font-semibold mt-6">Creating Effective Queries</h3>
+                        <p>The key to useful citation tracking is choosing the right queries to monitor:</p>
+
+                        <div class="space-y-4 mt-4">
+                            <div class="border rounded-lg p-4">
+                                <h4 class="font-semibold text-green-700">Good Query Examples</h4>
+                                <ul class="text-sm text-gray-600 mt-2 space-y-1 list-disc list-inside">
+                                    <li>"What is the best CRM for small businesses?" (if you sell CRM software)</li>
+                                    <li>"How to optimize content for AI search engines" (if you write about GEO)</li>
+                                    <li>"Top restaurants in Austin Texas" (if you run a restaurant)</li>
+                                    <li>"What are the benefits of solar panels?" (if you're in solar industry)</li>
+                                </ul>
+                            </div>
+
+                            <div class="border rounded-lg p-4">
+                                <h4 class="font-semibold text-red-700">Less Effective Queries</h4>
+                                <ul class="text-sm text-gray-600 mt-2 space-y-1 list-disc list-inside">
+                                    <li>"example.com" (too specific, AI won't search for your domain directly)</li>
+                                    <li>"weather today" (not relevant unless you're a weather service)</li>
+                                    <li>"buy shoes online" (too broad and transactional)</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 my-4">
+                            <h4 class="font-semibold text-blue-900 mb-2">Pro Tip</h4>
+                            <p class="text-blue-800 text-sm">Think about what questions your ideal customers would ask an AI assistant. Those are the queries you should track. If your GEO-optimized content answers those questions well, AI systems are more likely to cite you.</p>
+                        </div>
+
+                        <h3 class="text-lg font-semibold mt-6">Available AI Platforms</h3>
+                        <p>You can check citations across multiple AI platforms:</p>
+
+                        <div class="grid md:grid-cols-2 gap-4 my-4">
+                            <div class="border rounded-lg p-4 flex items-start gap-3">
+                                <span class="w-3 h-3 rounded-full bg-teal-500 mt-1.5"></span>
+                                <div>
+                                    <h4 class="font-semibold">Perplexity</h4>
+                                    <p class="text-sm text-gray-600">AI search engine that always cites sources. Great for tracking factual content.</p>
+                                </div>
+                            </div>
+                            <div class="border rounded-lg p-4 flex items-start gap-3">
+                                <span class="w-3 h-3 rounded-full bg-green-500 mt-1.5"></span>
+                                <div>
+                                    <h4 class="font-semibold">ChatGPT</h4>
+                                    <p class="text-sm text-gray-600">OpenAI's popular assistant with web browsing capabilities.</p>
+                                </div>
+                            </div>
+                            <div class="border rounded-lg p-4 flex items-start gap-3">
+                                <span class="w-3 h-3 rounded-full bg-orange-500 mt-1.5"></span>
+                                <div>
+                                    <h4 class="font-semibold">Claude</h4>
+                                    <p class="text-sm text-gray-600">Anthropic's AI assistant known for thoughtful, detailed responses.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h3 class="text-lg font-semibold mt-6">Running Citation Checks</h3>
+                        <p>Once you've created a query, you can run checks to see if AI platforms cite your domain:</p>
+
+                        <ol class="list-decimal list-inside space-y-2 mt-2">
+                            <li>Open a query from the Citation Tracking dashboard</li>
+                            <li>Click <strong>Run Check</strong> on any platform card</li>
+                            <li>Wait for the check to complete (usually 10-30 seconds)</li>
+                            <li>View the results showing whether you were cited</li>
+                            <li>Click <strong>View Response</strong> to see the full AI response and citations</li>
+                        </ol>
+
+                        <h3 class="text-lg font-semibold mt-6">Understanding Citation Results</h3>
+                        <p>Each check will show one of two outcomes:</p>
+
+                        <div class="grid md:grid-cols-2 gap-4 my-4">
+                            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span class="font-semibold text-green-700">Cited</span>
+                                </div>
+                                <p class="text-sm text-green-700">The AI mentioned or linked to your domain in its response. This is a win!</p>
+                            </div>
+                            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <span class="font-semibold text-red-700">Not Cited</span>
+                                </div>
+                                <p class="text-sm text-red-700">Your domain wasn't mentioned. Review the response to see what sources were cited instead.</p>
+                            </div>
+                        </div>
+
+                        <h3 class="text-lg font-semibold mt-6">Check History & Alerts</h3>
+                        <p>Citation Tracking maintains a history of all checks and alerts you to changes:</p>
+
+                        <ul class="list-disc list-inside space-y-2 mt-2">
+                            <li><strong>Check History:</strong> View all past checks for a query, with timestamps and results</li>
+                            <li><strong>New Citation Alert:</strong> Get notified when an AI starts citing your domain (great news!)</li>
+                            <li><strong>Lost Citation Alert:</strong> Get notified if an AI stops citing you (may need attention)</li>
+                        </ul>
+
+                        <h3 class="text-lg font-semibold mt-6">Scheduled Checks</h3>
+                        <p>Instead of running checks manually, you can schedule them to run automatically:</p>
+
+                        <div class="space-y-3 mt-4">
+                            <div class="flex items-start gap-3">
+                                <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs font-semibold">Manual</span>
+                                <p class="text-sm text-gray-600">Only runs when you click "Run Check". Best for occasional monitoring.</p>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-semibold">Weekly</span>
+                                <p class="text-sm text-gray-600">Automatically checks once per week. Good for stable content.</p>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <span class="bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs font-semibold">Daily</span>
+                                <p class="text-sm text-gray-600">Checks every day. Best for competitive or time-sensitive queries.</p>
+                            </div>
+                        </div>
+
+                        <h3 class="text-lg font-semibold mt-6">Improving Your Citation Rate</h3>
+                        <p>If AI platforms aren't citing your content, here are ways to improve:</p>
+
+                        <div class="space-y-4 mt-4">
+                            <div class="border-l-4 border-purple-500 pl-4">
+                                <h4 class="font-semibold">Optimize Your Content</h4>
+                                <p class="text-sm text-gray-600">Run a GEO scan on your relevant pages and implement the recommendations. Better-structured content is more likely to be cited.</p>
+                            </div>
+                            <div class="border-l-4 border-purple-500 pl-4">
+                                <h4 class="font-semibold">Add Clear Definitions</h4>
+                                <p class="text-sm text-gray-600">AI systems love content that clearly defines terms. If you rank for "what is X", make sure your content definitively answers that.</p>
+                            </div>
+                            <div class="border-l-4 border-purple-500 pl-4">
+                                <h4 class="font-semibold">Include Statistics & Data</h4>
+                                <p class="text-sm text-gray-600">Original research, statistics, and data points are highly citable. AI systems prefer content they can quote with confidence.</p>
+                            </div>
+                            <div class="border-l-4 border-purple-500 pl-4">
+                                <h4 class="font-semibold">Build Authority</h4>
+                                <p class="text-sm text-gray-600">Strong E-E-A-T signals (author credentials, citations to authoritative sources) help AI systems trust your content.</p>
+                            </div>
+                        </div>
+
+                        <h3 class="text-lg font-semibold mt-6">Citation Tracking Limits (Agency Plan)</h3>
+                        <p>As an Agency plan feature, citation tracking includes generous limits:</p>
+
+                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 my-4">
+                            <ul class="text-sm text-gray-600 space-y-1">
+                                <li><strong>Daily Checks:</strong> Up to 50 citation checks per day across all platforms</li>
+                                <li><strong>Active Queries:</strong> Up to 25 tracking queries</li>
+                                <li><strong>Per-Check Cost:</strong> Each platform check counts as 1 check (running on 3 platforms = 3 checks)</li>
+                            </ul>
+                            <p class="text-sm text-gray-500 mt-3 italic">Not on the Agency plan? <a href="/billing" class="text-purple-600 hover:underline">Upgrade now</a> to access Citation Tracking.</p>
+                        </div>
+
                         <!-- Billing -->
                         <h2 id="billing" class="text-2xl font-bold text-gray-900 border-b pb-4 mt-12">Billing & Plans</h2>
 
@@ -321,9 +496,8 @@
                                     <li>Unlimited scan history</li>
                                     <li>3 teams (5 members each)</li>
                                     <li>White-label reports</li>
-                                    <li>API access</li>
-                                    <li>Competitor tracking</li>
                                     <li>Scheduled & bulk scans</li>
+                                    <li>Citation Tracking</li>
                                 </ul>
                             </div>
                         </div>
@@ -402,6 +576,26 @@
                             <div>
                                 <h4 class="font-semibold">How do I contact support?</h4>
                                 <p class="text-sm text-gray-600 mt-1">Email us at <a href="mailto:support@geosource.ai" class="text-purple-600 hover:underline">support@geosource.ai</a> for any questions or issues.</p>
+                            </div>
+
+                            <div>
+                                <h4 class="font-semibold">What's the difference between GEO scanning and Citation Tracking?</h4>
+                                <p class="text-sm text-gray-600 mt-1">GEO scanning analyzes your content to see how well it's optimized for AI systems. Citation tracking monitors whether AI platforms are actually citing your content when users ask questions. Think of GEO scanning as "input" (how good is my content?) and citation tracking as "output" (is it working?).</p>
+                            </div>
+
+                            <div>
+                                <h4 class="font-semibold">Why wasn't I cited even though my GEO score is high?</h4>
+                                <p class="text-sm text-gray-600 mt-1">A high GEO score means your content is well-structured for AI systems, but citation depends on many factors: competition, query specificity, recency of content, and whether your content directly answers the question being asked. Keep optimizing and try different query variations.</p>
+                            </div>
+
+                            <div>
+                                <h4 class="font-semibold">How accurate is citation tracking?</h4>
+                                <p class="text-sm text-gray-600 mt-1">Citation tracking queries real AI platforms in real-time, so results reflect actual AI behavior at that moment. However, AI responses can vary based on phrasing, timing, and other factors. Track consistently over time for the most reliable insights.</p>
+                            </div>
+
+                            <div>
+                                <h4 class="font-semibold">Can I track my competitors' citations?</h4>
+                                <p class="text-sm text-gray-600 mt-1">Yes! When viewing citation check results, you can see all the sources the AI cited, including competitors. This helps you understand who you're competing against for AI visibility.</p>
                             </div>
                         </div>
 

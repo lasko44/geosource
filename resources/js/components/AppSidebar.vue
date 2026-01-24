@@ -5,6 +5,7 @@ import {
     CircleHelp,
     FileChartColumnIncreasingIcon,
     LayoutGrid,
+    Quote,
     Receipt,
     Users
 } from 'lucide-vue-next';
@@ -30,6 +31,7 @@ import AppLogoIcon from './AppLogoIcon.vue';
 
 const page = usePage();
 const hasTeams = computed(() => page.props.hasTeams);
+const hasCitationAccess = computed(() => page.props.hasCitationAccess);
 const teamBranding = computed(() => page.props.teamBranding as TeamBranding | null);
 
 const mainNavItems = computed<NavItem[]>(() => {
@@ -45,6 +47,14 @@ const mainNavItems = computed<NavItem[]>(() => {
             icon: FileChartColumnIncreasingIcon,
         },
     ];
+
+    if (hasCitationAccess.value) {
+        items.push({
+            title: 'Citations',
+            href: '/citations',
+            icon: Quote,
+        });
+    }
 
     if (hasTeams.value) {
         items.push({

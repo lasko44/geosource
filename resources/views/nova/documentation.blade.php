@@ -49,6 +49,10 @@
                             <li><a href="#services" class="text-gray-600 hover:text-purple-600">Key Services</a></li>
                             <li><a href="#models" class="text-gray-600 hover:text-purple-600">Database Models</a></li>
                             <li><a href="#billing" class="text-gray-600 hover:text-purple-600">Billing & Subscriptions</a></li>
+                            <li><a href="#citation-tracking" class="text-gray-600 hover:text-purple-600">Citation Tracking</a></li>
+                            <li><a href="#citation-models" class="text-gray-600 hover:text-purple-600">Citation Models</a></li>
+                            <li><a href="#citation-services" class="text-gray-600 hover:text-purple-600">Citation Services</a></li>
+                            <li><a href="#citation-jobs" class="text-gray-600 hover:text-purple-600">Citation Jobs</a></li>
                             <li><a href="#debugging" class="text-gray-600 hover:text-purple-600">Debugging Guide</a></li>
                             <li><a href="#security" class="text-gray-600 hover:text-purple-600">Security Precautions</a></li>
                         </ul>
@@ -1719,6 +1723,367 @@ php artisan tinker
                             <li>Failed jobs table in database</li>
                             <li>Stripe Dashboard for webhook logs</li>
                         </ul>
+
+                        <!-- Citation Tracking System -->
+                        <h2 id="citation-tracking" class="text-2xl font-bold text-gray-900 border-b pb-4 mt-12">Citation Tracking System</h2>
+
+                        <p>The Citation Tracking system monitors whether AI search platforms (ChatGPT, Claude, Perplexity) cite a user's domain when answering user queries. This is an <strong>Agency-tier only</strong> feature.</p>
+
+                        <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 my-4">
+                            <h4 class="font-semibold text-purple-900 mb-2">System Architecture</h4>
+                            <ul class="text-purple-800 text-sm space-y-1">
+                                <li><strong>Search Provider:</strong> Tavily Search API (web search)</li>
+                                <li><strong>AI Platforms:</strong> Perplexity (native), Claude + Tavily, ChatGPT + Tavily</li>
+                                <li><strong>Storage:</strong> PostgreSQL with soft deletes</li>
+                                <li><strong>Queue:</strong> Laravel Queue for async processing</li>
+                                <li><strong>Scheduling:</strong> Laravel Scheduler (hourly job)</li>
+                            </ul>
+                        </div>
+
+                        <h3 class="text-lg font-semibold mt-6">Flow Overview</h3>
+                        <pre><code>1. User creates CitationQuery (query + domain + frequency)
+2. User triggers manual check OR scheduler triggers auto-check
+3. CitationCheck record created (status: pending)
+4. CheckCitationJob dispatched to queue
+5. Platform service queries AI (Tavily search → LLM analysis)
+6. CitationAnalyzerService parses response for domain mentions
+7. CitationCheck updated with results
+8. CitationAlert created if citation status changed</code></pre>
+
+                        <h3 class="text-lg font-semibold mt-6">Environment Variables</h3>
+                        <table class="w-full text-sm">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="text-left p-2 font-semibold">Variable</th>
+                                    <th class="text-left p-2 font-semibold">Purpose</th>
+                                    <th class="text-left p-2 font-semibold">Required For</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="p-2"><code>TAVILY_API_KEY</code></td><td class="p-2">Tavily Search API authentication</td><td class="p-2">Claude, ChatGPT</td></tr>
+                                <tr><td class="p-2"><code>ANTHROPIC_API_KEY</code></td><td class="p-2">Claude API authentication</td><td class="p-2">Claude platform</td></tr>
+                                <tr><td class="p-2"><code>OPENAI_API_KEY</code></td><td class="p-2">OpenAI API authentication</td><td class="p-2">ChatGPT platform</td></tr>
+                                <tr><td class="p-2"><code>PERPLEXITY_API_KEY</code></td><td class="p-2">Perplexity API authentication</td><td class="p-2">Perplexity platform</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h3 class="text-lg font-semibold mt-6">Configuration</h3>
+                        <p>All citation settings are in <code>config/citations.php</code>:</p>
+                        <pre><code>// Platform configurations
+'claude' => [
+    'api_key' => env('ANTHROPIC_API_KEY'),
+    'model' => 'claude-haiku-4-5-20251001',
+    'timeout' => 90,
+],
+
+// Plan limits (in config/billing.php)
+'citation_queries' => 25,        // Max active queries
+'citation_checks_per_day' => 50, // Daily check limit
+'citation_frequency' => ['manual', 'daily', 'weekly'],
+'citation_platforms' => ['perplexity', 'claude', 'openai'],</code></pre>
+
+                        <!-- Citation Models -->
+                        <h2 id="citation-models" class="text-2xl font-bold text-gray-900 border-b pb-4 mt-12">Citation Models</h2>
+
+                        <h3 class="text-lg font-semibold mt-6">CitationQuery</h3>
+                        <p>Represents a search query to monitor for citations.</p>
+                        <div class="bg-gray-50 rounded-lg p-4 my-4">
+                            <p class="text-sm text-gray-600 mb-2"><strong>Table:</strong> <code>citation_queries</code></p>
+                            <p class="text-sm text-gray-600 mb-2"><strong>Traits:</strong> SoftDeletes</p>
+                            <p class="text-sm text-gray-600"><strong>Route Key:</strong> uuid</p>
+                        </div>
+                        <table class="w-full text-sm">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="text-left p-2 font-semibold">Field</th>
+                                    <th class="text-left p-2 font-semibold">Type</th>
+                                    <th class="text-left p-2 font-semibold">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="p-2"><code>uuid</code></td><td class="p-2">string</td><td class="p-2">Public identifier (route key)</td></tr>
+                                <tr><td class="p-2"><code>user_id</code></td><td class="p-2">foreignId</td><td class="p-2">Owner of the query</td></tr>
+                                <tr><td class="p-2"><code>team_id</code></td><td class="p-2">foreignId|null</td><td class="p-2">Team context (if applicable)</td></tr>
+                                <tr><td class="p-2"><code>query</code></td><td class="p-2">string</td><td class="p-2">The search query to monitor (max 500 chars)</td></tr>
+                                <tr><td class="p-2"><code>domain</code></td><td class="p-2">string</td><td class="p-2">Domain to check for citations (e.g., example.com)</td></tr>
+                                <tr><td class="p-2"><code>brand</code></td><td class="p-2">string|null</td><td class="p-2">Optional brand name to also check</td></tr>
+                                <tr><td class="p-2"><code>is_active</code></td><td class="p-2">boolean</td><td class="p-2">Whether scheduled checks are enabled</td></tr>
+                                <tr><td class="p-2"><code>frequency</code></td><td class="p-2">enum</td><td class="p-2">manual | daily | weekly</td></tr>
+                                <tr><td class="p-2"><code>last_checked_at</code></td><td class="p-2">datetime|null</td><td class="p-2">Last check timestamp</td></tr>
+                                <tr><td class="p-2"><code>next_check_at</code></td><td class="p-2">datetime|null</td><td class="p-2">Scheduled next check time</td></tr>
+                            </tbody>
+                        </table>
+                        <h4 class="font-semibold mt-4">Key Methods</h4>
+                        <pre><code>// Check if due for scheduled check
+$query->isDueForCheck(): bool
+
+// Schedule the next check based on frequency
+$query->scheduleNextCheck(): void
+
+// Get latest check for a platform
+$query->latestCheckForPlatform('claude'): ?CitationCheck
+
+// Get citation summary across all platforms
+$query->citation_summary: array // Accessor</code></pre>
+
+                        <h3 class="text-lg font-semibold mt-8">CitationCheck</h3>
+                        <p>Represents a single citation check execution on a specific platform.</p>
+                        <div class="bg-gray-50 rounded-lg p-4 my-4">
+                            <p class="text-sm text-gray-600 mb-2"><strong>Table:</strong> <code>citation_checks</code></p>
+                            <p class="text-sm text-gray-600 mb-2"><strong>Traits:</strong> SoftDeletes</p>
+                            <p class="text-sm text-gray-600"><strong>Route Key:</strong> uuid</p>
+                        </div>
+                        <table class="w-full text-sm">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="text-left p-2 font-semibold">Field</th>
+                                    <th class="text-left p-2 font-semibold">Type</th>
+                                    <th class="text-left p-2 font-semibold">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="p-2"><code>uuid</code></td><td class="p-2">string</td><td class="p-2">Public identifier</td></tr>
+                                <tr><td class="p-2"><code>citation_query_id</code></td><td class="p-2">foreignId</td><td class="p-2">Parent query</td></tr>
+                                <tr><td class="p-2"><code>user_id</code></td><td class="p-2">foreignId</td><td class="p-2">User who triggered check</td></tr>
+                                <tr><td class="p-2"><code>team_id</code></td><td class="p-2">foreignId|null</td><td class="p-2">Team context</td></tr>
+                                <tr><td class="p-2"><code>platform</code></td><td class="p-2">enum</td><td class="p-2">perplexity | openai | claude</td></tr>
+                                <tr><td class="p-2"><code>status</code></td><td class="p-2">enum</td><td class="p-2">pending | processing | completed | failed</td></tr>
+                                <tr><td class="p-2"><code>progress_step</code></td><td class="p-2">string|null</td><td class="p-2">Current processing step description</td></tr>
+                                <tr><td class="p-2"><code>progress_percent</code></td><td class="p-2">int</td><td class="p-2">0-100 progress indicator</td></tr>
+                                <tr><td class="p-2"><code>is_cited</code></td><td class="p-2">boolean|null</td><td class="p-2">Whether domain was cited</td></tr>
+                                <tr><td class="p-2"><code>ai_response</code></td><td class="p-2">text|null</td><td class="p-2">Full AI response text</td></tr>
+                                <tr><td class="p-2"><code>citations</code></td><td class="p-2">json|null</td><td class="p-2">Parsed citation details array</td></tr>
+                                <tr><td class="p-2"><code>metadata</code></td><td class="p-2">json|null</td><td class="p-2">Model info, tokens, raw citations</td></tr>
+                                <tr><td class="p-2"><code>error_message</code></td><td class="p-2">text|null</td><td class="p-2">Error details if failed</td></tr>
+                                <tr><td class="p-2"><code>started_at</code></td><td class="p-2">datetime|null</td><td class="p-2">Processing start time</td></tr>
+                                <tr><td class="p-2"><code>completed_at</code></td><td class="p-2">datetime|null</td><td class="p-2">Processing end time</td></tr>
+                            </tbody>
+                        </table>
+                        <h4 class="font-semibold mt-4">Platform Constants</h4>
+                        <pre><code>CitationCheck::PLATFORM_PERPLEXITY  // 'perplexity'
+CitationCheck::PLATFORM_OPENAI      // 'openai' (ChatGPT)
+CitationCheck::PLATFORM_CLAUDE      // 'claude'
+
+CitationCheck::STATUS_PENDING       // 'pending'
+CitationCheck::STATUS_PROCESSING    // 'processing'
+CitationCheck::STATUS_COMPLETED     // 'completed'
+CitationCheck::STATUS_FAILED        // 'failed'</code></pre>
+
+                        <h3 class="text-lg font-semibold mt-8">CitationAlert</h3>
+                        <p>Tracks citation status changes (gained or lost).</p>
+                        <div class="bg-gray-50 rounded-lg p-4 my-4">
+                            <p class="text-sm text-gray-600 mb-2"><strong>Table:</strong> <code>citation_alerts</code></p>
+                            <p class="text-sm text-gray-600"><strong>Traits:</strong> None (no soft delete)</p>
+                        </div>
+                        <table class="w-full text-sm">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="text-left p-2 font-semibold">Field</th>
+                                    <th class="text-left p-2 font-semibold">Type</th>
+                                    <th class="text-left p-2 font-semibold">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="p-2"><code>user_id</code></td><td class="p-2">foreignId</td><td class="p-2">Alert recipient</td></tr>
+                                <tr><td class="p-2"><code>team_id</code></td><td class="p-2">foreignId|null</td><td class="p-2">Team context</td></tr>
+                                <tr><td class="p-2"><code>citation_query_id</code></td><td class="p-2">foreignId</td><td class="p-2">Related query</td></tr>
+                                <tr><td class="p-2"><code>citation_check_id</code></td><td class="p-2">foreignId</td><td class="p-2">Triggering check</td></tr>
+                                <tr><td class="p-2"><code>type</code></td><td class="p-2">enum</td><td class="p-2">new_citation | lost_citation</td></tr>
+                                <tr><td class="p-2"><code>platform</code></td><td class="p-2">string</td><td class="p-2">Platform where change occurred</td></tr>
+                                <tr><td class="p-2"><code>message</code></td><td class="p-2">text</td><td class="p-2">Human-readable alert message</td></tr>
+                                <tr><td class="p-2"><code>is_read</code></td><td class="p-2">boolean</td><td class="p-2">Read status</td></tr>
+                                <tr><td class="p-2"><code>read_at</code></td><td class="p-2">datetime|null</td><td class="p-2">When marked as read</td></tr>
+                            </tbody>
+                        </table>
+                        <h4 class="font-semibold mt-4">Alert Creation</h4>
+                        <pre><code>// Create alert for new citation (domain now cited)
+CitationAlert::createNewCitationAlert($check);
+
+// Create alert for lost citation (domain no longer cited)
+CitationAlert::createLostCitationAlert($check);</code></pre>
+
+                        <h3 class="text-lg font-semibold mt-8">GA4Connection</h3>
+                        <p>Google Analytics 4 OAuth connection for AI traffic tracking.</p>
+                        <div class="bg-gray-50 rounded-lg p-4 my-4">
+                            <p class="text-sm text-gray-600 mb-2"><strong>Table:</strong> <code>ga4_connections</code></p>
+                            <p class="text-sm text-gray-600 mb-2"><strong>Traits:</strong> SoftDeletes</p>
+                            <p class="text-sm text-gray-600"><strong>Security:</strong> Tokens encrypted at rest</p>
+                        </div>
+                        <table class="w-full text-sm">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="text-left p-2 font-semibold">Field</th>
+                                    <th class="text-left p-2 font-semibold">Type</th>
+                                    <th class="text-left p-2 font-semibold">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="p-2"><code>uuid</code></td><td class="p-2">string</td><td class="p-2">Public identifier</td></tr>
+                                <tr><td class="p-2"><code>user_id</code></td><td class="p-2">foreignId</td><td class="p-2">Connection owner</td></tr>
+                                <tr><td class="p-2"><code>team_id</code></td><td class="p-2">foreignId|null</td><td class="p-2">Team context</td></tr>
+                                <tr><td class="p-2"><code>google_account_id</code></td><td class="p-2">string</td><td class="p-2">Google account identifier</td></tr>
+                                <tr><td class="p-2"><code>property_id</code></td><td class="p-2">string</td><td class="p-2">GA4 property ID</td></tr>
+                                <tr><td class="p-2"><code>property_name</code></td><td class="p-2">string</td><td class="p-2">Property display name</td></tr>
+                                <tr><td class="p-2"><code>access_token</code></td><td class="p-2">encrypted</td><td class="p-2">OAuth access token</td></tr>
+                                <tr><td class="p-2"><code>refresh_token</code></td><td class="p-2">encrypted</td><td class="p-2">OAuth refresh token</td></tr>
+                                <tr><td class="p-2"><code>token_expires_at</code></td><td class="p-2">datetime</td><td class="p-2">Token expiration</td></tr>
+                                <tr><td class="p-2"><code>is_active</code></td><td class="p-2">boolean</td><td class="p-2">Connection active status</td></tr>
+                                <tr><td class="p-2"><code>last_synced_at</code></td><td class="p-2">datetime|null</td><td class="p-2">Last data sync time</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h3 class="text-lg font-semibold mt-8">GA4ReferralData</h3>
+                        <p>Stores daily referral traffic data from GA4, filtered for AI sources.</p>
+                        <div class="bg-gray-50 rounded-lg p-4 my-4">
+                            <p class="text-sm text-gray-600"><strong>Table:</strong> <code>ga4_referral_data</code></p>
+                        </div>
+                        <table class="w-full text-sm">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="text-left p-2 font-semibold">Field</th>
+                                    <th class="text-left p-2 font-semibold">Type</th>
+                                    <th class="text-left p-2 font-semibold">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="p-2"><code>ga4_connection_id</code></td><td class="p-2">foreignId</td><td class="p-2">Parent connection</td></tr>
+                                <tr><td class="p-2"><code>team_id</code></td><td class="p-2">foreignId|null</td><td class="p-2">Team context</td></tr>
+                                <tr><td class="p-2"><code>date</code></td><td class="p-2">date</td><td class="p-2">Data date</td></tr>
+                                <tr><td class="p-2"><code>source</code></td><td class="p-2">string</td><td class="p-2">Traffic source (e.g., chat.openai.com)</td></tr>
+                                <tr><td class="p-2"><code>medium</code></td><td class="p-2">string</td><td class="p-2">Traffic medium (referral)</td></tr>
+                                <tr><td class="p-2"><code>sessions</code></td><td class="p-2">int</td><td class="p-2">Session count</td></tr>
+                                <tr><td class="p-2"><code>users</code></td><td class="p-2">int</td><td class="p-2">Unique users</td></tr>
+                                <tr><td class="p-2"><code>pageviews</code></td><td class="p-2">int</td><td class="p-2">Pageview count</td></tr>
+                                <tr><td class="p-2"><code>engaged_sessions</code></td><td class="p-2">int</td><td class="p-2">Engaged session count</td></tr>
+                                <tr><td class="p-2"><code>bounce_rate</code></td><td class="p-2">float</td><td class="p-2">Bounce rate percentage</td></tr>
+                                <tr><td class="p-2"><code>avg_session_duration</code></td><td class="p-2">float</td><td class="p-2">Avg duration in seconds</td></tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Citation Services -->
+                        <h2 id="citation-services" class="text-2xl font-bold text-gray-900 border-b pb-4 mt-12">Citation Services</h2>
+
+                        <h3 class="text-lg font-semibold mt-6">CitationService</h3>
+                        <p class="text-sm text-gray-600 mb-2"><code>App\Services\Citation\CitationService</code></p>
+                        <p>Main orchestrator for citation tracking operations.</p>
+                        <pre><code>// Get available platforms for user (based on API keys and plan)
+$service->getAvailablePlatforms($user): array
+
+// Check if user can perform a check (quota check)
+$service->canPerformCheck($user): bool
+
+// Get today's check count (uses withTrashed to prevent bypass)
+$service->getChecksPerformedToday($user): int
+
+// Get queries due for scheduled checks
+$service->getQueriesDueForCheck(): Collection
+
+// Create a new citation check
+$service->createCheck($query, $platform, $user): CitationCheck</code></pre>
+
+                        <h3 class="text-lg font-semibold mt-6">Platform Services</h3>
+                        <p>Each AI platform has a dedicated service in <code>App\Services\Citation\Platforms\</code>:</p>
+
+                        <div class="space-y-4 mt-4">
+                            <div class="border rounded-lg p-4">
+                                <h4 class="font-semibold">PerplexityService</h4>
+                                <p class="text-sm text-gray-600">Direct API integration. Perplexity natively returns source URLs.</p>
+                                <pre><code>// Uses sonar-pro model with search_recency_filter
+POST https://api.perplexity.ai/chat/completions</code></pre>
+                            </div>
+
+                            <div class="border rounded-lg p-4">
+                                <h4 class="font-semibold">ClaudeService</h4>
+                                <p class="text-sm text-gray-600">Tavily search → Claude analysis pattern.</p>
+                                <pre><code>1. Search web via Tavily API (Bearer auth)
+2. Build prompt with search results
+3. Ask Claude (claude-haiku-4-5-20251001) to answer with citations
+4. Analyze response for domain mentions</code></pre>
+                            </div>
+
+                            <div class="border rounded-lg p-4">
+                                <h4 class="font-semibold">OpenAIBrowsingService</h4>
+                                <p class="text-sm text-gray-600">Same Tavily + LLM pattern as Claude.</p>
+                                <pre><code>1. Search web via Tavily API
+2. Build prompt with search results
+3. Ask GPT-4o to answer with citations
+4. Analyze response for domain mentions</code></pre>
+                            </div>
+                        </div>
+
+                        <h3 class="text-lg font-semibold mt-6">CitationAnalyzerService</h3>
+                        <p class="text-sm text-gray-600 mb-2"><code>App\Services\Citation\CitationAnalyzerService</code></p>
+                        <p>Parses AI responses to detect domain/brand citations.</p>
+                        <pre><code>$analyzer->analyze(
+    $aiResponse,     // Full AI response text
+    $sourceUrls,     // URLs from search results
+    $domain,         // Domain to check (e.g., example.com)
+    $brand           // Optional brand name
+): array
+
+// Returns:
+[
+    'is_cited' => true|false,
+    'citations' => [
+        ['type' => 'url_match', 'url' => '...', 'context' => '...'],
+        ['type' => 'domain_mention', 'match' => '...', 'context' => '...'],
+    ],
+    'confidence' => 0.0-1.0
+]</code></pre>
+
+                        <!-- Citation Jobs -->
+                        <h2 id="citation-jobs" class="text-2xl font-bold text-gray-900 border-b pb-4 mt-12">Citation Jobs</h2>
+
+                        <h3 class="text-lg font-semibold mt-6">CheckCitationJob</h3>
+                        <p class="text-sm text-gray-600 mb-2"><code>App\Jobs\CheckCitationJob</code></p>
+                        <p>Processes a single citation check asynchronously.</p>
+                        <pre><code>// Dispatched when user clicks "Run Check" or by scheduler
+CheckCitationJob::dispatch($citationCheck);
+
+// Configuration
+public int $tries = 1;      // No retries (to prevent duplicate API costs)
+public int $timeout = 120;  // 2 minute timeout</code></pre>
+
+                        <h3 class="text-lg font-semibold mt-6">ProcessScheduledCitationChecksJob</h3>
+                        <p class="text-sm text-gray-600 mb-2"><code>App\Jobs\ProcessScheduledCitationChecksJob</code></p>
+                        <p>Runs hourly via Laravel Scheduler. Implements <code>ShouldBeUnique</code> to prevent concurrent execution.</p>
+                        <pre><code>// Scheduled in routes/console.php
+Schedule::job(new ProcessScheduledCitationChecksJob)->hourly();
+
+// Security measures:
+- ShouldBeUnique interface (prevents concurrent runs)
+- DB::transaction with lockForUpdate() for quota checks
+- Per-platform quota verification</code></pre>
+
+                        <h3 class="text-lg font-semibold mt-6">SyncGA4DataJob</h3>
+                        <p class="text-sm text-gray-600 mb-2"><code>App\Jobs\SyncGA4DataJob</code></p>
+                        <p>Syncs referral data from Google Analytics 4.</p>
+                        <pre><code>// Dispatched daily at 2 AM
+Schedule::command('citations:sync-ga4')->dailyAt('02:00');
+
+// Handles token refresh automatically
+// Filters for AI referral sources (chat.openai.com, perplexity.ai, etc.)</code></pre>
+
+                        <h3 class="text-lg font-semibold mt-6">Scheduled Commands</h3>
+                        <pre><code>// In routes/console.php:
+
+// Process due citation checks (hourly)
+Schedule::job(new ProcessScheduledCitationChecksJob)->hourly();
+
+// Sync GA4 data (daily at 2 AM)
+Schedule::command('citations:sync-ga4')->dailyAt('02:00');
+
+// Cleanup old data (daily at 3 AM)
+Schedule::command('citations:cleanup')->dailyAt('03:00');</code></pre>
+
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 my-4">
+                            <h4 class="font-semibold text-yellow-800 mb-2">Production Setup (Ploi)</h4>
+                            <ol class="text-sm text-yellow-700 space-y-1 list-decimal list-inside">
+                                <li>Enable Scheduler in Ploi (Site → Scheduler → Enable)</li>
+                                <li>Add Queue Daemon: <code>php artisan queue:work --sleep=3 --tries=3 --max-time=3600</code></li>
+                                <li>Set <code>QUEUE_CONNECTION=database</code> or <code>redis</code> in .env</li>
+                            </ol>
+                        </div>
 
                         <!-- Security Precautions -->
                         <h2 id="security" class="text-2xl font-bold text-gray-900 border-b pb-4 mt-12">Security Precautions</h2>

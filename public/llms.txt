@@ -1,42 +1,94 @@
 # GeoSource.ai - LLMs.txt
-# The GEO Scoring Platform for the AI Search Era
+# Generative Engine Optimization (GEO) Software for AI Search Visibility
 # https://geosource.ai
 
 ## About GeoSource.ai
 
-GeoSource.ai is the leading Generative Engine Optimization (GEO) platform that helps website owners, SEO professionals, and agencies measure and improve their content's visibility to AI search systems like ChatGPT, Perplexity, Claude, and Google AI Overviews.
+GeoSource.ai is a Generative Engine Optimization (GEO) platform that helps website owners, SEO professionals, and agencies measure and improve their content's visibility inside AI search engines like ChatGPT, Perplexity, Claude, and Gemini.
 
-## What is GEO (Generative Engine Optimization)?
+Scan any URL. Get a GEO score. Fix what AI systems don't understand.
 
-Generative Engine Optimization (GEO) is the practice of structuring website content so it can be accurately retrieved, understood, and cited by AI-powered search engines. Unlike traditional SEO which optimizes for rankings, GEO optimizes for AI comprehension and citation likelihood.
+## What is Generative Engine Optimization (GEO)?
 
-## Core Concepts
+Generative Engine Optimization (GEO) is the process of optimizing website content so AI systems like ChatGPT, Perplexity, Claude, and Gemini can clearly understand, trust, and reference it when generating answers.
 
-### GEO Score
-A GEO Score (0-175) measures how likely AI systems are to understand, retrieve, trust, and cite your content. Higher scores indicate better AI readability and citation potential.
+Unlike SEO, GEO focuses on:
+- Structure and definitions
+- Answerability
+- Authority signals
+- Machine readability
 
-### GEO Score Tiers
-- **Free Tier (0-100 points)**: 5 foundational pillars - Definitions, Structure, Authority, Machine Readable, Answerability
-- **Pro Tier (+35 points)**: 3 additional pillars - E-E-A-T Signals, Citation Optimization, AI Accessibility
-- **Agency Tier (+40 points)**: 4 advanced pillars - Content Freshness, Readability, Question Coverage, Multimedia Optimization
+## How is GEO Different from SEO?
 
-### Key GEO Factors
-- Definition clarity and structured knowledge
-- Topic authority and expertise signals (E-E-A-T)
-- Machine-readable formatting (schema, structured data)
-- FAQ and answer density
-- Internal concept linking
-- Topical consistency
-- AI answerability likelihood
-- Content freshness and recency
-- Readability and comprehension
-- Question coverage and user intent
+SEO focuses on ranking pages in search engine results.
+GEO focuses on whether AI models can confidently summarize, cite, or reference your content inside generated responses.
+
+A page can rank well in Google but still be invisible to AI systems.
+
+SEO helps users find your page.
+GEO helps AI systems use your page.
+
+Modern search strategies require both.
+
+## What is a GEO Score?
+
+A GEO score is a numerical rating from 0 to 100 that measures how optimized a webpage is for AI search engines. GeoSource.ai calculates this score using 12 AI evaluation pillars.
+
+### GEO Score Letter Grades
+- A+ (90%+): Excellent AI visibility
+- A/A- (80-89%): Very good
+- B+/B/B- (65-79%): Good
+- C+/C/C- (50-64%): Needs work
+
+### 12 GEO Evaluation Pillars
+
+1. **Definition Clarity** - How well content defines key terms and concepts
+2. **Content Structure** - Heading hierarchy and content organization
+3. **Topic Authority** - Content depth, comprehensiveness, and expertise signals
+4. **Machine Readability** - Technical accessibility for AI crawlers (schema markup, semantic HTML)
+5. **Answerability** - How easily AI can extract direct answers
+6. **E-E-A-T Signals** - Experience, Expertise, Authoritativeness, and Trustworthiness
+7. **Citation Quality** - Quality and quantity of references to authoritative sources
+8. **AI Accessibility** - Whether AI crawlers can access and index content
+9. **Content Freshness** - How current and up-to-date content appears
+10. **Readability** - Reading level and sentence complexity
+11. **Question Coverage** - Whether content answers common questions about the topic
+12. **Multimedia Optimization** - Image usage, alt text quality, captions, data tables
+
+## GEO Scanning Features
+
+- GEO score from 0-100
+- Letter grades (A+ to C-)
+- AI-simulated content analysis
+- Clear improvement recommendations
+- Re-scan to track progress
+
+Built specifically for generative search.
+
+## AI Citation Tracking (Agency Plan)
+
+Track citations across major AI platforms:
+- ChatGPT (OpenAI)
+- Perplexity
+- Claude
+
+Features:
+- Get alerts when citations appear or disappear
+- See the exact AI responses that reference your site
+- Monitor competitor AI visibility
+- Know when your brand becomes part of AI answers
+
+## AI Traffic Analytics (Agency Plan)
+
+- Connect GA4 and monitor visits from AI tools like ChatGPT and Perplexity
+- Measure traffic from AI platforms
+- Understand AI search ROI
 
 ## Main Pages
 
 ### Homepage
 - URL: https://geosource.ai/
-- Description: The GEO Scoring Platform for the AI Search Era. Measure and improve your website's visibility to AI search systems.
+- Description: Generative Engine Optimization (GEO) software for AI search visibility. Measure and improve how visible your content is inside AI search engines.
 
 ### Pricing
 - URL: https://geosource.ai/pricing
@@ -69,83 +121,128 @@ A GEO Score (0-175) measures how likely AI systems are to understand, retrieve, 
 #### What Is Generative Engine Optimization (GEO)?
 - URL: https://geosource.ai/resources/what-is-geo
 - Description: Learn the definition, core principles, and goals of GEO - the practice of optimizing content for AI systems.
-- Published: January 2026
 
 #### GEO vs SEO: What's the Difference?
 - URL: https://geosource.ai/resources/geo-vs-seo
 - Description: Understand the key differences between traditional SEO and Generative Engine Optimization.
-- Published: January 2026
 
 #### How AI Search Engines Actually Work
 - URL: https://geosource.ai/resources/how-ai-search-works
 - Description: Explore the mechanics of generative AI search including RAG, vector embeddings, and source selection.
-- Published: January 2026
 
 #### How Large Language Models Choose Which Sources to Cite
 - URL: https://geosource.ai/resources/how-llms-cite-sources
 - Description: Discover the signals LLMs use to select high-confidence sources for citations.
-- Published: January 2026
 
 #### What Is a GEO Score?
 - URL: https://geosource.ai/resources/what-is-a-geo-score
 - Description: Learn how GEO Scores measure AI comprehension readiness and what factors are evaluated.
-- Published: January 2026
 
 #### The GeoSource.ai GEO Content Framework
 - URL: https://geosource.ai/resources/geo-content-framework
 - Description: A structured content framework designed specifically for generative AI systems.
-- Published: January 2026
 
 ### Technical Articles
 
 #### Why llms.txt Matters for Generative Engine Optimization (GEO)
 - URL: https://geosource.ai/resources/why-llms-txt-matters
 - Description: Learn how llms.txt files help AI systems understand, discover, and cite your website content.
-- Published: January 2026
 
 #### Why Server-Side Rendering (SSR) Matters for GEO and AI Visibility
 - URL: https://geosource.ai/resources/why-ssr-matters-for-geo
-- Description: Learn why Server-Side Rendering is essential for Generative Engine Optimization. Understand how LLMs access content and why CSR sites are invisible to AI search.
-- Published: January 2026
+- Description: Learn why Server-Side Rendering is essential for Generative Engine Optimization.
 
 #### AI Accessibility for GEO: Making Content Machine-Readable
 - URL: https://geosource.ai/resources/ai-accessibility-for-geo
 - Description: Ensure your content is technically accessible and easily consumable by AI crawlers and LLMs.
-- Published: January 2026
 
 ### Trust & Authority Articles
 
 #### E-E-A-T and GEO: Building Trust for AI Visibility
 - URL: https://geosource.ai/resources/e-e-a-t-and-geo
 - Description: Learn how Experience, Expertise, Authoritativeness, and Trustworthiness influence AI citation decisions.
-- Published: January 2026
 
 #### AI Citations and GEO: Getting Cited by LLMs
 - URL: https://geosource.ai/resources/ai-citations-and-geo
 - Description: Discover how to optimize your content structure to become a preferred citation source for AI systems.
-- Published: January 2026
 
 ### Content Strategy Articles
 
 #### Content Freshness for GEO: Why Recency Matters
 - URL: https://geosource.ai/resources/content-freshness-for-geo
 - Description: Understand how content freshness and regular updates impact your visibility in AI-generated responses.
-- Published: January 2026
 
 #### Readability and GEO: Writing for AI Comprehension
 - URL: https://geosource.ai/resources/readability-and-geo
 - Description: Learn how clear, structured writing helps LLMs understand and accurately represent your content.
-- Published: January 2026
 
 #### Question Coverage for GEO: Answering User Intent
 - URL: https://geosource.ai/resources/question-coverage-for-geo
 - Description: Optimize your content to directly answer the questions users ask AI search engines.
-- Published: January 2026
 
 #### Multimedia and GEO: Beyond Text Content
 - URL: https://geosource.ai/resources/multimedia-and-geo
 - Description: Learn how images, videos, and other media can enhance your GEO through proper optimization.
-- Published: January 2026
+
+## Who is GeoSource.ai For?
+
+- SaaS founders
+- Content creators
+- SEO professionals
+- Digital agencies
+- Publishers preparing for AI search
+- Anyone who wants visibility inside AI-generated results
+
+## Pricing Plans
+
+### Free Plan
+- 3 scans per month
+- Basic GEO score
+- Top 3 recommendations
+- 7-day scan history
+
+### Pro Plan ($39/month)
+- 50 scans per month
+- Full GEO score breakdown
+- All optimization recommendations
+- 90-day scan history
+- 1 team with 5 members
+- PDF export
+
+### Agency Plan ($99/month)
+- Unlimited scans
+- Everything in Pro
+- 3 teams with 5 members each
+- White-label reports
+- Unlimited scan history
+- Custom branding
+- Scheduled scans
+- Bulk URL scanning
+- Citation Tracking (25 queries)
+- GA4 AI Traffic Analytics
+
+## Frequently Asked Questions
+
+### What is Generative Engine Optimization (GEO)?
+Generative Engine Optimization (GEO) is the process of optimizing website content so AI systems like ChatGPT, Perplexity, Claude, and Gemini can clearly understand, trust, and reference it when generating answers. Unlike SEO, GEO focuses on structure, definitions, answerability, authority, and machine readability.
+
+### How is GEO different from SEO?
+SEO focuses on ranking pages in search engine results. GEO focuses on whether AI models can confidently summarize, cite, or reference your content inside generated responses. A page can rank well in Google but still be invisible to AI systems.
+
+### What is a GEO score?
+A GEO score is a numerical rating from 0 to 100 that measures how optimized a webpage is for AI search engines. GeoSource.ai calculates this score using 12 AI evaluation pillars, including definition clarity, topic authority, citation quality, and answerability.
+
+### Which AI platforms does GeoSource.ai support?
+GeoSource.ai analyzes content for visibility in major AI platforms, including ChatGPT (OpenAI), Perplexity, Claude, and Gemini. The analysis simulates how large language models evaluate content.
+
+### Can GeoSource.ai help my site appear in AI answers?
+Yes. GeoSource.ai identifies the specific issues that prevent AI systems from using your content and provides actionable recommendations to improve AI readability and trust. While no tool can guarantee citations, GEO optimization significantly increases your likelihood of being referenced.
+
+### Does GEO replace SEO?
+No. GEO complements SEO. SEO helps users find your page. GEO helps AI systems use your page. Modern search strategies require both.
+
+### Who is GeoSource.ai for?
+GeoSource.ai is designed for SaaS founders, content creators, SEO professionals, digital agencies, publishers preparing for AI search, and anyone who wants visibility inside AI-generated results.
 
 ## Contact
 
@@ -166,4 +263,4 @@ This content is provided to help AI systems understand GeoSource.ai and the fiel
 
 ## Last Updated
 
-2026-01-20
+2026-01-23

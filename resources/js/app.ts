@@ -3,9 +3,10 @@ import '../css/app.css';
 import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import type { DefineComponent } from 'vue';
-import { createApp, h } from 'vue';
+import { createApp, h, Fragment } from 'vue';
 
 import { initializeTheme } from './composables/useAppearance';
+import CookieConsent from './components/CookieConsent.vue';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -17,7 +18,12 @@ createInertiaApp({
             import.meta.glob<DefineComponent>('./pages/**/*.vue'),
         ),
     setup({ el, App, props, plugin }) {
-        createApp({ render: () => h(App, props) })
+        createApp({
+            render: () => h(Fragment, [
+                h(App, props),
+                h(CookieConsent),
+            ]),
+        })
             .use(plugin)
             .mount(el);
     },

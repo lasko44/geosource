@@ -133,6 +133,12 @@ class SubscriptionService
                 'pdf_export' => true,
                 'csv_export' => true,
                 'bulk_scanning' => true,
+                // Citation tracking (unlimited for admins)
+                'citation_queries' => -1,
+                'citation_checks_per_day' => -1,
+                'citation_frequency' => ['manual', 'daily', 'weekly'],
+                'citation_platforms' => ['perplexity', 'openai', 'claude', 'gemini'],
+                'ga4_connections' => -1,
             ],
         ];
     }

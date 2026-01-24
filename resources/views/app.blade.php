@@ -32,6 +32,11 @@
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
+        {{-- Google Analytics 4 (loaded via consent banner) --}}
+        @if(config('services.google.analytics_id'))
+        <meta name="ga-id" content="{{ config('services.google.analytics_id') }}">
+        @endif
+
         <link rel="icon" href="/favicon.ico" sizes="any">
         <link rel="icon" href="/favicon.svg" type="image/svg+xml">
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">

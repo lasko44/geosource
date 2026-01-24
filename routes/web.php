@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\ScanController;
 use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
@@ -29,6 +30,10 @@ Route::get('/llms.txt', function () {
     ]);
 })->name('llms');
 
+// Google OAuth
+Route::get('/auth/google', [GoogleController::class, 'redirect'])->name('auth.google');
+Route::get('/auth/google/callback', [GoogleController::class, 'callback']);
+
 Route::get('dashboard', [ScanController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
@@ -43,3 +48,4 @@ require __DIR__.'/billing.php';
 require __DIR__.'/teams.php';
 require __DIR__.'/scans.php';
 require __DIR__.'/resources.php';
+require __DIR__.'/citations.php';

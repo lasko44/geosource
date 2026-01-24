@@ -18,6 +18,7 @@ import {
     Brain,
     Menu,
     Calendar,
+    Mail,
 } from 'lucide-vue-next';
 import {
     DropdownMenu,

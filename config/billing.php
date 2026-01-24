@@ -41,6 +41,12 @@ return [
                     'white_label' => false,
                     'scheduled_scans' => false,
                     'pdf_export' => true,
+                    // Citation tracking (Agency only)
+                    'citation_queries' => 0,
+                    'citation_checks_per_day' => 0,
+                    'citation_frequency' => [],
+                    'citation_platforms' => [],
+                    'ga4_connections' => 0,
                 ],
             ],
             'agency' => [
@@ -56,14 +62,14 @@ return [
                     'Everything in Pro',
                     '3 teams with 5 members each',
                     'White-label reports',
-                    'API access',
                     'Unlimited scan history',
-                    'Competitor tracking (5 domains)',
                     'Custom branding',
                     'Dedicated support',
                     'Export to PDF',
                     'Scheduled scans',
                     'Bulk URL scanning',
+                    'Citation Tracking (25 queries)',
+                    'GA4 AI Traffic Analytics',
                 ],
                 'limits' => [
                     'scans_per_month' => -1, // unlimited
@@ -77,6 +83,12 @@ return [
                     'scheduled_scans' => true,
                     'pdf_export' => true,
                     'bulk_scanning' => true,
+                    // Citation tracking limits
+                    'citation_queries' => 25,
+                    'citation_checks_per_day' => 50,
+                    'citation_frequency' => ['manual', 'daily', 'weekly'],
+                    'citation_platforms' => ['perplexity', 'claude'],
+                    'ga4_connections' => 3,
                 ],
             ],
         ],
@@ -111,6 +123,12 @@ return [
             'scheduled_scans' => false,
             'pdf_export' => false,
             'bulk_scanning' => false,
+            // Citation tracking limits (not available for free tier)
+            'citation_queries' => 0,
+            'citation_checks_per_day' => 0,
+            'citation_frequency' => [],
+            'citation_platforms' => [],
+            'ga4_connections' => 0,
         ],
     ],
 

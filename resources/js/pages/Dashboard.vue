@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, useForm, usePage, router } from '@inertiajs/vue3';
-import { Globe, TrendingUp, Target, Calendar, ExternalLink, Zap, ArrowRight, Users, Crown, Plus, Building2, User, ChevronDown } from 'lucide-vue-next';
+import { Globe, TrendingUp, Target, Calendar, ExternalLink, Zap, ArrowRight, Users, Crown, Plus, Building2, User, ChevronDown, Quote, CheckCircle2, XCircle } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -41,6 +41,25 @@ interface CurrentTeam {
     slug: string;
 }
 
+interface CitationQuery {
+    id: number;
+    uuid: string;
+    query: string;
+    domain: string;
+    is_cited: boolean | null;
+    last_checked_at: string | null;
+}
+
+interface CitationData {
+    queries: CitationQuery[];
+    stats: {
+        total_queries: number;
+        cited_count: number;
+        total_checks: number;
+        citation_rate: number;
+    };
+}
+
 interface Props {
     recentScans: Scan[];
     stats: DashboardStats;
@@ -51,6 +70,7 @@ interface Props {
     currentTeamId: number | null;
     currentTeam: CurrentTeam | null;
     hasPersonalOption: boolean;
+    citationData: CitationData | null;
 }
 
 const props = defineProps<Props>();
@@ -461,6 +481,76 @@ const getProgressColor = () => {
                                 <div class="text-right text-sm text-muted-foreground">
                                     {{ formatDate(scan.created_at) }}
                                 </div>
+                            </div>
+                        </Link>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <!-- Citation Tracking Section (Agency only) -->
+            <Card v-if="citationData">
+                <CardHeader>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <CardTitle class="flex items-center gap-2">
+                                <Quote class="h-5 w-5" />
+                                Citation Tracking
+                            </CardTitle>
+                            <CardDescription>Monitor how AI platforms cite your content</CardDescription>
+                        </div>
+                        <Link href="/citations">
+                            <Button variant="outline" size="sm">View All</Button>
+                        </Link>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <!-- Citation Stats -->
+                    <div class="grid gap-4 mb-6 sm:grid-cols-3">
+                        <div class="rounded-lg border p-3 text-center">
+                            <p class="text-2xl font-bold">{{ citationData.stats.total_queries }}</p>
+                            <p class="text-xs text-muted-foreground">Queries Tracked</p>
+                        </div>
+                        <div class="rounded-lg border p-3 text-center">
+                            <p class="text-2xl font-bold text-green-600">{{ citationData.stats.cited_count }}</p>
+                            <p class="text-xs text-muted-foreground">Citations Found</p>
+                        </div>
+                        <div class="rounded-lg border p-3 text-center">
+                            <p class="text-2xl font-bold" :class="citationData.stats.citation_rate >= 50 ? 'text-green-600' : 'text-yellow-600'">
+                                {{ citationData.stats.citation_rate }}%
+                            </p>
+                            <p class="text-xs text-muted-foreground">Citation Rate</p>
+                        </div>
+                    </div>
+
+                    <!-- Recent Queries -->
+                    <div v-if="citationData.queries.length === 0" class="py-8 text-center">
+                        <Quote class="mx-auto h-12 w-12 text-muted-foreground/50" />
+                        <h3 class="mt-4 text-lg font-medium">No citation queries yet</h3>
+                        <p class="mt-2 text-sm text-muted-foreground">
+                            Create a query to track how AI platforms cite your content
+                        </p>
+                        <Link href="/citations/queries/create" class="mt-4 inline-block">
+                            <Button>Create Your First Query</Button>
+                        </Link>
+                    </div>
+
+                    <div v-else class="space-y-2">
+                        <Link
+                            v-for="query in citationData.queries"
+                            :key="query.id"
+                            :href="`/citations/queries/${query.uuid}`"
+                            class="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50"
+                        >
+                            <div class="flex-1 min-w-0">
+                                <p class="font-medium truncate">{{ query.query }}</p>
+                                <p class="text-sm text-muted-foreground truncate">{{ query.domain }}</p>
+                            </div>
+                            <div class="flex items-center gap-2 ml-4">
+                                <template v-if="query.is_cited !== null">
+                                    <CheckCircle2 v-if="query.is_cited" class="h-5 w-5 text-green-600" />
+                                    <XCircle v-else class="h-5 w-5 text-red-500" />
+                                </template>
+                                <span v-else class="text-sm text-muted-foreground">Not checked</span>
                             </div>
                         </Link>
                     </div>

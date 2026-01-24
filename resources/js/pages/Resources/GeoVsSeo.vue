@@ -16,6 +16,7 @@ import {
     Lightbulb,
     Menu,
     Calendar,
+    Mail,
 } from 'lucide-vue-next';
 import {
     DropdownMenu,

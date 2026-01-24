@@ -18,6 +18,7 @@ import {
     Target,
     Menu,
     Calendar,
+    Mail,
 } from 'lucide-vue-next';
 import {
     DropdownMenu,

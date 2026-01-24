@@ -18,6 +18,7 @@ import {
     Database,
     Search,
     Menu,
+    Mail,
 } from 'lucide-vue-next';
 import {
     DropdownMenu,

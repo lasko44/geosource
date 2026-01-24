@@ -101,10 +101,9 @@ const featureCategories = [
         ],
     },
     {
-        name: 'Export & Integration',
+        name: 'Export',
         features: [
             { name: 'PDF export', key: 'pdf_export', format: 'boolean' },
-            { name: 'API access', key: 'api_access', format: 'boolean' },
         ],
     },
     {

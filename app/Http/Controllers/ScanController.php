@@ -8,6 +8,7 @@ use App\Models\Scan;
 use App\Models\ScanAuditLog;
 use App\Models\Team;
 use App\Models\User;
+use App\Services\Citation\CitationService;
 use App\Services\GEO\EnhancedGeoScorer;
 use App\Services\GEO\GeoScorer;
 use App\Services\RAG\VectorStore;
@@ -25,6 +26,7 @@ class ScanController extends Controller
         private EnhancedGeoScorer $enhancedGeoScorer,
         private VectorStore $vectorStore,
         private SubscriptionService $subscriptionService,
+        private CitationService $citationService,
     ) {}
 
     /**
@@ -134,6 +136,59 @@ class ScanController extends Controller
             $usage = $user->getUsageSummary();
         }
 
+        // Get citation data for Agency tier users
+        $citationData = null;
+        if ($this->citationService->canAccessCitations($user)) {
+            $citationQueries = \App\Models\CitationQuery::where(function ($q) use ($user, $currentTeamId) {
+                $q->where('user_id', $user->id);
+                if ($currentTeamId) {
+                    $q->orWhere('team_id', $currentTeamId);
+                }
+            })
+                ->with(['checks' => function ($q) {
+                    $q->latest()->limit(1);
+                }])
+                ->latest()
+                ->limit(5)
+                ->get();
+
+            $recentChecks = \App\Models\CitationCheck::where(function ($q) use ($user, $currentTeamId) {
+                $q->where('user_id', $user->id);
+                if ($currentTeamId) {
+                    $q->orWhere('team_id', $currentTeamId);
+                }
+            })
+                ->where('status', 'completed')
+                ->latest()
+                ->limit(10)
+                ->get();
+
+            $citedCount = $recentChecks->where('is_cited', true)->count();
+            $totalChecks = $recentChecks->count();
+
+            $citationData = [
+                'queries' => $citationQueries->map(fn ($q) => [
+                    'id' => $q->id,
+                    'uuid' => $q->uuid,
+                    'query' => $q->query,
+                    'domain' => $q->domain,
+                    'is_cited' => $q->checks->first()?->is_cited,
+                    'last_checked_at' => $q->last_checked_at?->toISOString(),
+                ]),
+                'stats' => [
+                    'total_queries' => \App\Models\CitationQuery::where(function ($q) use ($user, $currentTeamId) {
+                        $q->where('user_id', $user->id);
+                        if ($currentTeamId) {
+                            $q->orWhere('team_id', $currentTeamId);
+                        }
+                    })->count(),
+                    'cited_count' => $citedCount,
+                    'total_checks' => $totalChecks,
+                    'citation_rate' => $totalChecks > 0 ? round(($citedCount / $totalChecks) * 100) : 0,
+                ],
+            ];
+        }
+
         return Inertia::render('Dashboard', [
             'recentScans' => $recentScans,
             'stats' => $stats,
@@ -148,6 +203,7 @@ class ScanController extends Controller
                 'slug' => $currentTeam->slug,
             ] : null,
             'hasPersonalOption' => $hasPersonalOption,
+            'citationData' => $citationData,
         ]);
     }
 
