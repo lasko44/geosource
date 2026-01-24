@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
 
-import GoogleIcon from '@/components/icons/GoogleIcon.vue';
 import InputError from '@/components/InputError.vue';
 import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
@@ -25,24 +24,6 @@ const props = defineProps<Props>();
         description="Enter your details below to create your account"
     >
         <Head title="Register" />
-
-        <!-- Google Sign Up -->
-        <a
-            href="/auth/google"
-            class="flex w-full items-center justify-center gap-3 rounded-md border bg-background px-4 py-2.5 text-sm font-medium transition-colors hover:bg-muted"
-        >
-            <GoogleIcon />
-            Continue with Google
-        </a>
-
-        <div class="relative">
-            <div class="absolute inset-0 flex items-center">
-                <span class="w-full border-t" />
-            </div>
-            <div class="relative flex justify-center text-xs uppercase">
-                <span class="bg-background px-2 text-muted-foreground">Or continue with email</span>
-            </div>
-        </div>
 
         <Form
             v-bind="store.form()"
