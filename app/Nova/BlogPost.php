@@ -1,0 +1,188 @@
+<?php
+
+namespace App\Nova;
+
+use Laravel\Nova\Fields\Badge;
+use Laravel\Nova\Fields\BelongsTo;
+use Laravel\Nova\Fields\DateTime;
+use Laravel\Nova\Fields\ID;
+use Laravel\Nova\Fields\KeyValue;
+use Laravel\Nova\Fields\Markdown;
+use Laravel\Nova\Fields\Number;
+use Laravel\Nova\Fields\Select;
+use Laravel\Nova\Fields\Slug;
+use Laravel\Nova\Fields\Text;
+use Laravel\Nova\Fields\Textarea;
+use Laravel\Nova\Http\Requests\NovaRequest;
+use Laravel\Nova\Panel;
+
+class BlogPost extends Resource
+{
+    /**
+     * The model the resource corresponds to.
+     *
+     * @var class-string<\App\Models\BlogPost>
+     */
+    public static $model = \App\Models\BlogPost::class;
+
+    /**
+     * The single value that should be used to represent the resource when being displayed.
+     *
+     * @var string
+     */
+    public static $title = 'title';
+
+    /**
+     * The columns that should be searched.
+     *
+     * @var array
+     */
+    public static $search = [
+        'id', 'title', 'slug', 'excerpt',
+    ];
+
+    /**
+     * Get the fields displayed by the resource.
+     *
+     * @return array<int, \Laravel\Nova\Fields\Field>
+     */
+    public function fields(NovaRequest $request): array
+    {
+        return [
+            ID::make()->sortable(),
+
+            Text::make('Title')
+                ->sortable()
+                ->rules('required', 'max:255'),
+
+            Slug::make('Slug')
+                ->from('Title')
+                ->rules('required', 'max:255')
+                ->creationRules('unique:blog_posts,slug')
+                ->updateRules('unique:blog_posts,slug,{{resourceId}}'),
+
+            Textarea::make('Excerpt')
+                ->rules('required', 'max:500')
+                ->hideFromIndex(),
+
+            Markdown::make('Content')
+                ->rules('required')
+                ->hideFromIndex(),
+
+            new Panel('SEO', $this->seoFields()),
+
+            Select::make('Status')
+                ->options([
+                    'draft' => 'Draft',
+                    'published' => 'Published',
+                    'archived' => 'Archived',
+                ])
+                ->displayUsingLabels()
+                ->sortable()
+                ->filterable()
+                ->default('draft'),
+
+            Badge::make('Status')
+                ->map([
+                    'draft' => 'warning',
+                    'published' => 'success',
+                    'archived' => 'danger',
+                ])
+                ->onlyOnIndex(),
+
+            DateTime::make('Published At')
+                ->sortable()
+                ->filterable()
+                ->nullable(),
+
+            BelongsTo::make('Author', 'author', User::class)
+                ->sortable()
+                ->filterable()
+                ->nullable()
+                ->default($request->user()?->id),
+
+            Text::make('Tags')
+                ->help('Comma-separated list of tags')
+                ->nullable()
+                ->hideFromIndex()
+                ->fillUsing(function ($request, $model, $attribute, $requestAttribute) {
+                    $tags = $request->input($requestAttribute);
+                    if ($tags) {
+                        $model->{$attribute} = array_map('trim', explode(',', $tags));
+                    } else {
+                        $model->{$attribute} = [];
+                    }
+                })
+                ->resolveUsing(function ($value) {
+                    return is_array($value) ? implode(', ', $value) : $value;
+                }),
+
+            Number::make('Views', 'view_count')
+                ->sortable()
+                ->exceptOnForms(),
+
+            DateTime::make('Created At')
+                ->sortable()
+                ->exceptOnForms(),
+        ];
+    }
+
+    protected function seoFields(): array
+    {
+        return [
+            Text::make('Meta Title')
+                ->nullable()
+                ->rules('nullable', 'max:70')
+                ->help('Leave blank to use the post title'),
+
+            Textarea::make('Meta Description')
+                ->nullable()
+                ->rules('nullable', 'max:160')
+                ->help('Leave blank to use the excerpt'),
+
+            Text::make('Featured Image')
+                ->nullable()
+                ->help('URL to the featured image'),
+        ];
+    }
+
+    /**
+     * Get the cards available for the resource.
+     *
+     * @return array<int, \Laravel\Nova\Card>
+     */
+    public function cards(NovaRequest $request): array
+    {
+        return [];
+    }
+
+    /**
+     * Get the filters available for the resource.
+     *
+     * @return array<int, \Laravel\Nova\Filters\Filter>
+     */
+    public function filters(NovaRequest $request): array
+    {
+        return [];
+    }
+
+    /**
+     * Get the lenses available for the resource.
+     *
+     * @return array<int, \Laravel\Nova\Lenses\Lens>
+     */
+    public function lenses(NovaRequest $request): array
+    {
+        return [];
+    }
+
+    /**
+     * Get the actions available for the resource.
+     *
+     * @return array<int, \Laravel\Nova\Actions\Action>
+     */
+    public function actions(NovaRequest $request): array
+    {
+        return [];
+    }
+}

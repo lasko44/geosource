@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BlogPost;
 use Illuminate\Http\Response;
 
 class SitemapController extends Controller
@@ -150,7 +151,28 @@ class SitemapController extends Controller
                 'changefreq' => 'monthly',
                 'priority' => '0.7',
             ],
+            // Blog index
+            [
+                'url' => '/blog',
+                'lastmod' => now()->format('Y-m-d'),
+                'changefreq' => 'daily',
+                'priority' => '0.8',
+            ],
         ];
+
+        // Add blog posts dynamically
+        $blogPosts = BlogPost::published()
+            ->orderByDesc('published_at')
+            ->get(['slug', 'published_at', 'updated_at']);
+
+        foreach ($blogPosts as $post) {
+            $pages[] = [
+                'url' => '/blog/'.$post->slug,
+                'lastmod' => ($post->updated_at ?? $post->published_at)->format('Y-m-d'),
+                'changefreq' => 'weekly',
+                'priority' => '0.7',
+            ];
+        }
 
         $xml = '<?xml version="1.0" encoding="UTF-8"?>'."\n";
         $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'."\n";

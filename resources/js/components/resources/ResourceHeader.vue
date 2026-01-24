@@ -23,6 +23,9 @@ import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
                 <Link href="/pricing">
                     <Button variant="ghost">Pricing</Button>
                 </Link>
+                <Link href="/blog">
+                    <Button variant="ghost">Blog</Button>
+                </Link>
                 <Link href="/resources">
                     <Button variant="ghost">Resources</Button>
                 </Link>
@@ -53,6 +56,11 @@ import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
                         <DropdownMenuItem as-child role="menuitem">
                             <Link href="/pricing" class="w-full">
                                 Pricing
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem as-child role="menuitem">
+                            <Link href="/blog" class="w-full">
+                                Blog
                             </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem as-child role="menuitem">

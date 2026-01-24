@@ -50,3 +50,4 @@ require __DIR__.'/scans.php';
 require __DIR__.'/scheduled-scans.php';
 require __DIR__.'/resources.php';
 require __DIR__.'/citations.php';
+require __DIR__.'/blog.php';

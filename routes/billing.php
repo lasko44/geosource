@@ -13,6 +13,7 @@ Route::middleware(['auth', 'verified'])->prefix('billing')->name('billing.')->gr
     Route::get('/', [UserBillingController::class, 'index'])->name('index');
     Route::get('/plans', [UserBillingController::class, 'plans'])->name('plans');
     Route::get('/checkout/{plan}', [UserBillingController::class, 'checkout'])->name('checkout');
+    Route::get('/thank-you', [UserBillingController::class, 'thankYou'])->name('thank-you');
     Route::post('/subscribe', [UserBillingController::class, 'subscribe'])->name('subscribe');
     Route::post('/cancel', [UserBillingController::class, 'cancel'])->name('cancel');
     Route::post('/resume', [UserBillingController::class, 'resume'])->name('resume');

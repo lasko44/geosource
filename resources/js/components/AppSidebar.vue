@@ -6,6 +6,7 @@ import {
     CircleHelp,
     FileChartColumnIncreasingIcon,
     LayoutGrid,
+    Newspaper,
     Quote,
     Receipt,
     Users
@@ -84,6 +85,12 @@ const mainNavItems = computed<NavItem[]>(() => {
 });
 
 const footerNavItems: NavItem[] = [
+    {
+        title: 'Blog',
+        href: '/blog',
+        icon: Newspaper,
+        target: '_blank',
+    },
     {
         title: 'GEO Resources',
         href: '/resources',

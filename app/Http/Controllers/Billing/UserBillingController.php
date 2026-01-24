@@ -113,11 +113,37 @@ class UserBillingController extends Controller
             $user->newSubscription('default', $planConfig['price_id'])
                 ->create($request->input('payment_method'));
 
-            return redirect()->route('billing.index')
-                ->with('success', 'Successfully subscribed to '.$planConfig['name'].'!');
+            // Store plan info in session for the thank you page
+            session(['subscribed_plan' => [
+                'key' => $plan,
+                'name' => $planConfig['name'],
+                'price' => $planConfig['price'],
+            ]]);
+
+            return redirect()->route('billing.thank-you');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => $e->getMessage()]);
         }
+    }
+
+    /**
+     * Show the thank you page after successful subscription.
+     */
+    public function thankYou(Request $request): Response|RedirectResponse
+    {
+        $plan = session('subscribed_plan');
+
+        // If no plan in session, redirect to billing
+        if (! $plan) {
+            return redirect()->route('billing.index');
+        }
+
+        // Clear the session data so refreshing doesn't re-trigger tracking
+        session()->forget('subscribed_plan');
+
+        return Inertia::render('billing/ThankYou', [
+            'plan' => $plan,
+        ]);
     }
 
     /**

@@ -31,6 +31,10 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
                     MenuItem::resource(\App\Nova\Scan::class),
                 ])->icon('users')->collapsable(),
 
+                MenuSection::make('Content', [
+                    MenuItem::resource(\App\Nova\BlogPost::class),
+                ])->icon('document-text')->collapsable(),
+
                 MenuSection::make('Documentation', [
                     MenuItem::externalLink('Developer Docs', '/nova/documentation'),
                 ])->icon('book-open')->collapsable(),
