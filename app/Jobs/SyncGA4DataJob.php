@@ -22,34 +22,34 @@ class SyncGA4DataJob implements ShouldQueue
     public int $backoff = 60;
 
     public function __construct(
-        public GA4Connection $connection
+        public GA4Connection $ga4Connection
     ) {}
 
     public function handle(GA4DataSyncService $syncService): void
     {
         Log::info('Starting GA4 data sync', [
-            'connection_id' => $this->connection->id,
-            'property_id' => $this->connection->property_id,
+            'connection_id' => $this->ga4Connection->id,
+            'property_id' => $this->ga4Connection->property_id,
         ]);
 
         try {
-            $result = $syncService->syncConnection($this->connection);
+            $result = $syncService->syncConnection($this->ga4Connection);
 
             if ($result['success']) {
                 Log::info('GA4 data sync completed', [
-                    'connection_id' => $this->connection->id,
+                    'connection_id' => $this->ga4Connection->id,
                     'synced_rows' => $result['synced'],
                     'date_range' => $result['date_range'] ?? null,
                 ]);
             } else {
                 Log::warning('GA4 data sync failed', [
-                    'connection_id' => $this->connection->id,
+                    'connection_id' => $this->ga4Connection->id,
                     'error' => $result['error'],
                 ]);
             }
         } catch (\Exception $e) {
             Log::error('GA4 data sync exception', [
-                'connection_id' => $this->connection->id,
+                'connection_id' => $this->ga4Connection->id,
                 'error' => $e->getMessage(),
             ]);
 
@@ -63,16 +63,16 @@ class SyncGA4DataJob implements ShouldQueue
     public function failed(?\Throwable $exception): void
     {
         Log::error('GA4 data sync job failed permanently', [
-            'connection_id' => $this->connection->id,
+            'connection_id' => $this->ga4Connection->id,
             'error' => $exception?->getMessage(),
         ]);
 
         // Optionally deactivate the connection after multiple failures
         if ($this->attempts() >= $this->tries) {
-            $this->connection->deactivate();
+            $this->ga4Connection->deactivate();
 
             Log::warning('Deactivated GA4 connection due to repeated sync failures', [
-                'connection_id' => $this->connection->id,
+                'connection_id' => $this->ga4Connection->id,
             ]);
         }
     }
