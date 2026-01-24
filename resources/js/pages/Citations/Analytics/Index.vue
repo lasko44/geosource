@@ -93,9 +93,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 const syncing = ref<number | null>(null);
 const deleting = ref<number | null>(null);
 
-const syncConnection = (connectionId: number) => {
-    syncing.value = connectionId;
-    router.post(`/analytics/ga4/${connectionId}/sync`, {}, {
+const syncConnection = (connection: GA4Connection) => {
+    syncing.value = connection.id;
+    router.post(`/analytics/ga4/${connection.uuid}/sync`, {}, {
         preserveScroll: true,
         onFinish: () => {
             syncing.value = null;
@@ -291,7 +291,7 @@ const totalAITraffic = computed(() => {
                                         variant="outline"
                                         size="sm"
                                         :disabled="syncing === connection.id || !connection.is_active"
-                                        @click="syncConnection(connection.id)"
+                                        @click="syncConnection(connection)"
                                     >
                                         <RefreshCw
                                             class="mr-2 h-4 w-4"
