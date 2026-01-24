@@ -47,5 +47,6 @@ require __DIR__.'/settings.php';
 require __DIR__.'/billing.php';
 require __DIR__.'/teams.php';
 require __DIR__.'/scans.php';
+require __DIR__.'/scheduled-scans.php';
 require __DIR__.'/resources.php';
 require __DIR__.'/citations.php';

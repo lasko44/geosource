@@ -124,16 +124,16 @@ const faqItems = [
 </script>
 
 <template>
-    <Head title="GEO Software for AI Search Visibility | GeoSource.ai">
+    <Head title="GEO Scoring Platform for AI Search Visibility | GeoSource.ai">
         <meta name="description" content="GeoSource.ai helps you measure and improve how visible your content is inside AI search engines like ChatGPT, Perplexity, Claude, and Gemini. Scan any URL. Get a GEO score. Fix what AI systems don't understand." />
-        <meta property="og:title" content="Generative Engine Optimization (GEO) Software for AI Search Visibility" />
+        <meta property="og:title" content="Generative Engine Optimization (GEO) Scoring Platform for AI Search Visibility" />
         <meta property="og:description" content="Measure and improve your website's visibility to AI search systems. Get your GEO Score and actionable optimization recommendations." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://geosource.ai/" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:site" content="@geosource_ai" />
         <meta name="twitter:creator" content="@geosource_ai" />
-        <meta name="twitter:title" content="GeoSource.ai - GEO Software for AI Search Visibility" />
+        <meta name="twitter:title" content="GeoSource.ai - GEO Scoring Platform for AI Search Visibility" />
         <meta name="twitter:description" content="Measure and improve your website's visibility to AI search systems." />
         <link rel="canonical" href="https://geosource.ai/" />
         <link rel="preconnect" href="https://rsms.me/" />
@@ -233,7 +233,7 @@ const faqItems = [
                             AI-Powered Analysis
                         </Badge>
                         <h1 id="hero-heading" class="text-4xl font-bold tracking-tight sm:text-6xl">
-                            <span class="sr-only">Generative Engine Optimization (GEO) Software for AI Search Visibility: </span>
+                            <span class="sr-only">Generative Engine Optimization (GEO) Scoring Platform for AI Search Visibility: </span>
                             Optimize Your Website for AI Search
                         </h1>
                         <p class="mt-6 text-lg leading-8 text-muted-foreground">

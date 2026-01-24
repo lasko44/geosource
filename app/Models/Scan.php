@@ -86,6 +86,14 @@ class Scan extends Model
     }
 
     /**
+     * Get the scheduled scan that created this scan.
+     */
+    public function scheduledScan(): BelongsTo
+    {
+        return $this->belongsTo(ScheduledScan::class);
+    }
+
+    /**
      * Get the score as a percentage.
      */
     public function getScorePercentageAttribute(): float

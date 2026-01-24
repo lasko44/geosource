@@ -124,14 +124,13 @@ class SubscriptionService
             'limits' => [
                 'scans_per_month' => -1,
                 'history_days' => -1,
+                'teams_allowed' => -1,
                 'team_members' => -1,
-                'competitor_tracking' => -1,
+                'member_scans_per_month' => -1,
                 'recommendations_shown' => -1,
-                'api_access' => true,
                 'white_label' => true,
                 'scheduled_scans' => true,
                 'pdf_export' => true,
-                'csv_export' => true,
                 'bulk_scanning' => true,
                 // Citation tracking (unlimited for admins)
                 'citation_queries' => -1,

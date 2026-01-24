@@ -17,9 +17,12 @@ class WhiteLabelController extends Controller
      */
     public function edit(Team $team): Response
     {
-        $this->authorize('update', $team);
-
         $user = auth()->user();
+
+        // White label is only available to team owners
+        if (! $team->isOwner($user)) {
+            abort(403, 'Only team owners can manage white label settings.');
+        }
 
         // Check if user has white label feature
         if (! $user->hasFeature('white_label')) {
@@ -48,9 +51,12 @@ class WhiteLabelController extends Controller
      */
     public function update(Request $request, Team $team): RedirectResponse
     {
-        $this->authorize('update', $team);
-
         $user = auth()->user();
+
+        // White label is only available to team owners
+        if (! $team->isOwner($user)) {
+            abort(403, 'Only team owners can manage white label settings.');
+        }
 
         // Check if user has white label feature
         if (! $user->hasFeature('white_label')) {
@@ -76,9 +82,12 @@ class WhiteLabelController extends Controller
      */
     public function uploadLogo(Request $request, Team $team): RedirectResponse
     {
-        $this->authorize('update', $team);
-
         $user = auth()->user();
+
+        // White label is only available to team owners
+        if (! $team->isOwner($user)) {
+            abort(403, 'Only team owners can manage white label settings.');
+        }
 
         // Check if user has white label feature
         if (! $user->hasFeature('white_label')) {
@@ -107,9 +116,12 @@ class WhiteLabelController extends Controller
      */
     public function removeLogo(Team $team): RedirectResponse
     {
-        $this->authorize('update', $team);
-
         $user = auth()->user();
+
+        // White label is only available to team owners
+        if (! $team->isOwner($user)) {
+            abort(403, 'Only team owners can manage white label settings.');
+        }
 
         // Check if user has white label feature
         if (! $user->hasFeature('white_label')) {

@@ -13,6 +13,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/scan/check-cooldown', [ScanController::class, 'checkCooldown'])
         ->name('scan.check-cooldown');
 
+    // Bulk URL scanning
+    Route::get('/scans/bulk', [ScanController::class, 'bulkIndex'])->name('scans.bulk');
+    Route::post('/scans/bulk', [ScanController::class, 'bulkScan'])
+        ->middleware('throttle:5,1')
+        ->name('scans.bulk.store');
+    Route::post('/scans/bulk/status', [ScanController::class, 'bulkStatus'])
+        ->name('scans.bulk.status');
+
     Route::get('/scans', [ScanController::class, 'list'])->name('scans.index');
     Route::get('/scans/{scan}', [ScanController::class, 'show'])->name('scans.show');
     Route::get('/scans/{scan}/status', [ScanController::class, 'status'])->name('scans.status');

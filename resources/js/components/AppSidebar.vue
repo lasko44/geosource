@@ -42,7 +42,7 @@ const mainNavItems = computed<NavItem[]>(() => {
             icon: LayoutGrid,
         },
         {
-            title: 'Reports',
+            title: 'Scans',
             href: '/scans',
             icon: FileChartColumnIncreasingIcon,
         },

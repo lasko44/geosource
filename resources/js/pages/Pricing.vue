@@ -71,9 +71,7 @@ const freeTier = {
         scans_per_month: 3,
         history_days: 7,
         team_members: 0,
-        competitor_tracking: 0,
         recommendations_shown: 3,
-        api_access: false,
         white_label: false,
         scheduled_scans: false,
         pdf_export: false,
@@ -110,7 +108,7 @@ const featureCategories = [
         name: 'Team & Branding',
         features: [
             { name: 'Team members', key: 'team_members', format: 'number' },
-            { name: 'White-label reports', key: 'white_label', format: 'boolean' },
+            { name: 'White-label reports (team owners)', key: 'white_label', format: 'boolean' },
         ],
     },
 ];

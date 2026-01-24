@@ -30,6 +30,33 @@ class ScanController extends Controller
     ) {}
 
     /**
+     * Get cooldown minutes based on user tier.
+     * Agency users get 5 minutes, others get 15 minutes.
+     */
+    private function getCooldownMinutes(User $user): int
+    {
+        if ($this->subscriptionService->isAgencyTier($user) || $user->is_admin) {
+            return 5;
+        }
+
+        return 15;
+    }
+
+    /**
+     * Find recent successful scan for cooldown check.
+     * Failed scans don't count towards cooldown.
+     */
+    private function findRecentScanForCooldown(string $url, int $userId, int $cooldownMinutes): ?Scan
+    {
+        return Scan::where('url', $url)
+            ->where('user_id', $userId)
+            ->where('status', '!=', 'failed')
+            ->where('created_at', '>=', now()->subMinutes($cooldownMinutes))
+            ->orderByDesc('created_at')
+            ->first();
+    }
+
+    /**
      * Display the dashboard with recent scans.
      */
     public function index(Request $request)
@@ -204,6 +231,7 @@ class ScanController extends Controller
             ] : null,
             'hasPersonalOption' => $hasPersonalOption,
             'citationData' => $citationData,
+            'canBulkScan' => $user->hasFeature('bulk_scanning'),
         ]);
     }
 
@@ -256,12 +284,9 @@ class ScanController extends Controller
 
         $url = $request->input('url');
 
-        // Check cooldown - prevent scanning same URL within 15 minutes
-        $cooldownMinutes = 15;
-        $recentScan = Scan::where('url', $url)
-            ->where('user_id', $user->id)
-            ->where('created_at', '>=', now()->subMinutes($cooldownMinutes))
-            ->first();
+        // Check cooldown - Agency users get 5 min, others get 15 min. Failed scans don't count.
+        $cooldownMinutes = $this->getCooldownMinutes($user);
+        $recentScan = $this->findRecentScanForCooldown($url, $user->id, $cooldownMinutes);
 
         if ($recentScan) {
             $availableAt = $recentScan->created_at->addMinutes($cooldownMinutes);
@@ -363,6 +388,197 @@ class ScanController extends Controller
     }
 
     /**
+     * Show bulk scan page.
+     */
+    public function bulkIndex(Request $request)
+    {
+        $user = $request->user();
+
+        // Check if user has bulk scanning feature
+        if (! $user->hasFeature('bulk_scanning')) {
+            return Inertia::render('Scans/BulkUpgrade', [
+                'plans' => config('billing.plans.user'),
+            ]);
+        }
+
+        // Get current team context
+        $currentTeamId = session('current_team_id');
+        $currentTeamId = ($currentTeamId && $currentTeamId !== 'personal') ? (int) $currentTeamId : null;
+
+        return Inertia::render('Scans/Bulk', [
+            'currentTeamId' => $currentTeamId,
+            'usage' => $user->getUsageSummary(),
+        ]);
+    }
+
+    /**
+     * Process bulk URL scanning.
+     */
+    public function bulkScan(Request $request)
+    {
+        $user = $request->user();
+
+        // Check if user has bulk scanning feature
+        if (! $user->hasFeature('bulk_scanning')) {
+            return back()->withErrors(['feature' => 'Bulk scanning is not available on your current plan.']);
+        }
+
+        $validated = $request->validate([
+            'urls' => 'required|string',
+        ]);
+
+        // Parse URLs (one per line)
+        $urls = array_filter(array_map('trim', explode("\n", $validated['urls'])));
+        $urls = array_unique($urls);
+
+        // Validate URLs
+        $validUrls = [];
+        $invalidUrls = [];
+
+        foreach ($urls as $url) {
+            if (filter_var($url, FILTER_VALIDATE_URL)) {
+                $validUrls[] = $url;
+            } else {
+                $invalidUrls[] = $url;
+            }
+        }
+
+        if (empty($validUrls)) {
+            return back()->withErrors(['urls' => 'No valid URLs provided.']);
+        }
+
+        // Limit to 50 URLs per batch
+        if (count($validUrls) > 50) {
+            return back()->withErrors(['urls' => 'Maximum 50 URLs per batch. You provided '.count($validUrls).' URLs.']);
+        }
+
+        // Check cooldown for each URL - Agency users get 5 min, others get 15 min. Failed scans don't count.
+        $cooldownMinutes = $this->getCooldownMinutes($user);
+        $cooldownThreshold = now()->subMinutes($cooldownMinutes);
+
+        $recentlyScannedUrls = Scan::where('user_id', $user->id)
+            ->whereIn('url', $validUrls)
+            ->where('status', '!=', 'failed')
+            ->where('created_at', '>=', $cooldownThreshold)
+            ->pluck('url')
+            ->toArray();
+
+        $urlsOnCooldown = [];
+        $urlsToScan = [];
+
+        foreach ($validUrls as $url) {
+            if (in_array($url, $recentlyScannedUrls)) {
+                $urlsOnCooldown[] = $url;
+            } else {
+                $urlsToScan[] = $url;
+            }
+        }
+
+        // If all URLs are on cooldown, return error
+        if (empty($urlsToScan)) {
+            $count = count($urlsOnCooldown);
+
+            return back()->withErrors([
+                'urls' => "All {$count} URL(s) were scanned within the last {$cooldownMinutes} minutes. Please wait before scanning them again.",
+            ]);
+        }
+
+        // Update validUrls to only include URLs not on cooldown
+        $validUrls = $urlsToScan;
+
+        // Get team context
+        $currentTeamId = session('current_team_id');
+        $teamId = ($currentTeamId && $currentTeamId !== 'personal') ? (int) $currentTeamId : null;
+        $team = null;
+
+        if ($teamId) {
+            $team = $user->allTeams()->firstWhere('id', $teamId);
+            if (! $team) {
+                return back()->withErrors(['team' => 'You do not have access to this team.']);
+            }
+        }
+
+        // Check quota for all URLs
+        $scansNeeded = count($validUrls);
+
+        if ($team) {
+            $remaining = $this->subscriptionService->getOwnerScansRemaining($team->owner);
+            if ($remaining !== -1 && $remaining < $scansNeeded) {
+                return back()->withErrors([
+                    'quota' => "Team only has {$remaining} scans remaining this month. You're trying to scan {$scansNeeded} URLs.",
+                ]);
+            }
+        } else {
+            $remaining = $this->subscriptionService->getScansRemaining($user);
+            if ($remaining !== -1 && $remaining < $scansNeeded) {
+                return back()->withErrors([
+                    'quota' => "You only have {$remaining} scans remaining this month. You're trying to scan {$scansNeeded} URLs.",
+                ]);
+            }
+        }
+
+        // Create scans
+        $createdScans = [];
+
+        foreach ($validUrls as $url) {
+            $scan = Scan::create([
+                'user_id' => $user->id,
+                'team_id' => $teamId,
+                'url' => $url,
+                'title' => parse_url($url, PHP_URL_HOST),
+                'status' => 'pending',
+            ]);
+
+            ScanAuditLog::logScanCreated($scan, $user, $request);
+            ScanWebsiteJob::dispatch($scan);
+            $createdScans[] = $scan;
+        }
+
+        // Return JSON with scan UUIDs for polling
+        return response()->json([
+            'success' => true,
+            'scans' => collect($createdScans)->map(fn ($scan) => [
+                'uuid' => $scan->uuid,
+                'url' => $scan->url,
+                'status' => $scan->status,
+            ]),
+            'skipped' => [
+                'cooldown' => count($urlsOnCooldown),
+                'invalid' => count($invalidUrls),
+            ],
+        ]);
+    }
+
+    /**
+     * Get status of multiple scans (for bulk scan polling).
+     */
+    public function bulkStatus(Request $request)
+    {
+        $validated = $request->validate([
+            'uuids' => 'required|array',
+            'uuids.*' => 'required|string|uuid',
+        ]);
+
+        $user = $request->user();
+
+        $scans = Scan::whereIn('uuid', $validated['uuids'])
+            ->where('user_id', $user->id)
+            ->get();
+
+        return response()->json([
+            'scans' => $scans->map(fn ($scan) => [
+                'uuid' => $scan->uuid,
+                'url' => $scan->url,
+                'title' => $scan->title,
+                'status' => $scan->status,
+                'score' => $scan->score,
+                'grade' => $scan->grade,
+                'error_message' => $scan->error_message,
+            ]),
+        ]);
+    }
+
+    /**
      * Get scan status for polling.
      */
     public function status(Scan $scan)
@@ -391,13 +607,9 @@ class ScanController extends Controller
 
         $user = $request->user();
         $url = $request->input('url');
-        $cooldownMinutes = 15;
+        $cooldownMinutes = $this->getCooldownMinutes($user);
 
-        $recentScan = Scan::where('url', $url)
-            ->where('user_id', $user->id)
-            ->where('created_at', '>=', now()->subMinutes($cooldownMinutes))
-            ->orderByDesc('created_at')
-            ->first();
+        $recentScan = $this->findRecentScanForCooldown($url, $user->id, $cooldownMinutes);
 
         if ($recentScan) {
             $availableAt = $recentScan->created_at->addMinutes($cooldownMinutes);
@@ -450,13 +662,9 @@ class ScanController extends Controller
             || $user->is_admin
             || ! $user->isFreeTier();
 
-        // Check cooldown status for rescan
-        $cooldownMinutes = 15;
-        $recentScan = Scan::where('url', $scan->url)
-            ->where('user_id', $user->id)
-            ->where('created_at', '>=', now()->subMinutes($cooldownMinutes))
-            ->orderByDesc('created_at')
-            ->first();
+        // Check cooldown status for rescan - Agency users get 5 min, others get 15 min. Failed scans don't count.
+        $cooldownMinutes = $this->getCooldownMinutes($user);
+        $recentScan = $this->findRecentScanForCooldown($scan->url, $user->id, $cooldownMinutes);
 
         $cooldown = null;
         if ($recentScan) {
@@ -548,6 +756,10 @@ class ScanController extends Controller
             ->sort()
             ->values();
 
+        // Get current team context for scan form
+        $currentTeamId = session('current_team_id');
+        $currentTeamId = ($currentTeamId && $currentTeamId !== 'personal') ? (int) $currentTeamId : null;
+
         return Inertia::render('Scans/Index', [
             'scans' => $scans,
             'filters' => [
@@ -561,6 +773,9 @@ class ScanController extends Controller
                 'per_page' => $perPage,
             ],
             'grades' => $grades,
+            'usage' => $user->getUsageSummary(),
+            'canBulkScan' => $user->hasFeature('bulk_scanning'),
+            'currentTeamId' => $currentTeamId,
         ]);
     }
 
@@ -586,12 +801,9 @@ class ScanController extends Controller
 
         $user = $request->user();
 
-        // Check cooldown - prevent rescanning same URL within 15 minutes
-        $cooldownMinutes = 15;
-        $recentScan = Scan::where('url', $scan->url)
-            ->where('user_id', $user->id)
-            ->where('created_at', '>=', now()->subMinutes($cooldownMinutes))
-            ->first();
+        // Check cooldown - Agency users get 5 min, others get 15 min. Failed scans don't count.
+        $cooldownMinutes = $this->getCooldownMinutes($user);
+        $recentScan = $this->findRecentScanForCooldown($scan->url, $user->id, $cooldownMinutes);
 
         if ($recentScan) {
             $availableAt = $recentScan->created_at->addMinutes($cooldownMinutes);

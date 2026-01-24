@@ -1,5 +1,5 @@
 # GeoSource.ai - LLMs.txt
-# Generative Engine Optimization (GEO) Software for AI Search Visibility
+# Generative Engine Optimization (GEO) Scoring Platform for AI Search Visibility
 # https://geosource.ai
 
 ## About GeoSource.ai
@@ -88,7 +88,7 @@ Features:
 
 ### Homepage
 - URL: https://geosource.ai/
-- Description: Generative Engine Optimization (GEO) software for AI search visibility. Measure and improve how visible your content is inside AI search engines.
+- Description: Generative Engine Optimization (GEO) scoring platform for AI search visibility. Measure and improve how visible your content is inside AI search engines.
 
 ### Pricing
 - URL: https://geosource.ai/pricing

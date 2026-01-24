@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, useForm, usePage, router } from '@inertiajs/vue3';
-import { Globe, TrendingUp, Target, Calendar, ExternalLink, Zap, ArrowRight, Users, Crown, Plus, Building2, User, ChevronDown, Quote, CheckCircle2, XCircle, Clock } from 'lucide-vue-next';
+import { Globe, TrendingUp, Target, Calendar, ExternalLink, Zap, ArrowRight, Users, Crown, Plus, Building2, User, ChevronDown, Quote, CheckCircle2, XCircle, Clock, Layers } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -8,8 +8,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -71,6 +74,7 @@ interface Props {
     currentTeam: CurrentTeam | null;
     hasPersonalOption: boolean;
     citationData: CitationData | null;
+    canBulkScan: boolean;
 }
 
 const props = defineProps<Props>();
@@ -99,6 +103,127 @@ const form = useForm({
     url: '',
     team_id: props.currentTeamId ?? null,
 });
+
+// Bulk scan form
+const bulkUrls = ref('');
+const bulkProcessing = ref(false);
+const bulkError = ref<string | null>(null);
+
+interface BulkScanResult {
+    uuid: string;
+    url: string;
+    title: string | null;
+    status: 'pending' | 'processing' | 'completed' | 'failed';
+    score: number | null;
+    grade: string | null;
+    error_message: string | null;
+}
+
+const bulkScans = ref<BulkScanResult[]>([]);
+const bulkSkipped = ref({ cooldown: 0, invalid: 0 });
+let bulkPollInterval: ReturnType<typeof setInterval> | null = null;
+
+const bulkUrlCount = computed(() => {
+    if (!bulkUrls.value.trim()) return 0;
+    return bulkUrls.value.split('\n').filter(line => line.trim()).length;
+});
+
+const bulkCompleted = computed(() => bulkScans.value.filter(s => s.status === 'completed' || s.status === 'failed').length);
+const bulkTotal = computed(() => bulkScans.value.length);
+const bulkAllDone = computed(() => bulkTotal.value > 0 && bulkCompleted.value === bulkTotal.value);
+
+const submitBulkScan = async () => {
+    bulkProcessing.value = true;
+    bulkError.value = null;
+    bulkScans.value = [];
+
+    try {
+        const response = await fetch('/scans/bulk', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+            },
+            body: JSON.stringify({ urls: bulkUrls.value }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            bulkError.value = data.errors?.urls || data.errors?.quota || data.errors?.feature || data.message || 'Failed to start scans';
+            bulkProcessing.value = false;
+            return;
+        }
+
+        bulkScans.value = data.scans;
+        bulkSkipped.value = data.skipped;
+        bulkUrls.value = '';
+
+        // Start polling for status
+        startBulkPolling();
+    } catch (e) {
+        bulkError.value = 'Failed to start scans. Please try again.';
+        bulkProcessing.value = false;
+    }
+};
+
+const startBulkPolling = () => {
+    if (bulkPollInterval) clearInterval(bulkPollInterval);
+
+    bulkPollInterval = setInterval(async () => {
+        const pendingUuids = bulkScans.value
+            .filter(s => s.status === 'pending' || s.status === 'processing')
+            .map(s => s.uuid);
+
+        if (pendingUuids.length === 0) {
+            if (bulkPollInterval) clearInterval(bulkPollInterval);
+            bulkProcessing.value = false;
+            return;
+        }
+
+        try {
+            const response = await fetch('/scans/bulk/status', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                body: JSON.stringify({ uuids: pendingUuids }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                data.scans.forEach((updated: BulkScanResult) => {
+                    const idx = bulkScans.value.findIndex(s => s.uuid === updated.uuid);
+                    if (idx !== -1) {
+                        bulkScans.value[idx] = updated;
+                    }
+                });
+            }
+        } catch (e) {
+            // Silently ignore polling errors
+        }
+    }, 2000);
+};
+
+const resetBulkForm = () => {
+    if (bulkPollInterval) clearInterval(bulkPollInterval);
+    bulkScans.value = [];
+    bulkSkipped.value = { cooldown: 0, invalid: 0 };
+    bulkProcessing.value = false;
+    bulkError.value = null;
+};
+
+const getGradeColorBulk = (grade: string | null) => {
+    if (!grade) return 'bg-muted text-muted-foreground';
+    if (grade.startsWith('A')) return 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300';
+    if (grade.startsWith('B')) return 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300';
+    if (grade.startsWith('C')) return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300';
+    if (grade.startsWith('D')) return 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300';
+    return 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300';
+};
 
 // Cooldown state
 const cooldown = ref<{
@@ -371,70 +496,239 @@ const getProgressColor = () => {
                         Start a GEO Scan
                     </CardTitle>
                     <CardDescription>
-                        Enter a URL to analyze its Generative Engine Optimization score
+                        {{ canBulkScan ? 'Scan a single URL or multiple URLs at once' : 'Enter a URL to analyze its Generative Engine Optimization score' }}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <form @submit.prevent="submit" class="flex gap-3">
-                        <div class="flex-1">
-                            <Input
-                                v-model="form.url"
-                                type="url"
-                                placeholder="https://example.com/page"
-                                class="h-12 text-base"
-                                :disabled="form.processing || !usage.can_scan"
-                            />
+                    <Tabs default-value="single" class="w-full">
+                        <TabsList v-if="canBulkScan" class="mb-4">
+                            <TabsTrigger value="single">
+                                <Globe class="mr-2 h-4 w-4" />
+                                Single URL
+                            </TabsTrigger>
+                            <TabsTrigger value="bulk">
+                                <Layers class="mr-2 h-4 w-4" />
+                                Bulk Scan
+                            </TabsTrigger>
+                        </TabsList>
+
+                        <!-- Single URL Scan -->
+                        <TabsContent value="single" class="mt-0">
+                            <form @submit.prevent="submit" class="flex gap-3">
+                                <div class="flex-1">
+                                    <Input
+                                        v-model="form.url"
+                                        type="url"
+                                        placeholder="https://example.com/page"
+                                        class="h-12 text-base"
+                                        :disabled="form.processing || !usage.can_scan"
+                                    />
+                                </div>
+                                <Button
+                                    type="submit"
+                                    size="lg"
+                                    :disabled="form.processing || !form.url || !usage.can_scan || isOnCooldown || checkingCooldown"
+                                    class="h-12 px-8"
+                                >
+                                    <Clock v-if="isOnCooldown" class="mr-2 h-4 w-4" />
+                                    <svg v-else-if="form.processing || checkingCooldown" class="mr-2 h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                    </svg>
+                                    <template v-if="isOnCooldown">
+                                        {{ cooldownMinutes }}m cooldown
+                                    </template>
+                                    <template v-else-if="checkingCooldown">
+                                        Checking...
+                                    </template>
+                                    <template v-else>
+                                        {{ form.processing ? 'Scanning...' : 'Scan URL' }}
+                                    </template>
+                                </Button>
+                            </form>
+
+                            <Alert v-if="form.errors.url" variant="destructive" class="mt-3">
+                                <AlertDescription>{{ form.errors.url }}</AlertDescription>
+                            </Alert>
+                            <Alert v-if="form.errors.cooldown" class="mt-3 border-yellow-500/50 bg-yellow-50 text-yellow-800 dark:border-yellow-500/30 dark:bg-yellow-950/50 dark:text-yellow-200">
+                                <Clock class="h-4 w-4" />
+                                <AlertDescription>{{ form.errors.cooldown }}</AlertDescription>
+                            </Alert>
+                            <Alert v-else-if="isOnCooldown" class="mt-3 border-amber-500/50 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-950/50 dark:text-amber-200">
+                                <Clock class="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                                <AlertDescription class="flex items-center justify-between gap-4">
+                                    <span>This URL was scanned recently. Please wait {{ cooldownMinutes }} {{ cooldownMinutes === 1 ? 'minute' : 'minutes' }} before scanning again.</span>
+                                    <Button v-if="cooldown?.existing_scan_uuid" variant="outline" size="sm" @click="viewExistingScan" class="shrink-0">
+                                        View Existing Scan
+                                    </Button>
+                                </AlertDescription>
+                            </Alert>
+                            <Alert v-if="form.errors.limit" variant="destructive" class="mt-3">
+                                <AlertDescription>
+                                    {{ form.errors.limit }}
+                                    <Link href="/billing/plans" class="ml-2 underline">Upgrade now</Link>
+                                </AlertDescription>
+                            </Alert>
+                            <Alert v-if="!usage.can_scan && !form.errors.limit" variant="destructive" class="mt-3">
+                                <AlertDescription>
+                                    You've reached your monthly scan limit.
+                                    <Link href="/billing/plans" class="ml-1 underline">Upgrade your plan</Link> to continue scanning.
+                                </AlertDescription>
+                            </Alert>
+                        </TabsContent>
+
+                        <!-- Bulk URL Scan (Agency only) -->
+                        <TabsContent v-if="canBulkScan" value="bulk" class="mt-0">
+                            <!-- Progress State - Show scan results as they complete -->
+                            <div v-if="bulkScans.length > 0" class="space-y-4">
+                                <!-- Progress Header -->
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h3 class="font-semibold">
+                                            {{ bulkAllDone ? 'All Scans Complete' : 'Scanning in Progress...' }}
+                                        </h3>
+                                        <p class="text-sm text-muted-foreground">
+                                            {{ bulkCompleted }} of {{ bulkTotal }} completed
+                                            <template v-if="bulkSkipped.cooldown > 0 || bulkSkipped.invalid > 0">
+                                                <span class="text-muted-foreground">
+                                                    ({{ bulkSkipped.cooldown > 0 ? `${bulkSkipped.cooldown} on cooldown` : '' }}{{ bulkSkipped.cooldown > 0 && bulkSkipped.invalid > 0 ? ', ' : '' }}{{ bulkSkipped.invalid > 0 ? `${bulkSkipped.invalid} invalid` : '' }})
+                                                </span>
+                                            </template>
+                                        </p>
+                                    </div>
+                                    <div v-if="!bulkAllDone" class="flex items-center gap-2 text-sm text-muted-foreground">
+                                        <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                        </svg>
+                                        Processing...
+                                    </div>
+                                    <Button v-else variant="outline" size="sm" @click="resetBulkForm">
+                                        Scan More URLs
+                                    </Button>
+                                </div>
+
+                                <!-- Progress Bar -->
+                                <div class="h-2 overflow-hidden rounded-full bg-muted">
+                                    <div
+                                        class="h-full bg-primary transition-all duration-500"
+                                        :style="{ width: `${(bulkCompleted / bulkTotal) * 100}%` }"
+                                    />
+                                </div>
+
+                                <!-- Scan Results List -->
+                                <div class="max-h-[300px] space-y-2 overflow-y-auto">
+                                    <div
+                                        v-for="scan in bulkScans"
+                                        :key="scan.uuid"
+                                        class="flex items-center gap-3 rounded-lg border p-3"
+                                        :class="scan.status === 'completed' ? 'bg-background' : scan.status === 'failed' ? 'bg-red-50 dark:bg-red-950/20' : 'bg-muted/50'"
+                                    >
+                                        <!-- Status Icon -->
+                                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full" :class="getGradeColorBulk(scan.grade)">
+                                            <template v-if="scan.status === 'completed'">
+                                                <span class="text-sm font-bold">{{ scan.grade }}</span>
+                                            </template>
+                                            <template v-else-if="scan.status === 'failed'">
+                                                <XCircle class="h-5 w-5 text-red-600" />
+                                            </template>
+                                            <template v-else>
+                                                <svg class="h-5 w-5 animate-spin text-muted-foreground" fill="none" viewBox="0 0 24 24">
+                                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                                </svg>
+                                            </template>
+                                        </div>
+
+                                        <!-- URL & Title -->
+                                        <div class="min-w-0 flex-1">
+                                            <p class="truncate text-sm font-medium">
+                                                {{ scan.title || scan.url }}
+                                            </p>
+                                            <p class="truncate text-xs text-muted-foreground">
+                                                {{ scan.url }}
+                                            </p>
+                                        </div>
+
+                                        <!-- Score & Action -->
+                                        <div class="flex items-center gap-3">
+                                            <template v-if="scan.status === 'completed'">
+                                                <span class="text-lg font-bold" :class="getScoreColor(scan.score || 0)">
+                                                    {{ scan.score?.toFixed(1) }}
+                                                </span>
+                                                <Link :href="`/scans/${scan.uuid}`">
+                                                    <Button variant="ghost" size="sm">
+                                                        <ExternalLink class="h-4 w-4" />
+                                                    </Button>
+                                                </Link>
+                                            </template>
+                                            <template v-else-if="scan.status === 'failed'">
+                                                <span class="text-xs text-red-600">Failed</span>
+                                            </template>
+                                            <template v-else>
+                                                <span class="text-xs text-muted-foreground">Scanning...</span>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Form State -->
+                            <form v-else @submit.prevent="submitBulkScan" class="space-y-4">
+                                <div class="space-y-2">
+                                    <Label for="bulk-urls">URLs to Scan (one per line, max 50)</Label>
+                                    <Textarea
+                                        id="bulk-urls"
+                                        v-model="bulkUrls"
+                                        placeholder="https://example.com/page1
+https://example.com/page2
+https://example.com/page3"
+                                        class="min-h-[150px] font-mono text-sm"
+                                        :disabled="bulkProcessing"
+                                    />
+                                    <div class="flex items-center justify-between text-sm">
+                                        <span class="text-muted-foreground">
+                                            {{ bulkUrlCount }} URL{{ bulkUrlCount !== 1 ? 's' : '' }} entered
+                                        </span>
+                                        <span v-if="bulkUrlCount > 50" class="text-destructive">
+                                            Maximum 50 URLs allowed
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <Alert v-if="bulkError" variant="destructive">
+                                    <AlertDescription>{{ bulkError }}</AlertDescription>
+                                </Alert>
+
+                                <Button
+                                    type="submit"
+                                    size="lg"
+                                    :disabled="bulkProcessing || bulkUrlCount === 0 || bulkUrlCount > 50"
+                                    class="h-12"
+                                >
+                                    <svg v-if="bulkProcessing" class="mr-2 h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                    </svg>
+                                    {{ bulkProcessing ? 'Starting...' : `Scan ${bulkUrlCount} URL${bulkUrlCount !== 1 ? 's' : ''}` }}
+                                </Button>
+                            </form>
+                        </TabsContent>
+                    </Tabs>
+
+                    <!-- Upgrade prompt for non-Agency users -->
+                    <div v-if="!canBulkScan" class="mt-4 rounded-lg border border-dashed p-4">
+                        <div class="flex items-center gap-3">
+                            <Layers class="h-8 w-8 text-muted-foreground" />
+                            <div class="flex-1">
+                                <p class="font-medium">Need to scan multiple URLs?</p>
+                                <p class="text-sm text-muted-foreground">Upgrade to Agency for bulk URL scanning (up to 50 at once)</p>
+                            </div>
+                            <Link href="/billing/plans">
+                                <Button variant="outline" size="sm">Upgrade</Button>
+                            </Link>
                         </div>
-                        <Button
-                            type="submit"
-                            size="lg"
-                            :disabled="form.processing || !form.url || !usage.can_scan || isOnCooldown || checkingCooldown"
-                            class="h-12 px-8"
-                        >
-                            <Clock v-if="isOnCooldown" class="mr-2 h-4 w-4" />
-                            <svg v-else-if="form.processing || checkingCooldown" class="mr-2 h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                            </svg>
-                            <template v-if="isOnCooldown">
-                                {{ cooldownMinutes }}m cooldown
-                            </template>
-                            <template v-else-if="checkingCooldown">
-                                Checking...
-                            </template>
-                            <template v-else>
-                                {{ form.processing ? 'Scanning...' : 'Scan URL' }}
-                            </template>
-                        </Button>
-                    </form>
-                    <Alert v-if="form.errors.url" variant="destructive" class="mt-3">
-                        <AlertDescription>{{ form.errors.url }}</AlertDescription>
-                    </Alert>
-                    <Alert v-if="form.errors.cooldown" class="mt-3 border-yellow-500/50 bg-yellow-50 text-yellow-800 dark:border-yellow-500/30 dark:bg-yellow-950/50 dark:text-yellow-200">
-                        <Clock class="h-4 w-4" />
-                        <AlertDescription>{{ form.errors.cooldown }}</AlertDescription>
-                    </Alert>
-                    <Alert v-else-if="isOnCooldown" class="mt-3 border-amber-500/50 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-950/50 dark:text-amber-200">
-                        <Clock class="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                        <AlertDescription class="flex items-center justify-between gap-4">
-                            <span>This URL was scanned recently. Please wait {{ cooldownMinutes }} {{ cooldownMinutes === 1 ? 'minute' : 'minutes' }} before scanning again.</span>
-                            <Button v-if="cooldown?.existing_scan_uuid" variant="outline" size="sm" @click="viewExistingScan" class="shrink-0">
-                                View Existing Scan
-                            </Button>
-                        </AlertDescription>
-                    </Alert>
-                    <Alert v-if="form.errors.limit" variant="destructive" class="mt-3">
-                        <AlertDescription>
-                            {{ form.errors.limit }}
-                            <Link href="/billing/plans" class="ml-2 underline">Upgrade now</Link>
-                        </AlertDescription>
-                    </Alert>
-                    <Alert v-if="!usage.can_scan && !form.errors.limit" variant="destructive" class="mt-3">
-                        <AlertDescription>
-                            You've reached your monthly scan limit.
-                            <Link href="/billing/plans" class="ml-1 underline">Upgrade your plan</Link> to continue scanning.
-                        </AlertDescription>
-                    </Alert>
+                    </div>
                 </CardContent>
             </Card>
 

@@ -36,11 +36,10 @@ return [
                     'teams_allowed' => 1,
                     'team_members' => 5,
                     'member_scans_per_month' => 25, // Per-member limit within team
-                    'competitor_tracking' => 0,
-                    'api_access' => false,
                     'white_label' => false,
                     'scheduled_scans' => false,
                     'pdf_export' => true,
+                    'bulk_scanning' => false,
                     // Citation tracking (Agency only)
                     'citation_queries' => 0,
                     'citation_checks_per_day' => 0,
@@ -61,7 +60,7 @@ return [
                     'Unlimited scans',
                     'Everything in Pro',
                     '3 teams with 5 members each',
-                    'White-label reports',
+                    'White-label reports (team owners)',
                     'Unlimited scan history',
                     'Custom branding',
                     'Dedicated support',
@@ -77,8 +76,6 @@ return [
                     'teams_allowed' => 3,
                     'team_members' => 5,
                     'member_scans_per_month' => 100, // Per-member limit within team
-                    'competitor_tracking' => 5,
-                    'api_access' => true,
                     'white_label' => true,
                     'scheduled_scans' => true,
                     'pdf_export' => true,
@@ -116,9 +113,7 @@ return [
             'history_days' => 7,
             'teams_allowed' => 0,
             'team_members' => 0,
-            'competitor_tracking' => 0,
             'recommendations_shown' => 3,
-            'api_access' => false,
             'white_label' => false,
             'scheduled_scans' => false,
             'pdf_export' => false,
@@ -142,21 +137,5 @@ return [
     */
 
     'trial_days' => 14,
-
-    /*
-    |--------------------------------------------------------------------------
-    | Team Settings
-    |--------------------------------------------------------------------------
-    |
-    | Configuration for team-related billing settings.
-    |
-    */
-
-    'team' => [
-        'max_members' => [
-            'pro' => 1,
-            'agency' => 5,
-        ],
-    ],
 
 ];
