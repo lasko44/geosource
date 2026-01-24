@@ -4,8 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import SkipNav from '@/components/resources/SkipNav.vue';
+import ResourceHeader from '@/components/resources/ResourceHeader.vue';
+import ResourceFooter from '@/components/resources/ResourceFooter.vue';
+import ResourceBreadcrumb from '@/components/resources/ResourceBreadcrumb.vue';
 import {
-    Globe,
     BookOpen,
     ArrowRight,
     ArrowLeft,
@@ -14,17 +17,13 @@ import {
     CheckCircle,
     XCircle,
     Lightbulb,
-    Menu,
     Calendar,
-    Mail,
 } from 'lucide-vue-next';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
+
+const breadcrumbItems = [
+    { label: 'Resources', href: '/resources' },
+    { label: 'GEO vs SEO' },
+];
 
 const publishedDate = new Date('2026-01-18').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
@@ -113,99 +112,27 @@ const faqJsonLd = {
         <meta property="og:description" content="Understand the key differences between traditional SEO and Generative Engine Optimization." />
         <meta property="og:type" content="article" />
         <meta property="og:url" content="https://geosource.ai/resources/geo-vs-seo" />
+        <meta property="og:site_name" content="GeoSource.ai" />
+        <meta property="article:published_time" content="2026-01-18" />
+        <meta property="article:modified_time" content="2026-01-18" />
+        <meta property="article:author" content="GeoSource.ai" />
+        <meta property="article:section" content="Comparison" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="GEO vs SEO: What's the Difference?" />
         <meta name="twitter:description" content="Understand the key differences between traditional SEO and Generative Engine Optimization." />
+        <meta name="twitter:site" content="@geosourceai" />
+        <meta name="robots" content="index, follow" />
         <link rel="canonical" href="https://geosource.ai/resources/geo-vs-seo" />
         <component :is="'script'" type="application/ld+json">{{ JSON.stringify(jsonLd) }}</component>
         <component :is="'script'" type="application/ld+json">{{ JSON.stringify(faqJsonLd) }}</component>
     </Head>
 
     <div class="min-h-screen bg-background text-foreground">
-        <!-- Navigation -->
-        <header class="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-                <Link href="/" class="flex items-center gap-2">
-                    <Globe class="h-8 w-8 text-primary" />
-                    <span class="text-xl font-bold">GeoSource.ai</span>
-                </Link>
-                <!-- Desktop Navigation -->
-                <nav class="hidden items-center gap-2 sm:flex">
-                    <Link href="/pricing">
-                        <Button variant="ghost">Pricing</Button>
-                    </Link>
-                    <Link href="/resources">
-                        <Button variant="ghost">Resources</Button>
-                    </Link>
-                    <Link v-if="$page.props.auth.user" href="/dashboard">
-                        <Button variant="outline">Dashboard</Button>
-                    </Link>
-                    <template v-else>
-                        <Link href="/login">
-                            <Button variant="ghost">Log in</Button>
-                        </Link>
-                        <Link href="/register">
-                            <Button>Get Started</Button>
-                        </Link>
-                    </template>
-                    <ThemeSwitcher />
-                </nav>
+        <SkipNav />
+        <ResourceHeader />
 
-                <!-- Mobile Navigation -->
-                <div class="flex items-center gap-2 sm:hidden">
-                    <ThemeSwitcher />
-                    <DropdownMenu>
-                        <DropdownMenuTrigger as-child>
-                            <Button variant="ghost" size="icon">
-                                <Menu class="h-5 w-5" />
-                                <span class="sr-only">Open menu</span>
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" class="w-48">
-                            <DropdownMenuItem as-child>
-                                <Link href="/pricing" class="w-full">
-                                    Pricing
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem as-child>
-                                <Link href="/resources" class="w-full">
-                                    Resources
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem v-if="$page.props.auth.user" as-child>
-                                <Link href="/dashboard" class="w-full">
-                                    Dashboard
-                                </Link>
-                            </DropdownMenuItem>
-                            <template v-else>
-                                <DropdownMenuItem as-child>
-                                    <Link href="/login" class="w-full">
-                                        Log in
-                                    </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem as-child>
-                                    <Link href="/register" class="w-full font-medium text-primary">
-                                        Get Started
-                                    </Link>
-                                </DropdownMenuItem>
-                            </template>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-            </div>
-        </header>
-
-        <main>
-            <!-- Breadcrumb -->
-            <div class="border-b bg-muted/30">
-                <div class="mx-auto max-w-4xl px-4 py-4 sm:px-6 lg:px-8">
-                    <nav class="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Link href="/resources" class="hover:text-foreground">Resources</Link>
-                        <span>/</span>
-                        <span class="text-foreground">GEO vs SEO</span>
-                    </nav>
-                </div>
-            </div>
+        <main id="main-content" role="main">
+            <ResourceBreadcrumb :items="breadcrumbItems" />
 
             <!-- Article -->
             <article class="py-12">
@@ -213,7 +140,7 @@ const faqJsonLd = {
                     <!-- Header -->
                     <header class="mb-12">
                         <Badge variant="secondary" class="mb-4">
-                            <BookOpen class="mr-1 h-3 w-3" />
+                            <BookOpen class="mr-1 h-3 w-3" aria-hidden="true" />
                             Comparison
                         </Badge>
                         <h1 class="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
@@ -223,18 +150,19 @@ const faqJsonLd = {
                             Understanding why traditional search optimization is no longer enough.
                         </p>
                         <div class="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-                            <Calendar class="h-4 w-4" />
-                            <span>{{ publishedDate }}</span>
+                            <Calendar class="h-4 w-4" aria-hidden="true" />
+                            <time datetime="2026-01-18">{{ publishedDate }}</time>
                         </div>
                     </header>
 
                     <!-- Core Difference -->
                     <section class="mb-12" aria-labelledby="core-difference">
+                        <h2 id="core-difference" class="sr-only">Core Difference Between SEO and GEO</h2>
                         <div class="grid gap-6 sm:grid-cols-2">
                             <Card class="border-muted">
                                 <CardHeader>
                                     <div class="flex items-center gap-2">
-                                        <Search class="h-6 w-6" />
+                                        <Search class="h-6 w-6" aria-hidden="true" />
                                         <CardTitle>SEO</CardTitle>
                                     </div>
                                 </CardHeader>
@@ -248,7 +176,7 @@ const faqJsonLd = {
                             <Card class="border-primary/50 bg-primary/5">
                                 <CardHeader>
                                     <div class="flex items-center gap-2">
-                                        <Brain class="h-6 w-6 text-primary" />
+                                        <Brain class="h-6 w-6 text-primary" aria-hidden="true" />
                                         <CardTitle class="text-primary">GEO</CardTitle>
                                     </div>
                                 </CardHeader>
@@ -270,18 +198,19 @@ const faqJsonLd = {
                     <!-- Key Differences Table -->
                     <section class="mb-12" aria-labelledby="key-differences">
                         <h2 id="key-differences" class="text-2xl font-bold mb-6">Key Differences</h2>
-                        <div class="overflow-x-auto">
+                        <div class="overflow-x-auto" role="region" aria-label="Key differences table" tabindex="0">
                             <table class="w-full border-collapse">
+                                <caption class="sr-only">Key differences between SEO and GEO approaches</caption>
                                 <thead>
                                     <tr class="border-b">
-                                        <th class="py-3 px-4 text-left font-semibold">Area</th>
-                                        <th class="py-3 px-4 text-left font-semibold">SEO</th>
-                                        <th class="py-3 px-4 text-left font-semibold text-primary">GEO</th>
+                                        <th scope="col" class="py-3 px-4 text-left font-semibold">Area</th>
+                                        <th scope="col" class="py-3 px-4 text-left font-semibold">SEO</th>
+                                        <th scope="col" class="py-3 px-4 text-left font-semibold text-primary">GEO</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr v-for="row in keyDifferences" :key="row.area" class="border-b">
-                                        <td class="py-3 px-4 font-medium">{{ row.area }}</td>
+                                        <th scope="row" class="py-3 px-4 font-medium text-left">{{ row.area }}</th>
                                         <td class="py-3 px-4 text-muted-foreground">{{ row.seo }}</td>
                                         <td class="py-3 px-4 text-primary font-medium">{{ row.geo }}</td>
                                     </tr>
@@ -296,19 +225,19 @@ const faqJsonLd = {
                     <section class="mb-12" aria-labelledby="seo-not-enough">
                         <h2 id="seo-not-enough" class="text-2xl font-bold mb-6">Why SEO Alone Is No Longer Enough</h2>
 
-                        <Card class="mb-6 border-amber-500/50 bg-amber-500/5">
+                        <Card class="mb-6 border-amber-500/50 bg-amber-500/5" role="note">
                             <CardContent class="pt-6">
                                 <div class="flex items-start gap-3">
-                                    <Lightbulb class="h-6 w-6 text-amber-500 shrink-0 mt-0.5" />
+                                    <Lightbulb class="h-6 w-6 text-amber-500 shrink-0 mt-0.5" aria-hidden="true" />
                                     <div>
                                         <p class="font-medium text-foreground">A page can:</p>
-                                        <ul class="mt-2 space-y-1 text-muted-foreground">
+                                        <ul class="mt-2 space-y-1 text-muted-foreground" role="list">
                                             <li class="flex items-center gap-2">
-                                                <CheckCircle class="h-4 w-4 text-green-500" />
+                                                <CheckCircle class="h-4 w-4 text-green-500" aria-hidden="true" />
                                                 <span>Rank #1 on Google</span>
                                             </li>
                                             <li class="flex items-center gap-2">
-                                                <XCircle class="h-4 w-4 text-destructive" />
+                                                <XCircle class="h-4 w-4 text-destructive" aria-hidden="true" />
                                                 <span>Yet never appear in ChatGPT answers</span>
                                             </li>
                                         </ul>
@@ -318,9 +247,9 @@ const faqJsonLd = {
                         </Card>
 
                         <p class="text-muted-foreground mb-4">Because LLMs evaluate:</p>
-                        <ul class="space-y-3">
+                        <ul class="space-y-3" role="list">
                             <li v-for="item in llmEvaluates" :key="item" class="flex items-start gap-3">
-                                <CheckCircle class="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                                <CheckCircle class="h-5 w-5 text-primary shrink-0 mt-0.5" aria-hidden="true" />
                                 <span>{{ item }}</span>
                             </li>
                         </ul>
@@ -354,7 +283,7 @@ const faqJsonLd = {
                             <Card>
                                 <CardContent class="pt-6">
                                     <div class="flex items-center gap-2 mb-2">
-                                        <Search class="h-5 w-5" />
+                                        <Search class="h-5 w-5" aria-hidden="true" />
                                         <span class="font-medium">SEO</span>
                                     </div>
                                     <p class="text-muted-foreground">Brings traffic</p>
@@ -363,7 +292,7 @@ const faqJsonLd = {
                             <Card>
                                 <CardContent class="pt-6">
                                     <div class="flex items-center gap-2 mb-2">
-                                        <Brain class="h-5 w-5 text-primary" />
+                                        <Brain class="h-5 w-5 text-primary" aria-hidden="true" />
                                         <span class="font-medium text-primary">GEO</span>
                                     </div>
                                     <p class="text-muted-foreground">Brings visibility inside AI systems</p>
@@ -381,52 +310,59 @@ const faqJsonLd = {
                     <!-- Related Resources -->
                     <section aria-labelledby="related">
                         <h2 id="related" class="text-2xl font-bold mb-6">Related Resources</h2>
-                        <div class="grid gap-4 sm:grid-cols-3">
-                            <Link
-                                v-for="article in relatedArticles"
-                                :key="article.slug"
-                                :href="`/resources/${article.slug}`"
-                                class="group"
-                            >
-                                <Card class="h-full transition-colors hover:border-primary/50">
-                                    <CardContent class="pt-6">
-                                        <p class="font-medium group-hover:text-primary transition-colors">
-                                            {{ article.title }}
-                                        </p>
-                                        <span class="inline-flex items-center text-sm text-primary mt-2">
-                                            Read more
-                                            <ArrowRight class="ml-1 h-3 w-3 transition-transform group-hover:translate-x-1" />
-                                        </span>
-                                    </CardContent>
-                                </Card>
-                            </Link>
-                        </div>
+                        <ul class="grid gap-4 sm:grid-cols-3" role="list">
+                            <li v-for="article in relatedArticles" :key="article.slug">
+                                <Link
+                                    :href="`/resources/${article.slug}`"
+                                    class="group block h-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg"
+                                    :aria-label="`Read more about ${article.title}`"
+                                >
+                                    <Card class="h-full transition-colors hover:border-primary/50">
+                                        <CardContent class="pt-6">
+                                            <p class="font-medium group-hover:text-primary transition-colors">
+                                                {{ article.title }}
+                                            </p>
+                                            <span class="inline-flex items-center text-sm text-primary mt-2" aria-hidden="true">
+                                                Read more
+                                                <ArrowRight class="ml-1 h-3 w-3 transition-transform group-hover:translate-x-1" />
+                                            </span>
+                                        </CardContent>
+                                    </Card>
+                                </Link>
+                            </li>
+                        </ul>
                     </section>
 
                     <!-- Navigation -->
-                    <div class="mt-12 flex items-center justify-between border-t pt-8">
-                        <Link href="/resources/what-is-geo" class="inline-flex items-center text-muted-foreground hover:text-foreground">
-                            <ArrowLeft class="mr-2 h-4 w-4" />
+                    <nav aria-label="Article navigation" class="mt-12 flex items-center justify-between border-t pt-8">
+                        <Link
+                            href="/resources/what-is-geo"
+                            class="inline-flex items-center text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded"
+                        >
+                            <ArrowLeft class="mr-2 h-4 w-4" aria-hidden="true" />
                             Previous: What Is GEO?
                         </Link>
-                        <Link href="/resources/how-ai-search-works" class="inline-flex items-center text-primary hover:underline">
+                        <Link
+                            href="/resources/how-ai-search-works"
+                            class="inline-flex items-center text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded"
+                        >
                             Next: How AI Search Works
-                            <ArrowRight class="ml-2 h-4 w-4" />
+                            <ArrowRight class="ml-2 h-4 w-4" aria-hidden="true" />
                         </Link>
-                    </div>
+                    </nav>
                 </div>
             </article>
 
             <!-- CTA Section -->
-            <section class="border-t bg-muted/30 py-12">
+            <section aria-labelledby="cta-heading" class="border-t bg-muted/30 py-12">
                 <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
-                    <h2 class="text-2xl font-bold">Ready to optimize for both SEO and GEO?</h2>
+                    <h2 id="cta-heading" class="text-2xl font-bold">Ready to optimize for both SEO and GEO?</h2>
                     <p class="mt-2 text-muted-foreground">Get your GEO Score and discover how AI systems see your content.</p>
                     <div class="mt-6">
-                        <Link href="/register">
+                        <Link href="/register" class="inline-block focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-md">
                             <Button size="lg" class="gap-2">
                                 Get Your GEO Score
-                                <ArrowRight class="h-4 w-4" />
+                                <ArrowRight class="h-4 w-4" aria-hidden="true" />
                             </Button>
                         </Link>
                     </div>
@@ -434,28 +370,6 @@ const faqJsonLd = {
             </section>
         </main>
 
-        <!-- Footer -->
-        <footer class="border-t py-12">
-            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <div class="flex flex-col items-center gap-6">
-                    <div class="flex items-center gap-2 rounded-lg bg-primary/10 px-4 py-2">
-                        <Mail class="h-5 w-5 text-primary" />
-                        <span class="text-sm font-medium">Need help?</span>
-                        <a href="mailto:support@geosource.ai" class="text-sm font-semibold text-primary hover:underline">
-                            support@geosource.ai
-                        </a>
-                    </div>
-                    <div class="flex w-full flex-col items-center justify-between gap-4 sm:flex-row">
-                        <div class="flex items-center gap-2">
-                            <Globe class="h-6 w-6 text-primary" />
-                            <span class="font-semibold">GeoSource.ai</span>
-                        </div>
-                        <p class="text-sm text-muted-foreground">
-                            &copy; {{ new Date().getFullYear() }} GeoSource.ai. All rights reserved.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </footer>
+        <ResourceFooter />
     </div>
 </template>

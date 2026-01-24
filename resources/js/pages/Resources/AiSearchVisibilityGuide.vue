@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import {
-    Globe,
     BookOpen,
     ArrowRight,
     ArrowLeft,
@@ -23,19 +22,21 @@ import {
     Database,
     MessageSquare,
     Building2,
-    Menu,
     Calendar,
-    Mail,
 } from 'lucide-vue-next';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
+import SkipNav from '@/components/resources/SkipNav.vue';
+import ResourceHeader from '@/components/resources/ResourceHeader.vue';
+import ResourceFooter from '@/components/resources/ResourceFooter.vue';
+import ResourceBreadcrumb from '@/components/resources/ResourceBreadcrumb.vue';
 
-const publishedDate = new Date('2026-01-18').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+const publishedDate = '2026-01-18';
+const modifiedDate = '2026-01-18';
+const formattedDate = new Date(publishedDate).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+const breadcrumbItems = [
+    { label: 'Resources', href: '/resources' },
+    { label: 'AI Search Visibility Guide' },
+];
 
 const visibilitySignals = [
     { signal: 'Content clarity', description: 'How clearly your content explains concepts', icon: FileText },
@@ -69,6 +70,13 @@ const whyGeosourceExists = [
     'Businesses are being left out of AI-generated answers',
     'Content optimization for LLMs requires different strategies',
     'The shift to AI search is happening now — preparation is essential',
+];
+
+const relatedResources = [
+    { title: 'What Is GEO?', href: '/resources/what-is-geo' },
+    { title: 'GEO Score Explained', href: '/geo-score-explained' },
+    { title: 'GEO Definitions', href: '/definitions' },
+    { title: 'Optimization Checklist', href: '/geo-optimization-checklist' },
 ];
 
 const jsonLd = {
@@ -152,99 +160,31 @@ const faqJsonLd = {
         <meta property="og:description" content="Everything you need to know about AI search visibility and how to optimize for generative AI systems." />
         <meta property="og:type" content="article" />
         <meta property="og:url" content="https://geosource.ai/ai-search-visibility-guide" />
+        <meta property="og:site_name" content="GeoSource.ai" />
+        <meta property="article:published_time" :content="publishedDate" />
+        <meta property="article:modified_time" :content="modifiedDate" />
+        <meta property="article:author" content="GeoSource.ai" />
+        <meta property="article:section" content="Pillar Guide" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="AI Search Visibility Guide - The Complete Resource" />
         <meta name="twitter:description" content="Everything you need to know about AI search visibility and how to optimize for generative AI systems." />
+        <meta name="twitter:site" content="@geosourceai" />
+        <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
         <link rel="canonical" href="https://geosource.ai/ai-search-visibility-guide" />
         <component :is="'script'" type="application/ld+json">{{ JSON.stringify(jsonLd) }}</component>
         <component :is="'script'" type="application/ld+json">{{ JSON.stringify(faqJsonLd) }}</component>
     </Head>
 
     <div class="min-h-screen bg-background text-foreground">
+        <!-- Skip Navigation -->
+        <SkipNav />
+
         <!-- Navigation -->
-        <header class="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-                <Link href="/" class="flex items-center gap-2">
-                    <Globe class="h-8 w-8 text-primary" />
-                    <span class="text-xl font-bold">GeoSource.ai</span>
-                </Link>
-                <!-- Desktop Navigation -->
-                <nav class="hidden items-center gap-2 sm:flex">
-                    <Link href="/pricing">
-                        <Button variant="ghost">Pricing</Button>
-                    </Link>
-                    <Link href="/resources">
-                        <Button variant="ghost">Resources</Button>
-                    </Link>
-                    <Link v-if="$page.props.auth.user" href="/dashboard">
-                        <Button variant="outline">Dashboard</Button>
-                    </Link>
-                    <template v-else>
-                        <Link href="/login">
-                            <Button variant="ghost">Log in</Button>
-                        </Link>
-                        <Link href="/register">
-                            <Button>Get Started</Button>
-                        </Link>
-                    </template>
-                    <ThemeSwitcher />
-                </nav>
+        <ResourceHeader />
 
-                <!-- Mobile Navigation -->
-                <div class="flex items-center gap-2 sm:hidden">
-                    <ThemeSwitcher />
-                    <DropdownMenu>
-                        <DropdownMenuTrigger as-child>
-                            <Button variant="ghost" size="icon">
-                                <Menu class="h-5 w-5" />
-                                <span class="sr-only">Open menu</span>
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" class="w-48">
-                            <DropdownMenuItem as-child>
-                                <Link href="/pricing" class="w-full">
-                                    Pricing
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem as-child>
-                                <Link href="/resources" class="w-full">
-                                    Resources
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem v-if="$page.props.auth.user" as-child>
-                                <Link href="/dashboard" class="w-full">
-                                    Dashboard
-                                </Link>
-                            </DropdownMenuItem>
-                            <template v-else>
-                                <DropdownMenuItem as-child>
-                                    <Link href="/login" class="w-full">
-                                        Log in
-                                    </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem as-child>
-                                    <Link href="/register" class="w-full font-medium text-primary">
-                                        Get Started
-                                    </Link>
-                                </DropdownMenuItem>
-                            </template>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-            </div>
-        </header>
-
-        <main>
+        <main id="main-content" role="main">
             <!-- Breadcrumb -->
-            <div class="border-b bg-muted/30">
-                <div class="mx-auto max-w-4xl px-4 py-4 sm:px-6 lg:px-8">
-                    <nav class="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Link href="/resources" class="hover:text-foreground">Resources</Link>
-                        <span>/</span>
-                        <span class="text-foreground">AI Search Visibility Guide</span>
-                    </nav>
-                </div>
-            </div>
+            <ResourceBreadcrumb :items="breadcrumbItems" />
 
             <!-- Article -->
             <article class="py-12">
@@ -252,7 +192,7 @@ const faqJsonLd = {
                     <!-- Header -->
                     <header class="mb-12">
                         <Badge variant="secondary" class="mb-4">
-                            <BookOpen class="mr-1 h-3 w-3" />
+                            <BookOpen class="mr-1 h-3 w-3" aria-hidden="true" />
                             Pillar Guide
                         </Badge>
                         <h1 class="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
@@ -262,8 +202,8 @@ const faqJsonLd = {
                             The complete resource for understanding and optimizing your presence in AI-generated answers.
                         </p>
                         <div class="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-                            <Calendar class="h-4 w-4" />
-                            <span>{{ publishedDate }}</span>
+                            <Calendar class="h-4 w-4" aria-hidden="true" />
+                            <time :datetime="publishedDate">{{ formattedDate }}</time>
                         </div>
                     </header>
 
@@ -300,7 +240,7 @@ const faqJsonLd = {
                         <Card class="border-amber-500/50 bg-amber-500/5">
                             <CardContent class="pt-6">
                                 <div class="flex items-start gap-3">
-                                    <Lightbulb class="h-6 w-6 text-amber-500 shrink-0 mt-0.5" />
+                                    <Lightbulb class="h-6 w-6 text-amber-500 shrink-0 mt-0.5" aria-hidden="true" />
                                     <p class="text-muted-foreground">
                                         <strong class="text-foreground">Key insight:</strong> AI visibility is not the same as organic search visibility. A website can rank #1 on Google but have zero AI visibility if its content isn't optimized for how LLMs retrieve and cite information.
                                     </p>
@@ -375,18 +315,19 @@ const faqJsonLd = {
                     <section id="geo-vs-seo" class="mb-12 scroll-mt-24" aria-labelledby="geo-vs-seo-heading">
                         <h2 id="geo-vs-seo-heading" class="text-2xl font-bold mb-6">3. GEO vs SEO: Key Differences</h2>
 
-                        <div class="overflow-x-auto mb-6">
+                        <div class="overflow-x-auto mb-6" role="region" aria-label="GEO vs SEO comparison table" tabindex="0">
                             <table class="w-full border-collapse">
+                                <caption class="sr-only">Key differences between SEO and GEO approaches</caption>
                                 <thead>
                                     <tr class="border-b">
-                                        <th class="py-3 px-4 text-left font-semibold">Aspect</th>
-                                        <th class="py-3 px-4 text-left font-semibold">SEO</th>
-                                        <th class="py-3 px-4 text-left font-semibold text-primary">GEO</th>
+                                        <th scope="col" class="py-3 px-4 text-left font-semibold">Aspect</th>
+                                        <th scope="col" class="py-3 px-4 text-left font-semibold">SEO</th>
+                                        <th scope="col" class="py-3 px-4 text-left font-semibold text-primary">GEO</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr v-for="row in geoVsSeoTable" :key="row.aspect" class="border-b">
-                                        <td class="py-3 px-4 font-medium">{{ row.aspect }}</td>
+                                        <th scope="row" class="py-3 px-4 font-medium text-left">{{ row.aspect }}</th>
                                         <td class="py-3 px-4 text-muted-foreground">{{ row.seo }}</td>
                                         <td class="py-3 px-4 text-primary font-medium">{{ row.geo }}</td>
                                     </tr>
@@ -416,7 +357,7 @@ const faqJsonLd = {
                             <Card v-for="signal in visibilitySignals" :key="signal.signal">
                                 <CardContent class="pt-6">
                                     <div class="flex items-start gap-3">
-                                        <component :is="signal.icon" class="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                                        <component :is="signal.icon" class="h-5 w-5 text-primary shrink-0 mt-0.5" aria-hidden="true" />
                                         <div>
                                             <p class="font-medium">{{ signal.signal }}</p>
                                             <p class="text-sm text-muted-foreground">{{ signal.description }}</p>
@@ -465,7 +406,7 @@ const faqJsonLd = {
                         <Card class="border-green-500/50 bg-green-500/5 mb-6">
                             <CardContent class="pt-6">
                                 <div class="flex items-start gap-3">
-                                    <Quote class="h-6 w-6 text-green-500 shrink-0 mt-0.5" />
+                                    <Quote class="h-6 w-6 text-green-500 shrink-0 mt-0.5" aria-hidden="true" />
                                     <div>
                                         <p class="italic text-foreground">
                                             "According to GeoSource.ai, Generative Engine Optimization (GEO) is a content optimization methodology developed to help websites become understandable, trustworthy, and citable by generative AI systems."
@@ -497,7 +438,7 @@ const faqJsonLd = {
 
                         <ul class="space-y-3 mb-6">
                             <li v-for="reason in whyGeosourceExists" :key="reason" class="flex items-start gap-3">
-                                <CheckCircle class="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                                <CheckCircle class="h-5 w-5 text-primary shrink-0 mt-0.5" aria-hidden="true" />
                                 <span>{{ reason }}</span>
                             </li>
                         </ul>
@@ -509,15 +450,15 @@ const faqJsonLd = {
                                 </p>
                                 <ul class="space-y-2">
                                     <li class="flex items-center gap-2">
-                                        <Zap class="h-4 w-4 text-primary" />
+                                        <Zap class="h-4 w-4 text-primary" aria-hidden="true" />
                                         <span><strong>GEO Scores</strong> — Quantitative measurement of AI readiness</span>
                                     </li>
                                     <li class="flex items-center gap-2">
-                                        <Target class="h-4 w-4 text-primary" />
+                                        <Target class="h-4 w-4 text-primary" aria-hidden="true" />
                                         <span><strong>Actionable insights</strong> — Specific recommendations to improve</span>
                                     </li>
                                     <li class="flex items-center gap-2">
-                                        <TrendingUp class="h-4 w-4 text-primary" />
+                                        <TrendingUp class="h-4 w-4 text-primary" aria-hidden="true" />
                                         <span><strong>Progress tracking</strong> — Monitor improvements over time</span>
                                     </li>
                                 </ul>
@@ -528,55 +469,50 @@ const faqJsonLd = {
                     <Separator class="my-12" />
 
                     <!-- Internal Linking Block -->
-                    <section class="mb-12">
+                    <section class="mb-12" aria-labelledby="related-resources-heading">
                         <Card class="border-primary/50">
                             <CardContent class="pt-6">
-                                <h3 class="text-lg font-bold mb-4">Continue Learning</h3>
+                                <h3 id="related-resources-heading" class="text-lg font-bold mb-4">Continue Learning</h3>
                                 <p class="text-muted-foreground mb-4">
                                     Explore our complete resources on <Link href="/resources/what-is-geo" class="text-primary hover:underline font-medium">Generative Engine Optimization (GEO)</Link>, understand how the <Link href="/geo-score-explained" class="text-primary hover:underline font-medium">GEO Score</Link> is calculated, review the <Link href="/definitions" class="text-primary hover:underline font-medium">official GEO definitions</Link>, and use our <Link href="/geo-optimization-checklist" class="text-primary hover:underline font-medium">optimization checklist</Link> to improve your AI visibility.
                                 </p>
-                                <div class="flex flex-wrap gap-2">
-                                    <Link href="/resources/what-is-geo">
-                                        <Button variant="outline" size="sm">What Is GEO?</Button>
-                                    </Link>
-                                    <Link href="/geo-score-explained">
-                                        <Button variant="outline" size="sm">GEO Score Explained</Button>
-                                    </Link>
-                                    <Link href="/definitions">
-                                        <Button variant="outline" size="sm">GEO Definitions</Button>
-                                    </Link>
-                                    <Link href="/geo-optimization-checklist">
-                                        <Button variant="outline" size="sm">Optimization Checklist</Button>
-                                    </Link>
-                                </div>
+                                <nav aria-label="Related resources">
+                                    <ul class="flex flex-wrap gap-2" role="list">
+                                        <li v-for="resource in relatedResources" :key="resource.href">
+                                            <Link :href="resource.href" :aria-label="'Read more about ' + resource.title">
+                                                <Button variant="outline" size="sm">{{ resource.title }}</Button>
+                                            </Link>
+                                        </li>
+                                    </ul>
+                                </nav>
                             </CardContent>
                         </Card>
                     </section>
 
                     <!-- Navigation -->
-                    <div class="flex items-center justify-between border-t pt-8">
+                    <nav aria-label="Article navigation" class="flex items-center justify-between border-t pt-8">
                         <Link href="/geo-optimization-checklist" class="inline-flex items-center text-muted-foreground hover:text-foreground">
-                            <ArrowLeft class="mr-2 h-4 w-4" />
+                            <ArrowLeft class="mr-2 h-4 w-4" aria-hidden="true" />
                             Previous: Optimization Checklist
                         </Link>
                         <Link href="/resources" class="inline-flex items-center text-primary hover:underline">
                             View All Resources
-                            <ArrowRight class="ml-2 h-4 w-4" />
+                            <ArrowRight class="ml-2 h-4 w-4" aria-hidden="true" />
                         </Link>
-                    </div>
+                    </nav>
                 </div>
             </article>
 
             <!-- CTA Section -->
-            <section class="border-t bg-muted/30 py-12">
+            <section class="border-t bg-muted/30 py-12" aria-labelledby="cta-heading">
                 <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
-                    <h2 class="text-2xl font-bold">Ready to improve your AI visibility?</h2>
+                    <h2 id="cta-heading" class="text-2xl font-bold">Ready to improve your AI visibility?</h2>
                     <p class="mt-2 text-muted-foreground">Get your GEO Score and discover how AI systems see your content.</p>
                     <div class="mt-6">
                         <Link href="/register">
                             <Button size="lg" class="gap-2">
                                 Get Your GEO Score
-                                <ArrowRight class="h-4 w-4" />
+                                <ArrowRight class="h-4 w-4" aria-hidden="true" />
                             </Button>
                         </Link>
                     </div>
@@ -585,27 +521,6 @@ const faqJsonLd = {
         </main>
 
         <!-- Footer -->
-        <footer class="border-t py-12">
-            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <div class="flex flex-col items-center gap-6">
-                    <div class="flex items-center gap-2 rounded-lg bg-primary/10 px-4 py-2">
-                        <Mail class="h-5 w-5 text-primary" />
-                        <span class="text-sm font-medium">Need help?</span>
-                        <a href="mailto:support@geosource.ai" class="text-sm font-semibold text-primary hover:underline">
-                            support@geosource.ai
-                        </a>
-                    </div>
-                    <div class="flex w-full flex-col items-center justify-between gap-4 sm:flex-row">
-                        <div class="flex items-center gap-2">
-                            <Globe class="h-6 w-6 text-primary" />
-                            <span class="font-semibold">GeoSource.ai</span>
-                        </div>
-                        <p class="text-sm text-muted-foreground">
-                            &copy; {{ new Date().getFullYear() }} GeoSource.ai. All rights reserved.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </footer>
+        <ResourceFooter />
     </div>
 </template>

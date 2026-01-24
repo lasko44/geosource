@@ -5,13 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import {
-    Globe,
     BookOpen,
     ArrowRight,
     ArrowLeft,
     BarChart3,
     CheckCircle,
-    XCircle,
     Brain,
     FileText,
     Database,
@@ -20,7 +18,6 @@ import {
     HelpCircle,
     Lightbulb,
     TrendingUp,
-    Menu,
     Award,
     Layers,
     Code,
@@ -31,18 +28,21 @@ import {
     Clock,
     Type,
     Image,
-    Mail,
     Calendar,
 } from 'lucide-vue-next';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
+import SkipNav from '@/components/resources/SkipNav.vue';
+import ResourceHeader from '@/components/resources/ResourceHeader.vue';
+import ResourceFooter from '@/components/resources/ResourceFooter.vue';
+import ResourceBreadcrumb from '@/components/resources/ResourceBreadcrumb.vue';
 
-const publishedDate = new Date('2026-01-18').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+const publishedDate = '2026-01-18';
+const modifiedDate = '2026-01-18';
+const formattedPublishedDate = new Date(publishedDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+const breadcrumbItems = [
+    { label: 'Resources', href: '/resources' },
+    { label: 'GEO Score Explained' },
+];
 
 // Free Tier Pillars (100 points max)
 const freePillars = [
@@ -239,99 +239,31 @@ const faqJsonLd = {
         <meta property="og:description" content="Learn what factors determine your GEO Score and how to improve your AI citation readiness." />
         <meta property="og:type" content="article" />
         <meta property="og:url" content="https://geosource.ai/geo-score-explained" />
+        <meta property="og:site_name" content="GeoSource.ai" />
+        <meta property="article:published_time" :content="publishedDate" />
+        <meta property="article:modified_time" :content="modifiedDate" />
+        <meta property="article:author" content="GeoSource.ai" />
+        <meta property="article:section" content="Deep Dive" />
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@geosourceai" />
         <meta name="twitter:title" content="GEO Score Explained - How GeoSource.ai Measures AI Readiness" />
         <meta name="twitter:description" content="Learn what factors determine your GEO Score and how to improve your AI citation readiness." />
+        <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
         <link rel="canonical" href="https://geosource.ai/geo-score-explained" />
         <component :is="'script'" type="application/ld+json">{{ JSON.stringify(jsonLd) }}</component>
         <component :is="'script'" type="application/ld+json">{{ JSON.stringify(faqJsonLd) }}</component>
     </Head>
 
     <div class="min-h-screen bg-background text-foreground">
+        <!-- Skip Navigation -->
+        <SkipNav />
+
         <!-- Navigation -->
-        <header class="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-                <Link href="/" class="flex items-center gap-2">
-                    <Globe class="h-8 w-8 text-primary" />
-                    <span class="text-xl font-bold">GeoSource.ai</span>
-                </Link>
-                <!-- Desktop Navigation -->
-                <nav class="hidden items-center gap-2 sm:flex">
-                    <Link href="/pricing">
-                        <Button variant="ghost">Pricing</Button>
-                    </Link>
-                    <Link href="/resources">
-                        <Button variant="ghost">Resources</Button>
-                    </Link>
-                    <Link v-if="$page.props.auth.user" href="/dashboard">
-                        <Button variant="outline">Dashboard</Button>
-                    </Link>
-                    <template v-else>
-                        <Link href="/login">
-                            <Button variant="ghost">Log in</Button>
-                        </Link>
-                        <Link href="/register">
-                            <Button>Get Started</Button>
-                        </Link>
-                    </template>
-                    <ThemeSwitcher />
-                </nav>
+        <ResourceHeader />
 
-                <!-- Mobile Navigation -->
-                <div class="flex items-center gap-2 sm:hidden">
-                    <ThemeSwitcher />
-                    <DropdownMenu>
-                        <DropdownMenuTrigger as-child>
-                            <Button variant="ghost" size="icon">
-                                <Menu class="h-5 w-5" />
-                                <span class="sr-only">Open menu</span>
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" class="w-48">
-                            <DropdownMenuItem as-child>
-                                <Link href="/pricing" class="w-full">
-                                    Pricing
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem as-child>
-                                <Link href="/resources" class="w-full">
-                                    Resources
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem v-if="$page.props.auth.user" as-child>
-                                <Link href="/dashboard" class="w-full">
-                                    Dashboard
-                                </Link>
-                            </DropdownMenuItem>
-                            <template v-else>
-                                <DropdownMenuItem as-child>
-                                    <Link href="/login" class="w-full">
-                                        Log in
-                                    </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem as-child>
-                                    <Link href="/register" class="w-full font-medium text-primary">
-                                        Get Started
-                                    </Link>
-                                </DropdownMenuItem>
-                            </template>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-            </div>
-        </header>
-
-        <main>
+        <main id="main-content" role="main">
             <!-- Breadcrumb -->
-            <div class="border-b bg-muted/30">
-                <div class="mx-auto max-w-4xl px-4 py-4 sm:px-6 lg:px-8">
-                    <nav class="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Link href="/resources" class="hover:text-foreground">Resources</Link>
-                        <span>/</span>
-                        <span class="text-foreground">GEO Score Explained</span>
-                    </nav>
-                </div>
-            </div>
+            <ResourceBreadcrumb :items="breadcrumbItems" />
 
             <!-- Article -->
             <article class="py-12">
@@ -339,7 +271,7 @@ const faqJsonLd = {
                     <!-- Header -->
                     <header class="mb-12">
                         <Badge variant="secondary" class="mb-4">
-                            <BarChart3 class="mr-1 h-3 w-3" />
+                            <BarChart3 class="mr-1 h-3 w-3" aria-hidden="true" />
                             Deep Dive
                         </Badge>
                         <h1 class="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
@@ -349,8 +281,8 @@ const faqJsonLd = {
                             How GeoSource.ai measures your website's AI comprehension readiness.
                         </p>
                         <div class="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-                            <Calendar class="h-4 w-4" />
-                            <span>{{ publishedDate }}</span>
+                            <Calendar class="h-4 w-4" aria-hidden="true" />
+                            <time :datetime="publishedDate">{{ formattedPublishedDate }}</time>
                         </div>
                     </header>
 
@@ -382,9 +314,9 @@ const faqJsonLd = {
                         </p>
 
                         <!-- Free Tier -->
-                        <div class="mb-10">
+                        <section class="mb-10" aria-labelledby="free-tier-heading">
                             <div class="flex items-center gap-3 mb-4">
-                                <h3 class="text-xl font-semibold">Free Tier</h3>
+                                <h3 id="free-tier-heading" class="text-xl font-semibold">Free Tier</h3>
                                 <Badge variant="secondary">100 points max</Badge>
                             </div>
                             <p class="text-muted-foreground mb-4 text-sm">Core pillars available to all users.</p>
@@ -393,7 +325,7 @@ const faqJsonLd = {
                                     <CardHeader class="pb-2">
                                         <div class="flex items-center justify-between">
                                             <CardTitle class="text-lg flex items-center gap-2">
-                                                <component :is="pillar.icon" class="h-5 w-5 text-primary" />
+                                                <component :is="pillar.icon" class="h-5 w-5 text-primary" aria-hidden="true" />
                                                 {{ pillar.name }}
                                             </CardTitle>
                                             <Badge variant="default">{{ pillar.points }} pts</Badge>
@@ -407,19 +339,19 @@ const faqJsonLd = {
                                                 :key="example"
                                                 class="inline-flex items-center gap-1 px-2 py-1 rounded bg-muted text-sm"
                                             >
-                                                <CheckCircle class="h-3 w-3 text-green-500" />
+                                                <CheckCircle class="h-3 w-3 text-green-500" aria-hidden="true" />
                                                 {{ example }}
                                             </span>
                                         </div>
                                     </CardContent>
                                 </Card>
                             </div>
-                        </div>
+                        </section>
 
                         <!-- Pro Tier -->
-                        <div class="mb-10">
+                        <section class="mb-10" aria-labelledby="pro-tier-heading">
                             <div class="flex items-center gap-3 mb-4">
-                                <h3 class="text-xl font-semibold">Pro Tier</h3>
+                                <h3 id="pro-tier-heading" class="text-xl font-semibold">Pro Tier</h3>
                                 <Badge class="bg-blue-500 hover:bg-blue-600">+35 points</Badge>
                             </div>
                             <p class="text-muted-foreground mb-4 text-sm">Advanced pillars for Pro subscribers (135 points max total).</p>
@@ -428,7 +360,7 @@ const faqJsonLd = {
                                     <CardHeader class="pb-2">
                                         <div class="flex items-center justify-between">
                                             <CardTitle class="text-lg flex items-center gap-2">
-                                                <component :is="pillar.icon" class="h-5 w-5 text-blue-500" />
+                                                <component :is="pillar.icon" class="h-5 w-5 text-blue-500" aria-hidden="true" />
                                                 {{ pillar.name }}
                                             </CardTitle>
                                             <Badge class="bg-blue-500 hover:bg-blue-600">{{ pillar.points }} pts</Badge>
@@ -442,19 +374,19 @@ const faqJsonLd = {
                                                 :key="example"
                                                 class="inline-flex items-center gap-1 px-2 py-1 rounded bg-blue-500/10 text-sm"
                                             >
-                                                <CheckCircle class="h-3 w-3 text-blue-500" />
+                                                <CheckCircle class="h-3 w-3 text-blue-500" aria-hidden="true" />
                                                 {{ example }}
                                             </span>
                                         </div>
                                     </CardContent>
                                 </Card>
                             </div>
-                        </div>
+                        </section>
 
                         <!-- Agency Tier -->
-                        <div class="mb-10">
+                        <section class="mb-10" aria-labelledby="agency-tier-heading">
                             <div class="flex items-center gap-3 mb-4">
-                                <h3 class="text-xl font-semibold">Agency Tier</h3>
+                                <h3 id="agency-tier-heading" class="text-xl font-semibold">Agency Tier</h3>
                                 <Badge class="bg-purple-500 hover:bg-purple-600">+40 points</Badge>
                             </div>
                             <p class="text-muted-foreground mb-4 text-sm">Enterprise pillars for Agency subscribers (175 points max total).</p>
@@ -463,7 +395,7 @@ const faqJsonLd = {
                                     <CardHeader class="pb-2">
                                         <div class="flex items-center justify-between">
                                             <CardTitle class="text-lg flex items-center gap-2">
-                                                <component :is="pillar.icon" class="h-5 w-5 text-purple-500" />
+                                                <component :is="pillar.icon" class="h-5 w-5 text-purple-500" aria-hidden="true" />
                                                 {{ pillar.name }}
                                             </CardTitle>
                                             <Badge class="bg-purple-500 hover:bg-purple-600">{{ pillar.points }} pts</Badge>
@@ -477,43 +409,44 @@ const faqJsonLd = {
                                                 :key="example"
                                                 class="inline-flex items-center gap-1 px-2 py-1 rounded bg-purple-500/10 text-sm"
                                             >
-                                                <CheckCircle class="h-3 w-3 text-purple-500" />
+                                                <CheckCircle class="h-3 w-3 text-purple-500" aria-hidden="true" />
                                                 {{ example }}
                                             </span>
                                         </div>
                                     </CardContent>
                                 </Card>
                             </div>
-                        </div>
+                        </section>
 
                         <!-- Summary Table -->
                         <Card class="mt-8">
                             <CardHeader>
-                                <CardTitle>Scoring Summary by Plan</CardTitle>
+                                <CardTitle id="scoring-summary-title">Scoring Summary by Plan</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div class="overflow-x-auto">
-                                    <table class="w-full border-collapse text-sm">
+                                    <table class="w-full border-collapse text-sm" aria-labelledby="scoring-summary-title">
+                                        <caption class="sr-only">Comparison of GEO Score pillars and maximum points by subscription plan</caption>
                                         <thead>
                                             <tr class="border-b">
-                                                <th class="py-2 px-3 text-left font-semibold">Plan</th>
-                                                <th class="py-2 px-3 text-left font-semibold">Pillars</th>
-                                                <th class="py-2 px-3 text-left font-semibold">Max Score</th>
+                                                <th scope="col" class="py-2 px-3 text-left font-semibold">Plan</th>
+                                                <th scope="col" class="py-2 px-3 text-left font-semibold">Pillars</th>
+                                                <th scope="col" class="py-2 px-3 text-left font-semibold">Max Score</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <tr class="border-b">
-                                                <td class="py-2 px-3"><Badge variant="secondary">Free</Badge></td>
+                                                <th scope="row" class="py-2 px-3"><Badge variant="secondary">Free</Badge></th>
                                                 <td class="py-2 px-3">5 pillars (Definitions, Structure, Authority, Machine-Readable, Answerability)</td>
                                                 <td class="py-2 px-3 font-mono font-bold">100 pts</td>
                                             </tr>
                                             <tr class="border-b">
-                                                <td class="py-2 px-3"><Badge class="bg-blue-500">Pro</Badge></td>
+                                                <th scope="row" class="py-2 px-3"><Badge class="bg-blue-500">Pro</Badge></th>
                                                 <td class="py-2 px-3">8 pillars (+E-E-A-T, Citations, AI Accessibility)</td>
                                                 <td class="py-2 px-3 font-mono font-bold">135 pts</td>
                                             </tr>
                                             <tr>
-                                                <td class="py-2 px-3"><Badge class="bg-purple-500">Agency</Badge></td>
+                                                <th scope="row" class="py-2 px-3"><Badge class="bg-purple-500">Agency</Badge></th>
                                                 <td class="py-2 px-3">12 pillars (+Freshness, Readability, Question Coverage, Multimedia)</td>
                                                 <td class="py-2 px-3 font-mono font-bold">175 pts</td>
                                             </tr>
@@ -555,7 +488,7 @@ const faqJsonLd = {
                         <Card class="mb-6 border-amber-500/50 bg-amber-500/5">
                             <CardContent class="pt-6">
                                 <div class="flex items-start gap-3">
-                                    <Lightbulb class="h-6 w-6 text-amber-500 shrink-0 mt-0.5" />
+                                    <Lightbulb class="h-6 w-6 text-amber-500 shrink-0 mt-0.5" aria-hidden="true" />
                                     <div>
                                         <p class="font-medium text-foreground">Important Distinction</p>
                                         <p class="text-muted-foreground mt-1">
@@ -567,17 +500,18 @@ const faqJsonLd = {
                         </Card>
 
                         <div class="overflow-x-auto">
-                            <table class="w-full border-collapse">
+                            <table class="w-full border-collapse" aria-labelledby="geo-vs-seo">
+                                <caption class="sr-only">Comparison of SEO Score versus GEO Score across different aspects</caption>
                                 <thead>
                                     <tr class="border-b">
-                                        <th class="py-3 px-4 text-left font-semibold">Aspect</th>
-                                        <th class="py-3 px-4 text-left font-semibold">SEO Score</th>
-                                        <th class="py-3 px-4 text-left font-semibold text-primary">GEO Score</th>
+                                        <th scope="col" class="py-3 px-4 text-left font-semibold">Aspect</th>
+                                        <th scope="col" class="py-3 px-4 text-left font-semibold">SEO Score</th>
+                                        <th scope="col" class="py-3 px-4 text-left font-semibold text-primary">GEO Score</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr v-for="row in geoVsSeoComparison" :key="row.aspect" class="border-b">
-                                        <td class="py-3 px-4 font-medium">{{ row.aspect }}</td>
+                                        <th scope="row" class="py-3 px-4 font-medium">{{ row.aspect }}</th>
                                         <td class="py-3 px-4 text-muted-foreground">{{ row.seo }}</td>
                                         <td class="py-3 px-4 text-primary font-medium">{{ row.geo }}</td>
                                     </tr>
@@ -600,7 +534,7 @@ const faqJsonLd = {
                             <Card>
                                 <CardHeader class="pb-2">
                                     <CardTitle class="text-base flex items-center gap-2">
-                                        <BookOpen class="h-4 w-4 text-primary" />
+                                        <BookOpen class="h-4 w-4 text-primary" aria-hidden="true" />
                                         Clear Definitions
                                     </CardTitle>
                                 </CardHeader>
@@ -614,7 +548,7 @@ const faqJsonLd = {
                             <Card>
                                 <CardHeader class="pb-2">
                                     <CardTitle class="text-base flex items-center gap-2">
-                                        <Layers class="h-4 w-4 text-primary" />
+                                        <Layers class="h-4 w-4 text-primary" aria-hidden="true" />
                                         Structure
                                     </CardTitle>
                                 </CardHeader>
@@ -628,7 +562,7 @@ const faqJsonLd = {
                             <Card>
                                 <CardHeader class="pb-2">
                                     <CardTitle class="text-base flex items-center gap-2">
-                                        <Code class="h-4 w-4 text-primary" />
+                                        <Code class="h-4 w-4 text-primary" aria-hidden="true" />
                                         Machine-Readable
                                     </CardTitle>
                                 </CardHeader>
@@ -643,7 +577,7 @@ const faqJsonLd = {
                                 <Card class="h-full border-blue-500/30 hover:border-blue-500/50 transition-colors">
                                     <CardHeader class="pb-2">
                                         <CardTitle class="text-base flex items-center gap-2">
-                                            <UserCheck class="h-4 w-4 text-blue-500" />
+                                            <UserCheck class="h-4 w-4 text-blue-500" aria-hidden="true" />
                                             E-E-A-T Signals
                                             <Badge class="bg-blue-500 text-xs">Pro</Badge>
                                         </CardTitle>
@@ -660,7 +594,7 @@ const faqJsonLd = {
                                 <Card class="h-full border-blue-500/30 hover:border-blue-500/50 transition-colors">
                                     <CardHeader class="pb-2">
                                         <CardTitle class="text-base flex items-center gap-2">
-                                            <Quote class="h-4 w-4 text-blue-500" />
+                                            <Quote class="h-4 w-4 text-blue-500" aria-hidden="true" />
                                             Citations
                                             <Badge class="bg-blue-500 text-xs">Pro</Badge>
                                         </CardTitle>
@@ -677,7 +611,7 @@ const faqJsonLd = {
                                 <Card class="h-full border-blue-500/30 hover:border-blue-500/50 transition-colors">
                                     <CardHeader class="pb-2">
                                         <CardTitle class="text-base flex items-center gap-2">
-                                            <Bot class="h-4 w-4 text-blue-500" />
+                                            <Bot class="h-4 w-4 text-blue-500" aria-hidden="true" />
                                             AI Access
                                             <Badge class="bg-blue-500 text-xs">Pro</Badge>
                                         </CardTitle>
@@ -694,7 +628,7 @@ const faqJsonLd = {
                                 <Card class="h-full border-purple-500/30 hover:border-purple-500/50 transition-colors">
                                     <CardHeader class="pb-2">
                                         <CardTitle class="text-base flex items-center gap-2">
-                                            <Clock class="h-4 w-4 text-purple-500" />
+                                            <Clock class="h-4 w-4 text-purple-500" aria-hidden="true" />
                                             Freshness
                                             <Badge class="bg-purple-500 text-xs">Agency</Badge>
                                         </CardTitle>
@@ -711,7 +645,7 @@ const faqJsonLd = {
                                 <Card class="h-full border-purple-500/30 hover:border-purple-500/50 transition-colors">
                                     <CardHeader class="pb-2">
                                         <CardTitle class="text-base flex items-center gap-2">
-                                            <Type class="h-4 w-4 text-purple-500" />
+                                            <Type class="h-4 w-4 text-purple-500" aria-hidden="true" />
                                             Readability
                                             <Badge class="bg-purple-500 text-xs">Agency</Badge>
                                         </CardTitle>
@@ -728,7 +662,7 @@ const faqJsonLd = {
                                 <Card class="h-full border-purple-500/30 hover:border-purple-500/50 transition-colors">
                                     <CardHeader class="pb-2">
                                         <CardTitle class="text-base flex items-center gap-2">
-                                            <HelpCircle class="h-4 w-4 text-purple-500" />
+                                            <HelpCircle class="h-4 w-4 text-purple-500" aria-hidden="true" />
                                             Questions
                                             <Badge class="bg-purple-500 text-xs">Agency</Badge>
                                         </CardTitle>
@@ -746,13 +680,13 @@ const faqJsonLd = {
                             <Link href="/geo-optimization-checklist">
                                 <Button variant="outline" class="gap-2">
                                     View Complete Optimization Checklist
-                                    <ArrowRight class="h-4 w-4" />
+                                    <ArrowRight class="h-4 w-4" aria-hidden="true" />
                                 </Button>
                             </Link>
                             <Link href="/resources/multimedia-and-geo">
                                 <Button variant="ghost" class="gap-2">
                                     Learn About Multimedia & GEO
-                                    <ArrowRight class="h-4 w-4" />
+                                    <ArrowRight class="h-4 w-4" aria-hidden="true" />
                                 </Button>
                             </Link>
                         </div>
@@ -761,52 +695,60 @@ const faqJsonLd = {
                     <Separator class="my-12" />
 
                     <!-- Internal Linking Block -->
-                    <section class="mb-12">
+                    <section class="mb-12" aria-labelledby="related-resources-heading">
                         <Card class="border-primary/50">
                             <CardContent class="pt-6">
-                                <h3 class="text-lg font-bold mb-4">Related Resources</h3>
+                                <h3 id="related-resources-heading" class="text-lg font-bold mb-4">Related Resources</h3>
                                 <p class="text-muted-foreground mb-4">
                                     Learn more about <Link href="/resources/what-is-geo" class="text-primary hover:underline font-medium">Generative Engine Optimization (GEO)</Link>, explore the <Link href="/definitions" class="text-primary hover:underline font-medium">official GEO definitions</Link>, and use our <Link href="/geo-optimization-checklist" class="text-primary hover:underline font-medium">optimization checklist</Link> to improve your score.
                                 </p>
-                                <div class="flex flex-wrap gap-2">
-                                    <Link href="/resources/what-is-geo">
-                                        <Button variant="outline" size="sm">What Is GEO?</Button>
-                                    </Link>
-                                    <Link href="/definitions">
-                                        <Button variant="outline" size="sm">GEO Definitions</Button>
-                                    </Link>
-                                    <Link href="/geo-optimization-checklist">
-                                        <Button variant="outline" size="sm">Optimization Checklist</Button>
-                                    </Link>
-                                </div>
+                                <nav aria-label="Related resources">
+                                    <ul class="flex flex-wrap gap-2" role="list">
+                                        <li>
+                                            <Link href="/resources/what-is-geo">
+                                                <Button variant="outline" size="sm">What Is GEO?</Button>
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <Link href="/definitions">
+                                                <Button variant="outline" size="sm">GEO Definitions</Button>
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <Link href="/geo-optimization-checklist">
+                                                <Button variant="outline" size="sm">Optimization Checklist</Button>
+                                            </Link>
+                                        </li>
+                                    </ul>
+                                </nav>
                             </CardContent>
                         </Card>
                     </section>
 
                     <!-- Navigation -->
-                    <div class="flex items-center justify-between border-t pt-8">
+                    <nav aria-label="Article navigation" class="flex items-center justify-between border-t pt-8">
                         <Link href="/resources" class="inline-flex items-center text-muted-foreground hover:text-foreground">
-                            <ArrowLeft class="mr-2 h-4 w-4" />
+                            <ArrowLeft class="mr-2 h-4 w-4" aria-hidden="true" />
                             Back to Resources
                         </Link>
                         <Link href="/geo-optimization-checklist" class="inline-flex items-center text-primary hover:underline">
                             Next: Optimization Checklist
-                            <ArrowRight class="ml-2 h-4 w-4" />
+                            <ArrowRight class="ml-2 h-4 w-4" aria-hidden="true" />
                         </Link>
-                    </div>
+                    </nav>
                 </div>
             </article>
 
             <!-- CTA Section -->
-            <section class="border-t bg-muted/30 py-12">
+            <section class="border-t bg-muted/30 py-12" aria-labelledby="cta-heading">
                 <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
-                    <h2 class="text-2xl font-bold">Ready to get your GEO Score?</h2>
+                    <h2 id="cta-heading" class="text-2xl font-bold">Ready to get your GEO Score?</h2>
                     <p class="mt-2 text-muted-foreground">Discover exactly how AI systems see your content.</p>
                     <div class="mt-6">
                         <Link href="/register">
                             <Button size="lg" class="gap-2">
                                 Get Your GEO Score
-                                <ArrowRight class="h-4 w-4" />
+                                <ArrowRight class="h-4 w-4" aria-hidden="true" />
                             </Button>
                         </Link>
                     </div>
@@ -815,27 +757,6 @@ const faqJsonLd = {
         </main>
 
         <!-- Footer -->
-        <footer class="border-t py-12">
-            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <div class="flex flex-col items-center gap-6">
-                    <div class="flex items-center gap-2 rounded-lg bg-primary/10 px-4 py-2">
-                        <Mail class="h-5 w-5 text-primary" />
-                        <span class="text-sm font-medium">Need help?</span>
-                        <a href="mailto:support@geosource.ai" class="text-sm font-semibold text-primary hover:underline">
-                            support@geosource.ai
-                        </a>
-                    </div>
-                    <div class="flex w-full flex-col items-center justify-between gap-4 sm:flex-row">
-                        <div class="flex items-center gap-2">
-                            <Globe class="h-6 w-6 text-primary" />
-                            <span class="font-semibold">GeoSource.ai</span>
-                        </div>
-                        <p class="text-sm text-muted-foreground">
-                            &copy; {{ new Date().getFullYear() }} GeoSource.ai. All rights reserved.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </footer>
+        <ResourceFooter />
     </div>
 </template>

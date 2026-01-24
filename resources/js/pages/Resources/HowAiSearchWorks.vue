@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import {
-    Globe,
     BookOpen,
     ArrowRight,
     ArrowLeft,
@@ -17,17 +16,17 @@ import {
     Quote,
     CheckCircle,
     XCircle,
-    Menu,
     Calendar,
-    Mail,
 } from 'lucide-vue-next';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
+import SkipNav from '@/components/resources/SkipNav.vue';
+import ResourceHeader from '@/components/resources/ResourceHeader.vue';
+import ResourceFooter from '@/components/resources/ResourceFooter.vue';
+import ResourceBreadcrumb from '@/components/resources/ResourceBreadcrumb.vue';
+
+const breadcrumbItems = [
+    { label: 'Resources', href: '/resources' },
+    { label: 'How AI Search Works' },
+];
 
 const publishedDate = new Date('2026-01-18').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
@@ -129,95 +128,23 @@ const faqJsonLd = {
         <meta name="twitter:title" content="How AI Search Engines Actually Work" />
         <meta name="twitter:description" content="Explore the mechanics of generative AI search including RAG, vector embeddings, and source selection." />
         <link rel="canonical" href="https://geosource.ai/resources/how-ai-search-works" />
+        <meta property="og:site_name" content="GeoSource.ai" />
+        <meta property="article:published_time" content="2026-01-18" />
+        <meta property="article:modified_time" content="2026-01-18" />
+        <meta property="article:author" content="GeoSource.ai" />
+        <meta property="article:section" content="Technical" />
+        <meta name="twitter:site" content="@geosourceai" />
+        <meta name="robots" content="index, follow" />
         <component :is="'script'" type="application/ld+json">{{ JSON.stringify(jsonLd) }}</component>
         <component :is="'script'" type="application/ld+json">{{ JSON.stringify(faqJsonLd) }}</component>
     </Head>
 
     <div class="min-h-screen bg-background text-foreground">
-        <!-- Navigation -->
-        <header class="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-                <Link href="/" class="flex items-center gap-2">
-                    <Globe class="h-8 w-8 text-primary" />
-                    <span class="text-xl font-bold">GeoSource.ai</span>
-                </Link>
-                <!-- Desktop Navigation -->
-                <nav class="hidden items-center gap-2 sm:flex">
-                    <Link href="/pricing">
-                        <Button variant="ghost">Pricing</Button>
-                    </Link>
-                    <Link href="/resources">
-                        <Button variant="ghost">Resources</Button>
-                    </Link>
-                    <Link v-if="$page.props.auth.user" href="/dashboard">
-                        <Button variant="outline">Dashboard</Button>
-                    </Link>
-                    <template v-else>
-                        <Link href="/login">
-                            <Button variant="ghost">Log in</Button>
-                        </Link>
-                        <Link href="/register">
-                            <Button>Get Started</Button>
-                        </Link>
-                    </template>
-                    <ThemeSwitcher />
-                </nav>
+        <SkipNav />
+        <ResourceHeader />
 
-                <!-- Mobile Navigation -->
-                <div class="flex items-center gap-2 sm:hidden">
-                    <ThemeSwitcher />
-                    <DropdownMenu>
-                        <DropdownMenuTrigger as-child>
-                            <Button variant="ghost" size="icon">
-                                <Menu class="h-5 w-5" />
-                                <span class="sr-only">Open menu</span>
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" class="w-48">
-                            <DropdownMenuItem as-child>
-                                <Link href="/pricing" class="w-full">
-                                    Pricing
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem as-child>
-                                <Link href="/resources" class="w-full">
-                                    Resources
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem v-if="$page.props.auth.user" as-child>
-                                <Link href="/dashboard" class="w-full">
-                                    Dashboard
-                                </Link>
-                            </DropdownMenuItem>
-                            <template v-else>
-                                <DropdownMenuItem as-child>
-                                    <Link href="/login" class="w-full">
-                                        Log in
-                                    </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem as-child>
-                                    <Link href="/register" class="w-full font-medium text-primary">
-                                        Get Started
-                                    </Link>
-                                </DropdownMenuItem>
-                            </template>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-            </div>
-        </header>
-
-        <main>
-            <!-- Breadcrumb -->
-            <div class="border-b bg-muted/30">
-                <div class="mx-auto max-w-4xl px-4 py-4 sm:px-6 lg:px-8">
-                    <nav class="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Link href="/resources" class="hover:text-foreground">Resources</Link>
-                        <span>/</span>
-                        <span class="text-foreground">How AI Search Works</span>
-                    </nav>
-                </div>
-            </div>
+        <main id="main-content" role="main">
+            <ResourceBreadcrumb :items="breadcrumbItems" />
 
             <!-- Article -->
             <article class="py-12">
@@ -225,7 +152,7 @@ const faqJsonLd = {
                     <!-- Header -->
                     <header class="mb-12">
                         <Badge variant="secondary" class="mb-4">
-                            <BookOpen class="mr-1 h-3 w-3" />
+                            <BookOpen class="mr-1 h-3 w-3" aria-hidden="true" />
                             Technical
                         </Badge>
                         <h1 class="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
@@ -235,8 +162,8 @@ const faqJsonLd = {
                             Understanding the technology behind generative AI search systems.
                         </p>
                         <div class="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-                            <Calendar class="h-4 w-4" />
-                            <span>{{ publishedDate }}</span>
+                            <Calendar class="h-4 w-4" aria-hidden="true" />
+                            <time datetime="2026-01-18">{{ publishedDate }}</time>
                         </div>
                     </header>
 
@@ -245,7 +172,7 @@ const faqJsonLd = {
                         <Card class="border-amber-500/50 bg-amber-500/5">
                             <CardContent class="pt-6">
                                 <div class="flex items-start gap-3">
-                                    <XCircle class="h-6 w-6 text-amber-500 shrink-0 mt-0.5" />
+                                    <XCircle class="h-6 w-6 text-amber-500 shrink-0 mt-0.5" aria-hidden="true" />
                                     <div>
                                         <p class="font-medium text-foreground text-lg">
                                             Generative AI engines do not "crawl the web" like Google.
@@ -269,7 +196,7 @@ const faqJsonLd = {
                             <Card v-for="component in aiComponents" :key="component.title">
                                 <CardContent class="pt-6">
                                     <div class="flex items-start gap-3">
-                                        <component :is="component.icon" class="h-6 w-6 text-primary shrink-0" />
+                                        <component :is="component.icon" class="h-6 w-6 text-primary shrink-0" aria-hidden="true" />
                                         <div>
                                             <p class="font-medium">{{ component.title }}</p>
                                             <p class="text-sm text-muted-foreground mt-1">{{ component.description }}</p>
@@ -316,7 +243,7 @@ const faqJsonLd = {
                         </p>
                         <div class="grid gap-3 sm:grid-cols-2">
                             <div v-for="item in contentPreferences" :key="item" class="flex items-center gap-3">
-                                <CheckCircle class="h-5 w-5 text-green-500 shrink-0" />
+                                <CheckCircle class="h-5 w-5 text-green-500 shrink-0" aria-hidden="true" />
                                 <span>{{ item }}</span>
                             </div>
                         </div>
@@ -335,52 +262,53 @@ const faqJsonLd = {
                     <!-- Related Resources -->
                     <section aria-labelledby="related">
                         <h2 id="related" class="text-2xl font-bold mb-6">Related Resources</h2>
-                        <div class="grid gap-4 sm:grid-cols-3">
-                            <Link
-                                v-for="article in relatedArticles"
-                                :key="article.slug"
-                                :href="`/resources/${article.slug}`"
-                                class="group"
-                            >
-                                <Card class="h-full transition-colors hover:border-primary/50">
-                                    <CardContent class="pt-6">
-                                        <p class="font-medium group-hover:text-primary transition-colors">
-                                            {{ article.title }}
-                                        </p>
-                                        <span class="inline-flex items-center text-sm text-primary mt-2">
-                                            Read more
-                                            <ArrowRight class="ml-1 h-3 w-3 transition-transform group-hover:translate-x-1" />
-                                        </span>
-                                    </CardContent>
-                                </Card>
-                            </Link>
-                        </div>
+                        <ul role="list" class="grid gap-4 sm:grid-cols-3">
+                            <li v-for="article in relatedArticles" :key="article.slug">
+                                <Link
+                                    :href="`/resources/${article.slug}`"
+                                    :aria-label="`Read more about ${article.title}`"
+                                    class="group"
+                                >
+                                    <Card class="h-full transition-colors hover:border-primary/50">
+                                        <CardContent class="pt-6">
+                                            <p class="font-medium group-hover:text-primary transition-colors">
+                                                {{ article.title }}
+                                            </p>
+                                            <span class="inline-flex items-center text-sm text-primary mt-2">
+                                                Read more
+                                                <ArrowRight class="ml-1 h-3 w-3 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+                                            </span>
+                                        </CardContent>
+                                    </Card>
+                                </Link>
+                            </li>
+                        </ul>
                     </section>
 
                     <!-- Navigation -->
-                    <div class="mt-12 flex items-center justify-between border-t pt-8">
+                    <nav aria-label="Article navigation" class="mt-12 flex items-center justify-between border-t pt-8">
                         <Link href="/resources/geo-vs-seo" class="inline-flex items-center text-muted-foreground hover:text-foreground">
-                            <ArrowLeft class="mr-2 h-4 w-4" />
+                            <ArrowLeft class="mr-2 h-4 w-4" aria-hidden="true" />
                             Previous: GEO vs SEO
                         </Link>
                         <Link href="/resources/how-llms-cite-sources" class="inline-flex items-center text-primary hover:underline">
                             Next: How LLMs Cite Sources
-                            <ArrowRight class="ml-2 h-4 w-4" />
+                            <ArrowRight class="ml-2 h-4 w-4" aria-hidden="true" />
                         </Link>
-                    </div>
+                    </nav>
                 </div>
             </article>
 
             <!-- CTA Section -->
-            <section class="border-t bg-muted/30 py-12">
+            <section aria-labelledby="cta-heading" class="border-t bg-muted/30 py-12">
                 <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
-                    <h2 class="text-2xl font-bold">Optimize your content for AI systems</h2>
+                    <h2 id="cta-heading" class="text-2xl font-bold">Optimize your content for AI systems</h2>
                     <p class="mt-2 text-muted-foreground">Get your GEO Score and see how AI search engines view your site.</p>
                     <div class="mt-6">
                         <Link href="/register">
                             <Button size="lg" class="gap-2">
                                 Get Your GEO Score
-                                <ArrowRight class="h-4 w-4" />
+                                <ArrowRight class="h-4 w-4" aria-hidden="true" />
                             </Button>
                         </Link>
                     </div>
@@ -388,28 +316,6 @@ const faqJsonLd = {
             </section>
         </main>
 
-        <!-- Footer -->
-        <footer class="border-t py-12">
-            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <div class="flex flex-col items-center gap-6">
-                    <div class="flex items-center gap-2 rounded-lg bg-primary/10 px-4 py-2">
-                        <Mail class="h-5 w-5 text-primary" />
-                        <span class="text-sm font-medium">Need help?</span>
-                        <a href="mailto:support@geosource.ai" class="text-sm font-semibold text-primary hover:underline">
-                            support@geosource.ai
-                        </a>
-                    </div>
-                    <div class="flex w-full flex-col items-center justify-between gap-4 sm:flex-row">
-                        <div class="flex items-center gap-2">
-                            <Globe class="h-6 w-6 text-primary" />
-                            <span class="font-semibold">GeoSource.ai</span>
-                        </div>
-                        <p class="text-sm text-muted-foreground">
-                            &copy; {{ new Date().getFullYear() }} GeoSource.ai. All rights reserved.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </footer>
+        <ResourceFooter />
     </div>
 </template>

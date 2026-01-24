@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import {
-    Globe,
     BookOpen,
     ArrowRight,
     ArrowLeft,
@@ -16,19 +15,19 @@ import {
     CheckCircle,
     Layers,
     Brain,
-    Menu,
     Calendar,
-    Mail,
 } from 'lucide-vue-next';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
+import SkipNav from '@/components/resources/SkipNav.vue';
+import ResourceHeader from '@/components/resources/ResourceHeader.vue';
+import ResourceFooter from '@/components/resources/ResourceFooter.vue';
+import ResourceBreadcrumb from '@/components/resources/ResourceBreadcrumb.vue';
 
 const publishedDate = new Date('2026-01-18').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+const breadcrumbItems = [
+    { label: 'Resources', href: '/resources' },
+    { label: 'GEO Content Framework' },
+];
 
 const frameworkPillars = [
     {
@@ -138,99 +137,31 @@ const faqJsonLd = {
         <meta property="og:description" content="A structured framework designed specifically for generative AI systems." />
         <meta property="og:type" content="article" />
         <meta property="og:url" content="https://geosource.ai/resources/geo-content-framework" />
+        <meta property="og:site_name" content="GeoSource.ai" />
+        <meta property="article:published_time" content="2026-01-18T00:00:00Z" />
+        <meta property="article:modified_time" content="2026-01-18T00:00:00Z" />
+        <meta property="article:author" content="GeoSource.ai" />
+        <meta property="article:section" content="Resources" />
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@geosourceai" />
         <meta name="twitter:title" content="The GeoSource.ai GEO Content Framework" />
         <meta name="twitter:description" content="A structured framework designed specifically for generative AI systems." />
+        <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
         <link rel="canonical" href="https://geosource.ai/resources/geo-content-framework" />
         <component :is="'script'" type="application/ld+json">{{ JSON.stringify(jsonLd) }}</component>
         <component :is="'script'" type="application/ld+json">{{ JSON.stringify(faqJsonLd) }}</component>
     </Head>
 
     <div class="min-h-screen bg-background text-foreground">
+        <!-- Skip Navigation -->
+        <SkipNav />
+
         <!-- Navigation -->
-        <header class="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-                <Link href="/" class="flex items-center gap-2">
-                    <Globe class="h-8 w-8 text-primary" />
-                    <span class="text-xl font-bold">GeoSource.ai</span>
-                </Link>
-                <!-- Desktop Navigation -->
-                <nav class="hidden items-center gap-2 sm:flex">
-                    <Link href="/pricing">
-                        <Button variant="ghost">Pricing</Button>
-                    </Link>
-                    <Link href="/resources">
-                        <Button variant="ghost">Resources</Button>
-                    </Link>
-                    <Link v-if="$page.props.auth.user" href="/dashboard">
-                        <Button variant="outline">Dashboard</Button>
-                    </Link>
-                    <template v-else>
-                        <Link href="/login">
-                            <Button variant="ghost">Log in</Button>
-                        </Link>
-                        <Link href="/register">
-                            <Button>Get Started</Button>
-                        </Link>
-                    </template>
-                    <ThemeSwitcher />
-                </nav>
+        <ResourceHeader />
 
-                <!-- Mobile Navigation -->
-                <div class="flex items-center gap-2 sm:hidden">
-                    <ThemeSwitcher />
-                    <DropdownMenu>
-                        <DropdownMenuTrigger as-child>
-                            <Button variant="ghost" size="icon">
-                                <Menu class="h-5 w-5" />
-                                <span class="sr-only">Open menu</span>
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" class="w-48">
-                            <DropdownMenuItem as-child>
-                                <Link href="/pricing" class="w-full">
-                                    Pricing
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem as-child>
-                                <Link href="/resources" class="w-full">
-                                    Resources
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem v-if="$page.props.auth.user" as-child>
-                                <Link href="/dashboard" class="w-full">
-                                    Dashboard
-                                </Link>
-                            </DropdownMenuItem>
-                            <template v-else>
-                                <DropdownMenuItem as-child>
-                                    <Link href="/login" class="w-full">
-                                        Log in
-                                    </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem as-child>
-                                    <Link href="/register" class="w-full font-medium text-primary">
-                                        Get Started
-                                    </Link>
-                                </DropdownMenuItem>
-                            </template>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-            </div>
-        </header>
-
-        <main>
+        <main id="main-content" role="main">
             <!-- Breadcrumb -->
-            <div class="border-b bg-muted/30">
-                <div class="mx-auto max-w-4xl px-4 py-4 sm:px-6 lg:px-8">
-                    <nav class="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Link href="/resources" class="hover:text-foreground">Resources</Link>
-                        <span>/</span>
-                        <span class="text-foreground">GEO Content Framework</span>
-                    </nav>
-                </div>
-            </div>
+            <ResourceBreadcrumb :items="breadcrumbItems" />
 
             <!-- Article -->
             <article class="py-12">
@@ -238,7 +169,7 @@ const faqJsonLd = {
                     <!-- Header -->
                     <header class="mb-12">
                         <Badge variant="secondary" class="mb-4">
-                            <BookOpen class="mr-1 h-3 w-3" />
+                            <BookOpen class="mr-1 h-3 w-3" aria-hidden="true" />
                             Framework
                         </Badge>
                         <h1 class="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
@@ -248,13 +179,14 @@ const faqJsonLd = {
                             A structured approach designed specifically for generative AI systems.
                         </p>
                         <div class="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-                            <Calendar class="h-4 w-4" />
-                            <span>{{ publishedDate }}</span>
+                            <Calendar class="h-4 w-4" aria-hidden="true" />
+                            <time datetime="2026-01-18">{{ publishedDate }}</time>
                         </div>
                     </header>
 
                     <!-- Introduction -->
-                    <section class="mb-12" aria-labelledby="intro">
+                    <section class="mb-12" aria-labelledby="intro-heading">
+                        <h2 id="intro-heading" class="sr-only">Introduction</h2>
                         <Card class="border-primary/50 bg-primary/5">
                             <CardContent class="pt-6">
                                 <p class="text-lg">
@@ -275,14 +207,14 @@ const faqJsonLd = {
                                         <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold">
                                             {{ index + 1 }}
                                         </span>
-                                        <component :is="pillar.icon" class="h-6 w-6 text-primary" />
+                                        <component :is="pillar.icon" class="h-6 w-6 text-primary" aria-hidden="true" />
                                         <CardTitle>{{ pillar.title }}</CardTitle>
                                     </div>
                                 </CardHeader>
                                 <CardContent class="pt-6">
                                     <ul class="space-y-2">
                                         <li v-for="item in pillar.items" :key="item" class="flex items-center gap-2">
-                                            <CheckCircle class="h-4 w-4 text-green-500 shrink-0" />
+                                            <CheckCircle class="h-4 w-4 text-green-500 shrink-0" aria-hidden="true" />
                                             <span>{{ item }}</span>
                                         </li>
                                     </ul>
@@ -300,7 +232,7 @@ const faqJsonLd = {
                         <Card class="border-primary/50 bg-primary/5">
                             <CardContent class="pt-6">
                                 <div class="flex items-start gap-4">
-                                    <Brain class="h-8 w-8 text-primary shrink-0" />
+                                    <Brain class="h-8 w-8 text-primary shrink-0" aria-hidden="true" />
                                     <div>
                                         <p class="text-lg font-medium">
                                             This framework mirrors how LLMs retrieve and evaluate information internally.
@@ -310,19 +242,19 @@ const faqJsonLd = {
                                         </p>
                                         <ul class="mt-4 space-y-2">
                                             <li class="flex items-center gap-2">
-                                                <CheckCircle class="h-5 w-5 text-green-500" />
+                                                <CheckCircle class="h-5 w-5 text-green-500" aria-hidden="true" />
                                                 <span>Make your content easier for AI to parse</span>
                                             </li>
                                             <li class="flex items-center gap-2">
-                                                <CheckCircle class="h-5 w-5 text-green-500" />
+                                                <CheckCircle class="h-5 w-5 text-green-500" aria-hidden="true" />
                                                 <span>Increase trust signals that AI systems recognize</span>
                                             </li>
                                             <li class="flex items-center gap-2">
-                                                <CheckCircle class="h-5 w-5 text-green-500" />
+                                                <CheckCircle class="h-5 w-5 text-green-500" aria-hidden="true" />
                                                 <span>Reduce the risk of being misunderstood or ignored</span>
                                             </li>
                                             <li class="flex items-center gap-2">
-                                                <CheckCircle class="h-5 w-5 text-green-500" />
+                                                <CheckCircle class="h-5 w-5 text-green-500" aria-hidden="true" />
                                                 <span>Improve your likelihood of being cited</span>
                                             </li>
                                         </ul>
@@ -346,19 +278,19 @@ const faqJsonLd = {
                                 <CardContent>
                                     <ul class="space-y-2 text-sm">
                                         <li class="flex items-start gap-2">
-                                            <CheckCircle class="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                                            <CheckCircle class="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" aria-hidden="true" />
                                             <span>Start with a clear definition</span>
                                         </li>
                                         <li class="flex items-start gap-2">
-                                            <CheckCircle class="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                                            <CheckCircle class="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" aria-hidden="true" />
                                             <span>Use hierarchical headings (H1 → H2 → H3)</span>
                                         </li>
                                         <li class="flex items-start gap-2">
-                                            <CheckCircle class="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                                            <CheckCircle class="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" aria-hidden="true" />
                                             <span>Include bullet points for lists</span>
                                         </li>
                                         <li class="flex items-start gap-2">
-                                            <CheckCircle class="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                                            <CheckCircle class="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" aria-hidden="true" />
                                             <span>Add tables for comparisons</span>
                                         </li>
                                     </ul>
@@ -372,19 +304,19 @@ const faqJsonLd = {
                                 <CardContent>
                                     <ul class="space-y-2 text-sm">
                                         <li class="flex items-start gap-2">
-                                            <CheckCircle class="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                                            <CheckCircle class="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" aria-hidden="true" />
                                             <span>Stay focused on one topic per page</span>
                                         </li>
                                         <li class="flex items-start gap-2">
-                                            <CheckCircle class="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                                            <CheckCircle class="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" aria-hidden="true" />
                                             <span>Cover the topic comprehensively</span>
                                         </li>
                                         <li class="flex items-start gap-2">
-                                            <CheckCircle class="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                                            <CheckCircle class="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" aria-hidden="true" />
                                             <span>Link to related topics internally</span>
                                         </li>
                                         <li class="flex items-start gap-2">
-                                            <CheckCircle class="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                                            <CheckCircle class="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" aria-hidden="true" />
                                             <span>Use consistent terminology</span>
                                         </li>
                                     </ul>
@@ -398,19 +330,19 @@ const faqJsonLd = {
                                 <CardContent>
                                     <ul class="space-y-2 text-sm">
                                         <li class="flex items-start gap-2">
-                                            <CheckCircle class="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                                            <CheckCircle class="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" aria-hidden="true" />
                                             <span>Include an FAQ section</span>
                                         </li>
                                         <li class="flex items-start gap-2">
-                                            <CheckCircle class="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                                            <CheckCircle class="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" aria-hidden="true" />
                                             <span>Answer questions directly</span>
                                         </li>
                                         <li class="flex items-start gap-2">
-                                            <CheckCircle class="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                                            <CheckCircle class="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" aria-hidden="true" />
                                             <span>Use "X is defined as..." patterns</span>
                                         </li>
                                         <li class="flex items-start gap-2">
-                                            <CheckCircle class="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                                            <CheckCircle class="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" aria-hidden="true" />
                                             <span>State facts confidently</span>
                                         </li>
                                     </ul>
@@ -424,19 +356,19 @@ const faqJsonLd = {
                                 <CardContent>
                                     <ul class="space-y-2 text-sm">
                                         <li class="flex items-start gap-2">
-                                            <CheckCircle class="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                                            <CheckCircle class="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" aria-hidden="true" />
                                             <span>Add JSON-LD structured data</span>
                                         </li>
                                         <li class="flex items-start gap-2">
-                                            <CheckCircle class="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                                            <CheckCircle class="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" aria-hidden="true" />
                                             <span>Use semantic HTML tags</span>
                                         </li>
                                         <li class="flex items-start gap-2">
-                                            <CheckCircle class="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                                            <CheckCircle class="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" aria-hidden="true" />
                                             <span>Implement proper meta tags</span>
                                         </li>
                                         <li class="flex items-start gap-2">
-                                            <CheckCircle class="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                                            <CheckCircle class="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" aria-hidden="true" />
                                             <span>Ensure fast page load times</span>
                                         </li>
                                     </ul>
@@ -450,52 +382,53 @@ const faqJsonLd = {
                     <!-- Related Resources -->
                     <section aria-labelledby="related">
                         <h2 id="related" class="text-2xl font-bold mb-6">Related Resources</h2>
-                        <div class="grid gap-4 sm:grid-cols-3">
-                            <Link
-                                v-for="article in relatedArticles"
-                                :key="article.slug"
-                                :href="`/resources/${article.slug}`"
-                                class="group"
-                            >
-                                <Card class="h-full transition-colors hover:border-primary/50">
-                                    <CardContent class="pt-6">
-                                        <p class="font-medium group-hover:text-primary transition-colors">
-                                            {{ article.title }}
-                                        </p>
-                                        <span class="inline-flex items-center text-sm text-primary mt-2">
-                                            Read more
-                                            <ArrowRight class="ml-1 h-3 w-3 transition-transform group-hover:translate-x-1" />
-                                        </span>
-                                    </CardContent>
-                                </Card>
-                            </Link>
-                        </div>
+                        <ul class="grid gap-4 sm:grid-cols-3" aria-label="Related resource articles">
+                            <li v-for="article in relatedArticles" :key="article.slug">
+                                <Link
+                                    :href="`/resources/${article.slug}`"
+                                    class="group block h-full"
+                                    :aria-label="`Read more about ${article.title}`"
+                                >
+                                    <Card class="h-full transition-colors hover:border-primary/50">
+                                        <CardContent class="pt-6">
+                                            <p class="font-medium group-hover:text-primary transition-colors">
+                                                {{ article.title }}
+                                            </p>
+                                            <span class="inline-flex items-center text-sm text-primary mt-2">
+                                                Read more
+                                                <ArrowRight class="ml-1 h-3 w-3 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+                                            </span>
+                                        </CardContent>
+                                    </Card>
+                                </Link>
+                            </li>
+                        </ul>
                     </section>
 
                     <!-- Navigation -->
-                    <div class="mt-12 flex items-center justify-between border-t pt-8">
+                    <nav class="mt-12 flex items-center justify-between border-t pt-8" aria-label="Article navigation">
                         <Link href="/resources/what-is-a-geo-score" class="inline-flex items-center text-muted-foreground hover:text-foreground">
-                            <ArrowLeft class="mr-2 h-4 w-4" />
+                            <ArrowLeft class="mr-2 h-4 w-4" aria-hidden="true" />
                             Previous: What Is a GEO Score?
                         </Link>
                         <Link href="/resources" class="inline-flex items-center text-primary hover:underline">
                             View All Resources
-                            <ArrowRight class="ml-2 h-4 w-4" />
+                            <ArrowRight class="ml-2 h-4 w-4" aria-hidden="true" />
                         </Link>
-                    </div>
+                    </nav>
                 </div>
             </article>
 
             <!-- CTA Section -->
-            <section class="border-t bg-muted/30 py-12">
+            <section class="border-t bg-muted/30 py-12" aria-labelledby="cta-heading">
                 <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
-                    <h2 class="text-2xl font-bold">Put the framework into practice</h2>
+                    <h2 id="cta-heading" class="text-2xl font-bold">Put the framework into practice</h2>
                     <p class="mt-2 text-muted-foreground">Get your GEO Score and see how your content measures up against the framework.</p>
                     <div class="mt-6">
                         <Link href="/register">
                             <Button size="lg" class="gap-2">
                                 Get Your GEO Score
-                                <ArrowRight class="h-4 w-4" />
+                                <ArrowRight class="h-4 w-4" aria-hidden="true" />
                             </Button>
                         </Link>
                     </div>
@@ -504,27 +437,6 @@ const faqJsonLd = {
         </main>
 
         <!-- Footer -->
-        <footer class="border-t py-12">
-            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <div class="flex flex-col items-center gap-6">
-                    <div class="flex items-center gap-2 rounded-lg bg-primary/10 px-4 py-2">
-                        <Mail class="h-5 w-5 text-primary" />
-                        <span class="text-sm font-medium">Need help?</span>
-                        <a href="mailto:support@geosource.ai" class="text-sm font-semibold text-primary hover:underline">
-                            support@geosource.ai
-                        </a>
-                    </div>
-                    <div class="flex w-full flex-col items-center justify-between gap-4 sm:flex-row">
-                        <div class="flex items-center gap-2">
-                            <Globe class="h-6 w-6 text-primary" />
-                            <span class="font-semibold">GeoSource.ai</span>
-                        </div>
-                        <p class="text-sm text-muted-foreground">
-                            &copy; {{ new Date().getFullYear() }} GeoSource.ai. All rights reserved.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </footer>
+        <ResourceFooter />
     </div>
 </template>

@@ -3,9 +3,10 @@ import { Head, Link } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
+import SkipNav from '@/components/resources/SkipNav.vue';
+import ResourceHeader from '@/components/resources/ResourceHeader.vue';
+import ResourceFooter from '@/components/resources/ResourceFooter.vue';
 import {
-    Globe,
     BookOpen,
     ArrowRight,
     Brain,
@@ -17,8 +18,6 @@ import {
     Eye,
     CheckSquare,
     Library,
-    Menu,
-    Mail,
     Server,
     UserCheck,
     Bot,
@@ -28,12 +27,6 @@ import {
     Image,
     Calendar,
 } from 'lucide-vue-next';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 
 const articles = [
     {
@@ -220,98 +213,31 @@ const jsonLd = {
         <meta property="og:description" content="Comprehensive guides to Generative Engine Optimization (GEO). Learn how to optimize your content for AI search engines." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://geosource.ai/resources" />
+        <meta property="og:site_name" content="GeoSource.ai" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="GEO Learning Resources - GeoSource.ai" />
         <meta name="twitter:description" content="Comprehensive guides to Generative Engine Optimization (GEO). Learn how to optimize your content for AI search engines." />
+        <meta name="twitter:site" content="@geosourceai" />
+        <meta name="robots" content="index, follow" />
         <link rel="canonical" href="https://geosource.ai/resources" />
         <component :is="'script'" type="application/ld+json">{{ JSON.stringify(jsonLd) }}</component>
     </Head>
 
     <div class="min-h-screen bg-background text-foreground">
-        <!-- Navigation -->
-        <header class="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-                <Link href="/" class="flex items-center gap-2">
-                    <Globe class="h-8 w-8 text-primary" />
-                    <span class="text-xl font-bold">GeoSource.ai</span>
-                </Link>
-                <!-- Desktop Navigation -->
-                <nav class="hidden items-center gap-2 sm:flex">
-                    <Link href="/pricing">
-                        <Button variant="ghost">Pricing</Button>
-                    </Link>
-                    <Link href="/resources">
-                        <Button variant="ghost">Resources</Button>
-                    </Link>
-                    <Link v-if="$page.props.auth.user" href="/dashboard">
-                        <Button variant="outline">Dashboard</Button>
-                    </Link>
-                    <template v-else>
-                        <Link href="/login">
-                            <Button variant="ghost">Log in</Button>
-                        </Link>
-                        <Link href="/register">
-                            <Button>Get Started</Button>
-                        </Link>
-                    </template>
-                    <ThemeSwitcher />
-                </nav>
+        <SkipNav />
+        <ResourceHeader />
 
-                <!-- Mobile Navigation -->
-                <div class="flex items-center gap-2 sm:hidden">
-                    <ThemeSwitcher />
-                    <DropdownMenu>
-                        <DropdownMenuTrigger as-child>
-                            <Button variant="ghost" size="icon">
-                                <Menu class="h-5 w-5" />
-                                <span class="sr-only">Open menu</span>
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" class="w-48">
-                            <DropdownMenuItem as-child>
-                                <Link href="/pricing" class="w-full">
-                                    Pricing
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem as-child>
-                                <Link href="/resources" class="w-full">
-                                    Resources
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem v-if="$page.props.auth.user" as-child>
-                                <Link href="/dashboard" class="w-full">
-                                    Dashboard
-                                </Link>
-                            </DropdownMenuItem>
-                            <template v-else>
-                                <DropdownMenuItem as-child>
-                                    <Link href="/login" class="w-full">
-                                        Log in
-                                    </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem as-child>
-                                    <Link href="/register" class="w-full font-medium text-primary">
-                                        Get Started
-                                    </Link>
-                                </DropdownMenuItem>
-                            </template>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-            </div>
-        </header>
-
-        <main>
+        <main id="main-content" role="main">
             <!-- Hero Section -->
-            <section class="relative overflow-hidden py-16 sm:py-24">
-                <div class="absolute inset-0 -z-10 bg-[radial-gradient(45%_40%_at_50%_60%,hsl(var(--primary)/0.12),transparent)]" />
+            <section aria-labelledby="hero-heading" class="relative overflow-hidden py-16 sm:py-24">
+                <div class="absolute inset-0 -z-10 bg-[radial-gradient(45%_40%_at_50%_60%,hsl(var(--primary)/0.12),transparent)]" aria-hidden="true" />
                 <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div class="mx-auto max-w-3xl text-center">
                         <Badge variant="secondary" class="mb-6">
-                            <BookOpen class="mr-1 h-3 w-3" />
+                            <BookOpen class="mr-1 h-3 w-3" aria-hidden="true" />
                             Learning Hub
                         </Badge>
-                        <h1 class="text-4xl font-bold tracking-tight sm:text-5xl">
+                        <h1 id="hero-heading" class="text-4xl font-bold tracking-tight sm:text-5xl">
                             GEO Learning Resources
                         </h1>
                         <p class="mt-6 text-lg leading-8 text-muted-foreground">
@@ -322,101 +248,103 @@ const jsonLd = {
             </section>
 
             <!-- Featured Resources -->
-            <section class="border-t py-16">
+            <section aria-labelledby="featured-heading" class="border-t py-16">
                 <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <h2 class="text-2xl font-bold mb-8 text-center">Essential GEO Resources</h2>
-                    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                        <Link
-                            v-for="resource in featuredResources"
-                            :key="resource.href"
-                            :href="resource.href"
-                            class="group"
-                        >
-                            <Card
-                                class="h-full transition-colors hover:border-primary/50"
-                                :class="{ 'border-primary/50 bg-primary/5': resource.highlight }"
+                    <h2 id="featured-heading" class="text-2xl font-bold mb-8 text-center">Essential GEO Resources</h2>
+                    <ul class="grid gap-6 md:grid-cols-2 lg:grid-cols-4" role="list">
+                        <li v-for="resource in featuredResources" :key="resource.href">
+                            <Link
+                                :href="resource.href"
+                                class="group block h-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg"
+                                :aria-label="`${resource.title}: ${resource.description}`"
                             >
-                                <CardHeader>
-                                    <div class="flex items-center justify-between">
-                                        <component :is="resource.icon" class="h-8 w-8 text-primary" />
-                                        <Badge :variant="resource.highlight ? 'default' : 'outline'">{{ resource.badge }}</Badge>
-                                    </div>
-                                    <CardTitle class="mt-4 text-lg group-hover:text-primary transition-colors">
-                                        {{ resource.title }}
-                                    </CardTitle>
-                                    <CardDescription>
-                                        {{ resource.description }}
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <span class="inline-flex items-center text-sm font-medium text-primary">
-                                        Explore
-                                        <ArrowRight class="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                                    </span>
-                                </CardContent>
-                            </Card>
-                        </Link>
-                    </div>
+                                <Card
+                                    class="h-full transition-colors hover:border-primary/50"
+                                    :class="{ 'border-primary/50 bg-primary/5': resource.highlight }"
+                                >
+                                    <CardHeader>
+                                        <div class="flex items-center justify-between">
+                                            <component :is="resource.icon" class="h-8 w-8 text-primary" aria-hidden="true" />
+                                            <Badge :variant="resource.highlight ? 'default' : 'outline'">{{ resource.badge }}</Badge>
+                                        </div>
+                                        <CardTitle class="mt-4 text-lg group-hover:text-primary transition-colors">
+                                            {{ resource.title }}
+                                        </CardTitle>
+                                        <CardDescription>
+                                            {{ resource.description }}
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <span class="inline-flex items-center text-sm font-medium text-primary" aria-hidden="true">
+                                            Explore
+                                            <ArrowRight class="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                                        </span>
+                                    </CardContent>
+                                </Card>
+                            </Link>
+                        </li>
+                    </ul>
                 </div>
             </section>
 
             <!-- Articles Grid -->
-            <section class="border-t bg-muted/30 py-16">
+            <section aria-labelledby="articles-heading" class="border-t bg-muted/30 py-16">
                 <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <h2 class="text-2xl font-bold mb-8 text-center">Learn the Fundamentals</h2>
-                    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        <Link
-                            v-for="article in articles"
-                            :key="article.slug"
-                            :href="`/resources/${article.slug}`"
-                            class="group"
-                        >
-                            <Card class="h-full transition-colors hover:border-primary/50">
-                                <CardHeader>
-                                    <div class="flex items-center justify-between">
-                                        <component :is="article.icon" class="h-8 w-8 text-primary" />
-                                        <Badge variant="outline">{{ article.badge }}</Badge>
-                                    </div>
-                                    <CardTitle class="mt-4 text-xl group-hover:text-primary transition-colors">
-                                        {{ article.title }}
-                                    </CardTitle>
-                                    <CardDescription class="text-base">
-                                        {{ article.description }}
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <div class="flex items-center justify-between">
-                                        <span class="inline-flex items-center text-sm font-medium text-primary">
-                                            Read article
-                                            <ArrowRight class="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                                        </span>
-                                        <span class="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                                            <Calendar class="h-3 w-3" />
-                                            {{ article.date }}
-                                        </span>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </Link>
-                    </div>
+                    <h2 id="articles-heading" class="text-2xl font-bold mb-8 text-center">Learn the Fundamentals</h2>
+                    <ul class="grid gap-6 md:grid-cols-2 lg:grid-cols-3" role="list">
+                        <li v-for="article in articles" :key="article.slug">
+                            <Link
+                                :href="`/resources/${article.slug}`"
+                                class="group block h-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg"
+                                :aria-label="`${article.title}: ${article.description}`"
+                            >
+                                <Card class="h-full transition-colors hover:border-primary/50">
+                                    <CardHeader>
+                                        <div class="flex items-center justify-between">
+                                            <component :is="article.icon" class="h-8 w-8 text-primary" aria-hidden="true" />
+                                            <Badge variant="outline">{{ article.badge }}</Badge>
+                                        </div>
+                                        <CardTitle class="mt-4 text-xl group-hover:text-primary transition-colors">
+                                            {{ article.title }}
+                                        </CardTitle>
+                                        <CardDescription class="text-base">
+                                            {{ article.description }}
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div class="flex items-center justify-between">
+                                            <span class="inline-flex items-center text-sm font-medium text-primary" aria-hidden="true">
+                                                Read article
+                                                <ArrowRight class="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                                            </span>
+                                            <span class="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                                                <Calendar class="h-3 w-3" aria-hidden="true" />
+                                                <time :datetime="'2026-01'">{{ article.date }}</time>
+                                            </span>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </Link>
+                        </li>
+                    </ul>
                 </div>
             </section>
 
             <!-- CTA Section -->
-            <section class="border-t py-16">
+            <section aria-labelledby="cta-heading" class="border-t py-16">
                 <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div class="mx-auto max-w-2xl text-center">
-                        <h2 class="text-2xl font-bold tracking-tight sm:text-3xl">
+                        <h2 id="cta-heading" class="text-2xl font-bold tracking-tight sm:text-3xl">
                             Ready to measure your GEO readiness?
                         </h2>
                         <p class="mt-4 text-lg text-muted-foreground">
                             Get your GEO Score and actionable recommendations.
                         </p>
                         <div class="mt-8">
-                            <Link href="/register">
+                            <Link href="/register" class="inline-block focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-md">
                                 <Button size="lg" class="gap-2">
                                     Start Free Analysis
-                                    <ArrowRight class="h-4 w-4" />
+                                    <ArrowRight class="h-4 w-4" aria-hidden="true" />
                                 </Button>
                             </Link>
                         </div>
@@ -425,28 +353,6 @@ const jsonLd = {
             </section>
         </main>
 
-        <!-- Footer -->
-        <footer class="border-t py-12">
-            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <div class="flex flex-col items-center gap-6">
-                    <div class="flex items-center gap-2 rounded-lg bg-primary/10 px-4 py-2">
-                        <Mail class="h-5 w-5 text-primary" />
-                        <span class="text-sm font-medium">Need help?</span>
-                        <a href="mailto:support@geosource.ai" class="text-sm font-semibold text-primary hover:underline">
-                            support@geosource.ai
-                        </a>
-                    </div>
-                    <div class="flex w-full flex-col items-center justify-between gap-4 sm:flex-row">
-                        <div class="flex items-center gap-2">
-                            <Globe class="h-6 w-6 text-primary" />
-                            <span class="font-semibold">GeoSource.ai</span>
-                        </div>
-                        <p class="text-sm text-muted-foreground">
-                            &copy; {{ new Date().getFullYear() }} GeoSource.ai. All rights reserved.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </footer>
+        <ResourceFooter />
     </div>
 </template>

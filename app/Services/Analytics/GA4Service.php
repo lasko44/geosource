@@ -28,18 +28,13 @@ class GA4Service
      */
     public function canAccessGA4(User $user): bool
     {
-        // TODO: Remove admin-only restriction after testing in production
-        // Currently restricted to admins only for testing
-        return $user->is_admin;
+        if ($user->is_admin) {
+            return true;
+        }
 
-        // Original logic - uncomment when ready for production:
-        // if ($user->is_admin) {
-        //     return true;
-        // }
-        //
-        // $limit = $this->subscriptionService->getLimit($user, 'ga4_connections');
-        //
-        // return $limit !== null && $limit !== 0;
+        $limit = $this->subscriptionService->getLimit($user, 'ga4_connections');
+
+        return $limit !== null && $limit !== 0;
     }
 
     /**

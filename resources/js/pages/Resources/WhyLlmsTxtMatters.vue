@@ -5,29 +5,29 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import {
-    Globe,
     BookOpen,
     ArrowRight,
     ArrowLeft,
     FileText,
     Lightbulb,
     CheckCircle,
-    Menu,
-    Mail,
     Code,
     Search,
     Zap,
     Calendar,
 } from 'lucide-vue-next';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
+import SkipNav from '@/components/resources/SkipNav.vue';
+import ResourceHeader from '@/components/resources/ResourceHeader.vue';
+import ResourceFooter from '@/components/resources/ResourceFooter.vue';
+import ResourceBreadcrumb from '@/components/resources/ResourceBreadcrumb.vue';
 
-const publishedDate = new Date('2026-01-20').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+const publishedDate = '2026-01-20';
+const publishedDateFormatted = new Date(publishedDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+const breadcrumbItems = [
+    { label: 'Resources', href: '/resources' },
+    { label: 'Why llms.txt Matters' },
+];
 
 const keyBenefits = [
     {
@@ -151,99 +151,31 @@ const faqJsonLd = {
         <meta property="og:description" content="Learn how llms.txt files help AI systems understand, discover, and cite your website content." />
         <meta property="og:type" content="article" />
         <meta property="og:url" content="https://geosource.ai/resources/why-llms-txt-matters" />
+        <meta property="og:site_name" content="GeoSource.ai" />
+        <meta property="article:published_time" content="2026-01-20T00:00:00Z" />
+        <meta property="article:modified_time" content="2026-01-20T00:00:00Z" />
+        <meta property="article:author" content="GeoSource.ai" />
+        <meta property="article:section" content="Technical" />
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@geosourceai" />
         <meta name="twitter:title" content="Why llms.txt Matters for Generative Engine Optimization (GEO)" />
         <meta name="twitter:description" content="Learn how llms.txt files help AI systems understand, discover, and cite your website content." />
+        <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
         <link rel="canonical" href="https://geosource.ai/resources/why-llms-txt-matters" />
         <component :is="'script'" type="application/ld+json">{{ JSON.stringify(jsonLd) }}</component>
         <component :is="'script'" type="application/ld+json">{{ JSON.stringify(faqJsonLd) }}</component>
     </Head>
 
     <div class="min-h-screen bg-background text-foreground">
+        <!-- Skip Navigation -->
+        <SkipNav />
+
         <!-- Navigation -->
-        <header class="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-                <Link href="/" class="flex items-center gap-2">
-                    <Globe class="h-8 w-8 text-primary" />
-                    <span class="text-xl font-bold">GeoSource.ai</span>
-                </Link>
-                <!-- Desktop Navigation -->
-                <nav class="hidden items-center gap-2 sm:flex">
-                    <Link href="/pricing">
-                        <Button variant="ghost">Pricing</Button>
-                    </Link>
-                    <Link href="/resources">
-                        <Button variant="ghost">Resources</Button>
-                    </Link>
-                    <Link v-if="$page.props.auth.user" href="/dashboard">
-                        <Button variant="outline">Dashboard</Button>
-                    </Link>
-                    <template v-else>
-                        <Link href="/login">
-                            <Button variant="ghost">Log in</Button>
-                        </Link>
-                        <Link href="/register">
-                            <Button>Get Started</Button>
-                        </Link>
-                    </template>
-                    <ThemeSwitcher />
-                </nav>
+        <ResourceHeader />
 
-                <!-- Mobile Navigation -->
-                <div class="flex items-center gap-2 sm:hidden">
-                    <ThemeSwitcher />
-                    <DropdownMenu>
-                        <DropdownMenuTrigger as-child>
-                            <Button variant="ghost" size="icon">
-                                <Menu class="h-5 w-5" />
-                                <span class="sr-only">Open menu</span>
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" class="w-48">
-                            <DropdownMenuItem as-child>
-                                <Link href="/pricing" class="w-full">
-                                    Pricing
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem as-child>
-                                <Link href="/resources" class="w-full">
-                                    Resources
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem v-if="$page.props.auth.user" as-child>
-                                <Link href="/dashboard" class="w-full">
-                                    Dashboard
-                                </Link>
-                            </DropdownMenuItem>
-                            <template v-else>
-                                <DropdownMenuItem as-child>
-                                    <Link href="/login" class="w-full">
-                                        Log in
-                                    </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem as-child>
-                                    <Link href="/register" class="w-full font-medium text-primary">
-                                        Get Started
-                                    </Link>
-                                </DropdownMenuItem>
-                            </template>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-            </div>
-        </header>
-
-        <main>
+        <main id="main-content" role="main">
             <!-- Breadcrumb -->
-            <div class="border-b bg-muted/30">
-                <div class="mx-auto max-w-4xl px-4 py-4 sm:px-6 lg:px-8">
-                    <nav class="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Link href="/resources" class="hover:text-foreground">Resources</Link>
-                        <span>/</span>
-                        <span class="text-foreground">Why llms.txt Matters</span>
-                    </nav>
-                </div>
-            </div>
+            <ResourceBreadcrumb :items="breadcrumbItems" />
 
             <!-- Article -->
             <article class="py-12">
@@ -251,7 +183,7 @@ const faqJsonLd = {
                     <!-- Header -->
                     <header class="mb-12">
                         <Badge variant="secondary" class="mb-4">
-                            <FileText class="mr-1 h-3 w-3" />
+                            <FileText class="mr-1 h-3 w-3" aria-hidden="true" />
                             Technical Guide
                         </Badge>
                         <h1 class="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
@@ -261,14 +193,14 @@ const faqJsonLd = {
                             How a simple text file can dramatically improve your site's AI discoverability and citation potential.
                         </p>
                         <div class="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-                            <Calendar class="h-4 w-4" />
-                            <span>{{ publishedDate }}</span>
+                            <Calendar class="h-4 w-4" aria-hidden="true" />
+                            <time :datetime="publishedDate">{{ publishedDateFormatted }}</time>
                         </div>
                     </header>
 
                     <!-- Definition Section -->
-                    <section class="mb-12" aria-labelledby="definition">
-                        <h2 id="definition" class="text-2xl font-bold mb-6">What is llms.txt?</h2>
+                    <section class="mb-12" aria-labelledby="definition-heading">
+                        <h2 id="definition-heading" class="text-2xl font-bold mb-6">What is llms.txt?</h2>
                         <Card class="border-primary/50 bg-primary/5">
                             <CardContent class="pt-6">
                                 <p class="text-lg leading-relaxed">
@@ -289,8 +221,8 @@ const faqJsonLd = {
                     <Separator class="my-12" />
 
                     <!-- Why It Matters Section -->
-                    <section class="mb-12" aria-labelledby="why-it-matters">
-                        <h2 id="why-it-matters" class="text-2xl font-bold mb-6">Why llms.txt Matters for GEO</h2>
+                    <section class="mb-12" aria-labelledby="why-it-matters-heading">
+                        <h2 id="why-it-matters-heading" class="text-2xl font-bold mb-6">Why llms.txt Matters for GEO</h2>
                         <p class="text-muted-foreground mb-8">
                             In the age of generative AI search, having a well-structured llms.txt file provides several key advantages:
                         </p>
@@ -300,7 +232,7 @@ const faqJsonLd = {
                                 <CardContent class="pt-6">
                                     <div class="flex items-start gap-4">
                                         <div class="rounded-lg bg-primary/10 p-2">
-                                            <component :is="benefit.icon" class="h-5 w-5 text-primary" />
+                                            <component :is="benefit.icon" class="h-5 w-5 text-primary" aria-hidden="true" />
                                         </div>
                                         <div>
                                             <h3 class="font-semibold">{{ benefit.title }}</h3>
@@ -315,24 +247,25 @@ const faqJsonLd = {
                     <Separator class="my-12" />
 
                     <!-- Comparison Section -->
-                    <section class="mb-12" aria-labelledby="comparison">
-                        <h2 id="comparison" class="text-2xl font-bold mb-6">llms.txt vs robots.txt</h2>
+                    <section class="mb-12" aria-labelledby="comparison-heading">
+                        <h2 id="comparison-heading" class="text-2xl font-bold mb-6">llms.txt vs robots.txt</h2>
                         <p class="text-muted-foreground mb-6">
                             Understanding the difference between these two files is crucial:
                         </p>
 
-                        <div class="overflow-x-auto">
+                        <div class="overflow-x-auto" role="region" aria-label="Comparison table" tabindex="0">
                             <table class="w-full border-collapse">
+                                <caption class="sr-only">Comparison between robots.txt and llms.txt files</caption>
                                 <thead>
                                     <tr class="border-b">
-                                        <th class="py-3 px-4 text-left font-semibold">Aspect</th>
-                                        <th class="py-3 px-4 text-left font-semibold">robots.txt</th>
-                                        <th class="py-3 px-4 text-left font-semibold text-primary">llms.txt</th>
+                                        <th scope="col" class="py-3 px-4 text-left font-semibold">Aspect</th>
+                                        <th scope="col" class="py-3 px-4 text-left font-semibold">robots.txt</th>
+                                        <th scope="col" class="py-3 px-4 text-left font-semibold text-primary">llms.txt</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr v-for="row in comparisonData" :key="row.aspect" class="border-b">
-                                        <td class="py-3 px-4 text-muted-foreground">{{ row.aspect }}</td>
+                                        <th scope="row" class="py-3 px-4 text-muted-foreground font-normal text-left">{{ row.aspect }}</th>
                                         <td class="py-3 px-4">{{ row.robotsTxt }}</td>
                                         <td class="py-3 px-4 text-primary font-medium">{{ row.llmsTxt }}</td>
                                     </tr>
@@ -343,7 +276,7 @@ const faqJsonLd = {
                         <Card class="mt-8 border-amber-500/50 bg-amber-500/5">
                             <CardContent class="pt-6">
                                 <div class="flex items-start gap-3">
-                                    <Lightbulb class="h-6 w-6 text-amber-500 shrink-0 mt-0.5" />
+                                    <Lightbulb class="h-6 w-6 text-amber-500 shrink-0 mt-0.5" aria-hidden="true" />
                                     <div>
                                         <p class="font-medium text-foreground">Key Insight</p>
                                         <p class="text-muted-foreground mt-1">
@@ -358,8 +291,8 @@ const faqJsonLd = {
                     <Separator class="my-12" />
 
                     <!-- What to Include Section -->
-                    <section class="mb-12" aria-labelledby="what-to-include">
-                        <h2 id="what-to-include" class="text-2xl font-bold mb-6">What to Include in Your llms.txt</h2>
+                    <section class="mb-12" aria-labelledby="what-to-include-heading">
+                        <h2 id="what-to-include-heading" class="text-2xl font-bold mb-6">What to Include in Your llms.txt</h2>
                         <p class="text-muted-foreground mb-6">
                             An effective llms.txt file should contain:
                         </p>
@@ -368,7 +301,7 @@ const faqJsonLd = {
                             <CardContent class="pt-6">
                                 <ul class="space-y-3">
                                     <li v-for="(item, index) in whatToInclude" :key="index" class="flex items-start gap-3">
-                                        <CheckCircle class="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                                        <CheckCircle class="h-5 w-5 text-green-500 shrink-0 mt-0.5" aria-hidden="true" />
                                         <span>{{ item }}</span>
                                     </li>
                                 </ul>
@@ -379,8 +312,8 @@ const faqJsonLd = {
                     <Separator class="my-12" />
 
                     <!-- Example Section -->
-                    <section class="mb-12" aria-labelledby="example">
-                        <h2 id="example" class="text-2xl font-bold mb-6">Example llms.txt Structure</h2>
+                    <section class="mb-12" aria-labelledby="example-heading">
+                        <h2 id="example-heading" class="text-2xl font-bold mb-6">Example llms.txt Structure</h2>
                         <p class="text-muted-foreground mb-6">
                             Here's a basic structure for an effective llms.txt file:
                         </p>
@@ -416,25 +349,25 @@ https://example.com/sitemap.xml</code></pre>
                         </Card>
 
                         <p class="mt-6 text-muted-foreground">
-                            View <Link href="/llms.txt" class="text-primary hover:underline" target="_blank">GeoSource.ai's llms.txt</Link> for a real-world example.
+                            View <Link href="/llms.txt" class="text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded" target="_blank">GeoSource.ai's llms.txt</Link> for a real-world example.
                         </p>
                     </section>
 
                     <Separator class="my-12" />
 
                     <!-- Best Practices Section -->
-                    <section class="mb-12" aria-labelledby="best-practices">
-                        <h2 id="best-practices" class="text-2xl font-bold mb-6">Best Practices</h2>
+                    <section class="mb-12" aria-labelledby="best-practices-heading">
+                        <h2 id="best-practices-heading" class="text-2xl font-bold mb-6">Best Practices</h2>
                         <div class="grid gap-4 sm:grid-cols-2">
                             <Card>
                                 <CardContent class="pt-6">
                                     <h3 class="font-semibold text-green-600 mb-2">Do</h3>
                                     <ul class="space-y-2 text-sm text-muted-foreground">
-                                        <li>• Keep it concise and scannable</li>
-                                        <li>• Use clear, descriptive language</li>
-                                        <li>• Update it when content changes</li>
-                                        <li>• Include your most important pages</li>
-                                        <li>• Reference your sitemap</li>
+                                        <li>Keep it concise and scannable</li>
+                                        <li>Use clear, descriptive language</li>
+                                        <li>Update it when content changes</li>
+                                        <li>Include your most important pages</li>
+                                        <li>Reference your sitemap</li>
                                     </ul>
                                 </CardContent>
                             </Card>
@@ -442,11 +375,11 @@ https://example.com/sitemap.xml</code></pre>
                                 <CardContent class="pt-6">
                                     <h3 class="font-semibold text-red-600 mb-2">Don't</h3>
                                     <ul class="space-y-2 text-sm text-muted-foreground">
-                                        <li>• Include sensitive information</li>
-                                        <li>• Make it excessively long</li>
-                                        <li>• Use complex formatting</li>
-                                        <li>• List every page on your site</li>
-                                        <li>• Let it become outdated</li>
+                                        <li>Include sensitive information</li>
+                                        <li>Make it excessively long</li>
+                                        <li>Use complex formatting</li>
+                                        <li>List every page on your site</li>
+                                        <li>Let it become outdated</li>
                                     </ul>
                                 </CardContent>
                             </Card>
@@ -456,8 +389,8 @@ https://example.com/sitemap.xml</code></pre>
                     <Separator class="my-12" />
 
                     <!-- Summary Section -->
-                    <section class="mb-12" aria-labelledby="summary">
-                        <h2 id="summary" class="text-2xl font-bold mb-6">The Bottom Line</h2>
+                    <section class="mb-12" aria-labelledby="summary-heading">
+                        <h2 id="summary-heading" class="text-2xl font-bold mb-6">The Bottom Line</h2>
                         <Card class="border-primary bg-primary/5">
                             <CardContent class="pt-6">
                                 <p class="text-xl font-medium text-center">
@@ -470,54 +403,55 @@ https://example.com/sitemap.xml</code></pre>
                     <Separator class="my-12" />
 
                     <!-- Related Resources -->
-                    <section aria-labelledby="related">
-                        <h2 id="related" class="text-2xl font-bold mb-6">Related Resources</h2>
-                        <div class="grid gap-4 sm:grid-cols-3">
-                            <Link
-                                v-for="article in relatedArticles"
-                                :key="article.slug"
-                                :href="`/resources/${article.slug}`"
-                                class="group"
-                            >
-                                <Card class="h-full transition-colors hover:border-primary/50">
-                                    <CardContent class="pt-6">
-                                        <p class="font-medium group-hover:text-primary transition-colors">
-                                            {{ article.title }}
-                                        </p>
-                                        <span class="inline-flex items-center text-sm text-primary mt-2">
-                                            Read more
-                                            <ArrowRight class="ml-1 h-3 w-3 transition-transform group-hover:translate-x-1" />
-                                        </span>
-                                    </CardContent>
-                                </Card>
-                            </Link>
-                        </div>
+                    <section aria-labelledby="related-heading">
+                        <h2 id="related-heading" class="text-2xl font-bold mb-6">Related Resources</h2>
+                        <ul class="grid gap-4 sm:grid-cols-3" role="list" aria-label="Related articles">
+                            <li v-for="article in relatedArticles" :key="article.slug">
+                                <Link
+                                    :href="`/resources/${article.slug}`"
+                                    class="group block h-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg"
+                                    :aria-label="`Read article: ${article.title}`"
+                                >
+                                    <Card class="h-full transition-colors hover:border-primary/50">
+                                        <CardContent class="pt-6">
+                                            <p class="font-medium group-hover:text-primary transition-colors">
+                                                {{ article.title }}
+                                            </p>
+                                            <span class="inline-flex items-center text-sm text-primary mt-2">
+                                                Read more
+                                                <ArrowRight class="ml-1 h-3 w-3 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+                                            </span>
+                                        </CardContent>
+                                    </Card>
+                                </Link>
+                            </li>
+                        </ul>
                     </section>
 
                     <!-- Navigation -->
-                    <div class="mt-12 flex items-center justify-between border-t pt-8">
-                        <Link href="/resources" class="inline-flex items-center text-muted-foreground hover:text-foreground">
-                            <ArrowLeft class="mr-2 h-4 w-4" />
+                    <nav aria-label="Article navigation" class="mt-12 flex items-center justify-between border-t pt-8">
+                        <Link href="/resources" class="inline-flex items-center text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded">
+                            <ArrowLeft class="mr-2 h-4 w-4" aria-hidden="true" />
                             Back to Resources
                         </Link>
-                        <Link href="/resources/why-ssr-matters-for-geo" class="inline-flex items-center text-primary hover:underline">
+                        <Link href="/resources/why-ssr-matters-for-geo" class="inline-flex items-center text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded">
                             Next: Why SSR Matters for GEO
-                            <ArrowRight class="ml-2 h-4 w-4" />
+                            <ArrowRight class="ml-2 h-4 w-4" aria-hidden="true" />
                         </Link>
-                    </div>
+                    </nav>
                 </div>
             </article>
 
             <!-- CTA Section -->
-            <section class="border-t bg-muted/30 py-12">
+            <section class="border-t bg-muted/30 py-12" aria-labelledby="cta-heading">
                 <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
-                    <h2 class="text-2xl font-bold">Ready to optimize for AI?</h2>
+                    <h2 id="cta-heading" class="text-2xl font-bold">Ready to optimize for AI?</h2>
                     <p class="mt-2 text-muted-foreground">Get your GEO Score and start improving your AI visibility.</p>
                     <div class="mt-6">
                         <Link href="/register">
                             <Button size="lg" class="gap-2">
                                 Get Your GEO Score
-                                <ArrowRight class="h-4 w-4" />
+                                <ArrowRight class="h-4 w-4" aria-hidden="true" />
                             </Button>
                         </Link>
                     </div>
@@ -526,27 +460,6 @@ https://example.com/sitemap.xml</code></pre>
         </main>
 
         <!-- Footer -->
-        <footer class="border-t py-12">
-            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <div class="flex flex-col items-center gap-6">
-                    <div class="flex items-center gap-2 rounded-lg bg-primary/10 px-4 py-2">
-                        <Mail class="h-5 w-5 text-primary" />
-                        <span class="text-sm font-medium">Need help?</span>
-                        <a href="mailto:support@geosource.ai" class="text-sm font-semibold text-primary hover:underline">
-                            support@geosource.ai
-                        </a>
-                    </div>
-                    <div class="flex w-full flex-col items-center justify-between gap-4 sm:flex-row">
-                        <div class="flex items-center gap-2">
-                            <Globe class="h-6 w-6 text-primary" />
-                            <span class="font-semibold">GeoSource.ai</span>
-                        </div>
-                        <p class="text-sm text-muted-foreground">
-                            &copy; {{ new Date().getFullYear() }} GeoSource.ai. All rights reserved.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </footer>
+        <ResourceFooter />
     </div>
 </template>

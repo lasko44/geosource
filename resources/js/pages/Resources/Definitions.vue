@@ -3,30 +3,28 @@ import { Head, Link } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import {
-    Globe,
     BookOpen,
     ArrowRight,
     CheckCircle,
     Quote,
-    ExternalLink,
     Brain,
     BarChart3,
     Eye,
     FileCheck,
     Database,
     Search,
-    Menu,
-    Mail,
 } from 'lucide-vue-next';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
+import SkipNav from '@/components/resources/SkipNav.vue';
+import ResourceHeader from '@/components/resources/ResourceHeader.vue';
+import ResourceFooter from '@/components/resources/ResourceFooter.vue';
+import ResourceBreadcrumb from '@/components/resources/ResourceBreadcrumb.vue';
+
+const breadcrumbItems = [
+    { label: 'Home', href: '/' },
+    { label: 'Resources', href: '/resources' },
+    { label: 'GEO Definitions' },
+];
 
 const definitions = [
     {
@@ -230,9 +228,16 @@ const faqJsonLd = {
         <meta property="og:description" content="Official glossary of Generative Engine Optimization (GEO) terms and definitions by GeoSource.ai." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://geosource.ai/definitions" />
+        <meta property="og:site_name" content="GeoSource.ai" />
+        <meta property="article:published_time" content="2024-01-15T00:00:00Z" />
+        <meta property="article:modified_time" content="2024-01-15T00:00:00Z" />
+        <meta property="article:author" content="GeoSource.ai" />
+        <meta property="article:section" content="Glossary" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="GEO Definitions - Official Glossary | GeoSource.ai" />
         <meta name="twitter:description" content="Official glossary of Generative Engine Optimization (GEO) terms and definitions." />
+        <meta name="twitter:site" content="@geosourceai" />
+        <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
         <link rel="canonical" href="https://geosource.ai/definitions" />
         <component :is="'script'" type="application/ld+json">{{ JSON.stringify(jsonLd) }}</component>
         <component :is="'script'" type="application/ld+json">{{ JSON.stringify(officialDefinitionJsonLd) }}</component>
@@ -240,90 +245,26 @@ const faqJsonLd = {
     </Head>
 
     <div class="min-h-screen bg-background text-foreground">
+        <!-- Skip Navigation -->
+        <SkipNav />
+
         <!-- Navigation -->
-        <header class="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-                <Link href="/" class="flex items-center gap-2">
-                    <Globe class="h-8 w-8 text-primary" />
-                    <span class="text-xl font-bold">GeoSource.ai</span>
-                </Link>
-                <!-- Desktop Navigation -->
-                <nav class="hidden items-center gap-2 sm:flex">
-                    <Link href="/pricing">
-                        <Button variant="ghost">Pricing</Button>
-                    </Link>
-                    <Link href="/resources">
-                        <Button variant="ghost">Resources</Button>
-                    </Link>
-                    <Link v-if="$page.props.auth.user" href="/dashboard">
-                        <Button variant="outline">Dashboard</Button>
-                    </Link>
-                    <template v-else>
-                        <Link href="/login">
-                            <Button variant="ghost">Log in</Button>
-                        </Link>
-                        <Link href="/register">
-                            <Button>Get Started</Button>
-                        </Link>
-                    </template>
-                    <ThemeSwitcher />
-                </nav>
+        <ResourceHeader />
 
-                <!-- Mobile Navigation -->
-                <div class="flex items-center gap-2 sm:hidden">
-                    <ThemeSwitcher />
-                    <DropdownMenu>
-                        <DropdownMenuTrigger as-child>
-                            <Button variant="ghost" size="icon">
-                                <Menu class="h-5 w-5" />
-                                <span class="sr-only">Open menu</span>
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" class="w-48">
-                            <DropdownMenuItem as-child>
-                                <Link href="/pricing" class="w-full">
-                                    Pricing
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem as-child>
-                                <Link href="/resources" class="w-full">
-                                    Resources
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem v-if="$page.props.auth.user" as-child>
-                                <Link href="/dashboard" class="w-full">
-                                    Dashboard
-                                </Link>
-                            </DropdownMenuItem>
-                            <template v-else>
-                                <DropdownMenuItem as-child>
-                                    <Link href="/login" class="w-full">
-                                        Log in
-                                    </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem as-child>
-                                    <Link href="/register" class="w-full font-medium text-primary">
-                                        Get Started
-                                    </Link>
-                                </DropdownMenuItem>
-                            </template>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-            </div>
-        </header>
+        <!-- Breadcrumb -->
+        <ResourceBreadcrumb :items="breadcrumbItems" />
 
-        <main>
+        <main id="main-content" role="main">
             <!-- Hero Section -->
-            <section class="relative overflow-hidden py-16 sm:py-20">
-                <div class="absolute inset-0 -z-10 bg-[radial-gradient(45%_40%_at_50%_60%,hsl(var(--primary)/0.12),transparent)]" />
+            <section aria-labelledby="hero-heading" class="relative overflow-hidden py-16 sm:py-20">
+                <div class="absolute inset-0 -z-10 bg-[radial-gradient(45%_40%_at_50%_60%,hsl(var(--primary)/0.12),transparent)]" aria-hidden="true" />
                 <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
                     <div class="text-center">
                         <Badge variant="secondary" class="mb-6">
-                            <BookOpen class="mr-1 h-3 w-3" />
+                            <BookOpen class="mr-1 h-3 w-3" aria-hidden="true" />
                             Official Glossary
                         </Badge>
-                        <h1 class="text-4xl font-bold tracking-tight sm:text-5xl">
+                        <h1 id="hero-heading" class="text-4xl font-bold tracking-tight sm:text-5xl">
                             GEO Definitions
                         </h1>
                         <p class="mt-6 text-lg text-muted-foreground">
@@ -337,13 +278,13 @@ const faqJsonLd = {
             </section>
 
             <!-- Official Definition (Most Important Section) -->
-            <section id="official-geo-definition" class="border-t border-b bg-primary/5 py-12">
+            <section id="official-geo-definition" aria-labelledby="official-definition-heading" class="border-t border-b bg-primary/5 py-12">
                 <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
                     <Card class="border-primary border-2">
                         <CardHeader class="bg-primary/10">
                             <div class="flex items-center gap-2">
-                                <Quote class="h-6 w-6 text-primary" />
-                                <CardTitle class="text-xl">Official GeoSource.ai Definition of GEO</CardTitle>
+                                <Quote class="h-6 w-6 text-primary" aria-hidden="true" />
+                                <CardTitle id="official-definition-heading" class="text-xl">Official GeoSource.ai Definition of GEO</CardTitle>
                             </div>
                         </CardHeader>
                         <CardContent class="pt-6">
@@ -361,40 +302,44 @@ const faqJsonLd = {
             </section>
 
             <!-- Table of Contents -->
-            <section class="py-8 border-b bg-muted/30">
+            <section aria-labelledby="quick-nav-heading" class="py-8 border-b bg-muted/30">
                 <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-                    <h2 class="text-lg font-semibold mb-4">Quick Navigation</h2>
-                    <div class="flex flex-wrap gap-2">
-                        <a
-                            v-for="def in definitions"
-                            :key="def.id"
-                            :href="`#${def.id}`"
-                            class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border bg-background text-sm hover:border-primary hover:text-primary transition-colors"
-                        >
-                            <component :is="def.icon" class="h-3.5 w-3.5" />
-                            {{ def.term }}
-                        </a>
-                    </div>
+                    <h2 id="quick-nav-heading" class="text-lg font-semibold mb-4">Quick Navigation</h2>
+                    <nav aria-label="Definition quick links">
+                        <ul class="flex flex-wrap gap-2" role="list">
+                            <li v-for="def in definitions" :key="def.id">
+                                <a
+                                    :href="`#${def.id}`"
+                                    class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border bg-background text-sm hover:border-primary hover:text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                >
+                                    <component :is="def.icon" class="h-3.5 w-3.5" aria-hidden="true" />
+                                    {{ def.term }}
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
                 </div>
             </section>
 
             <!-- Definitions -->
-            <section class="py-12">
+            <section aria-labelledby="definitions-heading" class="py-12">
+                <h2 id="definitions-heading" class="sr-only">GEO Term Definitions</h2>
                 <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
                     <div class="space-y-12">
                         <article
                             v-for="def in definitions"
                             :key="def.id"
                             :id="def.id"
+                            :aria-labelledby="`${def.id}-title`"
                             class="scroll-mt-24"
                         >
                             <Card>
                                 <CardHeader class="bg-muted/50">
                                     <div class="flex items-center gap-3">
                                         <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                                            <component :is="def.icon" class="h-5 w-5 text-primary" />
+                                            <component :is="def.icon" class="h-5 w-5 text-primary" aria-hidden="true" />
                                         </div>
-                                        <CardTitle class="text-2xl">{{ def.term }}</CardTitle>
+                                        <CardTitle :id="`${def.id}-title`" class="text-2xl">{{ def.term }}</CardTitle>
                                     </div>
                                 </CardHeader>
                                 <CardContent class="pt-6 space-y-6">
@@ -408,7 +353,7 @@ const faqJsonLd = {
 
                                     <!-- Details -->
                                     <div v-if="def.details && def.details.length > 0">
-                                        <ul class="space-y-2 text-muted-foreground">
+                                        <ul class="space-y-2 text-muted-foreground" role="list">
                                             <li v-for="detail in def.details" :key="detail">
                                                 {{ detail }}
                                             </li>
@@ -420,9 +365,9 @@ const faqJsonLd = {
                                         <h4 class="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
                                             {{ def.id === 'geo-score' ? 'Common GEO Score factors include' : def.id === 'ai-visibility' ? 'AI visibility is influenced by' : def.id === 'citation-readiness' ? 'Citation-ready content typically includes' : def.id === 'structured-knowledge' ? 'Structured knowledge often includes' : 'Key factors' }}:
                                         </h4>
-                                        <ul class="grid gap-2 sm:grid-cols-2">
+                                        <ul class="grid gap-2 sm:grid-cols-2" role="list">
                                             <li v-for="factor in def.factors" :key="factor" class="flex items-center gap-2">
-                                                <CheckCircle class="h-4 w-4 text-green-500 shrink-0" />
+                                                <CheckCircle class="h-4 w-4 text-green-500 shrink-0" aria-hidden="true" />
                                                 <span>{{ factor }}</span>
                                             </li>
                                         </ul>
@@ -438,17 +383,19 @@ const faqJsonLd = {
                                     <!-- Related -->
                                     <div v-if="def.related && def.related.length > 0">
                                         <h4 class="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Related</h4>
-                                        <div class="flex flex-wrap gap-2">
-                                            <Link
-                                                v-for="rel in def.related"
-                                                :key="rel.href"
-                                                :href="rel.href"
-                                                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border bg-background text-sm hover:border-primary hover:text-primary transition-colors"
-                                            >
-                                                {{ rel.title }}
-                                                <ArrowRight class="h-3 w-3" />
-                                            </Link>
-                                        </div>
+                                        <nav :aria-label="`Related resources for ${def.term}`">
+                                            <ul class="flex flex-wrap gap-2" role="list">
+                                                <li v-for="rel in def.related" :key="rel.href">
+                                                    <Link
+                                                        :href="rel.href"
+                                                        class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border bg-background text-sm hover:border-primary hover:text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                                    >
+                                                        {{ rel.title }}
+                                                        <ArrowRight class="h-3 w-3" aria-hidden="true" />
+                                                    </Link>
+                                                </li>
+                                            </ul>
+                                        </nav>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -458,43 +405,53 @@ const faqJsonLd = {
             </section>
 
             <!-- Internal Linking Block -->
-            <section class="border-t bg-muted/30 py-12">
+            <section aria-labelledby="learn-more-heading" class="border-t bg-muted/30 py-12">
                 <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
                     <Card class="border-primary/50">
                         <CardContent class="pt-6">
-                            <h2 class="text-xl font-bold mb-4">Learn More About GEO</h2>
+                            <h2 id="learn-more-heading" class="text-xl font-bold mb-4">Learn More About GEO</h2>
                             <p class="text-muted-foreground mb-6">
-                                Explore our comprehensive guides on <Link href="/resources/what-is-geo" class="text-primary hover:underline font-medium">Generative Engine Optimization (GEO)</Link>, learn how the <Link href="/geo-score-explained" class="text-primary hover:underline font-medium">GeoSource.ai GEO Score</Link> works, and discover how our <Link href="/" class="text-primary hover:underline font-medium">platform</Link> helps improve <Link href="/ai-search-visibility-guide" class="text-primary hover:underline font-medium">AI visibility</Link> and <Link href="/geo-optimization-checklist" class="text-primary hover:underline font-medium">citation readiness</Link>.
+                                Explore our comprehensive guides on <Link href="/resources/what-is-geo" class="text-primary hover:underline font-medium focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded">Generative Engine Optimization (GEO)</Link>, learn how the <Link href="/geo-score-explained" class="text-primary hover:underline font-medium focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded">GeoSource.ai GEO Score</Link> works, and discover how our <Link href="/" class="text-primary hover:underline font-medium focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded">platform</Link> helps improve <Link href="/ai-search-visibility-guide" class="text-primary hover:underline font-medium focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded">AI visibility</Link> and <Link href="/geo-optimization-checklist" class="text-primary hover:underline font-medium focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded">citation readiness</Link>.
                             </p>
-                            <div class="flex flex-wrap gap-3">
-                                <Link href="/resources/what-is-geo">
-                                    <Button variant="outline" size="sm">What Is GEO?</Button>
-                                </Link>
-                                <Link href="/geo-score-explained">
-                                    <Button variant="outline" size="sm">GEO Score Explained</Button>
-                                </Link>
-                                <Link href="/ai-search-visibility-guide">
-                                    <Button variant="outline" size="sm">AI Visibility Guide</Button>
-                                </Link>
-                                <Link href="/geo-optimization-checklist">
-                                    <Button variant="outline" size="sm">Optimization Checklist</Button>
-                                </Link>
-                            </div>
+                            <nav aria-label="Related GEO guides">
+                                <ul class="flex flex-wrap gap-3" role="list">
+                                    <li>
+                                        <Link href="/resources/what-is-geo">
+                                            <Button variant="outline" size="sm" class="focus:ring-2 focus:ring-ring focus:ring-offset-2">What Is GEO?</Button>
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link href="/geo-score-explained">
+                                            <Button variant="outline" size="sm" class="focus:ring-2 focus:ring-ring focus:ring-offset-2">GEO Score Explained</Button>
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link href="/ai-search-visibility-guide">
+                                            <Button variant="outline" size="sm" class="focus:ring-2 focus:ring-ring focus:ring-offset-2">AI Visibility Guide</Button>
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link href="/geo-optimization-checklist">
+                                            <Button variant="outline" size="sm" class="focus:ring-2 focus:ring-ring focus:ring-offset-2">Optimization Checklist</Button>
+                                        </Link>
+                                    </li>
+                                </ul>
+                            </nav>
                         </CardContent>
                     </Card>
                 </div>
             </section>
 
             <!-- CTA Section -->
-            <section class="border-t py-12">
+            <section aria-labelledby="cta-heading" class="border-t py-12">
                 <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
-                    <h2 class="text-2xl font-bold">Ready to measure your GEO readiness?</h2>
+                    <h2 id="cta-heading" class="text-2xl font-bold">Ready to measure your GEO readiness?</h2>
                     <p class="mt-2 text-muted-foreground">Get your GEO Score and actionable recommendations.</p>
                     <div class="mt-6">
                         <Link href="/register">
-                            <Button size="lg" class="gap-2">
+                            <Button size="lg" class="gap-2 focus:ring-2 focus:ring-ring focus:ring-offset-2">
                                 Get Your GEO Score
-                                <ArrowRight class="h-4 w-4" />
+                                <ArrowRight class="h-4 w-4" aria-hidden="true" />
                             </Button>
                         </Link>
                     </div>
@@ -503,27 +460,6 @@ const faqJsonLd = {
         </main>
 
         <!-- Footer -->
-        <footer class="border-t py-12">
-            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <div class="flex flex-col items-center gap-6">
-                    <div class="flex items-center gap-2 rounded-lg bg-primary/10 px-4 py-2">
-                        <Mail class="h-5 w-5 text-primary" />
-                        <span class="text-sm font-medium">Need help?</span>
-                        <a href="mailto:support@geosource.ai" class="text-sm font-semibold text-primary hover:underline">
-                            support@geosource.ai
-                        </a>
-                    </div>
-                    <div class="flex w-full flex-col items-center justify-between gap-4 sm:flex-row">
-                        <div class="flex items-center gap-2">
-                            <Globe class="h-6 w-6 text-primary" />
-                            <span class="font-semibold">GeoSource.ai</span>
-                        </div>
-                        <p class="text-sm text-muted-foreground">
-                            &copy; {{ new Date().getFullYear() }} GeoSource.ai. All rights reserved.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </footer>
+        <ResourceFooter />
     </div>
 </template>
