@@ -41,6 +41,7 @@ class HandleInertiaRequests extends Middleware
         $hasTeams = false;
         $canCreateTeams = false;
         $hasCitationAccess = false;
+        $hasScheduledScansAccess = false;
         $teamBranding = null;
 
         if ($user) {
@@ -51,6 +52,8 @@ class HandleInertiaRequests extends Middleware
             $canCreateTeams = $subscriptionService->canCreateTeams($user);
             // Citation access is agency-only (same as teams for now)
             $hasCitationAccess = $user->is_admin || $subscriptionService->isAgencyTier($user);
+            // Scheduled scans access is agency-only
+            $hasScheduledScansAccess = $user->hasFeature('scheduled_scans');
 
             // Get team branding if user is in a team context with white-label enabled
             $teamBranding = $this->getTeamBranding($request, $user);
@@ -75,6 +78,7 @@ class HandleInertiaRequests extends Middleware
             'hasTeams' => $hasTeams,
             'canCreateTeams' => $canCreateTeams,
             'hasCitationAccess' => $hasCitationAccess,
+            'hasScheduledScansAccess' => $hasScheduledScansAccess,
             'teamBranding' => $teamBranding,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];

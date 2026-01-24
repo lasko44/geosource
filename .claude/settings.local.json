@@ -11,7 +11,9 @@
       "WebFetch(domain:docs.tavily.com)",
       "WebSearch",
       "WebFetch(domain:docs.anthropic.com)",
-      "WebFetch(domain:platform.openai.com)"
+      "WebFetch(domain:platform.openai.com)",
+      "Bash(npm run build:*)",
+      "Bash(php -l:*)"
     ]
   }
 }

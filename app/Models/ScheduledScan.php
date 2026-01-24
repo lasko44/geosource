@@ -88,8 +88,8 @@ class ScheduledScan extends Model
      */
     public function calculateNextRunAt(): \Carbon\Carbon
     {
-        $now = now();
-        $time = $this->scheduled_time ? \Carbon\Carbon::parse($this->scheduled_time) : now()->setTime(9, 0);
+        $now = \Carbon\Carbon::now();
+        $time = $this->scheduled_time ? \Carbon\Carbon::parse($this->scheduled_time) : \Carbon\Carbon::now()->setTime(9, 0);
 
         $next = $now->copy()->setTimeFrom($time);
 

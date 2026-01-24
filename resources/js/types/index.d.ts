@@ -37,6 +37,8 @@ export type AppPageProps<
     sidebarOpen: boolean;
     hasTeams: boolean;
     canCreateTeams: boolean;
+    hasCitationAccess: boolean;
+    hasScheduledScansAccess: boolean;
     teamBranding: TeamBranding | null;
     [key: string]: unknown;
 };

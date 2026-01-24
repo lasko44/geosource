@@ -644,15 +644,32 @@ class ScanController extends Controller
         $user = auth()->user();
         $scanData = $scan->toArray();
 
-        // Filter recommendations for free tier users
-        if ($user->isFreeTier()) {
-            $recommendationsLimit = $user->getLimit('recommendations_shown') ?? 3;
+        // Filter pillars based on user's current tier
+        if (isset($scanData['results']['pillars'])) {
+            $scanData['results']['pillars'] = $this->filterPillarsForTier($scanData['results']['pillars'], $user);
+        }
 
-            if (isset($scanData['results']['recommendations'])) {
-                $allRecommendations = $scanData['results']['recommendations'];
+        // Filter recommendations based on visible pillars and tier limits
+        if (isset($scanData['results']['recommendations'])) {
+            $allRecommendations = $scanData['results']['recommendations'];
+
+            // First, filter recommendations to only include those for visible pillars
+            $visiblePillarKeys = array_keys($scanData['results']['pillars'] ?? []);
+            $allRecommendations = array_filter($allRecommendations, function ($rec) use ($visiblePillarKeys) {
+                $pillarKey = $rec['pillar_key'] ?? $this->pillarNameToKey($rec['pillar'] ?? '');
+
+                return in_array($pillarKey, $visiblePillarKeys);
+            });
+            $allRecommendations = array_values($allRecommendations);
+
+            // Then apply recommendation limits for free tier users
+            if ($user->isFreeTier()) {
+                $recommendationsLimit = $user->getLimit('recommendations_shown') ?? 3;
                 $scanData['results']['recommendations'] = array_slice($allRecommendations, 0, $recommendationsLimit);
                 $scanData['results']['recommendations_limited'] = true;
                 $scanData['results']['recommendations_total'] = count($allRecommendations);
+            } else {
+                $scanData['results']['recommendations'] = $allRecommendations;
             }
         }
 
@@ -810,9 +827,14 @@ class ScanController extends Controller
             $minutesRemaining = (int) ceil(now()->diffInSeconds($availableAt, false) / 60);
 
             $minuteWord = $minutesRemaining === 1 ? 'minute' : 'minutes';
+            $errorMessage = "You can rescan this URL in {$minutesRemaining} {$minuteWord}. Please wait before rescanning.";
+
+            if ($request->wantsJson()) {
+                return response()->json(['error' => $errorMessage], 422);
+            }
 
             return redirect()->route('scans.show', $scan)->withErrors([
-                'cooldown' => "You can rescan this URL in {$minutesRemaining} {$minuteWord}. Please wait before rescanning.",
+                'cooldown' => $errorMessage,
             ]);
         }
 
@@ -915,11 +937,25 @@ class ScanController extends Controller
             });
         } catch (\App\Exceptions\QuotaExceededException $e) {
             $errorKey = $e->getQuotaType() === 'access' ? 'access' : 'limit';
+
+            if ($request->wantsJson()) {
+                return response()->json(['error' => $e->getMessage()], 422);
+            }
+
             return redirect()->route('scans.show', $scan)->withErrors([$errorKey => $e->getMessage()]);
         }
 
         // Dispatch the scan job to run asynchronously (outside transaction)
         ScanWebsiteJob::dispatch($newScan);
+
+        // Return JSON for AJAX requests (allows polling for completion)
+        if ($request->wantsJson()) {
+            return response()->json([
+                'uuid' => $newScan->uuid,
+                'url' => $newScan->url,
+                'status' => $newScan->status,
+            ]);
+        }
 
         return redirect()->route('scans.show', $newScan);
     }
@@ -999,9 +1035,21 @@ class ScanController extends Controller
             }
         }
 
+        // Filter pillars based on user's current tier
+        $pillars = $this->filterPillarsForTier($scan->results['pillars'] ?? [], $user);
+
+        // Also filter recommendations to only include those for visible pillars
+        $visiblePillarNames = array_keys($pillars);
+        $recommendations = array_filter($recommendations, function ($rec) use ($visiblePillarNames) {
+            $pillarKey = $rec['pillar_key'] ?? $this->pillarNameToKey($rec['pillar'] ?? '');
+
+            return in_array($pillarKey, $visiblePillarNames);
+        });
+        $recommendations = array_values($recommendations);
+
         return [
             'scan' => $scan,
-            'pillars' => $scan->results['pillars'] ?? [],
+            'pillars' => $pillars,
             'recommendations' => $recommendations,
             'summary' => $scan->results['summary'] ?? [],
             'filename' => $filename,
@@ -1011,6 +1059,48 @@ class ScanController extends Controller
             'generatedAt' => now(),
             'whiteLabel' => $whiteLabel,
         ];
+    }
+
+    /**
+     * Filter pillars based on user's current subscription tier.
+     */
+    private function filterPillarsForTier(array $pillars, User $user): array
+    {
+        $userTier = $this->getUserTierForPillars($user);
+
+        $allowedTiers = ['free'];
+        if (in_array($userTier, ['pro', 'agency', 'agency_member', 'admin'])) {
+            $allowedTiers[] = 'pro';
+        }
+        if (in_array($userTier, ['agency', 'agency_member', 'admin'])) {
+            $allowedTiers[] = 'agency';
+        }
+
+        return array_filter($pillars, function ($pillar) use ($allowedTiers) {
+            $pillarTier = $pillar['tier'] ?? 'free';
+
+            return in_array($pillarTier, $allowedTiers);
+        });
+    }
+
+    /**
+     * Get the user's tier for pillar filtering.
+     */
+    private function getUserTierForPillars(User $user): string
+    {
+        if ($user->is_admin) {
+            return 'admin';
+        }
+
+        return $this->subscriptionService->getPlanKey($user);
+    }
+
+    /**
+     * Convert pillar display name to key.
+     */
+    private function pillarNameToKey(string $name): string
+    {
+        return strtolower(str_replace([' ', '-'], '_', $name));
     }
 
     /**

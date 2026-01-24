@@ -2,6 +2,7 @@
 import { Link, usePage } from '@inertiajs/vue3';
 import {
     BookOpen,
+    CalendarClock,
     CircleHelp,
     FileChartColumnIncreasingIcon,
     LayoutGrid,
@@ -32,6 +33,7 @@ import AppLogoIcon from './AppLogoIcon.vue';
 const page = usePage();
 const hasTeams = computed(() => page.props.hasTeams);
 const hasCitationAccess = computed(() => page.props.hasCitationAccess);
+const hasScheduledScansAccess = computed(() => page.props.hasScheduledScansAccess);
 const teamBranding = computed(() => page.props.teamBranding as TeamBranding | null);
 
 const mainNavItems = computed<NavItem[]>(() => {
@@ -47,6 +49,14 @@ const mainNavItems = computed<NavItem[]>(() => {
             icon: FileChartColumnIncreasingIcon,
         },
     ];
+
+    if (hasScheduledScansAccess.value) {
+        items.push({
+            title: 'Scheduled Scans',
+            href: '/scheduled-scans',
+            icon: CalendarClock,
+        });
+    }
 
     if (hasCitationAccess.value) {
         items.push({

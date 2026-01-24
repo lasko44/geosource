@@ -103,9 +103,21 @@ class ScanReportMail extends Mailable
             }
         }
 
+        // Filter pillars based on user's current tier
+        $pillars = $this->filterPillarsForTier($this->scan->results['pillars'] ?? []);
+
+        // Also filter recommendations to only include those for visible pillars
+        $visiblePillarNames = array_keys($pillars);
+        $recommendations = array_filter($recommendations, function ($rec) use ($visiblePillarNames) {
+            $pillarKey = $rec['pillar_key'] ?? $this->pillarNameToKey($rec['pillar'] ?? '');
+
+            return in_array($pillarKey, $visiblePillarNames);
+        });
+        $recommendations = array_values($recommendations);
+
         $this->pdfData = [
             'scan' => $this->scan,
-            'pillars' => $this->scan->results['pillars'] ?? [],
+            'pillars' => $pillars,
             'recommendations' => $recommendations,
             'summary' => $this->scan->results['summary'] ?? [],
             'filename' => $filename,
@@ -115,5 +127,47 @@ class ScanReportMail extends Mailable
             'generatedAt' => now(),
             'whiteLabel' => $whiteLabel,
         ];
+    }
+
+    /**
+     * Filter pillars based on user's current subscription tier.
+     */
+    private function filterPillarsForTier(array $pillars): array
+    {
+        $userTier = $this->getUserTierForPillars();
+
+        $allowedTiers = ['free'];
+        if (in_array($userTier, ['pro', 'agency', 'agency_member', 'admin'])) {
+            $allowedTiers[] = 'pro';
+        }
+        if (in_array($userTier, ['agency', 'agency_member', 'admin'])) {
+            $allowedTiers[] = 'agency';
+        }
+
+        return array_filter($pillars, function ($pillar) use ($allowedTiers) {
+            $pillarTier = $pillar['tier'] ?? 'free';
+
+            return in_array($pillarTier, $allowedTiers);
+        });
+    }
+
+    /**
+     * Get the user's tier for pillar filtering.
+     */
+    private function getUserTierForPillars(): string
+    {
+        if ($this->user->is_admin) {
+            return 'admin';
+        }
+
+        return $this->user->getPlanKey();
+    }
+
+    /**
+     * Convert pillar display name to key.
+     */
+    private function pillarNameToKey(string $name): string
+    {
+        return strtolower(str_replace([' ', '-'], '_', $name));
     }
 }

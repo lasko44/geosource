@@ -92,11 +92,13 @@ const progressStep = ref(props.scan.progress_step || 'Initializing');
 const progressPercent = ref(props.scan.progress_percent || 0);
 const scanTitle = ref(props.scan.title);
 const errorMessage = ref(props.scan.error_message);
+const reloading = ref(false);
 let pollInterval: ReturnType<typeof setInterval> | null = null;
 
 const isPending = computed(() => scanStatus.value === 'pending' || scanStatus.value === 'processing');
 const isFailed = computed(() => scanStatus.value === 'failed');
-const isCompleted = computed(() => scanStatus.value === 'completed');
+const isCompleted = computed(() => scanStatus.value === 'completed' && props.scan.results !== null);
+const isReloading = computed(() => reloading.value);
 
 // Progress steps for visual display
 const progressSteps = [
@@ -120,13 +122,19 @@ const pollStatus = async () => {
     try {
         const response = await fetch(`/scans/${props.scan.uuid}/status`);
         const data = await response.json();
-        scanStatus.value = data.status;
-        progressStep.value = data.progress_step || 'Processing';
-        progressPercent.value = data.progress_percent || 0;
-        errorMessage.value = data.error_message;
-        if (data.title) {
-            scanTitle.value = data.title;
+
+        // Only update UI state if scan is still in progress
+        // When completed, we'll reload the page to get fresh data
+        if (data.status === 'pending' || data.status === 'processing') {
+            scanStatus.value = data.status;
+            progressStep.value = data.progress_step || 'Processing';
+            progressPercent.value = data.progress_percent || 0;
+            if (data.title) {
+                scanTitle.value = data.title;
+            }
         }
+
+        errorMessage.value = data.error_message;
 
         if (data.status === 'completed' || data.status === 'failed') {
             if (pollInterval) {
@@ -134,7 +142,14 @@ const pollStatus = async () => {
                 pollInterval = null;
             }
             if (data.status === 'completed') {
+                // Show loading state while reloading to prevent showing stale data
+                reloading.value = true;
+                progressStep.value = 'Loading results...';
+                progressPercent.value = 100;
                 router.reload();
+            } else {
+                // For failed status, update immediately
+                scanStatus.value = data.status;
             }
         }
     } catch {
@@ -209,15 +224,74 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const rescanning = ref(false);
+const rescanProgress = ref('');
+const newScanUuid = ref<string | null>(null);
 const deleting = ref(false);
 
-const rescan = () => {
-    rescanning.value = true;
-    router.post(`/scans/${props.scan.uuid}/rescan`, {}, {
-        onFinish: () => {
+const pollNewScan = async () => {
+    if (!newScanUuid.value) return;
+
+    try {
+        const response = await fetch(`/scans/${newScanUuid.value}/status`);
+        const data = await response.json();
+
+        if (data.status === 'pending' || data.status === 'processing') {
+            rescanProgress.value = data.progress_step || 'Processing...';
+            setTimeout(pollNewScan, 1000);
+        } else if (data.status === 'completed') {
+            // Scan complete, redirect to the new scan
+            router.visit(`/scans/${newScanUuid.value}`);
+        } else if (data.status === 'failed') {
+            rescanProgress.value = 'Scan failed';
             rescanning.value = false;
-        },
-    });
+            // Still redirect to show the error
+            setTimeout(() => {
+                router.visit(`/scans/${newScanUuid.value}`);
+            }, 1000);
+        }
+    } catch {
+        // Retry on error
+        setTimeout(pollNewScan, 2000);
+    }
+};
+
+const rescan = async () => {
+    rescanning.value = true;
+    rescanProgress.value = 'Starting rescan...';
+    newScanUuid.value = null;
+
+    try {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        const response = await fetch(`/scans/${props.scan.uuid}/rescan`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrfToken || '',
+            },
+        });
+
+        const data = await response.json();
+
+        if (data.uuid) {
+            newScanUuid.value = data.uuid;
+            rescanProgress.value = 'Scanning...';
+            pollNewScan();
+        } else if (data.error) {
+            rescanProgress.value = '';
+            rescanning.value = false;
+            alert(data.error);
+        } else {
+            // Fallback: if we got a redirect response or unexpected format
+            rescanProgress.value = '';
+            rescanning.value = false;
+            router.reload();
+        }
+    } catch {
+        rescanProgress.value = '';
+        rescanning.value = false;
+        router.reload();
+    }
 };
 
 const deleteScan = () => {
@@ -346,12 +420,16 @@ const summary = computed(() => props.scan.results?.summary);
                             :title="isOnCooldown ? `Available in ${cooldownMinutes} ${cooldownMinutes === 1 ? 'minute' : 'minutes'}` : ''"
                         >
                             <Clock v-if="isOnCooldown" class="mr-2 h-4 w-4" />
-                            <RefreshCw v-else class="mr-2 h-4 w-4" :class="{ 'animate-spin': rescanning }" />
+                            <Loader2 v-else-if="rescanning" class="mr-2 h-4 w-4 animate-spin" />
+                            <RefreshCw v-else class="mr-2 h-4 w-4" />
                             <template v-if="isOnCooldown">
                                 Rescan in {{ cooldownMinutes }}m
                             </template>
+                            <template v-else-if="rescanning">
+                                {{ rescanProgress || 'Rescanning...' }}
+                            </template>
                             <template v-else>
-                                {{ rescanning ? 'Rescanning...' : 'Rescan' }}
+                                Rescan
                             </template>
                         </Button>
                     </template>
@@ -362,8 +440,8 @@ const summary = computed(() => props.scan.results?.summary);
                 </div>
             </div>
 
-            <!-- Pending/Processing State -->
-            <Card v-if="isPending" class="overflow-hidden">
+            <!-- Pending/Processing State (also shown while reloading to prevent stale data flash) -->
+            <Card v-if="isPending || isReloading" class="overflow-hidden">
                 <CardContent class="py-12">
                     <div class="mx-auto max-w-md">
                         <!-- Title and URL -->
@@ -431,8 +509,9 @@ const summary = computed(() => props.scan.results?.summary);
                     {{ errorMessage || 'An unexpected error occurred while scanning the URL.' }}
                     <div class="mt-4">
                         <Button variant="outline" @click="rescan" :disabled="rescanning">
-                            <RefreshCw class="mr-2 h-4 w-4" :class="{ 'animate-spin': rescanning }" />
-                            {{ rescanning ? 'Retrying...' : 'Try Again' }}
+                            <Loader2 v-if="rescanning" class="mr-2 h-4 w-4 animate-spin" />
+                            <RefreshCw v-else class="mr-2 h-4 w-4" />
+                            {{ rescanning ? (rescanProgress || 'Retrying...') : 'Try Again' }}
                         </Button>
                     </div>
                 </AlertDescription>
