@@ -83,6 +83,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('throttle:5,1')
         ->name('citations.ga4.sync');
 
+    Route::get('/analytics/ga4/{connection}/sync-status', [GA4Controller::class, 'syncStatus'])
+        ->name('citations.ga4.sync-status');
+
     Route::delete('/analytics/ga4/{connection}', [GA4Controller::class, 'disconnect'])
         ->name('citations.ga4.disconnect');
 });

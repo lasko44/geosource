@@ -32,6 +32,9 @@ class SyncGA4DataJob implements ShouldQueue
             'property_id' => $this->ga4Connection->property_id,
         ]);
 
+        // Mark sync as started
+        $this->ga4Connection->markSyncStarted();
+
         try {
             $result = $syncService->syncConnection($this->ga4Connection);
 
@@ -41,17 +44,21 @@ class SyncGA4DataJob implements ShouldQueue
                     'synced_rows' => $result['synced'],
                     'date_range' => $result['date_range'] ?? null,
                 ]);
+                // markAsSynced is already called in syncConnection, but status is now set there too
             } else {
                 Log::warning('GA4 data sync failed', [
                     'connection_id' => $this->ga4Connection->id,
                     'error' => $result['error'],
                 ]);
+                $this->ga4Connection->markSyncFailed($result['error']);
             }
         } catch (\Exception $e) {
             Log::error('GA4 data sync exception', [
                 'connection_id' => $this->ga4Connection->id,
                 'error' => $e->getMessage(),
             ]);
+
+            $this->ga4Connection->markSyncFailed($e->getMessage());
 
             throw $e;
         }

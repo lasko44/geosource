@@ -14,7 +14,7 @@ import {
     CheckCircle2,
     XCircle,
 } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { computed, ref, onUnmounted } from 'vue';
 
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
@@ -39,6 +39,8 @@ interface GA4Connection {
     property_name: string;
     is_active: boolean;
     last_synced_at: string | null;
+    sync_status: 'idle' | 'syncing' | 'completed' | 'failed';
+    sync_error: string | null;
     created_at: string;
 }
 
@@ -92,15 +94,78 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const syncing = ref<number | null>(null);
 const deleting = ref<number | null>(null);
+const syncStatuses = ref<Record<number, { status: string; error: string | null }>>({});
+const pollIntervals = ref<Record<number, ReturnType<typeof setInterval>>>({});
+
+// Initialize sync statuses from props
+props.connections.forEach(conn => {
+    syncStatuses.value[conn.id] = {
+        status: conn.sync_status || 'idle',
+        error: conn.sync_error,
+    };
+});
+
+const pollSyncStatus = (connection: GA4Connection) => {
+    // Clear any existing interval for this connection
+    if (pollIntervals.value[connection.id]) {
+        clearInterval(pollIntervals.value[connection.id]);
+    }
+
+    // Start polling
+    pollIntervals.value[connection.id] = setInterval(async () => {
+        try {
+            const response = await fetch(`/analytics/ga4/${connection.uuid}/sync-status`);
+            const data = await response.json();
+
+            syncStatuses.value[connection.id] = {
+                status: data.sync_status,
+                error: data.sync_error,
+            };
+
+            // Stop polling if sync is complete or failed
+            if (data.sync_status !== 'syncing') {
+                clearInterval(pollIntervals.value[connection.id]);
+                delete pollIntervals.value[connection.id];
+                syncing.value = null;
+
+                // Refresh the page data if sync completed successfully
+                if (data.sync_status === 'completed') {
+                    router.reload({ only: ['connections', 'trafficData'] });
+                }
+            }
+        } catch (error) {
+            console.error('Failed to poll sync status:', error);
+        }
+    }, 2000); // Poll every 2 seconds
+};
 
 const syncConnection = (connection: GA4Connection) => {
     syncing.value = connection.id;
+    syncStatuses.value[connection.id] = { status: 'syncing', error: null };
+
     router.post(`/analytics/ga4/${connection.uuid}/sync`, {}, {
         preserveScroll: true,
-        onFinish: () => {
+        onSuccess: () => {
+            // Start polling for status updates
+            pollSyncStatus(connection);
+        },
+        onError: () => {
             syncing.value = null;
+            syncStatuses.value[connection.id] = { status: 'failed', error: 'Failed to start sync' };
         },
     });
+};
+
+const isSyncing = (connection: GA4Connection) => {
+    return syncStatuses.value[connection.id]?.status === 'syncing' || syncing.value === connection.id;
+};
+
+const getSyncStatus = (connection: GA4Connection) => {
+    return syncStatuses.value[connection.id]?.status || connection.sync_status || 'idle';
+};
+
+const getSyncError = (connection: GA4Connection) => {
+    return syncStatuses.value[connection.id]?.error || connection.sync_error;
 };
 
 const deleteConnection = (connection: GA4Connection) => {
@@ -109,6 +174,11 @@ const deleteConnection = (connection: GA4Connection) => {
         router.delete(`/analytics/ga4/${connection.uuid}`);
     }
 };
+
+// Cleanup polling intervals on unmount
+onUnmounted(() => {
+    Object.values(pollIntervals.value).forEach(interval => clearInterval(interval));
+});
 
 const getSourceColor = (source: string) => {
     const colors: Record<string, string> = {
@@ -286,23 +356,50 @@ const totalAITraffic = computed(() => {
                                         </span>
                                     </CardDescription>
                                 </div>
-                                <div class="flex gap-2">
+                                <div class="flex items-center gap-2">
+                                    <!-- Sync Status Badge -->
+                                    <Badge
+                                        v-if="isSyncing(connection)"
+                                        variant="secondary"
+                                        class="gap-1"
+                                    >
+                                        <RefreshCw class="h-3 w-3 animate-spin" />
+                                        Syncing...
+                                    </Badge>
+                                    <Badge
+                                        v-else-if="getSyncStatus(connection) === 'failed'"
+                                        variant="destructive"
+                                        class="gap-1"
+                                        :title="getSyncError(connection) || 'Sync failed'"
+                                    >
+                                        <XCircle class="h-3 w-3" />
+                                        Failed
+                                    </Badge>
+                                    <Badge
+                                        v-else-if="getSyncStatus(connection) === 'completed'"
+                                        variant="default"
+                                        class="gap-1 bg-green-600"
+                                    >
+                                        <CheckCircle2 class="h-3 w-3" />
+                                        Synced
+                                    </Badge>
+
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        :disabled="syncing === connection.id || !connection.is_active"
+                                        :disabled="isSyncing(connection) || !connection.is_active"
                                         @click="syncConnection(connection)"
                                     >
                                         <RefreshCw
                                             class="mr-2 h-4 w-4"
-                                            :class="{ 'animate-spin': syncing === connection.id }"
+                                            :class="{ 'animate-spin': isSyncing(connection) }"
                                         />
-                                        Sync
+                                        {{ isSyncing(connection) ? 'Syncing...' : 'Sync' }}
                                     </Button>
                                     <Button
                                         variant="destructive"
                                         size="sm"
-                                        :disabled="deleting === connection.id"
+                                        :disabled="deleting === connection.id || isSyncing(connection)"
                                         @click="deleteConnection(connection)"
                                     >
                                         <Trash2 class="h-4 w-4" />

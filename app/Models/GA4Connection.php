@@ -26,7 +26,14 @@ class GA4Connection extends Model
         'token_expires_at',
         'is_active',
         'last_synced_at',
+        'sync_status',
+        'sync_error',
     ];
+
+    public const SYNC_STATUS_IDLE = 'idle';
+    public const SYNC_STATUS_SYNCING = 'syncing';
+    public const SYNC_STATUS_COMPLETED = 'completed';
+    public const SYNC_STATUS_FAILED = 'failed';
 
     /**
      * The attributes that should be hidden for serialization.
@@ -120,7 +127,41 @@ class GA4Connection extends Model
      */
     public function markAsSynced(): void
     {
-        $this->update(['last_synced_at' => now()]);
+        $this->update([
+            'last_synced_at' => now(),
+            'sync_status' => self::SYNC_STATUS_COMPLETED,
+            'sync_error' => null,
+        ]);
+    }
+
+    /**
+     * Mark sync as started.
+     */
+    public function markSyncStarted(): void
+    {
+        $this->update([
+            'sync_status' => self::SYNC_STATUS_SYNCING,
+            'sync_error' => null,
+        ]);
+    }
+
+    /**
+     * Mark sync as failed.
+     */
+    public function markSyncFailed(string $error): void
+    {
+        $this->update([
+            'sync_status' => self::SYNC_STATUS_FAILED,
+            'sync_error' => $error,
+        ]);
+    }
+
+    /**
+     * Check if sync is in progress.
+     */
+    public function isSyncing(): bool
+    {
+        return $this->sync_status === self::SYNC_STATUS_SYNCING;
     }
 
     /**

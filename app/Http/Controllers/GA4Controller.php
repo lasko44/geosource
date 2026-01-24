@@ -372,6 +372,27 @@ class GA4Controller extends Controller
     }
 
     /**
+     * Get sync status for a connection.
+     */
+    public function syncStatus(GA4Connection $connection, Request $request)
+    {
+        $user = $request->user();
+
+        // Authorization
+        if ($connection->user_id !== $user->id) {
+            if (! $connection->team_id || ! $user->allTeams()->contains('id', $connection->team_id)) {
+                abort(403);
+            }
+        }
+
+        return response()->json([
+            'sync_status' => $connection->sync_status,
+            'sync_error' => $connection->sync_error,
+            'last_synced_at' => $connection->last_synced_at?->toISOString(),
+        ]);
+    }
+
+    /**
      * Disconnect (delete) a GA4 connection.
      */
     public function disconnect(GA4Connection $connection, Request $request)
