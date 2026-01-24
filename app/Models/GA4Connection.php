@@ -79,7 +79,7 @@ class GA4Connection extends Model
 
     public function referralData(): HasMany
     {
-        return $this->hasMany(GA4ReferralData::class);
+        return $this->hasMany(GA4ReferralData::class, 'ga4_connection_id');
     }
 
     /**
