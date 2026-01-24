@@ -9,6 +9,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('throttle:10,1')
         ->name('scan');
 
+    // Check cooldown status for a URL
+    Route::post('/scan/check-cooldown', [ScanController::class, 'checkCooldown'])
+        ->name('scan.check-cooldown');
+
     Route::get('/scans', [ScanController::class, 'list'])->name('scans.index');
     Route::get('/scans/{scan}', [ScanController::class, 'show'])->name('scans.show');
     Route::get('/scans/{scan}/status', [ScanController::class, 'status'])->name('scans.status');

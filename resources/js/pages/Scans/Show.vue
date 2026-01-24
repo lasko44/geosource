@@ -44,13 +44,48 @@ import { type BreadcrumbItem, type Scan, type PillarResult, type Recommendation 
 
 const { formatDate } = useDateFormat();
 
+interface CooldownInfo {
+    minutes_remaining: number;
+    available_at: string;
+}
+
 interface Props {
     scan: Scan;
     canExportPdf: boolean;
     canEmailReport: boolean;
+    cooldown?: CooldownInfo | null;
 }
 
 const props = defineProps<Props>();
+
+// Cooldown state management
+const cooldownMinutes = ref(Math.ceil(props.cooldown?.minutes_remaining || 0));
+const cooldownAvailableAt = ref(props.cooldown?.available_at ? new Date(props.cooldown.available_at) : null);
+let cooldownInterval: ReturnType<typeof setInterval> | null = null;
+
+const isOnCooldown = computed(() => cooldownMinutes.value > 0);
+
+const updateCooldown = () => {
+    if (cooldownAvailableAt.value) {
+        const now = new Date();
+        const diff = cooldownAvailableAt.value.getTime() - now.getTime();
+        if (diff > 0) {
+            cooldownMinutes.value = Math.ceil(diff / 60000);
+        } else {
+            cooldownMinutes.value = 0;
+            cooldownAvailableAt.value = null;
+            if (cooldownInterval) {
+                clearInterval(cooldownInterval);
+                cooldownInterval = null;
+            }
+        }
+    }
+};
+
+// Start cooldown timer if needed
+if (props.cooldown?.available_at) {
+    cooldownInterval = setInterval(updateCooldown, 10000); // Update every 10 seconds
+}
 
 const scanStatus = ref(props.scan.status || 'completed');
 const progressStep = ref(props.scan.progress_step || 'Initializing');
@@ -116,6 +151,9 @@ onMounted(() => {
 onUnmounted(() => {
     if (pollInterval) {
         clearInterval(pollInterval);
+    }
+    if (cooldownInterval) {
+        clearInterval(cooldownInterval);
     }
 });
 
@@ -301,9 +339,20 @@ const summary = computed(() => props.scan.results?.summary);
                             <Mail class="mr-2 h-4 w-4" />
                             Email Report
                         </Button>
-                        <Button variant="outline" @click="rescan" :disabled="rescanning">
-                            <RefreshCw class="mr-2 h-4 w-4" :class="{ 'animate-spin': rescanning }" />
-                            {{ rescanning ? 'Rescanning...' : 'Rescan' }}
+                        <Button
+                            variant="outline"
+                            @click="rescan"
+                            :disabled="rescanning || isOnCooldown"
+                            :title="isOnCooldown ? `Available in ${cooldownMinutes} ${cooldownMinutes === 1 ? 'minute' : 'minutes'}` : ''"
+                        >
+                            <Clock v-if="isOnCooldown" class="mr-2 h-4 w-4" />
+                            <RefreshCw v-else class="mr-2 h-4 w-4" :class="{ 'animate-spin': rescanning }" />
+                            <template v-if="isOnCooldown">
+                                Rescan in {{ cooldownMinutes }}m
+                            </template>
+                            <template v-else>
+                                {{ rescanning ? 'Rescanning...' : 'Rescan' }}
+                            </template>
                         </Button>
                     </template>
                     <Button v-if="!isPending" variant="destructive" @click="deleteScan" :disabled="deleting">

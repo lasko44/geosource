@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, useForm, usePage, router } from '@inertiajs/vue3';
-import { Globe, TrendingUp, Target, Calendar, ExternalLink, Zap, ArrowRight, Users, Crown, Plus, Building2, User, ChevronDown, Quote, CheckCircle2, XCircle } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { Globe, TrendingUp, Target, Calendar, ExternalLink, Zap, ArrowRight, Users, Crown, Plus, Building2, User, ChevronDown, Quote, CheckCircle2, XCircle, Clock } from 'lucide-vue-next';
+import { computed, ref, watch } from 'vue';
 
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Badge } from '@/components/ui/badge';
@@ -100,12 +100,108 @@ const form = useForm({
     team_id: props.currentTeamId ?? null,
 });
 
+// Cooldown state
+const cooldown = ref<{
+    on_cooldown: boolean;
+    minutes_remaining?: number;
+    existing_scan_uuid?: string;
+} | null>(null);
+const checkingCooldown = ref(false);
+let cooldownCheckTimeout: ReturnType<typeof setTimeout> | null = null;
+
+const isOnCooldown = computed(() => cooldown.value?.on_cooldown === true);
+const cooldownMinutes = computed(() => {
+    const mins = cooldown.value?.minutes_remaining;
+    return mins ? Math.ceil(mins) : 0;
+});
+
+// Check if URL looks valid enough to check cooldown
+const isValidUrlForCheck = (url: string): boolean => {
+    if (!url) return false;
+    // Check if it's a valid URL pattern
+    try {
+        new URL(url);
+        return true;
+    } catch {
+        // Also allow URLs without protocol that look like domains
+        try {
+            new URL('https://' + url);
+            return url.includes('.');
+        } catch {
+            return false;
+        }
+    }
+};
+
+// Normalize URL for cooldown check
+const normalizeUrl = (url: string): string => {
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        return 'https://' + url;
+    }
+    return url;
+};
+
+// Check cooldown when URL changes (debounced)
+const checkCooldown = async (url: string) => {
+    if (!isValidUrlForCheck(url)) {
+        cooldown.value = null;
+        return;
+    }
+
+    const normalizedUrl = normalizeUrl(url);
+    checkingCooldown.value = true;
+
+    try {
+        const response = await fetch('/scan/check-cooldown', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: JSON.stringify({ url: normalizedUrl }),
+        });
+        if (response.ok) {
+            cooldown.value = await response.json();
+        } else {
+            cooldown.value = null;
+        }
+    } catch {
+        cooldown.value = null;
+    } finally {
+        checkingCooldown.value = false;
+    }
+};
+
+// Debounced URL watcher
+watch(() => form.url, (newUrl) => {
+    if (cooldownCheckTimeout) {
+        clearTimeout(cooldownCheckTimeout);
+    }
+    // Reset cooldown when URL changes
+    cooldown.value = null;
+
+    if (newUrl && newUrl.length > 3) {
+        cooldownCheckTimeout = setTimeout(() => {
+            checkCooldown(newUrl);
+        }, 500);
+    }
+});
+
 const submit = () => {
+    if (isOnCooldown.value) return;
     // Ensure team_id is synced with current context before submitting
     form.team_id = props.currentTeamId ?? null;
     form.post('/scan', {
         preserveScroll: true,
     });
+};
+
+const viewExistingScan = () => {
+    if (cooldown.value?.existing_scan_uuid) {
+        router.visit(`/scans/${cooldown.value.existing_scan_uuid}`);
+    }
 };
 
 const getGradeColor = (grade: string) => {
@@ -292,18 +388,40 @@ const getProgressColor = () => {
                         <Button
                             type="submit"
                             size="lg"
-                            :disabled="form.processing || !form.url || !usage.can_scan"
+                            :disabled="form.processing || !form.url || !usage.can_scan || isOnCooldown || checkingCooldown"
                             class="h-12 px-8"
                         >
-                            <svg v-if="form.processing" class="mr-2 h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <Clock v-if="isOnCooldown" class="mr-2 h-4 w-4" />
+                            <svg v-else-if="form.processing || checkingCooldown" class="mr-2 h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                             </svg>
-                            {{ form.processing ? 'Scanning...' : 'Scan URL' }}
+                            <template v-if="isOnCooldown">
+                                {{ cooldownMinutes }}m cooldown
+                            </template>
+                            <template v-else-if="checkingCooldown">
+                                Checking...
+                            </template>
+                            <template v-else>
+                                {{ form.processing ? 'Scanning...' : 'Scan URL' }}
+                            </template>
                         </Button>
                     </form>
                     <Alert v-if="form.errors.url" variant="destructive" class="mt-3">
                         <AlertDescription>{{ form.errors.url }}</AlertDescription>
+                    </Alert>
+                    <Alert v-if="form.errors.cooldown" class="mt-3 border-yellow-500/50 bg-yellow-50 text-yellow-800 dark:border-yellow-500/30 dark:bg-yellow-950/50 dark:text-yellow-200">
+                        <Clock class="h-4 w-4" />
+                        <AlertDescription>{{ form.errors.cooldown }}</AlertDescription>
+                    </Alert>
+                    <Alert v-else-if="isOnCooldown" class="mt-3 border-amber-500/50 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-950/50 dark:text-amber-200">
+                        <Clock class="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                        <AlertDescription class="flex items-center justify-between gap-4">
+                            <span>This URL was scanned recently. Please wait {{ cooldownMinutes }} {{ cooldownMinutes === 1 ? 'minute' : 'minutes' }} before scanning again.</span>
+                            <Button v-if="cooldown?.existing_scan_uuid" variant="outline" size="sm" @click="viewExistingScan" class="shrink-0">
+                                View Existing Scan
+                            </Button>
+                        </AlertDescription>
                     </Alert>
                     <Alert v-if="form.errors.limit" variant="destructive" class="mt-3">
                         <AlertDescription>

@@ -256,6 +256,24 @@ class ScanController extends Controller
 
         $url = $request->input('url');
 
+        // Check cooldown - prevent scanning same URL within 15 minutes
+        $cooldownMinutes = 15;
+        $recentScan = Scan::where('url', $url)
+            ->where('user_id', $user->id)
+            ->where('created_at', '>=', now()->subMinutes($cooldownMinutes))
+            ->first();
+
+        if ($recentScan) {
+            $availableAt = $recentScan->created_at->addMinutes($cooldownMinutes);
+            $minutesRemaining = (int) ceil(now()->diffInSeconds($availableAt, false) / 60);
+
+            $minuteWord = $minutesRemaining === 1 ? 'minute' : 'minutes';
+
+            return back()->withErrors([
+                'cooldown' => "This URL was scanned recently. Please wait {$minutesRemaining} {$minuteWord} before scanning again.",
+            ]);
+        }
+
         // Use transaction with pessimistic locking to prevent race conditions on quota
         try {
             $scan = DB::transaction(function () use ($user, $team, $teamId, $url, $request) {
@@ -363,6 +381,45 @@ class ScanController extends Controller
     }
 
     /**
+     * Check cooldown status for a URL.
+     */
+    public function checkCooldown(Request $request)
+    {
+        $request->validate([
+            'url' => 'required|url',
+        ]);
+
+        $user = $request->user();
+        $url = $request->input('url');
+        $cooldownMinutes = 15;
+
+        $recentScan = Scan::where('url', $url)
+            ->where('user_id', $user->id)
+            ->where('created_at', '>=', now()->subMinutes($cooldownMinutes))
+            ->orderByDesc('created_at')
+            ->first();
+
+        if ($recentScan) {
+            $availableAt = $recentScan->created_at->addMinutes($cooldownMinutes);
+            $secondsRemaining = now()->diffInSeconds($availableAt, false);
+            $minutesRemaining = (int) ceil($secondsRemaining / 60);
+
+            if ($minutesRemaining > 0) {
+                return response()->json([
+                    'on_cooldown' => true,
+                    'minutes_remaining' => $minutesRemaining,
+                    'available_at' => $availableAt->toIso8601String(),
+                    'existing_scan_uuid' => $recentScan->uuid,
+                ]);
+            }
+        }
+
+        return response()->json([
+            'on_cooldown' => false,
+        ]);
+    }
+
+    /**
      * Display scan results.
      */
     public function show(Scan $scan)
@@ -393,11 +450,32 @@ class ScanController extends Controller
             || $user->is_admin
             || ! $user->isFreeTier();
 
+        // Check cooldown status for rescan
+        $cooldownMinutes = 15;
+        $recentScan = Scan::where('url', $scan->url)
+            ->where('user_id', $user->id)
+            ->where('created_at', '>=', now()->subMinutes($cooldownMinutes))
+            ->orderByDesc('created_at')
+            ->first();
+
+        $cooldown = null;
+        if ($recentScan) {
+            $availableAt = $recentScan->created_at->addMinutes($cooldownMinutes);
+            $minutesRemaining = (int) ceil(now()->diffInSeconds($availableAt, false) / 60);
+            if ($minutesRemaining > 0) {
+                $cooldown = [
+                    'minutes_remaining' => $minutesRemaining,
+                    'available_at' => $availableAt->toIso8601String(),
+                ];
+            }
+        }
+
         return Inertia::render('Scans/Show', [
             'scan' => $scanData,
             'usage' => $user->getUsageSummary(),
             'canExportPdf' => $user->hasFeature('pdf_export'),
             'canEmailReport' => $canEmailReport,
+            'cooldown' => $cooldown,
         ]);
     }
 
@@ -516,10 +594,13 @@ class ScanController extends Controller
             ->first();
 
         if ($recentScan) {
-            $minutesRemaining = $cooldownMinutes - now()->diffInMinutes($recentScan->created_at);
+            $availableAt = $recentScan->created_at->addMinutes($cooldownMinutes);
+            $minutesRemaining = (int) ceil(now()->diffInSeconds($availableAt, false) / 60);
+
+            $minuteWord = $minutesRemaining === 1 ? 'minute' : 'minutes';
 
             return redirect()->route('scans.show', $scan)->withErrors([
-                'cooldown' => "You can rescan this URL in {$minutesRemaining} minute(s). Please wait before rescanning.",
+                'cooldown' => "You can rescan this URL in {$minutesRemaining} {$minuteWord}. Please wait before rescanning.",
             ]);
         }
 
