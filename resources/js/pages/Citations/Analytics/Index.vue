@@ -177,12 +177,12 @@ const totalAITraffic = computed(() => {
                 </div>
 
                 <div v-if="usage.can_create_connection">
-                    <Link href="/analytics/ga4/connect">
+                    <a href="/analytics/ga4/connect">
                         <Button>
                             <Plus class="mr-2 h-4 w-4" />
                             Connect GA4 Property
                         </Button>
-                    </Link>
+                    </a>
                 </div>
             </div>
 
@@ -222,12 +222,12 @@ const totalAITraffic = computed(() => {
                         Connect your Google Analytics 4 property to track referral traffic from AI platforms
                         like Perplexity, ChatGPT, Claude, and more.
                     </p>
-                    <Link v-if="usage.can_create_connection" href="/analytics/ga4/connect" class="mt-4 inline-block">
+                    <a v-if="usage.can_create_connection" href="/analytics/ga4/connect" class="mt-4 inline-block">
                         <Button>
                             <Plus class="mr-2 h-4 w-4" />
                             Connect GA4 Property
                         </Button>
-                    </Link>
+                    </a>
                 </CardContent>
             </Card>
 
