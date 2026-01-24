@@ -443,7 +443,7 @@ const getProgressColor = () => {
                         <Link
                             v-for="scan in recentScans"
                             :key="scan.id"
-                            :href="`/scans/${scan.uuid}`"
+                            :href="`/scans/${scan.uuid || scan.id}`"
                             class="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
                         >
                             <div class="flex items-center gap-4">

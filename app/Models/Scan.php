@@ -48,6 +48,23 @@ class Scan extends Model
         return 'uuid';
     }
 
+    /**
+     * Resolve the model for route model binding.
+     * Falls back to ID lookup for old scans without UUIDs.
+     */
+    public function resolveRouteBinding($value, $field = null): ?self
+    {
+        // Try UUID first
+        $scan = $this->where('uuid', $value)->first();
+
+        // If not found and value is numeric, try ID as fallback for old scans
+        if (! $scan && is_numeric($value)) {
+            $scan = $this->where('id', $value)->first();
+        }
+
+        return $scan;
+    }
+
     protected function casts(): array
     {
         return [
