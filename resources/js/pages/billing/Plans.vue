@@ -260,17 +260,26 @@ const planOrder = ['free', 'pro', 'agency'];
                 <!-- Agency Plan -->
                 <Card
                     v-if="plans.agency"
-                    class="relative flex flex-col border-border opacity-75"
+                    class="relative flex flex-col"
+                    :class="{
+                        'border-green-500 ring-2 ring-green-500': isCurrentPlan('agency'),
+                        'border-purple-500 ring-2 ring-purple-500': !isCurrentPlan('agency'),
+                    }"
                 >
-                    <div class="absolute -top-3 left-1/2 -translate-x-1/2">
-                        <span class="rounded-full bg-muted px-4 py-1 text-xs font-semibold text-muted-foreground">
-                            Coming Soon
+                    <div v-if="isCurrentPlan('agency')" class="absolute -top-3 left-1/2 -translate-x-1/2">
+                        <span class="rounded-full bg-green-500 px-4 py-1 text-xs font-semibold text-white">
+                            Current Plan
+                        </span>
+                    </div>
+                    <div v-else class="absolute -top-3 left-1/2 -translate-x-1/2">
+                        <span class="rounded-full bg-purple-500 px-4 py-1 text-xs font-semibold text-white">
+                            Best Value
                         </span>
                     </div>
                     <CardHeader class="pb-4">
                         <div class="flex items-center gap-2">
-                            <div class="rounded-lg bg-muted p-2">
-                                <Building2 class="h-5 w-5 text-muted-foreground" />
+                            <div class="rounded-lg bg-purple-100 p-2 dark:bg-purple-950">
+                                <Building2 class="h-5 w-5 text-purple-600 dark:text-purple-400" />
                             </div>
                             <CardTitle class="text-xl">{{ plans.agency.name }}</CardTitle>
                         </div>
@@ -285,18 +294,29 @@ const planOrder = ['free', 'pro', 'agency'];
                         </div>
                         <ul class="mb-8 flex-1 space-y-3">
                             <li v-for="feature in plans.agency.features" :key="feature" class="flex items-start gap-3">
-                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted">
-                                    <Check class="h-3 w-3 text-muted-foreground" />
+                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-950">
+                                    <Check class="h-3 w-3 text-purple-600 dark:text-purple-400" />
                                 </div>
                                 <span class="text-sm text-muted-foreground">{{ feature }}</span>
                             </li>
                         </ul>
                         <Button
+                            v-if="isCurrentPlan('agency')"
                             variant="outline"
                             class="w-full py-6 text-base"
                             disabled
                         >
-                            Coming Soon
+                            Current Plan
+                        </Button>
+                        <Button
+                            v-else
+                            variant="default"
+                            class="w-full py-6 text-base bg-purple-600 hover:bg-purple-700"
+                            as-child
+                        >
+                            <Link href="/billing/checkout/agency">
+                                Upgrade to Agency
+                            </Link>
                         </Button>
                     </CardContent>
                 </Card>

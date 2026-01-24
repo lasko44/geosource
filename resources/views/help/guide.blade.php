@@ -488,7 +488,7 @@
                                 </ul>
                             </div>
                             <div class="border border-purple-300 rounded-lg p-4 bg-purple-50/30 relative">
-                                <span class="absolute -top-2 right-2 bg-gray-200 text-gray-600 text-xs px-2 py-0.5 rounded">Coming Soon</span>
+                                <span class="absolute -top-2 right-2 bg-purple-500 text-white text-xs px-2 py-0.5 rounded">Best Value</span>
                                 <h4 class="font-bold text-lg text-purple-700">Agency</h4>
                                 <p class="text-2xl font-bold text-gray-900 mt-2">$99<span class="text-sm font-normal text-gray-500">/month</span></p>
                                 <ul class="mt-4 space-y-2 text-sm text-gray-600">

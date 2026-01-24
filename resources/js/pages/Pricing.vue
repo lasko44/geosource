@@ -367,17 +367,17 @@ const getPlanLimit = (planKey: string, limitKey: string) => {
                     <!-- Agency Plan -->
                     <Card
                         v-if="plans.agency"
-                        class="relative flex flex-col border-border opacity-75"
+                        class="relative flex flex-col border-purple-500 ring-2 ring-purple-500"
                     >
                         <div class="absolute -top-3 left-1/2 -translate-x-1/2">
-                            <span class="rounded-full bg-muted px-4 py-1 text-xs font-semibold text-muted-foreground">
-                                Coming Soon
+                            <span class="rounded-full bg-purple-500 px-4 py-1 text-xs font-semibold text-white">
+                                Best Value
                             </span>
                         </div>
                         <CardHeader class="pb-4">
                             <div class="flex items-center gap-2">
-                                <div class="rounded-lg bg-muted p-2">
-                                    <Building2 class="h-5 w-5 text-muted-foreground" />
+                                <div class="rounded-lg bg-purple-100 p-2 dark:bg-purple-950">
+                                    <Building2 class="h-5 w-5 text-purple-600 dark:text-purple-400" />
                                 </div>
                                 <CardTitle class="text-xl">{{ plans.agency.name }}</CardTitle>
                             </div>
@@ -392,18 +392,21 @@ const getPlanLimit = (planKey: string, limitKey: string) => {
                             </div>
                             <ul class="mb-8 flex-1 space-y-3">
                                 <li v-for="feature in plans.agency.features" :key="feature" class="flex items-start gap-3">
-                                    <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted">
-                                        <Check class="h-3 w-3 text-muted-foreground" />
+                                    <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-950">
+                                        <Check class="h-3 w-3 text-purple-600 dark:text-purple-400" />
                                     </div>
                                     <span class="text-sm text-muted-foreground">{{ feature }}</span>
                                 </li>
                             </ul>
                             <Button
-                                variant="outline"
-                                class="w-full py-6 text-base"
-                                disabled
+                                variant="default"
+                                class="w-full py-6 text-base bg-purple-600 hover:bg-purple-700"
+                                as-child
                             >
-                                Coming Soon
+                                <Link :href="register()">
+                                    Start with Agency
+                                    <ArrowRight class="ml-2 h-4 w-4" />
+                                </Link>
                             </Button>
                         </CardContent>
                     </Card>
