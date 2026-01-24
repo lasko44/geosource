@@ -89,6 +89,7 @@ class ScanWebsiteJob implements ShouldQueue
 
             // Configure scorer for user's plan tier
             $geoScorer->forTier($tier);
+            $enhancedGeoScorer->forTier($tier);
 
             if ($useEnhanced && $teamId) {
                 $result = $enhancedGeoScorer->analyze($html, $teamId, ['url' => $this->scan->url]);

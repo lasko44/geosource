@@ -26,6 +26,16 @@ class EnhancedGeoScorer
     ) {}
 
     /**
+     * Configure scorer for a specific plan tier.
+     */
+    public function forTier(string $tier): self
+    {
+        $this->baseScorer->forTier($tier);
+
+        return $this;
+    }
+
+    /**
      * Perform comprehensive GEO analysis with RAG enhancement.
      */
     public function analyze(
