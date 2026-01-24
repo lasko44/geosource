@@ -6,17 +6,11 @@ import { Button } from '@/components/ui/button';
 const CONSENT_KEY = 'geosource_cookie_consent';
 const showBanner = ref(false);
 
-const loadGA = () => {
+const enableGA = () => {
     const gaId = document.querySelector('meta[name="ga-id"]')?.getAttribute('content');
-    if (!gaId || window.gtag) return;
+    if (!gaId || !window.gtag) return;
 
-    const script = document.createElement('script');
-    script.async = true;
-    script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
-    document.head.appendChild(script);
-
-    window.dataLayer = window.dataLayer || [];
-    window.gtag = function() { window.dataLayer.push(arguments); };
+    // GA script is already loaded in app.blade.php, just enable tracking
     window.gtag('js', new Date());
     window.gtag('config', gaId);
 };
@@ -24,7 +18,7 @@ const loadGA = () => {
 const acceptCookies = () => {
     localStorage.setItem(CONSENT_KEY, 'accepted');
     showBanner.value = false;
-    loadGA();
+    enableGA();
 };
 
 const declineCookies = () => {
@@ -36,7 +30,7 @@ onMounted(() => {
     const consent = localStorage.getItem(CONSENT_KEY);
 
     if (consent === 'accepted') {
-        loadGA();
+        enableGA();
     } else if (!consent) {
         showBanner.value = true;
     }

@@ -32,9 +32,16 @@
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
-        {{-- Google Analytics 4 (loaded via consent banner) --}}
+        {{-- Google Analytics 4 --}}
         @if(config('services.google.analytics_id'))
         <meta name="ga-id" content="{{ config('services.google.analytics_id') }}">
+        {{-- Load GA script for detection, but only track after consent --}}
+        <script async src="https://www.googletagmanager.com/gtag/js?id={{ config('services.google.analytics_id') }}"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            // Don't send data until consent is given - CookieConsent.vue will call gtag('config', ...) after consent
+        </script>
         @endif
 
         <link rel="icon" href="/favicon.ico" sizes="any">
