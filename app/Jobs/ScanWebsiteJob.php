@@ -263,8 +263,10 @@ class ScanWebsiteJob implements ShouldQueue
             }
 
             // Send email to each unique recipient
+            // Using send() instead of queue() since we're already in a queued job
+            // and queue() causes serialization issues with typed model properties
             foreach ($recipients->unique('id') as $recipient) {
-                Mail::to($recipient->email)->queue(
+                Mail::to($recipient->email)->send(
                     new ScheduledScanCompletedMail($this->scan, $scheduledScan, $recipient)
                 );
             }
