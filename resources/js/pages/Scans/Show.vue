@@ -22,6 +22,7 @@ import {
     HelpCircle,
     Image,
     Mail,
+    Repeat,
 } from 'lucide-vue-next';
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
 
@@ -403,7 +404,16 @@ const summary = computed(() => props.scan.results?.summary);
                             </Button>
                         </Link>
                     </div>
-                    <h1 class="mt-2 text-2xl font-bold">{{ scan.title || 'Scan Results' }}</h1>
+                    <div class="mt-2 flex items-center gap-2">
+                        <h1 class="text-2xl font-bold">{{ scan.title || 'Scan Results' }}</h1>
+                        <span
+                            v-if="scan.scheduled_scan_id"
+                            class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900 dark:text-blue-300"
+                        >
+                            <Repeat class="h-3 w-3" />
+                            Scheduled
+                        </span>
+                    </div>
                     <a
                         :href="scan.url"
                         target="_blank"

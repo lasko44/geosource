@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { ref, watch, computed } from 'vue';
-import { ExternalLink, Trash2, Globe, ArrowLeft, Search, X, ChevronUp, ChevronDown, Filter, Layers, Clock, CheckCircle2, XCircle } from 'lucide-vue-next';
+import { ExternalLink, Trash2, Globe, ArrowLeft, Search, X, ChevronUp, ChevronDown, Filter, Layers, Clock, CheckCircle2, XCircle, Repeat } from 'lucide-vue-next';
 import { useDebounceFn } from '@vueuse/core';
 
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -796,7 +796,16 @@ https://example.com/page3"
 
                                 <!-- Info -->
                                 <div class="flex-1">
-                                    <p class="font-medium">{{ scan.title || 'Untitled' }}</p>
+                                    <div class="flex items-center gap-2">
+                                        <p class="font-medium">{{ scan.title || 'Untitled' }}</p>
+                                        <span
+                                            v-if="scan.scheduled_scan_id"
+                                            class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900 dark:text-blue-300"
+                                        >
+                                            <Repeat class="h-3 w-3" />
+                                            Scheduled
+                                        </span>
+                                    </div>
                                     <p class="flex items-center gap-1 text-sm text-muted-foreground">
                                         <ExternalLink class="h-3 w-3" />
                                         {{ truncateUrl(scan.url) }}

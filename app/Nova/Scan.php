@@ -4,6 +4,7 @@ namespace App\Nova;
 
 use Laravel\Nova\Fields\Badge;
 use Laravel\Nova\Fields\BelongsTo;
+use Laravel\Nova\Fields\Boolean;
 use Laravel\Nova\Fields\DateTime;
 use Laravel\Nova\Fields\ID;
 use Laravel\Nova\Fields\Number;
@@ -50,9 +51,26 @@ class Scan extends Resource
                 ->onlyOnDetail()
                 ->copyable(),
 
+            Badge::make('Type', function () {
+                return $this->scheduled_scan_id ? 'Scheduled' : 'Manual';
+            })->map([
+                'Scheduled' => 'info',
+                'Manual' => 'success',
+            ])->filterable(function ($request, $query, $value, $attribute) {
+                if ($value === 'Scheduled') {
+                    $query->whereNotNull('scheduled_scan_id');
+                } else {
+                    $query->whereNull('scheduled_scan_id');
+                }
+            }),
+
             BelongsTo::make('User')
                 ->sortable()
                 ->filterable(),
+
+            BelongsTo::make('Scheduled Scan', 'scheduledScan', ScheduledScan::class)
+                ->nullable()
+                ->hideFromIndex(),
 
             Text::make('Title')
                 ->sortable()
@@ -82,6 +100,16 @@ class Scan extends Resource
                     'D' => 'danger',
                     'D-' => 'danger',
                     'F' => 'danger',
+                ])
+                ->sortable()
+                ->filterable(),
+
+            Badge::make('Status')
+                ->map([
+                    'pending' => 'warning',
+                    'processing' => 'info',
+                    'completed' => 'success',
+                    'failed' => 'danger',
                 ])
                 ->sortable()
                 ->filterable(),

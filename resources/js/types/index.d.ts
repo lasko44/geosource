@@ -125,6 +125,7 @@ export interface Scan {
     uuid: string;
     user_id: number;
     team_id: number | null;
+    scheduled_scan_id: number | null;
     url: string;
     title: string | null;
     score: number;
