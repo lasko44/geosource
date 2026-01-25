@@ -22,14 +22,15 @@ class ScansPerDay extends Trend
     /**
      * Get the ranges available for the metric.
      *
-     * @return array<int, string>
+     * @return array<int|string, string>
      */
     public function ranges(): array
     {
         return [
+            7 => Nova::__('7 Days'),
+            14 => Nova::__('14 Days'),
             30 => Nova::__('30 Days'),
             60 => Nova::__('60 Days'),
-            90 => Nova::__('90 Days'),
         ];
     }
 
@@ -38,8 +39,6 @@ class ScansPerDay extends Trend
      */
     public function cacheFor(): ?DateTimeInterface
     {
-        // return now()->addMinutes(5);
-
         return null;
     }
 

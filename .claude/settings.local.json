@@ -16,7 +16,8 @@
       "Bash(php -l:*)",
       "Bash(xargs:*)",
       "Bash(tree:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(composer dump-autoload:*)"
     ]
   }
 }

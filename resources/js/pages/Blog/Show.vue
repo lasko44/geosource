@@ -34,6 +34,7 @@ interface BlogPost {
     featured_image_url: string | null;
     meta_title: string | null;
     meta_description: string | null;
+    schema_json: Record<string, unknown> | null;
     published_at: string;
     tags: string[] | null;
     view_count: number;
@@ -82,33 +83,41 @@ const renderedContent = computed(() => {
 const metaTitle = computed(() => props.post.meta_title || props.post.title);
 const metaDescription = computed(() => props.post.meta_description || props.post.excerpt);
 
-const jsonLd = computed(() => ({
-    '@context': 'https://schema.org',
-    '@type': 'BlogPosting',
-    headline: props.post.title,
-    description: props.post.excerpt,
-    url: `https://geosource.ai/blog/${props.post.slug}`,
-    datePublished: props.post.published_at,
-    dateModified: props.post.published_at,
-    author: props.post.author ? {
-        '@type': 'Person',
-        name: props.post.author.name,
-    } : {
-        '@type': 'Organization',
-        name: 'GeoSource.ai',
-        url: 'https://geosource.ai',
-    },
-    publisher: {
-        '@type': 'Organization',
-        name: 'GeoSource.ai',
-        url: 'https://geosource.ai',
-    },
-    mainEntityOfPage: {
-        '@type': 'WebPage',
-        '@id': `https://geosource.ai/blog/${props.post.slug}`,
-    },
-    image: props.post.featured_image_url || 'https://geosource.ai/og-image.png',
-}));
+// Use stored schema_json if available, otherwise generate dynamically
+const jsonLd = computed(() => {
+    if (props.post.schema_json) {
+        return props.post.schema_json;
+    }
+
+    // Fallback to dynamically generated schema
+    return {
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        headline: props.post.title,
+        description: props.post.excerpt,
+        url: `https://geosource.ai/blog/${props.post.slug}`,
+        datePublished: props.post.published_at,
+        dateModified: props.post.published_at,
+        author: props.post.author ? {
+            '@type': 'Person',
+            name: props.post.author.name,
+        } : {
+            '@type': 'Organization',
+            name: 'GeoSource.ai',
+            url: 'https://geosource.ai',
+        },
+        publisher: {
+            '@type': 'Organization',
+            name: 'GeoSource.ai',
+            url: 'https://geosource.ai',
+        },
+        mainEntityOfPage: {
+            '@type': 'WebPage',
+            '@id': `https://geosource.ai/blog/${props.post.slug}`,
+        },
+        image: props.post.featured_image_url || 'https://geosource.ai/og-image.png',
+    };
+});
 </script>
 
 <template>

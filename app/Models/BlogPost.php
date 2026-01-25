@@ -21,6 +21,7 @@ class BlogPost extends Model
         'featured_image',
         'meta_title',
         'meta_description',
+        'schema_json',
         'author_id',
         'status',
         'published_at',
@@ -53,6 +54,7 @@ class BlogPost extends Model
         return [
             'published_at' => 'datetime',
             'tags' => 'array',
+            'schema_json' => 'array',
         ];
     }
 

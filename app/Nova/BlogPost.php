@@ -4,6 +4,7 @@ namespace App\Nova;
 
 use Laravel\Nova\Fields\Badge;
 use Laravel\Nova\Fields\BelongsTo;
+use Laravel\Nova\Fields\Code;
 use Laravel\Nova\Fields\DateTime;
 use Laravel\Nova\Fields\ID;
 use Laravel\Nova\Fields\Image;
@@ -71,6 +72,8 @@ class BlogPost extends Resource
                 ->hideFromIndex(),
 
             new Panel('SEO', $this->seoFields()),
+
+            new Panel('GEO Data', $this->geoFields()),
 
             Select::make('Status')
                 ->options([
@@ -146,6 +149,17 @@ class BlogPost extends Resource
                 ->path('blog')
                 ->nullable()
                 ->help('Recommended size: 1200x630px for optimal social sharing'),
+        ];
+    }
+
+    protected function geoFields(): array
+    {
+        return [
+            Code::make('Schema JSON', 'schema_json')
+                ->json()
+                ->readonly()
+                ->hideFromIndex()
+                ->help('Auto-generated schema.org JSON-LD for AI search engines. Updated automatically when the post is saved.'),
         ];
     }
 

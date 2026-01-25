@@ -26,14 +26,24 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
             return [
                 MenuSection::dashboard(\App\Nova\Dashboards\Main::class)->icon('chart-bar'),
 
-                MenuSection::make('Resources', [
+                MenuSection::make('Users', [
                     MenuItem::resource(\App\Nova\User::class),
-                    MenuItem::resource(\App\Nova\Scan::class),
+                    MenuItem::resource(\App\Nova\Team::class),
                 ])->icon('users')->collapsable(),
+
+                MenuSection::make('Scanning', [
+                    MenuItem::resource(\App\Nova\Scan::class),
+                    MenuItem::resource(\App\Nova\ScheduledScan::class),
+                ])->icon('clock')->collapsable(),
 
                 MenuSection::make('Content', [
                     MenuItem::resource(\App\Nova\BlogPost::class),
                 ])->icon('document-text')->collapsable(),
+
+                MenuSection::make('Queue', [
+                    MenuItem::resource(\App\Nova\PendingJob::class),
+                    MenuItem::resource(\App\Nova\FailedJob::class),
+                ])->icon('server')->collapsable(),
 
                 MenuSection::make('Documentation', [
                     MenuItem::externalLink('Developer Docs', '/nova/documentation'),

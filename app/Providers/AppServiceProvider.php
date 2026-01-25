@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\BlogPost;
+use App\Observers\BlogPostObserver;
+use App\Services\BlogPostGeoService;
 use App\Services\GEO\EnhancedGeoScorer;
 use App\Services\GEO\GeoScorer;
 use App\Services\RAG\ChunkingService;
@@ -49,6 +52,9 @@ class AppServiceProvider extends ServiceProvider
             $app->make(VectorStore::class),
             $app->make(EmbeddingService::class),
         ));
+
+        // Blog Post GEO Service
+        $this->app->singleton(BlogPostGeoService::class, fn () => new BlogPostGeoService);
     }
 
     /**
@@ -62,6 +68,9 @@ class AppServiceProvider extends ServiceProvider
 
         $this->configureDefaults();
         $this->configureVectorSupport();
+
+        // Register model observers
+        BlogPost::observe(BlogPostObserver::class);
     }
 
     protected function configureVectorSupport(): void

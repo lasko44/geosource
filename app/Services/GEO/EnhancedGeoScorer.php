@@ -6,6 +6,7 @@ use App\Models\Document;
 use App\Services\RAG\EmbeddingService;
 use App\Services\RAG\RAGService;
 use App\Services\RAG\VectorStore;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -442,7 +443,7 @@ PROMPT;
 
     private function callLLM(string $prompt, int $maxTokens = 1000, float $temperature = 0.3): array
     {
-        $response = \Illuminate\Support\Facades\Http::withToken(config('rag.openai.api_key'))
+        $response = Http::withToken(config('rag.openai.api_key'))
             ->timeout(90)
             ->post('https://api.openai.com/v1/chat/completions', [
                 'model' => config('rag.llm.model', 'gpt-4o-mini'),
@@ -454,7 +455,7 @@ PROMPT;
             ]);
 
         if (! $response->successful()) {
-            Log::error('LLM API error', [
+            Log::error('LLM API  error', [
                 'status' => $response->status(),
                 'body' => $response->body(),
             ]);

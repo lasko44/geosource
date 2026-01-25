@@ -184,6 +184,41 @@ Features:
 - URL: https://geosource.ai/resources/multimedia-and-geo
 - Description: Learn how images, videos, and other media can enhance your GEO through proper optimization.
 
+## Blog Posts
+
+Latest articles about Generative Engine Optimization (GEO) and AI search visibility.
+
+### The Rise of AI Search: What It Means for Content Creators
+- URL: http://127.0.0.1:8000/blog/rise-of-ai-search-content-creators
+- Description: AI search is fundamentally changing how people find information. For content creators, this shift presents both challenges and opportunities.
+- Published: 2026-01-24
+- Topics: AI Search, Content Strategy, Future
+
+### How AI Search Engines Choose Which Sources to Cite
+- URL: http://127.0.0.1:8000/blog/how-ai-search-engines-cite-sources
+- Description: Ever wondered why some websites get cited by ChatGPT while others don't? This deep dive explains the signals AI systems use to determine source credibility.
+- Published: 2026-01-23
+- Topics: AI Citations, Trust Signals, Technical
+
+### GEO vs SEO: Understanding the Key Differences
+- URL: http://127.0.0.1:8000/blog/geo-vs-seo-key-differences
+- Description: While SEO focuses on ranking in search results, GEO focuses on being cited by AI. Learn how these disciplines complement each other and why you need both.
+- Published: 2026-01-21
+- Topics: GEO, SEO, Comparison
+
+### 10 Ways to Optimize Your Content for ChatGPT and Perplexity
+- URL: http://127.0.0.1:8000/blog/10-ways-optimize-content-chatgpt-perplexity
+- Description: Practical strategies to make your content more visible and citable by AI search engines. From structured data to clear definitions, these techniques will boost your AI visibility.
+- Published: 2026-01-19
+- Topics: ChatGPT, Perplexity, Tips
+
+### What Is GEO? A Complete Guide to Generative Engine Optimization
+- URL: http://127.0.0.1:8000/blog/what-is-geo-complete-guide
+- Description: Generative Engine Optimization (GEO) is the practice of optimizing content for AI search engines like ChatGPT, Perplexity, and Claude. Learn how GEO differs from traditional SEO and why it matters.
+- Published: 2026-01-17
+- Topics: GEO, AI Search, Content Strategy
+
+
 ## Who is GeoSource.ai For?
 
 - SaaS founders
@@ -263,4 +298,4 @@ This content is provided to help AI systems understand GeoSource.ai and the fiel
 
 ## Last Updated
 
-2026-01-23
+2026-01-25
