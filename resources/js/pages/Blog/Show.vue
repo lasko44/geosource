@@ -31,6 +31,7 @@ interface BlogPost {
     excerpt: string;
     content: string;
     featured_image: string | null;
+    featured_image_url: string | null;
     meta_title: string | null;
     meta_description: string | null;
     published_at: string;
@@ -106,7 +107,7 @@ const jsonLd = computed(() => ({
         '@type': 'WebPage',
         '@id': `https://geosource.ai/blog/${props.post.slug}`,
     },
-    image: props.post.featured_image || 'https://geosource.ai/og-image.png',
+    image: props.post.featured_image_url || 'https://geosource.ai/og-image.png',
 }));
 </script>
 
@@ -118,11 +119,15 @@ const jsonLd = computed(() => ({
         <meta property="og:type" content="article" />
         <meta property="og:url" :content="`https://geosource.ai/blog/${post.slug}`" />
         <meta property="og:site_name" content="GeoSource.ai" />
+        <meta property="og:image" :content="post.featured_image_url || 'https://geosource.ai/og-image.png'" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
         <meta property="article:published_time" :content="post.published_at" />
         <meta v-if="post.author" property="article:author" :content="post.author.name" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" :content="metaTitle" />
         <meta name="twitter:description" :content="metaDescription" />
+        <meta name="twitter:image" :content="post.featured_image_url || 'https://geosource.ai/og-image.png'" />
         <meta name="twitter:site" content="@geosourceai" />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" :href="`https://geosource.ai/blog/${post.slug}`" />
@@ -169,9 +174,9 @@ const jsonLd = computed(() => ({
                     </header>
 
                     <!-- Featured Image -->
-                    <div v-if="post.featured_image" class="mb-12 overflow-hidden rounded-lg">
+                    <div v-if="post.featured_image_url" class="mb-12 overflow-hidden rounded-lg">
                         <img
-                            :src="post.featured_image"
+                            :src="post.featured_image_url"
                             :alt="post.title"
                             class="w-full h-auto"
                         />

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class BlogPost extends Model
@@ -24,6 +25,10 @@ class BlogPost extends Model
         'status',
         'published_at',
         'tags',
+    ];
+
+    protected $appends = [
+        'featured_image_url',
     ];
 
     protected static function boot(): void
@@ -89,5 +94,20 @@ class BlogPost extends Model
     public function getFormattedDateAttribute(): string
     {
         return $this->published_at?->format('F j, Y') ?? 'Draft';
+    }
+
+    public function getFeaturedImageUrlAttribute(): ?string
+    {
+        if (empty($this->featured_image)) {
+            return null;
+        }
+
+        // If it's already a full URL, return as-is
+        if (str_starts_with($this->featured_image, 'http')) {
+            return $this->featured_image;
+        }
+
+        // Otherwise, generate URL from storage
+        return Storage::disk('public')->url($this->featured_image);
     }
 }

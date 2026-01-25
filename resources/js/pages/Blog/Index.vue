@@ -21,6 +21,7 @@ interface BlogPost {
     title: string;
     excerpt: string;
     featured_image: string | null;
+    featured_image_url: string | null;
     published_at: string;
     tags: string[] | null;
     view_count: number;
@@ -128,9 +129,9 @@ const jsonLd = {
                                 :aria-label="`${post.title}: ${post.excerpt}`"
                             >
                                 <Card class="h-full transition-all hover:border-primary/50 hover:shadow-lg">
-                                    <div v-if="post.featured_image" class="aspect-video overflow-hidden rounded-t-lg">
+                                    <div v-if="post.featured_image_url" class="aspect-video overflow-hidden rounded-t-lg">
                                         <img
-                                            :src="post.featured_image"
+                                            :src="post.featured_image_url"
                                             :alt="post.title"
                                             class="h-full w-full object-cover transition-transform group-hover:scale-105"
                                         />

@@ -6,6 +6,7 @@ use Laravel\Nova\Fields\Badge;
 use Laravel\Nova\Fields\BelongsTo;
 use Laravel\Nova\Fields\DateTime;
 use Laravel\Nova\Fields\ID;
+use Laravel\Nova\Fields\Image;
 use Laravel\Nova\Fields\KeyValue;
 use Laravel\Nova\Fields\Markdown;
 use Laravel\Nova\Fields\Number;
@@ -140,9 +141,11 @@ class BlogPost extends Resource
                 ->rules('nullable', 'max:160')
                 ->help('Leave blank to use the excerpt'),
 
-            Text::make('Featured Image')
+            Image::make('Featured Image')
+                ->disk('public')
+                ->path('blog')
                 ->nullable()
-                ->help('URL to the featured image'),
+                ->help('Recommended size: 1200x630px for optimal social sharing'),
         ];
     }
 
