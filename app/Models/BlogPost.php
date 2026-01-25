@@ -30,6 +30,7 @@ class BlogPost extends Model
 
     protected $appends = [
         'featured_image_url',
+        'social_image_url',
     ];
 
     protected static function boot(): void
@@ -116,5 +117,46 @@ class BlogPost extends Model
 
         // Otherwise, generate URL from storage
         return Storage::disk('public')->url($this->featured_image);
+    }
+
+    /**
+     * Get the social sharing image URL (PNG format for Twitter/OG compatibility).
+     * Twitter and most social platforms don't support SVG images.
+     */
+    public function getSocialImageUrlAttribute(): ?string
+    {
+        if (empty($this->featured_image)) {
+            return config('app.url') . '/og-image.png';
+        }
+
+        // Convert SVG to PNG path for social sharing
+        $imagePath = $this->featured_image;
+        if (str_ends_with($imagePath, '.svg')) {
+            $imagePath = preg_replace('/\.svg$/', '.png', $imagePath);
+        }
+
+        // If it's already a full URL, return with PNG extension swap
+        if (str_starts_with($imagePath, 'http')) {
+            return $imagePath;
+        }
+
+        // If it starts with /images/, it's in public folder
+        if (str_starts_with($imagePath, '/images/')) {
+            $fullPath = public_path($imagePath);
+            // Verify PNG exists, otherwise fall back to default
+            if (file_exists($fullPath)) {
+                return config('app.url') . $imagePath;
+            }
+
+            return config('app.url') . '/og-image.png';
+        }
+
+        // For storage disk images, verify the PNG exists
+        if (Storage::disk('public')->exists($imagePath)) {
+            return Storage::disk('public')->url($imagePath);
+        }
+
+        // Fall back to default OG image
+        return config('app.url') . '/og-image.png';
     }
 }

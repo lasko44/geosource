@@ -2,6 +2,8 @@
 
 namespace App\Nova;
 
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Laravel\Nova\Fields\Badge;
 use Laravel\Nova\Fields\BelongsTo;
 use Laravel\Nova\Fields\Code;
@@ -146,9 +148,78 @@ class BlogPost extends Resource
 
             Image::make('Featured Image')
                 ->disk('public')
-                ->path('blog')
                 ->nullable()
-                ->help('Recommended size: 1200x630px for optimal social sharing'),
+                ->help('Recommended size: 1200x630px. Images will be converted to PNG for social sharing compatibility.')
+                ->store(function (NovaRequest $request, $model, $attribute, $requestAttribute) {
+                    $file = $request->file($requestAttribute);
+                    if (! $file) {
+                        return null;
+                    }
+
+                    $filename = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
+                    $filename = $filename . '-' . Str::random(6) . '.png';
+                    $path = 'blog/' . $filename;
+
+                    // Get the file extension to determine conversion method
+                    $extension = strtolower($file->getClientOriginalExtension());
+
+                    if ($extension === 'svg') {
+                        // Use Imagick for SVG conversion
+                        $imagick = new \Imagick();
+                        $imagick->setBackgroundColor(new \ImagickPixel('transparent'));
+                        $imagick->readImageBlob($file->get());
+                        $imagick->setImageFormat('png');
+                        // Resize to 1200x630 for social sharing
+                        $imagick->resizeImage(1200, 630, \Imagick::FILTER_LANCZOS, 1);
+                        $imageData = $imagick->getImageBlob();
+                        $imagick->destroy();
+                    } else {
+                        // Use GD for other image formats
+                        $sourceImage = match ($extension) {
+                            'jpg', 'jpeg' => imagecreatefromjpeg($file->getPathname()),
+                            'gif' => imagecreatefromgif($file->getPathname()),
+                            'webp' => imagecreatefromwebp($file->getPathname()),
+                            'png' => imagecreatefrompng($file->getPathname()),
+                            default => imagecreatefromstring($file->get()),
+                        };
+
+                        if (! $sourceImage) {
+                            // Fallback: store as-is if conversion fails
+                            return $file->storeAs('blog', $filename, 'public');
+                        }
+
+                        // Get original dimensions
+                        $origWidth = imagesx($sourceImage);
+                        $origHeight = imagesy($sourceImage);
+
+                        // Create resized image at 1200x630
+                        $newImage = imagecreatetruecolor(1200, 630);
+
+                        // Preserve transparency
+                        imagealphablending($newImage, false);
+                        imagesavealpha($newImage, true);
+                        $transparent = imagecolorallocatealpha($newImage, 0, 0, 0, 127);
+                        imagefill($newImage, 0, 0, $transparent);
+
+                        // Resize
+                        imagecopyresampled($newImage, $sourceImage, 0, 0, 0, 0, 1200, 630, $origWidth, $origHeight);
+
+                        // Save to buffer
+                        ob_start();
+                        imagepng($newImage, null, 9);
+                        $imageData = ob_get_clean();
+
+                        imagedestroy($sourceImage);
+                        imagedestroy($newImage);
+                    }
+
+                    // Store the PNG
+                    Storage::disk('public')->put($path, $imageData);
+
+                    return [
+                        $attribute => $path,
+                    ];
+                }),
         ];
     }
 

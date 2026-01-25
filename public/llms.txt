@@ -184,9 +184,16 @@ Features:
 - URL: https://geosource.ai/resources/multimedia-and-geo
 - Description: Learn how images, videos, and other media can enhance your GEO through proper optimization.
 
+
 ## Blog Posts
 
 Latest articles about Generative Engine Optimization (GEO) and AI search visibility.
+
+### Why Server-Side Rendering (SSR) Matters for GEO and AI Visibility
+- URL: http://127.0.0.1:8000/blog/why-server-side-rendering-ssr-matters-for-geo-and-ai-visibility
+- Description: Learn why server-side rendering (SSR) is critical for GEO, AI visibility, and crawlability. Improve AI indexing, SEO performance, and discoverability.
+- Published: 2026-01-25
+- Topics: server-side rendering, ssr seo, geo optimization, generative engine optimization, ai search visibility, technical seo, ai crawler indexing, javascript seo, llm optimization, geo strategy, geosource ai
 
 ### The Rise of AI Search: What It Means for Content Creators
 - URL: http://127.0.0.1:8000/blog/rise-of-ai-search-content-creators
