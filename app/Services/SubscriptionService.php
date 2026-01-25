@@ -175,6 +175,7 @@ class SubscriptionService
     /**
      * Get the number of scans used this month by a user (personal scans only).
      * Includes soft-deleted scans to prevent quota bypass via deletion.
+     * Excludes cancelled scans since they don't consume quota.
      * Uses user's timezone for accurate month boundary calculation.
      */
     public function getScansUsedThisMonth(User $user): int
@@ -184,6 +185,7 @@ class SubscriptionService
         return $user->scans()
             ->withTrashed() // Include deleted scans to prevent quota bypass
             ->where('created_at', '>=', $startOfMonth)
+            ->where('status', '!=', 'cancelled') // Cancelled scans don't count
             ->count();
     }
 
@@ -201,6 +203,7 @@ class SubscriptionService
     /**
      * Get the number of scans used this month for a team owner (all their teams' scans + personal scans).
      * Includes soft-deleted scans to prevent quota bypass via deletion.
+     * Excludes cancelled scans since they don't consume quota.
      * Includes personal scans to prevent quota bypass by mixing personal and team scans.
      * Uses owner's timezone for accurate month boundary calculation.
      */
@@ -214,6 +217,7 @@ class SubscriptionService
         // PLUS the owner's personal scans (to prevent mixing personal + team to bypass quota)
         return \App\Models\Scan::withTrashed()
             ->where('created_at', '>=', $startOfMonth)
+            ->where('status', '!=', 'cancelled') // Cancelled scans don't count
             ->where(function ($query) use ($owner, $teamIds) {
                 $query->whereIn('team_id', $teamIds)
                     ->orWhere(function ($q) use ($owner) {

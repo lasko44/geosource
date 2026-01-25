@@ -797,6 +797,37 @@ class ScanController extends Controller
     }
 
     /**
+     * Cancel a pending or processing scan.
+     */
+    public function cancel(Scan $scan, Request $request)
+    {
+        $this->authorize('update', $scan);
+
+        // Only allow cancelling pending or processing scans
+        if (! in_array($scan->status, ['pending', 'processing'])) {
+            if ($request->wantsJson()) {
+                return response()->json(['error' => 'Only pending or processing scans can be cancelled.'], 422);
+            }
+
+            return back()->withErrors(['status' => 'Only pending or processing scans can be cancelled.']);
+        }
+
+        $scan->update([
+            'status' => 'cancelled',
+            'error_message' => 'Scan was cancelled by user.',
+        ]);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'status' => 'cancelled',
+            ]);
+        }
+
+        return back()->with('success', 'Scan cancelled successfully.');
+    }
+
+    /**
      * Delete a scan.
      */
     public function destroy(Scan $scan)

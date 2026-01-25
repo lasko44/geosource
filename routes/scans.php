@@ -24,6 +24,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/scans', [ScanController::class, 'list'])->name('scans.index');
     Route::get('/scans/{scan}', [ScanController::class, 'show'])->name('scans.show');
     Route::get('/scans/{scan}/status', [ScanController::class, 'status'])->name('scans.status');
+    Route::post('/scans/{scan}/cancel', [ScanController::class, 'cancel'])->name('scans.cancel');
     Route::delete('/scans/{scan}', [ScanController::class, 'destroy'])->name('scans.destroy');
 
     // Rate limit rescan to prevent abuse (10 per minute)

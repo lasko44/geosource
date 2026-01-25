@@ -44,6 +44,11 @@ class ScanWebsiteJob implements ShouldQueue
         VectorStore $vectorStore,
         SubscriptionService $subscriptionService
     ): void {
+        // Check if scan was cancelled before we start
+        if ($this->isCancelled()) {
+            return;
+        }
+
         // Re-verify subscription before completing the scan
         // This prevents downgraded users from completing queued scans
         if (! $this->verifySubscriptionStillValid($subscriptionService)) {
@@ -85,6 +90,11 @@ class ScanWebsiteJob implements ShouldQueue
 
             // Step 3: Check llms.txt (happens inside MachineReadableScorer)
             $this->updateProgress('checking_llms_txt');
+
+            // Check for cancellation before expensive scoring
+            if ($this->isCancelled()) {
+                return;
+            }
 
             // Step 4: Score content
             $this->updateProgress('scoring_content');
@@ -161,6 +171,16 @@ class ScanWebsiteJob implements ShouldQueue
             'error_message' => $message,
             'completed_at' => now(),
         ]);
+    }
+
+    /**
+     * Check if the scan has been cancelled.
+     */
+    private function isCancelled(): bool
+    {
+        $this->scan->refresh();
+
+        return $this->scan->status === 'cancelled';
     }
 
     private function extractTitle(string $html): ?string

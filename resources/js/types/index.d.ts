@@ -131,7 +131,7 @@ export interface Scan {
     score: number;
     grade: string;
     results: ScanResults;
-    status?: 'pending' | 'processing' | 'completed' | 'failed';
+    status?: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
     progress_step?: string | null;
     progress_percent?: number;
     error_message?: string | null;

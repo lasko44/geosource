@@ -23,6 +23,8 @@ import {
     Image,
     Mail,
     Repeat,
+    Ban,
+    XOctagon,
 } from 'lucide-vue-next';
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
 
@@ -113,6 +115,7 @@ watch(() => props.scan.status, (newStatus) => {
 
 const isPending = computed(() => scanStatus.value === 'pending' || scanStatus.value === 'processing');
 const isFailed = computed(() => scanStatus.value === 'failed');
+const isCancelled = computed(() => scanStatus.value === 'cancelled');
 const isCompleted = computed(() => scanStatus.value === 'completed' && props.scan.results !== null);
 const isReloading = computed(() => reloading.value);
 
@@ -152,7 +155,7 @@ const pollStatus = async () => {
 
         errorMessage.value = data.error_message;
 
-        if (data.status === 'completed' || data.status === 'failed') {
+        if (data.status === 'completed' || data.status === 'failed' || data.status === 'cancelled') {
             if (pollInterval) {
                 clearInterval(pollInterval);
                 pollInterval = null;
@@ -163,6 +166,9 @@ const pollStatus = async () => {
                 progressStep.value = 'Loading results...';
                 progressPercent.value = 100;
                 router.reload();
+            } else if (data.status === 'cancelled') {
+                // For cancelled status, update immediately
+                scanStatus.value = data.status;
             } else {
                 // For failed status, update immediately
                 scanStatus.value = data.status;
@@ -243,6 +249,35 @@ const rescanning = ref(false);
 const rescanProgress = ref('');
 const newScanUuid = ref<string | null>(null);
 const deleting = ref(false);
+const cancelling = ref(false);
+
+const cancelScan = async () => {
+    if (cancelling.value) return;
+    cancelling.value = true;
+
+    try {
+        const response = await fetch(`/scans/${props.scan.uuid}/cancel`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+            },
+        });
+
+        if (response.ok) {
+            scanStatus.value = 'cancelled';
+            if (pollInterval) {
+                clearInterval(pollInterval);
+                pollInterval = null;
+            }
+        }
+    } catch (e) {
+        // Silent fail
+    } finally {
+        cancelling.value = false;
+    }
+};
 
 const pollNewScan = async () => {
     if (!newScanUuid.value) return;
@@ -522,6 +557,19 @@ const summary = computed(() => props.scan.results?.summary);
                                 </span>
                             </div>
                         </div>
+
+                        <!-- Cancel Button -->
+                        <div v-if="!isReloading" class="mt-8 text-center">
+                            <Button
+                                variant="outline"
+                                @click="cancelScan"
+                                :disabled="cancelling"
+                            >
+                                <Loader2 v-if="cancelling" class="mr-2 h-4 w-4 animate-spin" />
+                                <Ban v-else class="mr-2 h-4 w-4" />
+                                {{ cancelling ? 'Cancelling...' : 'Cancel Scan' }}
+                            </Button>
+                        </div>
                     </div>
                 </CardContent>
             </Card>
@@ -537,6 +585,22 @@ const summary = computed(() => props.scan.results?.summary);
                             <Loader2 v-if="rescanning" class="mr-2 h-4 w-4 animate-spin" />
                             <RefreshCw v-else class="mr-2 h-4 w-4" />
                             {{ rescanning ? (rescanProgress || 'Retrying...') : 'Try Again' }}
+                        </Button>
+                    </div>
+                </AlertDescription>
+            </Alert>
+
+            <!-- Cancelled State -->
+            <Alert v-else-if="isCancelled" class="border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-900">
+                <XOctagon class="h-5 w-5 text-gray-500" />
+                <AlertTitle>Scan Cancelled</AlertTitle>
+                <AlertDescription>
+                    This scan was cancelled and does not count towards your quota.
+                    <div class="mt-4">
+                        <Button variant="outline" @click="rescan" :disabled="rescanning">
+                            <Loader2 v-if="rescanning" class="mr-2 h-4 w-4 animate-spin" />
+                            <RefreshCw v-else class="mr-2 h-4 w-4" />
+                            {{ rescanning ? (rescanProgress || 'Scanning...') : 'Scan Again' }}
                         </Button>
                     </div>
                 </AlertDescription>

@@ -54,7 +54,7 @@ interface RecentScheduledRun {
     title: string | null;
     score: number | null;
     grade: string | null;
-    status: 'pending' | 'processing' | 'completed' | 'failed';
+    status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
     scheduled_scan_name: string | null;
     user: { name: string } | null;
     created_at: string;
@@ -306,6 +306,12 @@ const getScoreColor = (grade: string) => {
                                     <span class="text-xs font-medium">FAIL</span>
                                 </div>
                                 <div
+                                    v-else-if="scan.status === 'cancelled'"
+                                    class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
+                                >
+                                    <span class="text-xs font-medium">X</span>
+                                </div>
+                                <div
                                     v-else
                                     class="flex h-12 w-12 items-center justify-center rounded-full bg-muted"
                                 >
@@ -335,6 +341,9 @@ const getScoreColor = (grade: string) => {
                                 </div>
                                 <div v-else-if="scan.status === 'failed'" class="text-right">
                                     <Badge variant="destructive">Failed</Badge>
+                                </div>
+                                <div v-else-if="scan.status === 'cancelled'" class="text-right">
+                                    <Badge variant="secondary">Cancelled</Badge>
                                 </div>
                                 <div v-else class="text-right">
                                     <Badge variant="secondary">{{ scan.status }}</Badge>

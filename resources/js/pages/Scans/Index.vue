@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { ref, watch, computed } from 'vue';
-import { ExternalLink, Trash2, Globe, ArrowLeft, Search, X, ChevronUp, ChevronDown, Filter, Layers, Clock, CheckCircle2, XCircle, Repeat } from 'lucide-vue-next';
+import { ExternalLink, Trash2, Globe, ArrowLeft, Search, X, ChevronUp, ChevronDown, Filter, Layers, Clock, CheckCircle2, XCircle, Repeat, Loader2 } from 'lucide-vue-next';
 import { useDebounceFn } from '@vueuse/core';
 
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -788,10 +788,29 @@ https://example.com/page3"
                             >
                                 <!-- Grade Badge -->
                                 <div
+                                    v-if="scan.status === 'completed' && scan.grade"
                                     class="flex h-12 w-12 items-center justify-center rounded-full text-lg font-bold"
                                     :class="getGradeColor(scan.grade)"
                                 >
                                     {{ scan.grade }}
+                                </div>
+                                <div
+                                    v-else-if="scan.status === 'failed'"
+                                    class="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-950 dark:text-red-400"
+                                >
+                                    <XCircle class="h-6 w-6" />
+                                </div>
+                                <div
+                                    v-else-if="scan.status === 'cancelled'"
+                                    class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
+                                >
+                                    <XCircle class="h-6 w-6" />
+                                </div>
+                                <div
+                                    v-else
+                                    class="flex h-12 w-12 items-center justify-center rounded-full bg-muted"
+                                >
+                                    <Loader2 class="h-6 w-6 animate-spin text-muted-foreground" />
                                 </div>
 
                                 <!-- Info -->
@@ -816,11 +835,20 @@ https://example.com/page3"
                                 </div>
 
                                 <!-- Score -->
-                                <div class="text-right">
+                                <div v-if="scan.status === 'completed' && scan.score !== null" class="text-right">
                                     <p class="text-2xl font-bold" :class="getScoreColorByGrade(scan.grade)">
                                         {{ scan.score.toFixed(1) }}
                                     </p>
                                     <p class="text-xs text-muted-foreground">/ {{ scan.results?.max_score ?? 100 }}</p>
+                                </div>
+                                <div v-else-if="scan.status === 'failed'" class="text-right">
+                                    <p class="text-sm font-medium text-red-600 dark:text-red-400">Failed</p>
+                                </div>
+                                <div v-else-if="scan.status === 'cancelled'" class="text-right">
+                                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Cancelled</p>
+                                </div>
+                                <div v-else class="text-right">
+                                    <p class="text-sm font-medium text-muted-foreground capitalize">{{ scan.status || 'pending' }}</p>
                                 </div>
 
                                 <!-- Date -->
