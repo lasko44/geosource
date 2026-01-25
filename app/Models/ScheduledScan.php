@@ -84,17 +84,44 @@ class ScheduledScan extends Model
     }
 
     /**
+     * Get the user's timezone, falling back to UTC.
+     */
+    public function getUserTimezone(): string
+    {
+        // Load user if not already loaded
+        if (! $this->relationLoaded('user')) {
+            $this->load('user');
+        }
+
+        return $this->user?->timezone ?? 'UTC';
+    }
+
+    /**
      * Calculate the next run time based on frequency.
+     * Times are interpreted in the user's timezone and stored in UTC.
      */
     public function calculateNextRunAt(): \Carbon\Carbon
     {
-        $now = \Carbon\Carbon::now();
-        $time = $this->scheduled_time ? \Carbon\Carbon::parse($this->scheduled_time) : \Carbon\Carbon::now()->setTime(9, 0);
+        $userTimezone = $this->getUserTimezone();
 
-        $next = $now->copy()->setTimeFrom($time);
+        // Get current time in the user's timezone
+        $nowInUserTz = \Carbon\Carbon::now($userTimezone);
+
+        // Parse the scheduled time in the user's timezone
+        $scheduledHour = 9;
+        $scheduledMinute = 0;
+
+        if ($this->scheduled_time) {
+            $timeParts = \Carbon\Carbon::parse($this->scheduled_time);
+            $scheduledHour = $timeParts->hour;
+            $scheduledMinute = $timeParts->minute;
+        }
+
+        // Create the next run time in the user's timezone
+        $next = $nowInUserTz->copy()->setTime($scheduledHour, $scheduledMinute, 0);
 
         // If the time has already passed today, start from tomorrow
-        if ($next->lte($now)) {
+        if ($next->lte($nowInUserTz)) {
             $next->addDay();
         }
 
@@ -113,13 +140,15 @@ class ScheduledScan extends Model
             case 'monthly':
                 $dayOfMonth = min($this->day_of_month ?? 1, 28); // Cap at 28 to avoid month issues
                 $next->day($dayOfMonth);
-                if ($next->lte($now)) {
+                if ($next->lte($nowInUserTz)) {
                     $next->addMonth()->day($dayOfMonth);
                 }
                 break;
         }
 
-        return $next;
+        // Convert to UTC for storage (Laravel will handle this automatically,
+        // but we're explicit here for clarity)
+        return $next->setTimezone('UTC');
     }
 
     /**
@@ -139,11 +168,13 @@ class ScheduledScan extends Model
     public function getScheduleDescriptionAttribute(): string
     {
         $time = $this->scheduled_time ? \Carbon\Carbon::parse($this->scheduled_time)->format('g:i A') : '9:00 AM';
+        $timezone = $this->getUserTimezone();
+        $tzAbbrev = \Carbon\Carbon::now($timezone)->format('T');
 
         return match ($this->frequency) {
-            'daily' => "Daily at {$time}",
-            'weekly' => 'Every '.['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][$this->day_of_week ?? 1]." at {$time}",
-            'monthly' => "Monthly on day ".($this->day_of_month ?? 1)." at {$time}",
+            'daily' => "Daily at {$time} {$tzAbbrev}",
+            'weekly' => 'Every '.['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][$this->day_of_week ?? 1]." at {$time} {$tzAbbrev}",
+            'monthly' => "Monthly on day ".($this->day_of_month ?? 1)." at {$time} {$tzAbbrev}",
             default => 'Unknown schedule',
         };
     }
