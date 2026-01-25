@@ -159,6 +159,9 @@ const faqItems = [
                     <Link href="/pricing">
                         <Button variant="ghost">Pricing</Button>
                     </Link>
+                    <Link href="/blog">
+                        <Button variant="ghost">Blog</Button>
+                    </Link>
                     <Link href="/resources">
                         <Button variant="ghost">Resources</Button>
                     </Link>
@@ -192,6 +195,11 @@ const faqItems = [
                             <DropdownMenuItem as-child>
                                 <Link href="/pricing" class="w-full">
                                     Pricing
+                                </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem as-child>
+                                <Link href="/blog" class="w-full">
+                                    Blog
                                 </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem as-child>
