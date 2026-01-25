@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Billing;
 
 use App\Http\Controllers\Controller;
+use App\Mail\AdminNewSubscriptionNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -119,6 +121,11 @@ class UserBillingController extends Controller
                 'name' => $planConfig['name'],
                 'price' => $planConfig['price'],
             ]]);
+
+            // Notify admin of new subscription
+            Mail::to('matt@geosource.ai')->send(
+                new AdminNewSubscriptionNotification($user, $planConfig['name'], $planConfig['price'])
+            );
 
             return redirect()->route('billing.thank-you');
         } catch (\Exception $e) {
