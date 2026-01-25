@@ -2,6 +2,7 @@
 
 namespace App\Services\GEO;
 
+use App\Models\Document;
 use App\Services\RAG\EmbeddingService;
 use App\Services\RAG\RAGService;
 use App\Services\RAG\VectorStore;
@@ -146,7 +147,7 @@ class EnhancedGeoScorer
         // Security: Verify each document belongs to the same team to prevent data leakage
         foreach ($myScore['similar_content'] as $similar) {
             // Explicitly query with team_id constraint to prevent cross-team access
-            $doc = \App\Models\Document::where('id', $similar['id'])
+            $doc = Document::where('id', $similar['id'])
                 ->where('team_id', $teamId)
                 ->first();
 
@@ -189,7 +190,7 @@ class EnhancedGeoScorer
         $currentScore = $this->analyze($content, $teamId);
 
         // Get historical scores from metadata
-        $historical = \App\Models\Document::where('team_id', $teamId)
+        $historical = Document::where('team_id', $teamId)
             ->whereRaw("metadata->>'content_id' = ?", [$contentId])
             ->whereRaw("metadata->>'type' = 'geo_score_history'")
             ->orderByDesc('created_at')
@@ -211,7 +212,7 @@ class EnhancedGeoScorer
         }
 
         // Store current score for tracking
-        \App\Models\Document::create([
+        Document::create([
             'team_id' => $teamId,
             'title' => "GEO Score: {$contentId}",
             'content' => json_encode($currentScore['pillars']),

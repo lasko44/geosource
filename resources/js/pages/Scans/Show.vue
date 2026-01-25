@@ -23,7 +23,7 @@ import {
     Image,
     Mail,
 } from 'lucide-vue-next';
-import { computed, ref, onMounted, onUnmounted } from 'vue';
+import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
 
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
@@ -94,6 +94,21 @@ const scanTitle = ref(props.scan.title);
 const errorMessage = ref(props.scan.error_message);
 const reloading = ref(false);
 let pollInterval: ReturnType<typeof setInterval> | null = null;
+
+// Watch for prop changes after router.reload() to sync local state
+watch(() => props.scan.status, (newStatus) => {
+    if (newStatus && newStatus !== scanStatus.value) {
+        scanStatus.value = newStatus;
+        progressStep.value = props.scan.progress_step || 'Completed';
+        progressPercent.value = props.scan.progress_percent || 100;
+        scanTitle.value = props.scan.title;
+        errorMessage.value = props.scan.error_message;
+        // Clear reloading state when props are updated
+        if (newStatus === 'completed' || newStatus === 'failed') {
+            reloading.value = false;
+        }
+    }
+});
 
 const isPending = computed(() => scanStatus.value === 'pending' || scanStatus.value === 'processing');
 const isFailed = computed(() => scanStatus.value === 'failed');
