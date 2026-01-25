@@ -30,6 +30,50 @@ class ConvertBlogSvgsToPng extends Command
     {
         $dryRun = $this->option('dry-run');
 
+        // Check if Imagick is available, try CLI tools as fallback
+        $conversionMethod = $this->detectConversionMethod();
+
+        if ($conversionMethod === null && ! $dryRun) {
+            $this->error('❌ No SVG to PNG conversion method available.');
+            $this->newLine();
+            $this->line('Install one of these options:');
+            $this->line('  <comment>Option 1 - PHP Imagick:</comment>');
+            $this->line('    Ubuntu/Debian: sudo apt-get install php-imagick');
+            $this->line('    Then restart PHP-FPM: sudo systemctl restart php8.2-fpm');
+            $this->newLine();
+            $this->line('  <comment>Option 2 - rsvg-convert (librsvg):</comment>');
+            $this->line('    Ubuntu/Debian: sudo apt-get install librsvg2-bin');
+            $this->newLine();
+            $this->line('  <comment>Option 3 - ImageMagick CLI:</comment>');
+            $this->line('    Ubuntu/Debian: sudo apt-get install imagemagick');
+            $this->newLine();
+            $this->line('Or convert locally and upload:');
+            $this->line('  magick input.svg -resize 1200x630 output.png');
+            $this->newLine();
+
+            // List the files that need conversion
+            $posts = BlogPost::whereNotNull('featured_image')
+                ->where('featured_image', 'like', '%.svg')
+                ->get();
+
+            if ($posts->isNotEmpty()) {
+                $this->info('Files that need conversion:');
+                foreach ($posts as $post) {
+                    $pngPath = preg_replace('/\.svg$/', '.png', $post->featured_image);
+                    $this->line("  SVG: {$post->featured_image}");
+                    $this->line("  PNG: {$pngPath}");
+                    $this->newLine();
+                }
+            }
+
+            return Command::FAILURE;
+        }
+
+        if (! $dryRun) {
+            $this->info("Using conversion method: <comment>{$conversionMethod}</comment>");
+            $this->newLine();
+        }
+
         if ($dryRun) {
             $this->info('🔍 Dry run mode - no files will be modified');
             $this->newLine();
@@ -156,16 +200,60 @@ class ConvertBlogSvgsToPng extends Command
     }
 
     /**
-     * Convert SVG content to PNG using Imagick.
+     * Detect which conversion method is available.
      */
-    private function convertSvgToPng(string $svgContent): ?string
+    private function detectConversionMethod(): ?string
+    {
+        // Check PHP Imagick extension
+        if (extension_loaded('imagick')) {
+            return 'imagick';
+        }
+
+        // Check for rsvg-convert CLI tool
+        exec('which rsvg-convert 2>/dev/null', $output, $returnCode);
+        if ($returnCode === 0) {
+            return 'rsvg-convert';
+        }
+
+        // Check for ImageMagick CLI tool
+        exec('which magick 2>/dev/null', $output, $returnCode);
+        if ($returnCode === 0) {
+            return 'magick';
+        }
+
+        exec('which convert 2>/dev/null', $output, $returnCode);
+        if ($returnCode === 0) {
+            return 'convert';
+        }
+
+        return null;
+    }
+
+    /**
+     * Convert SVG content to PNG using the best available method.
+     */
+    private function convertSvgToPng(string $svgContent, string $svgPath = null): ?string
+    {
+        $method = $this->detectConversionMethod();
+
+        return match ($method) {
+            'imagick' => $this->convertWithImagick($svgContent),
+            'rsvg-convert' => $this->convertWithRsvg($svgContent, $svgPath),
+            'magick', 'convert' => $this->convertWithImageMagickCli($svgContent, $svgPath, $method),
+            default => null,
+        };
+    }
+
+    /**
+     * Convert using PHP Imagick extension.
+     */
+    private function convertWithImagick(string $svgContent): ?string
     {
         try {
             $imagick = new \Imagick();
             $imagick->setBackgroundColor(new \ImagickPixel('transparent'));
             $imagick->readImageBlob($svgContent);
             $imagick->setImageFormat('png');
-            // Resize to 1200x630 for social sharing
             $imagick->resizeImage(1200, 630, \Imagick::FILTER_LANCZOS, 1);
             $pngData = $imagick->getImageBlob();
             $imagick->destroy();
@@ -173,6 +261,85 @@ class ConvertBlogSvgsToPng extends Command
             return $pngData;
         } catch (\Exception $e) {
             $this->error("   Imagick error: {$e->getMessage()}");
+
+            return null;
+        }
+    }
+
+    /**
+     * Convert using rsvg-convert CLI tool.
+     */
+    private function convertWithRsvg(string $svgContent, ?string $svgPath): ?string
+    {
+        try {
+            $tempSvg = tempnam(sys_get_temp_dir(), 'svg_');
+            $tempPng = tempnam(sys_get_temp_dir(), 'png_');
+
+            file_put_contents($tempSvg, $svgContent);
+
+            $command = sprintf(
+                'rsvg-convert -w 1200 -h 630 -o %s %s 2>&1',
+                escapeshellarg($tempPng),
+                escapeshellarg($tempSvg)
+            );
+
+            exec($command, $output, $returnCode);
+
+            unlink($tempSvg);
+
+            if ($returnCode !== 0) {
+                $this->error('   rsvg-convert error: ' . implode("\n", $output));
+                @unlink($tempPng);
+
+                return null;
+            }
+
+            $pngData = file_get_contents($tempPng);
+            unlink($tempPng);
+
+            return $pngData;
+        } catch (\Exception $e) {
+            $this->error("   rsvg-convert error: {$e->getMessage()}");
+
+            return null;
+        }
+    }
+
+    /**
+     * Convert using ImageMagick CLI tool (magick or convert).
+     */
+    private function convertWithImageMagickCli(string $svgContent, ?string $svgPath, string $command): ?string
+    {
+        try {
+            $tempSvg = tempnam(sys_get_temp_dir(), 'svg_') . '.svg';
+            $tempPng = tempnam(sys_get_temp_dir(), 'png_') . '.png';
+
+            file_put_contents($tempSvg, $svgContent);
+
+            $cmd = sprintf(
+                '%s -background none -density 150 %s -resize 1200x630! %s 2>&1',
+                $command,
+                escapeshellarg($tempSvg),
+                escapeshellarg($tempPng)
+            );
+
+            exec($cmd, $output, $returnCode);
+
+            @unlink($tempSvg);
+
+            if ($returnCode !== 0 || ! file_exists($tempPng)) {
+                $this->error('   ImageMagick error: ' . implode("\n", $output));
+                @unlink($tempPng);
+
+                return null;
+            }
+
+            $pngData = file_get_contents($tempPng);
+            unlink($tempPng);
+
+            return $pngData;
+        } catch (\Exception $e) {
+            $this->error("   ImageMagick error: {$e->getMessage()}");
 
             return null;
         }
