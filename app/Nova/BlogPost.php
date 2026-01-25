@@ -149,43 +149,58 @@ class BlogPost extends Resource
             Image::make('Featured Image')
                 ->disk('public')
                 ->nullable()
-                ->help('Recommended size: 1200x630px. Images will be converted to PNG for social sharing compatibility.')
+                ->help('Recommended size: 1200x630px. PNG/JPG images will be resized for social sharing.')
                 ->store(function (NovaRequest $request, $model, $attribute, $requestAttribute) {
                     $file = $request->file($requestAttribute);
                     if (! $file) {
                         return null;
                     }
 
-                    $filename = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
-                    $filename = $filename . '-' . Str::random(6) . '.png';
-                    $path = 'blog/' . $filename;
-
-                    // Get the file extension to determine conversion method
                     $extension = strtolower($file->getClientOriginalExtension());
+                    $filename = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
+                    $filename = $filename . '-' . Str::random(6);
 
+                    // For SVG files, check if we can convert them
                     if ($extension === 'svg') {
-                        // Use Imagick for SVG conversion
-                        $imagick = new \Imagick();
-                        $imagick->setBackgroundColor(new \ImagickPixel('transparent'));
-                        $imagick->readImageBlob($file->get());
-                        $imagick->setImageFormat('png');
-                        // Resize to 1200x630 for social sharing
-                        $imagick->resizeImage(1200, 630, \Imagick::FILTER_LANCZOS, 1);
-                        $imageData = $imagick->getImageBlob();
-                        $imagick->destroy();
-                    } else {
-                        // Use GD for other image formats
+                        // Try Imagick first
+                        if (extension_loaded('imagick')) {
+                            try {
+                                $imagick = new \Imagick();
+                                $imagick->setBackgroundColor(new \ImagickPixel('transparent'));
+                                $imagick->readImageBlob($file->get());
+                                $imagick->setImageFormat('png');
+                                $imagick->resizeImage(1200, 630, \Imagick::FILTER_LANCZOS, 1);
+                                $imageData = $imagick->getImageBlob();
+                                $imagick->destroy();
+
+                                $path = 'blog/' . $filename . '.png';
+                                Storage::disk('public')->put($path, $imageData);
+
+                                return [$attribute => $path];
+                            } catch (\Exception $e) {
+                                logger()->warning('Imagick SVG conversion failed: ' . $e->getMessage());
+                            }
+                        }
+
+                        // Fallback: store SVG as-is (will need manual conversion later)
+                        $path = 'blog/' . $filename . '.svg';
+
+                        return $file->storeAs('blog', $filename . '.svg', 'public');
+                    }
+
+                    // For non-SVG images, use GD to convert to PNG
+                    try {
                         $sourceImage = match ($extension) {
-                            'jpg', 'jpeg' => imagecreatefromjpeg($file->getPathname()),
-                            'gif' => imagecreatefromgif($file->getPathname()),
-                            'webp' => imagecreatefromwebp($file->getPathname()),
-                            'png' => imagecreatefrompng($file->getPathname()),
-                            default => imagecreatefromstring($file->get()),
+                            'jpg', 'jpeg' => @imagecreatefromjpeg($file->getPathname()),
+                            'gif' => @imagecreatefromgif($file->getPathname()),
+                            'webp' => @imagecreatefromwebp($file->getPathname()),
+                            'png' => @imagecreatefrompng($file->getPathname()),
+                            default => @imagecreatefromstring($file->get()),
                         };
 
                         if (! $sourceImage) {
-                            // Fallback: store as-is if conversion fails
-                            return $file->storeAs('blog', $filename, 'public');
+                            // Fallback: store as-is if GD fails
+                            return $file->storeAs('blog', $filename . '.' . $extension, 'public');
                         }
 
                         // Get original dimensions
@@ -211,14 +226,17 @@ class BlogPost extends Resource
 
                         imagedestroy($sourceImage);
                         imagedestroy($newImage);
+
+                        $path = 'blog/' . $filename . '.png';
+                        Storage::disk('public')->put($path, $imageData);
+
+                        return [$attribute => $path];
+                    } catch (\Exception $e) {
+                        logger()->warning('GD image conversion failed: ' . $e->getMessage());
+
+                        // Fallback: store as-is
+                        return $file->storeAs('blog', $filename . '.' . $extension, 'public');
                     }
-
-                    // Store the PNG
-                    Storage::disk('public')->put($path, $imageData);
-
-                    return [
-                        $attribute => $path,
-                    ];
                 }),
         ];
     }

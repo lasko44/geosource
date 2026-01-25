@@ -739,6 +739,18 @@ const summary = computed(() => props.scan.results?.summary);
                                     {{ action }}
                                 </li>
                             </ul>
+                            <div v-if="rec.resources && rec.resources.length > 0" class="mt-3 flex flex-wrap items-center gap-2 border-t pt-3">
+                                <span class="text-xs font-medium">Learn more:</span>
+                                <Link
+                                    v-for="(resource, idx) in rec.resources"
+                                    :key="idx"
+                                    :href="resource.url"
+                                    class="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/20 transition-colors"
+                                >
+                                    {{ resource.title }}
+                                    <ExternalLink class="h-3 w-3" />
+                                </Link>
+                            </div>
                         </AlertDescription>
                     </Alert>
                 </div>

@@ -164,12 +164,18 @@ export interface PillarResult {
     tier?: 'free' | 'pro' | 'agency';
 }
 
+export interface RecommendationResource {
+    title: string;
+    url: string;
+}
+
 export interface Recommendation {
     pillar: string;
     current_score: string;
     priority: 'high' | 'medium' | 'low';
     actions: string[];
     tier?: 'free' | 'pro' | 'agency';
+    resources?: RecommendationResource[];
 }
 
 export interface ScanSummary {

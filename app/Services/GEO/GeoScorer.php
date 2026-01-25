@@ -40,6 +40,60 @@ class GeoScorer
 
     public const TIER_AGENCY = 'agency';
 
+    /**
+     * Resource links for each pillar type to help users learn more.
+     */
+    private const PILLAR_RESOURCES = [
+        'definitions' => [
+            ['title' => 'What Is GEO?', 'url' => '/blog/what-is-geo-complete-guide'],
+            ['title' => '10 Ways to Optimize Content for AI', 'url' => '/blog/10-ways-optimize-content-chatgpt-perplexity'],
+        ],
+        'structure' => [
+            ['title' => 'Why SSR Matters for GEO', 'url' => '/blog/why-server-side-rendering-ssr-matters-for-geo-and-ai-visibility'],
+            ['title' => '10 Ways to Optimize Content for AI', 'url' => '/blog/10-ways-optimize-content-chatgpt-perplexity'],
+        ],
+        'authority' => [
+            ['title' => 'How AI Search Engines Cite Sources', 'url' => '/blog/how-ai-search-engines-cite-sources'],
+            ['title' => 'GEO vs SEO: Key Differences', 'url' => '/blog/geo-vs-seo-key-differences'],
+        ],
+        'machine_readable' => [
+            ['title' => 'Why SSR Matters for GEO', 'url' => '/blog/why-server-side-rendering-ssr-matters-for-geo-and-ai-visibility'],
+            ['title' => 'What Is GEO?', 'url' => '/blog/what-is-geo-complete-guide'],
+        ],
+        'answerability' => [
+            ['title' => 'How AI Search Engines Cite Sources', 'url' => '/blog/how-ai-search-engines-cite-sources'],
+            ['title' => '10 Ways to Optimize Content for AI', 'url' => '/blog/10-ways-optimize-content-chatgpt-perplexity'],
+        ],
+        'eeat' => [
+            ['title' => 'How AI Search Engines Cite Sources', 'url' => '/blog/how-ai-search-engines-cite-sources'],
+            ['title' => 'GEO vs SEO: Key Differences', 'url' => '/blog/geo-vs-seo-key-differences'],
+        ],
+        'citations' => [
+            ['title' => 'How AI Search Engines Cite Sources', 'url' => '/blog/how-ai-search-engines-cite-sources'],
+            ['title' => '10 Ways to Optimize Content for AI', 'url' => '/blog/10-ways-optimize-content-chatgpt-perplexity'],
+        ],
+        'ai_accessibility' => [
+            ['title' => 'Why SSR Matters for GEO', 'url' => '/blog/why-server-side-rendering-ssr-matters-for-geo-and-ai-visibility'],
+            ['title' => 'The Rise of AI Search', 'url' => '/blog/rise-of-ai-search-content-creators'],
+        ],
+        'freshness' => [
+            ['title' => 'GEO vs SEO: Key Differences', 'url' => '/blog/geo-vs-seo-key-differences'],
+            ['title' => 'The Rise of AI Search', 'url' => '/blog/rise-of-ai-search-content-creators'],
+        ],
+        'readability' => [
+            ['title' => '10 Ways to Optimize Content for AI', 'url' => '/blog/10-ways-optimize-content-chatgpt-perplexity'],
+            ['title' => 'What Is GEO?', 'url' => '/blog/what-is-geo-complete-guide'],
+        ],
+        'question_coverage' => [
+            ['title' => 'How AI Search Engines Cite Sources', 'url' => '/blog/how-ai-search-engines-cite-sources'],
+            ['title' => '10 Ways to Optimize Content for AI', 'url' => '/blog/10-ways-optimize-content-chatgpt-perplexity'],
+        ],
+        'multimedia' => [
+            ['title' => 'GEO vs SEO: Key Differences', 'url' => '/blog/geo-vs-seo-key-differences'],
+            ['title' => 'What Is GEO?', 'url' => '/blog/what-is-geo-complete-guide'],
+        ],
+    ];
+
     public function __construct(
         ?DefinitionScorer $definitionScorer = null,
         ?StructureScorer $structureScorer = null,
@@ -253,6 +307,7 @@ class GeoScorer
                     'priority' => $percentage < 40 ? 'high' : ($percentage < 55 ? 'medium' : 'low'),
                     'actions' => $recs,
                     'tier' => $pillar['tier'] ?? self::TIER_FREE,
+                    'resources' => self::PILLAR_RESOURCES[$key] ?? [],
                 ];
             }
         }
