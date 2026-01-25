@@ -15,6 +15,7 @@ class Scan extends Model
     protected $fillable = [
         'user_id',
         'team_id',
+        'scheduled_scan_id',
         'url',
         'title',
         'score',

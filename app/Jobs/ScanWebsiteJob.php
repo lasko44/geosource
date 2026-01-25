@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Mail\ScheduledScanCompletedMail;
 use App\Models\Scan;
 use App\Models\Team;
 use App\Services\GEO\EnhancedGeoScorer;
@@ -14,6 +15,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 
 class ScanWebsiteJob implements ShouldQueue
 {
@@ -111,6 +113,9 @@ class ScanWebsiteJob implements ShouldQueue
                 'completed_at' => now(),
             ]);
 
+            // Send email notification if this is a scheduled scan
+            $this->sendScheduledScanNotification();
+
             // Optional: Store in vector database
             if ($teamId && config('rag.geo.use_rag_analysis', false)) {
                 try {
@@ -189,6 +194,73 @@ class ScanWebsiteJob implements ShouldQueue
             'pro' => GeoScorer::TIER_PRO,
             default => GeoScorer::TIER_FREE,
         };
+    }
+
+    /**
+     * Send email notification for scheduled scan completion.
+     */
+    private function sendScheduledScanNotification(): void
+    {
+        // Only send notification if this is a scheduled scan
+        if (! $this->scan->scheduled_scan_id) {
+            return;
+        }
+
+        // Load the scheduled scan with relationships
+        $scheduledScan = $this->scan->scheduledScan;
+        if (! $scheduledScan) {
+            return;
+        }
+
+        // Refresh the scan to ensure we have the latest data
+        $this->scan->refresh();
+        $this->scan->load(['user', 'team']);
+
+        try {
+            // Collect all recipients (avoid duplicates)
+            $recipients = collect();
+
+            // Always add the scan creator
+            if ($this->scan->user) {
+                $recipients->push($this->scan->user);
+            }
+
+            // If this is a team scan, add team owner and members
+            if ($this->scan->team_id && $this->scan->team) {
+                $team = $this->scan->team;
+
+                // Add team owner if different from scan creator
+                if ($team->owner && $team->owner->id !== $this->scan->user_id) {
+                    $recipients->push($team->owner);
+                }
+
+                // Add all team members
+                foreach ($team->members as $member) {
+                    if (! $recipients->contains('id', $member->id)) {
+                        $recipients->push($member);
+                    }
+                }
+            }
+
+            // Send email to each unique recipient
+            foreach ($recipients->unique('id') as $recipient) {
+                Mail::to($recipient->email)->queue(
+                    new ScheduledScanCompletedMail($this->scan, $scheduledScan, $recipient)
+                );
+            }
+
+            logger()->info('Scheduled scan notification sent', [
+                'scan_id' => $this->scan->id,
+                'scheduled_scan_id' => $scheduledScan->id,
+                'recipients_count' => $recipients->unique('id')->count(),
+            ]);
+        } catch (\Exception $e) {
+            // Log but don't fail the scan if notification fails
+            logger()->warning('Failed to send scheduled scan notification: '.$e->getMessage(), [
+                'scan_id' => $this->scan->id,
+                'scheduled_scan_id' => $scheduledScan->id ?? null,
+            ]);
+        }
     }
 
     /**
