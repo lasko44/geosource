@@ -15,7 +15,8 @@
       "Bash(npm run build:*)",
       "Bash(php -l:*)",
       "Bash(xargs:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(ls:*)"
     ]
   }
 }

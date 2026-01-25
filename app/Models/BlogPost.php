@@ -107,6 +107,11 @@ class BlogPost extends Model
             return $this->featured_image;
         }
 
+        // If it starts with /images/, it's in public folder
+        if (str_starts_with($this->featured_image, '/images/')) {
+            return config('app.url') . $this->featured_image;
+        }
+
         // Otherwise, generate URL from storage
         return Storage::disk('public')->url($this->featured_image);
     }
