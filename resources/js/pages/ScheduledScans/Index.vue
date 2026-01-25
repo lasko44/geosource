@@ -48,8 +48,21 @@ interface ScheduledScan {
     created_at: string;
 }
 
+interface RecentScheduledRun {
+    uuid: string;
+    url: string;
+    title: string | null;
+    score: number | null;
+    grade: string | null;
+    status: 'pending' | 'processing' | 'completed' | 'failed';
+    scheduled_scan_name: string | null;
+    user: { name: string } | null;
+    created_at: string;
+}
+
 interface Props {
     scheduledScans: ScheduledScan[];
+    recentScheduledRuns: RecentScheduledRun[];
     currentTeamId: number | null;
 }
 
@@ -88,6 +101,22 @@ const getFrequencyBadgeColor = (frequency: string) => {
         case 'monthly': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
         default: return '';
     }
+};
+
+const getGradeColor = (grade: string) => {
+    if (grade.startsWith('A')) return 'text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-950';
+    if (grade.startsWith('B')) return 'text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-950';
+    if (grade.startsWith('C')) return 'text-yellow-600 bg-yellow-100 dark:text-yellow-400 dark:bg-yellow-950';
+    if (grade.startsWith('D')) return 'text-orange-600 bg-orange-100 dark:text-orange-400 dark:bg-orange-950';
+    return 'text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-950';
+};
+
+const getScoreColor = (grade: string) => {
+    if (grade.startsWith('A')) return 'text-green-600 dark:text-green-400';
+    if (grade.startsWith('B')) return 'text-blue-600 dark:text-blue-400';
+    if (grade.startsWith('C')) return 'text-yellow-600 dark:text-yellow-400';
+    if (grade.startsWith('D')) return 'text-orange-600 dark:text-orange-400';
+    return 'text-red-600 dark:text-red-400';
 };
 </script>
 
@@ -239,6 +268,85 @@ const getFrequencyBadgeColor = (frequency: string) => {
                             </TableRow>
                         </TableBody>
                     </Table>
+                </CardContent>
+            </Card>
+
+            <!-- Recent Scheduled Scan Results -->
+            <Card v-if="recentScheduledRuns.length > 0">
+                <CardHeader>
+                    <CardTitle class="flex items-center gap-2">
+                        <Clock class="h-5 w-5" />
+                        Recent Scheduled Scan Results
+                    </CardTitle>
+                    <CardDescription>
+                        The last 10 scans that ran from your schedules
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div class="space-y-3">
+                        <Link
+                            v-for="scan in recentScheduledRuns"
+                            :key="scan.uuid"
+                            :href="`/scans/${scan.uuid}`"
+                            class="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
+                        >
+                            <div class="flex items-center gap-4">
+                                <!-- Grade Badge -->
+                                <div
+                                    v-if="scan.status === 'completed' && scan.grade"
+                                    class="flex h-12 w-12 items-center justify-center rounded-full text-lg font-bold"
+                                    :class="getGradeColor(scan.grade)"
+                                >
+                                    {{ scan.grade }}
+                                </div>
+                                <div
+                                    v-else-if="scan.status === 'failed'"
+                                    class="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-950 dark:text-red-400"
+                                >
+                                    <span class="text-xs font-medium">FAIL</span>
+                                </div>
+                                <div
+                                    v-else
+                                    class="flex h-12 w-12 items-center justify-center rounded-full bg-muted"
+                                >
+                                    <RefreshCw class="h-5 w-5 animate-spin text-muted-foreground" />
+                                </div>
+
+                                <!-- Info -->
+                                <div class="flex-1">
+                                    <p class="font-medium">{{ scan.title || 'Untitled' }}</p>
+                                    <p class="flex items-center gap-1 text-sm text-muted-foreground">
+                                        <ExternalLink class="h-3 w-3" />
+                                        {{ truncateUrl(scan.url) }}
+                                    </p>
+                                    <p v-if="scan.scheduled_scan_name" class="mt-1 text-xs text-muted-foreground">
+                                        from <span class="font-medium">{{ scan.scheduled_scan_name }}</span>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-4">
+                                <!-- Score -->
+                                <div v-if="scan.status === 'completed' && scan.score !== null" class="text-right">
+                                    <p class="text-2xl font-bold" :class="getScoreColor(scan.grade || '')">
+                                        {{ scan.score.toFixed(1) }}
+                                    </p>
+                                    <p class="text-xs text-muted-foreground">/ 100</p>
+                                </div>
+                                <div v-else-if="scan.status === 'failed'" class="text-right">
+                                    <Badge variant="destructive">Failed</Badge>
+                                </div>
+                                <div v-else class="text-right">
+                                    <Badge variant="secondary">{{ scan.status }}</Badge>
+                                </div>
+
+                                <!-- Date -->
+                                <div class="w-28 text-right text-sm text-muted-foreground">
+                                    {{ formatRelative(scan.created_at) }}
+                                </div>
+                            </div>
+                        </Link>
+                    </div>
                 </CardContent>
             </Card>
         </div>

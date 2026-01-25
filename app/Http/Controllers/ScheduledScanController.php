@@ -44,6 +44,14 @@ class ScheduledScanController extends Controller
                 ->get();
         }
 
+        // Get the last 10 scans that were created from scheduled scans
+        $scheduledScanIds = $scheduledScans->pluck('id');
+        $recentScheduledRuns = \App\Models\Scan::whereIn('scheduled_scan_id', $scheduledScanIds)
+            ->with(['user:id,name', 'scheduledScan:id,name,url'])
+            ->orderByDesc('created_at')
+            ->limit(10)
+            ->get();
+
         return Inertia::render('ScheduledScans/Index', [
             'scheduledScans' => $scheduledScans->map(fn ($scan) => [
                 'id' => $scan->id,
@@ -59,6 +67,17 @@ class ScheduledScanController extends Controller
                 'next_run_at' => $scan->next_run_at?->toIso8601String(),
                 'total_runs' => $scan->total_runs,
                 'schedule_description' => $scan->schedule_description,
+                'user' => $scan->user ? ['name' => $scan->user->name] : null,
+                'created_at' => $scan->created_at->toIso8601String(),
+            ]),
+            'recentScheduledRuns' => $recentScheduledRuns->map(fn ($scan) => [
+                'uuid' => $scan->uuid,
+                'url' => $scan->url,
+                'title' => $scan->title,
+                'score' => $scan->score,
+                'grade' => $scan->grade,
+                'status' => $scan->status,
+                'scheduled_scan_name' => $scan->scheduledScan?->name,
                 'user' => $scan->user ? ['name' => $scan->user->name] : null,
                 'created_at' => $scan->created_at->toIso8601String(),
             ]),
