@@ -856,7 +856,7 @@ https://example.com/page3"
                             v-for="scan in recentScans"
                             :key="scan.id"
                             :href="`/scans/${scan.uuid || scan.id}`"
-                            class="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
+                            class="flex cursor-pointer items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50 [&_*]:cursor-pointer"
                         >
                             <div class="flex items-center gap-4">
                                 <!-- Grade Badge -->

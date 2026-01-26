@@ -171,16 +171,19 @@
     }
 
     /* Ensure all interactive elements have pointer cursor */
-    a,
-    button,
-    [role="button"],
-    input[type="submit"],
-    input[type="button"],
-    input[type="reset"],
-    select,
+    a:not([disabled]),
+    button:not(:disabled),
+    [role="button"]:not([aria-disabled="true"]),
+    input[type="submit"]:not(:disabled),
+    input[type="button"]:not(:disabled),
+    input[type="reset"]:not(:disabled),
+    select:not(:disabled),
     summary,
-    [tabindex]:not([tabindex="-1"]) {
-        cursor: pointer;
+    [tabindex]:not([tabindex="-1"]),
+    .cursor-pointer,
+    [data-slot="card"].cursor-pointer,
+    [data-slot="card"].cursor-pointer * {
+        cursor: pointer !important;
     }
 
     /* Disabled elements should show not-allowed cursor */
@@ -188,7 +191,8 @@
     [role="button"][aria-disabled="true"],
     input:disabled,
     select:disabled,
-    textarea:disabled {
-        cursor: not-allowed;
+    textarea:disabled,
+    .cursor-not-allowed {
+        cursor: not-allowed !important;
     }
 }
