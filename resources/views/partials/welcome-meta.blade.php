@@ -178,7 +178,7 @@ $schemaData = [
             ],
             'featureList' => [
                 'GEO Score calculation (0-100)',
-                'Letter grades (A+ to C-)',
+                'Letter grades (A+ to F)',
                 'AI-simulated content analysis',
                 '12 GEO evaluation pillars',
                 'Definition clarity analysis',

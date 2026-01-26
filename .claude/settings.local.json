@@ -20,7 +20,10 @@
       "Bash(composer dump-autoload:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git check-ignore:*)"
+      "Bash(git check-ignore:*)",
+      "Bash(npm install)",
+      "Bash(npm install:*)",
+      "Bash(npm run prod:*)"
     ]
   }
 }

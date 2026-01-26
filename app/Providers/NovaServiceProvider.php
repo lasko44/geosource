@@ -45,9 +45,9 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
                     MenuItem::resource(\App\Nova\FailedJob::class),
                 ])->icon('server')->collapsable(),
 
-                MenuSection::make('Documentation', [
-                    MenuItem::externalLink('Developer Docs', '/nova/documentation'),
-                ])->icon('book-open')->collapsable(),
+                MenuSection::make('Documentation')
+                    ->path('/documentation')
+                    ->icon('book-open'),
             ];
         });
 
@@ -82,14 +82,6 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
             ->withPasswordResetRoutes()
             ->withoutEmailVerificationRoutes()
             ->register();
-
-        // Custom documentation route
-        Route::middleware(['web', \Laravel\Nova\Http\Middleware\Authenticate::class, \Laravel\Nova\Http\Middleware\Authorize::class])
-            ->prefix('nova')
-            ->group(function () {
-                Route::get('/documentation', [\App\Http\Controllers\Nova\DocumentationController::class, 'index'])
-                    ->name('nova.documentation');
-            });
     }
 
     /**
@@ -123,7 +115,9 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
      */
     public function tools(): array
     {
-        return [];
+        return [
+            new \Geosource\Documentation\Documentation,
+        ];
     }
 
     /**

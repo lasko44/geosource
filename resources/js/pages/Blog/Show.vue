@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import { marked } from 'marked';
+import { marked, Renderer } from 'marked';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -16,11 +16,26 @@ import {
     Calendar,
     Clock,
     User,
+    ChevronDown,
+    ChevronUp,
+    List,
+    HelpCircle,
 } from 'lucide-vue-next';
+import { ref } from 'vue';
 
 interface Author {
     id: number;
     name: string;
+}
+
+interface FAQItem {
+    question: string;
+    answer: string;
+}
+
+interface QuickLink {
+    title: string;
+    anchor: string;
 }
 
 interface BlogPost {
@@ -40,6 +55,8 @@ interface BlogPost {
     tags: string[] | null;
     view_count: number;
     author: Author | null;
+    faq: FAQItem[] | null;
+    quick_links: QuickLink[] | null;
 }
 
 interface RelatedPost {
@@ -74,15 +91,64 @@ const readingTime = computed(() => {
     return Math.max(1, Math.ceil(words / 200));
 });
 
+// Custom renderer to add IDs to headings for anchor links
+const slugify = (text: string) => {
+    return text
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .trim();
+};
+
+const renderer = new Renderer();
+renderer.heading = ({ tokens, depth }) => {
+    const text = tokens.map(t => ('text' in t ? t.text : '')).join('');
+    const id = slugify(text);
+    return `<h${depth} id="${id}">${text}</h${depth}>`;
+};
+
 const renderedContent = computed(() => {
     return marked(props.post.content, {
         breaks: true,
         gfm: true,
+        renderer,
     });
 });
 
 const metaTitle = computed(() => props.post.meta_title || props.post.title);
 const metaDescription = computed(() => props.post.meta_description || props.post.excerpt);
+
+// Quick links (table of contents)
+const hasQuickLinks = computed(() => props.post.quick_links && props.post.quick_links.length > 0);
+const quickLinksOpen = ref(true);
+
+// FAQ
+const hasFaq = computed(() => props.post.faq && props.post.faq.length > 0);
+
+// Generate FAQ Schema for SEO
+const faqSchema = computed(() => {
+    if (!hasFaq.value) return null;
+    return {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: props.post.faq?.map(item => ({
+            '@type': 'Question',
+            name: item.question,
+            acceptedAnswer: {
+                '@type': 'Answer',
+                text: item.answer,
+            },
+        })),
+    };
+});
+
+const scrollToSection = (anchor: string) => {
+    const element = document.getElementById(anchor);
+    if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+};
 
 // Use stored schema_json if available, otherwise generate dynamically
 const jsonLd = computed(() => {
@@ -142,6 +208,7 @@ const jsonLd = computed(() => {
         <meta name="robots" content="index, follow" />
         <link rel="canonical" :href="`https://geosource.ai/blog/${post.slug}`" />
         <component :is="'script'" type="application/ld+json">{{ JSON.stringify(jsonLd) }}</component>
+        <component v-if="faqSchema" :is="'script'" type="application/ld+json">{{ JSON.stringify(faqSchema) }}</component>
     </Head>
 
     <div class="min-h-screen bg-background text-foreground">
@@ -192,11 +259,61 @@ const jsonLd = computed(() => {
                         />
                     </div>
 
+                    <!-- Quick Links / Table of Contents -->
+                    <div v-if="hasQuickLinks" class="mb-10 rounded-lg border bg-muted/30 p-6">
+                        <button
+                            @click="quickLinksOpen = !quickLinksOpen"
+                            class="flex w-full items-center justify-between text-left"
+                        >
+                            <div class="flex items-center gap-2">
+                                <List class="h-5 w-5 text-primary" />
+                                <span class="font-semibold">In This Article</span>
+                            </div>
+                            <ChevronUp v-if="quickLinksOpen" class="h-5 w-5 text-muted-foreground" />
+                            <ChevronDown v-else class="h-5 w-5 text-muted-foreground" />
+                        </button>
+                        <nav v-show="quickLinksOpen" class="mt-4" aria-label="Table of contents">
+                            <ol class="space-y-2 list-decimal list-inside">
+                                <li v-for="(link, index) in post.quick_links" :key="index">
+                                    <button
+                                        @click="scrollToSection(link.anchor)"
+                                        class="text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
+                                    >
+                                        {{ link.title }}
+                                    </button>
+                                </li>
+                            </ol>
+                        </nav>
+                    </div>
+
                     <!-- Content -->
                     <div
                         class="prose prose-lg dark:prose-invert max-w-none prose-headings:scroll-mt-20 prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-img:rounded-lg"
                         v-html="renderedContent"
                     />
+
+                    <!-- FAQ Section -->
+                    <section v-if="hasFaq" class="mt-12 rounded-lg border bg-muted/30 p-6" id="faq">
+                        <div class="flex items-center gap-2 mb-6">
+                            <HelpCircle class="h-6 w-6 text-primary" />
+                            <h2 class="text-2xl font-bold">Frequently Asked Questions</h2>
+                        </div>
+                        <div class="space-y-3">
+                            <details
+                                v-for="(item, index) in post.faq"
+                                :key="index"
+                                class="group rounded-lg border bg-background"
+                            >
+                                <summary class="flex cursor-pointer items-center justify-between p-4 font-medium hover:bg-muted/50 transition-colors rounded-lg">
+                                    <span>{{ item.question }}</span>
+                                    <ChevronDown class="h-5 w-5 text-muted-foreground transition-transform group-open:rotate-180" />
+                                </summary>
+                                <div class="px-4 pb-4 text-muted-foreground">
+                                    {{ item.answer }}
+                                </div>
+                            </details>
+                        </div>
+                    </section>
 
                     <Separator class="my-12" />
 

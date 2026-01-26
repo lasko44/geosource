@@ -1,12 +1,12 @@
 <?php
 
-namespace Geosource\Documentation;
+namespace Geosource\DocsTest;
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Nova\Events\ServingNova;
 use Laravel\Nova\Nova;
-use Geosource\Documentation\Http\Middleware\Authorize;
+use Geosource\DocsTest\Http\Middleware\Authorize;
 
 class ToolServiceProvider extends ServiceProvider
 {
@@ -33,11 +33,11 @@ class ToolServiceProvider extends ServiceProvider
             return;
         }
 
-        Nova::router(['nova', 'nova.auth', Authorize::class], 'documentation')
+        Nova::router(['nova', 'nova.auth', Authorize::class], 'docs-test')
             ->group(__DIR__.'/../routes/inertia.php');
 
         Route::middleware(['nova', 'nova.auth', Authorize::class])
-            ->prefix('nova-vendor/documentation')
+            ->prefix('nova-vendor/docs-test')
             ->group(__DIR__.'/../routes/api.php');
     }
 

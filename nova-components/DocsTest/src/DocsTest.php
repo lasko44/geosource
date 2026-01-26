@@ -1,20 +1,20 @@
 <?php
 
-namespace Geosource\Documentation;
+namespace Geosource\DocsTest;
 
 use Illuminate\Http\Request;
 use Laravel\Nova\Menu\MenuSection;
 use Laravel\Nova\Nova;
 use Laravel\Nova\Tool;
 
-class Documentation extends Tool
+class DocsTest extends Tool
 {
     /**
      * Perform any tasks that need to happen when the tool is booted.
      */
     public function boot(): void
     {
-        Nova::mix('documentation', __DIR__.'/../dist/mix-manifest.json');
+        Nova::mix('docs-test', __DIR__.'/../dist/mix-manifest.json');
     }
 
     /**
@@ -22,8 +22,8 @@ class Documentation extends Tool
      */
     public function menu(Request $request): MenuSection
     {
-        return MenuSection::make('Documentation')
-            ->path('/documentation')
-            ->icon('book-open');
+        return MenuSection::make('Docs Test')
+            ->path('/docs-test')
+            ->icon('server');
     }
 }

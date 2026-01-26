@@ -65,6 +65,27 @@ class BlogPostGeoService
             $schema['articleSection'] = $post->tags[0] ?? 'GEO';
         }
 
+        // Add FAQ schema if available
+        if (! empty($post->faq)) {
+            $faqSchema = [
+                '@type' => 'FAQPage',
+                'mainEntity' => array_map(fn ($item) => [
+                    '@type' => 'Question',
+                    'name' => $item['question'],
+                    'acceptedAnswer' => [
+                        '@type' => 'Answer',
+                        'text' => $item['answer'],
+                    ],
+                ], $post->faq),
+            ];
+
+            // Use @graph to include both BlogPosting and FAQPage schemas
+            return [
+                '@context' => 'https://schema.org',
+                '@graph' => [$schema, $faqSchema],
+            ];
+        }
+
         return $schema;
     }
 

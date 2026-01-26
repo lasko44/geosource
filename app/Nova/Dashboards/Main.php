@@ -3,11 +3,13 @@
 namespace App\Nova\Dashboards;
 
 use App\Nova\Metrics\FailedJobsCount;
-use App\Nova\Metrics\NewUsersThisWeek;
+use App\Nova\Metrics\NewUsersPerDay;
+use App\Nova\Metrics\PayingCustomers;
 use App\Nova\Metrics\PendingJobsCount;
 use App\Nova\Metrics\ScansByGrade;
 use App\Nova\Metrics\ScansPerDay;
 use App\Nova\Metrics\ScheduledScansCount;
+use App\Nova\Metrics\TopBlogPosts;
 use App\Nova\Metrics\TotalScans;
 use App\Nova\Metrics\TotalUsers;
 use Laravel\Nova\Dashboards\Main as Dashboard;
@@ -22,19 +24,17 @@ class Main extends Dashboard
     public function cards(): array
     {
         return [
-            // User & Scan Stats
-            new TotalUsers,
-            new TotalScans,
-            new NewUsersThisWeek,
+            // Value Metrics
+            (new TotalUsers)->width('1/4'),
+            (new TotalScans)->width('1/4'),
+            (new PendingJobsCount)->width('1/4'),
+            (new FailedJobsCount)->width('1/4'),
 
-            // Queue Stats
-            new PendingJobsCount,
-            new FailedJobsCount,
-            new ScheduledScansCount,
-
-            // Charts
-            new ScansPerDay,
-            new ScansByGrade,
+            // Trend Charts
+            (new NewUsersPerDay)->width('1/2'),
+            (new PayingCustomers)->width('1/2'),
+            (new ScansPerDay)->width('1/2'),
+            (new TopBlogPosts)->width('1/2'),
         ];
     }
 }

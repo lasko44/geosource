@@ -23,7 +23,8 @@
         "laravel/wayfinder": "^0.1.9",
         "mailgun/mailgun-php": "^4.3",
         "symfony/http-client": "^8.0",
-        "symfony/mailgun-mailer": "^8.0"
+        "symfony/mailgun-mailer": "^8.0",
+        "geosource/docs-test": "@dev"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -118,6 +119,10 @@
         {
             "type": "path",
             "url": "./nova-components/Documentation"
+        },
+        {
+            "type": "path",
+            "url": "./nova-components/DocsTest"
         }
     ]
 }

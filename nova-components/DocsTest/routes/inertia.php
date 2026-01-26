@@ -15,10 +15,5 @@ use Laravel\Nova\Http\Requests\NovaRequest;
 */
 
 Route::get('/', function (NovaRequest $request) {
-    // Extract just the content from the documentation blade
-    $html = view('nova.documentation-content')->render();
-
-    return inertia('Documentation', [
-        'content' => $html,
-    ]);
+    return inertia('DocsTest');
 });

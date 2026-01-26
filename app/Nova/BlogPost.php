@@ -10,7 +10,6 @@ use Laravel\Nova\Fields\Code;
 use Laravel\Nova\Fields\DateTime;
 use Laravel\Nova\Fields\ID;
 use Laravel\Nova\Fields\Image;
-use Laravel\Nova\Fields\KeyValue;
 use Laravel\Nova\Fields\Markdown;
 use Laravel\Nova\Fields\Number;
 use Laravel\Nova\Fields\Select;
@@ -63,7 +62,8 @@ class BlogPost extends Resource
                 ->from('Title')
                 ->rules('required', 'max:255')
                 ->creationRules('unique:blog_posts,slug')
-                ->updateRules('unique:blog_posts,slug,{{resourceId}}'),
+                ->updateRules('unique:blog_posts,slug,{{resourceId}}')
+                ->hideFromIndex(),
 
             Textarea::make('Excerpt')
                 ->rules('required', 'max:500')
@@ -86,7 +86,8 @@ class BlogPost extends Resource
                 ->displayUsingLabels()
                 ->sortable()
                 ->filterable()
-                ->default('draft'),
+                ->default('draft')
+                ->hideFromIndex(),
 
             Badge::make('Status')
                 ->map([
@@ -105,7 +106,8 @@ class BlogPost extends Resource
                 ->sortable()
                 ->filterable()
                 ->nullable()
-                ->default($request->user()?->id),
+                ->default($request->user()?->id)
+                ->hideFromIndex(),
 
             Text::make('Tags')
                 ->help('Comma-separated list of tags')
@@ -129,7 +131,8 @@ class BlogPost extends Resource
 
             DateTime::make('Created At')
                 ->sortable()
-                ->exceptOnForms(),
+                ->exceptOnForms()
+                ->hideFromIndex(),
         ];
     }
 
@@ -144,12 +147,14 @@ class BlogPost extends Resource
             Textarea::make('Meta Description')
                 ->nullable()
                 ->rules('nullable', 'max:160')
-                ->help('Leave blank to use the excerpt'),
+                ->help('Leave blank to use the excerpt')
+                ->hideFromIndex(),
 
             Image::make('Featured Image')
                 ->disk('public')
                 ->nullable()
                 ->help('Recommended size: 1200x630px. PNG/JPG images will be resized for social sharing.')
+                ->hideFromIndex()
                 ->store(function (NovaRequest $request, $model, $attribute, $requestAttribute) {
                     $file = $request->file($requestAttribute);
                     if (! $file) {
@@ -158,14 +163,14 @@ class BlogPost extends Resource
 
                     $extension = strtolower($file->getClientOriginalExtension());
                     $filename = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
-                    $filename = $filename . '-' . Str::random(6);
+                    $filename = $filename.'-'.Str::random(6);
 
                     // For SVG files, check if we can convert them
                     if ($extension === 'svg') {
                         // Try Imagick first
                         if (extension_loaded('imagick')) {
                             try {
-                                $imagick = new \Imagick();
+                                $imagick = new \Imagick;
                                 $imagick->setBackgroundColor(new \ImagickPixel('transparent'));
                                 $imagick->readImageBlob($file->get());
                                 $imagick->setImageFormat('png');
@@ -173,19 +178,19 @@ class BlogPost extends Resource
                                 $imageData = $imagick->getImageBlob();
                                 $imagick->destroy();
 
-                                $path = 'blog/' . $filename . '.png';
+                                $path = 'blog/'.$filename.'.png';
                                 Storage::disk('public')->put($path, $imageData);
 
                                 return [$attribute => $path];
                             } catch (\Exception $e) {
-                                logger()->warning('Imagick SVG conversion failed: ' . $e->getMessage());
+                                logger()->warning('Imagick SVG conversion failed: '.$e->getMessage());
                             }
                         }
 
                         // Fallback: store SVG as-is (will need manual conversion later)
-                        $path = 'blog/' . $filename . '.svg';
+                        $path = 'blog/'.$filename.'.svg';
 
-                        return $file->storeAs('blog', $filename . '.svg', 'public');
+                        return $file->storeAs('blog', $filename.'.svg', 'public');
                     }
 
                     // For non-SVG images, use GD to convert to PNG
@@ -200,7 +205,7 @@ class BlogPost extends Resource
 
                         if (! $sourceImage) {
                             // Fallback: store as-is if GD fails
-                            return $file->storeAs('blog', $filename . '.' . $extension, 'public');
+                            return $file->storeAs('blog', $filename.'.'.$extension, 'public');
                         }
 
                         // Get original dimensions
@@ -227,15 +232,15 @@ class BlogPost extends Resource
                         imagedestroy($sourceImage);
                         imagedestroy($newImage);
 
-                        $path = 'blog/' . $filename . '.png';
+                        $path = 'blog/'.$filename.'.png';
                         Storage::disk('public')->put($path, $imageData);
 
                         return [$attribute => $path];
                     } catch (\Exception $e) {
-                        logger()->warning('GD image conversion failed: ' . $e->getMessage());
+                        logger()->warning('GD image conversion failed: '.$e->getMessage());
 
                         // Fallback: store as-is
-                        return $file->storeAs('blog', $filename . '.' . $extension, 'public');
+                        return $file->storeAs('blog', $filename.'.'.$extension, 'public');
                     }
                 }),
         ];
@@ -244,6 +249,16 @@ class BlogPost extends Resource
     protected function geoFields(): array
     {
         return [
+            Code::make('FAQ', 'faq')
+                ->json()
+                ->hideFromIndex()
+                ->help('FAQ items for GEO optimization. Format: [{"question": "...", "answer": "..."}]'),
+
+            Code::make('Quick Links', 'quick_links')
+                ->json()
+                ->hideFromIndex()
+                ->help('Quick navigation links. Format: [{"title": "...", "url": "...", "description": "..."}]'),
+
             Code::make('Schema JSON', 'schema_json')
                 ->json()
                 ->readonly()

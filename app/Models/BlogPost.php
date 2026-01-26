@@ -26,6 +26,8 @@ class BlogPost extends Model
         'status',
         'published_at',
         'tags',
+        'faq',
+        'quick_links',
     ];
 
     protected $appends = [
@@ -56,6 +58,8 @@ class BlogPost extends Model
             'published_at' => 'datetime',
             'tags' => 'array',
             'schema_json' => 'array',
+            'faq' => 'array',
+            'quick_links' => 'array',
         ];
     }
 

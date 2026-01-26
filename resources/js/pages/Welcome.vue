@@ -67,7 +67,7 @@ const geoScoreFactors = [
 
 const scanFeatures = [
     'GEO score from 0-100',
-    'Letter grades (A+ to C-)',
+    'Letter grades (A+ to F)',
     'AI-simulated content analysis',
     'Clear improvement recommendations',
     'Re-scan to track progress',
