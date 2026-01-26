@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GeoSource Scanner</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+          <path d="M12 2C12 2 14.5 6 14.5 12C14.5 18 12 22 12 22" stroke="currentColor" stroke-width="2"/>
+          <path d="M12 2C12 2 9.5 6 9.5 12C9.5 18 12 22 12 22" stroke="currentColor" stroke-width="2"/>
+          <path d="M2 12H22" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        <span>GeoSource</span>
+      </div>
+    </header>
+
+    <!-- Login Section -->
+    <div id="login-section" class="section">
+      <p class="description">Connect your GeoSource account to scan pages directly from your browser.</p>
+      <div id="token-form">
+        <label for="api-token">API Token</label>
+        <input type="password" id="api-token" placeholder="Paste your API token here">
+        <p class="help-text">
+          Get your token from <a href="#" id="get-token-link">Settings &rarr; API Tokens</a>
+        </p>
+        <button id="save-token-btn" class="btn btn-primary">Connect Account</button>
+      </div>
+    </div>
+
+    <!-- Connected Section -->
+    <div id="scan-section" class="section" style="display: none;">
+      <div id="current-url" class="current-url">
+        <span class="label">Current page:</span>
+        <span id="url-display" class="url"></span>
+      </div>
+
+      <button id="scan-btn" class="btn btn-primary btn-large">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="M21 21l-4.35-4.35"/>
+        </svg>
+        Scan This Page
+      </button>
+
+      <!-- Loading State -->
+      <div id="loading" class="loading" style="display: none;">
+        <div class="spinner"></div>
+        <span>Scanning page...</span>
+      </div>
+
+      <!-- Result -->
+      <div id="result" class="result" style="display: none;">
+        <div id="result-content"></div>
+      </div>
+
+      <!-- Recent Scans -->
+      <div id="recent-scans" class="recent-scans">
+        <h3>Recent Scans</h3>
+        <div id="recent-list"></div>
+      </div>
+
+      <!-- Footer Actions -->
+      <div class="footer-actions">
+        <a href="#" id="dashboard-link" class="link">Open Dashboard</a>
+        <button id="disconnect-btn" class="btn btn-ghost btn-small">Disconnect</button>
+      </div>
+    </div>
+
+    <!-- Error Display -->
+    <div id="error" class="error" style="display: none;">
+      <span id="error-message"></span>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

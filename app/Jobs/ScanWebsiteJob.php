@@ -15,7 +15,9 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Spatie\Browsershot\Browsershot;
 
 class ScanWebsiteJob implements ShouldQueue
 {
@@ -60,20 +62,12 @@ class ScanWebsiteJob implements ShouldQueue
         $this->updateProgress('fetching');
 
         try {
-            // Step 1: Fetch webpage
-            $response = Http::timeout(60)
-                ->withHeaders([
-                    'User-Agent' => 'GeoSource Scanner/1.0',
-                ])
-                ->get($this->scan->url);
+            // Step 1: Fetch webpage - try HTTP first, fall back to headless browser
+            $html = $this->fetchWebpage($this->scan->url);
 
-            if (! $response->successful()) {
-                $this->markFailed('Failed to fetch URL. Status: '.$response->status());
-
-                return;
+            if ($html === null) {
+                return; // Error already handled in fetchWebpage
             }
-
-            $html = $response->body();
             $title = $this->extractTitle($html) ?? parse_url($this->scan->url, PHP_URL_HOST);
 
             // Update title early so user sees it
@@ -181,6 +175,116 @@ class ScanWebsiteJob implements ShouldQueue
         $this->scan->refresh();
 
         return $this->scan->status === 'cancelled';
+    }
+
+    /**
+     * Fetch webpage content, with headless browser fallback for protected sites.
+     */
+    private function fetchWebpage(string $url): ?string
+    {
+        // First, try simple HTTP request (fast)
+        $response = Http::timeout(30)
+            ->withHeaders([
+                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+                'Accept-Language' => 'en-US,en;q=0.9',
+                'Accept-Encoding' => 'gzip, deflate, br',
+                'Cache-Control' => 'no-cache',
+                'Sec-Ch-Ua' => '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+                'Sec-Ch-Ua-Mobile' => '?0',
+                'Sec-Ch-Ua-Platform' => '"Windows"',
+                'Sec-Fetch-Dest' => 'document',
+                'Sec-Fetch-Mode' => 'navigate',
+                'Sec-Fetch-Site' => 'none',
+                'Sec-Fetch-User' => '?1',
+                'Upgrade-Insecure-Requests' => '1',
+            ])
+            ->get($url);
+
+        // If successful, return the HTML
+        if ($response->successful()) {
+            return $response->body();
+        }
+
+        // If blocked (403, 503) or other issues, try headless browser
+        $status = $response->status();
+        if (in_array($status, [403, 503, 429, 406, 451])) {
+            Log::info("HTTP request blocked ({$status}) for {$url}, trying headless browser");
+
+            return $this->fetchWithBrowser($url);
+        }
+
+        // For other errors (404, 500, etc.), fail immediately
+        $this->markFailed("Failed to fetch URL. Status: {$status}");
+
+        return null;
+    }
+
+    /**
+     * Fetch webpage using headless browser (Puppeteer via Browsershot).
+     * Includes stealth options to bypass bot detection.
+     */
+    private function fetchWithBrowser(string $url): ?string
+    {
+        try {
+            $browsershot = Browsershot::url($url)
+                ->setNodeBinary(config('browsershot.node_binary', '/usr/bin/node'))
+                ->setNpmBinary(config('browsershot.npm_binary', '/usr/bin/npm'))
+                ->noSandbox()
+                ->dismissDialogs()
+                ->waitUntilNetworkIdle()
+                ->timeout(90)
+                // Stealth options to bypass bot detection
+                ->userAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
+                ->windowSize(1920, 1080)
+                ->addChromiumArguments([
+                    'disable-blink-features' => 'AutomationControlled',
+                    'disable-features' => 'IsolateOrigins,site-per-process',
+                    'disable-site-isolation-trials',
+                    'disable-web-security',
+                    'disable-dev-shm-usage',
+                    'disable-gpu',
+                    'no-first-run',
+                    'no-default-browser-check',
+                    'disable-infobars',
+                    'disable-extensions',
+                    'disable-popup-blocking',
+                ])
+                ->setExtraHttpHeaders([
+                    'Accept-Language' => 'en-US,en;q=0.9',
+                    'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+                ])
+                // Wait for Cloudflare challenge to resolve
+                ->setDelay(3000);
+
+            // Use custom Chrome path if specified
+            if ($chromePath = config('browsershot.chrome_path')) {
+                $browsershot->setChromePath($chromePath);
+            }
+
+            $html = $browsershot->bodyHtml();
+
+            if (empty($html)) {
+                $this->markFailed('Failed to fetch URL: Empty response from browser');
+
+                return null;
+            }
+
+            // Check if we got a Cloudflare challenge page
+            if (str_contains($html, 'challenge-platform') || str_contains($html, 'cf-browser-verification')) {
+                Log::warning("Cloudflare challenge detected for {$url}, waiting longer...");
+
+                // Try again with longer delay
+                $html = $browsershot->setDelay(8000)->bodyHtml();
+            }
+
+            return $html;
+        } catch (\Exception $e) {
+            Log::error("Browsershot failed for {$url}: ".$e->getMessage());
+            $this->markFailed('Failed to fetch URL: '.$e->getMessage());
+
+            return null;
+        }
     }
 
     private function extractTitle(string $html): ?string
