@@ -82,9 +82,14 @@ return [
                     'bulk_scanning' => true,
                     // Citation tracking limits
                     'citation_queries' => 25,
-                    'citation_checks_per_day' => 50,
+                    'citation_checks_per_day' => 100,
                     'citation_frequency' => ['manual', 'daily', 'weekly'],
-                    'citation_platforms' => ['perplexity', 'claude'],
+                    'citation_platforms' => [
+                        // AI Platforms
+                        'perplexity', 'openai', 'claude', 'gemini', 'deepseek',
+                        // Search/Social Platforms
+                        'google', 'youtube', 'facebook',
+                    ],
                     'ga4_connections' => 3,
                 ],
             ],

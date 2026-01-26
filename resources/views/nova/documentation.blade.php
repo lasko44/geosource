@@ -56,6 +56,7 @@
                             <li><a href="#debugging" class="text-gray-600 hover:text-purple-600">Debugging Guide</a></li>
                             <li><a href="#security" class="text-gray-600 hover:text-purple-600">Security Precautions</a></li>
                             <li><a href="#blog-management" class="text-gray-600 hover:text-purple-600">Blog Management</a></li>
+                            <li><a href="#marketing-emails" class="text-gray-600 hover:text-purple-600">Marketing Emails</a></li>
                         </ul>
                     </div>
                 </nav>
@@ -2583,6 +2584,172 @@ $sanitizedContent = $this->sanitizeForPrompt($content);
                                 <tr><td class="p-2"><code>app/Services/BlogPostGeoService.php</code></td><td class="p-2">Generates schema including FAQPage</td></tr>
                                 <tr><td class="p-2"><code>resources/js/pages/Blog/Show.vue</code></td><td class="p-2">Frontend rendering of quick links & FAQ</td></tr>
                                 <tr><td class="p-2"><code>database/seeders/BlogGeoContentSeeder.php</code></td><td class="p-2">Example FAQ and quick links data</td></tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Marketing Emails -->
+                        <h2 id="marketing-emails" class="text-2xl font-bold text-gray-900 border-b pb-4 mt-12">Marketing Emails</h2>
+
+                        <p>The marketing email system allows you to create email templates, build campaigns targeting specific user segments, and track engagement metrics like opens and clicks. All emails include CAN-SPAM compliant unsubscribe functionality.</p>
+
+                        <h3 class="text-lg font-semibold mt-8">Quick Start Guide</h3>
+
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 my-4">
+                            <h4 class="font-semibold text-blue-900 mb-2">Steps to Send a Marketing Email</h4>
+                            <ol class="text-blue-800 text-sm space-y-2 list-decimal list-inside">
+                                <li><strong>Create a Template:</strong> Go to Marketing → Email Templates → Create</li>
+                                <li><strong>Create a Campaign:</strong> Go to Marketing → Email Campaigns → Create</li>
+                                <li><strong>Select Audience:</strong> Choose from All Users, Free, Pro, Agency, or Custom</li>
+                                <li><strong>Send:</strong> Select the campaign and click "Send Campaign" action</li>
+                            </ol>
+                        </div>
+
+                        <h3 class="text-lg font-semibold mt-8">Creating Email Templates</h3>
+
+                        <p>Templates support dynamic variables that get replaced when sending:</p>
+
+                        <table class="w-full text-sm">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="text-left p-2 font-semibold">Variable</th>
+                                    <th class="text-left p-2 font-semibold">Description</th>
+                                    <th class="text-left p-2 font-semibold">Example Output</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="p-2"><code>{{user_name}}</code></td><td class="p-2">Recipient's full name</td><td class="p-2">John Smith</td></tr>
+                                <tr><td class="p-2"><code>{{user_first_name}}</code></td><td class="p-2">Recipient's first name</td><td class="p-2">John</td></tr>
+                                <tr><td class="p-2"><code>{{user_email}}</code></td><td class="p-2">Recipient's email address</td><td class="p-2">john@example.com</td></tr>
+                                <tr><td class="p-2"><code>{{app_name}}</code></td><td class="p-2">Application name</td><td class="p-2">GeoSource.ai</td></tr>
+                                <tr><td class="p-2"><code>{{app_url}}</code></td><td class="p-2">Application URL</td><td class="p-2">https://geosource.ai</td></tr>
+                                <tr><td class="p-2"><code>{{unsubscribe_url}}</code></td><td class="p-2">Unsubscribe link (required!)</td><td class="p-2">Signed URL</td></tr>
+                                <tr><td class="p-2"><code>{{current_year}}</code></td><td class="p-2">Current year</td><td class="p-2">2026</td></tr>
+                            </tbody>
+                        </table>
+
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 my-4">
+                            <h4 class="font-semibold text-yellow-900 mb-2">Important: Unsubscribe Link Required</h4>
+                            <p class="text-yellow-800 text-sm">Always include <code>{{unsubscribe_url}}</code> in your template content. This is required for CAN-SPAM compliance. The link is automatically generated with a signed URL for security.</p>
+                        </div>
+
+                        <h3 class="text-lg font-semibold mt-8">Template Types</h3>
+
+                        <table class="w-full text-sm">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="text-left p-2 font-semibold">Type</th>
+                                    <th class="text-left p-2 font-semibold">Use Case</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="p-2"><strong>Marketing</strong></td><td class="p-2">General marketing communications</td></tr>
+                                <tr><td class="p-2"><strong>Announcement</strong></td><td class="p-2">Product updates, new features</td></tr>
+                                <tr><td class="p-2"><strong>Newsletter</strong></td><td class="p-2">Regular newsletter content</td></tr>
+                                <tr><td class="p-2"><strong>Promotional</strong></td><td class="p-2">Sales, discounts, special offers</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h3 class="text-lg font-semibold mt-8">Example Template Content</h3>
+
+<pre><code>&lt;h2&gt;Hi {{user_first_name}}!&lt;/h2&gt;
+
+&lt;p&gt;We're excited to announce a new feature in {{app_name}} that will help you optimize your content even faster.&lt;/p&gt;
+
+&lt;p&gt;Check out the new AI-powered suggestions by logging into your dashboard.&lt;/p&gt;
+
+&lt;p&gt;
+    &lt;a href="{{app_url}}/dashboard" style="display: inline-block; background: #6366f1; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none;"&gt;
+        View Dashboard
+    &lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p style="font-size: 12px; color: #666;"&gt;
+    Don't want these emails? &lt;a href="{{unsubscribe_url}}"&gt;Unsubscribe here&lt;/a&gt;
+&lt;/p&gt;</code></pre>
+
+                        <h3 class="text-lg font-semibold mt-8">Creating Campaigns</h3>
+
+                        <p>Campaigns target specific user segments based on their subscription status:</p>
+
+                        <table class="w-full text-sm">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="text-left p-2 font-semibold">Audience</th>
+                                    <th class="text-left p-2 font-semibold">Who Receives</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="p-2"><strong>All Users</strong></td><td class="p-2">All verified users who haven't unsubscribed</td></tr>
+                                <tr><td class="p-2"><strong>Free</strong></td><td class="p-2">Users without any subscription</td></tr>
+                                <tr><td class="p-2"><strong>Pro</strong></td><td class="p-2">Users with Pro subscription</td></tr>
+                                <tr><td class="p-2"><strong>Agency</strong></td><td class="p-2">Users with Agency subscription</td></tr>
+                                <tr><td class="p-2"><strong>Custom</strong></td><td class="p-2">Custom filters (future feature)</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h3 class="text-lg font-semibold mt-8">Campaign Workflow</h3>
+
+                        <div class="bg-gray-50 rounded-lg p-4 my-4">
+                            <ol class="text-sm space-y-3 list-decimal list-inside">
+                                <li><strong>Draft:</strong> Campaign is created but not sent. You can edit all settings.</li>
+                                <li><strong>Sending:</strong> Campaign is actively being sent. Emails are queued and processed.</li>
+                                <li><strong>Sent:</strong> All emails have been processed. View statistics in the campaign detail.</li>
+                            </ol>
+                        </div>
+
+                        <h3 class="text-lg font-semibold mt-8">Tracking & Analytics</h3>
+
+                        <p>Each campaign tracks the following metrics:</p>
+
+                        <table class="w-full text-sm">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="text-left p-2 font-semibold">Metric</th>
+                                    <th class="text-left p-2 font-semibold">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="p-2"><strong>Total Recipients</strong></td><td class="p-2">Number of users in the target audience</td></tr>
+                                <tr><td class="p-2"><strong>Sent Count</strong></td><td class="p-2">Successfully sent emails</td></tr>
+                                <tr><td class="p-2"><strong>Failed Count</strong></td><td class="p-2">Emails that failed to send</td></tr>
+                                <tr><td class="p-2"><strong>Open Rate</strong></td><td class="p-2">Percentage of recipients who opened the email</td></tr>
+                                <tr><td class="p-2"><strong>Click Rate</strong></td><td class="p-2">Percentage of recipients who clicked a link</td></tr>
+                            </tbody>
+                        </table>
+
+                        <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 my-4">
+                            <h4 class="font-semibold text-purple-900 mb-2">How Tracking Works</h4>
+                            <ul class="text-purple-800 text-sm space-y-1">
+                                <li><strong>Opens:</strong> Tracked via a 1x1 pixel image loaded when the email is opened</li>
+                                <li><strong>Clicks:</strong> Tracked via redirect URLs (optional, for future implementation)</li>
+                            </ul>
+                        </div>
+
+                        <h3 class="text-lg font-semibold mt-8">Managing Unsubscribes</h3>
+
+                        <p>Users can unsubscribe via the link in any marketing email. Unsubscribed emails are stored in the <code>marketing_unsubscribes</code> table and filtered out of all future campaigns automatically.</p>
+
+                        <p>To view or manage unsubscribes, go to Marketing → Unsubscribes in Nova.</p>
+
+                        <h3 class="text-lg font-semibold mt-8">Related Files</h3>
+
+                        <table class="w-full text-sm">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="text-left p-2 font-semibold">File</th>
+                                    <th class="text-left p-2 font-semibold">Purpose</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr><td class="p-2"><code>app/Models/EmailTemplate.php</code></td><td class="p-2">Template model with variable rendering</td></tr>
+                                <tr><td class="p-2"><code>app/Models/EmailCampaign.php</code></td><td class="p-2">Campaign model with audience filtering</td></tr>
+                                <tr><td class="p-2"><code>app/Models/EmailCampaignSend.php</code></td><td class="p-2">Individual send tracking records</td></tr>
+                                <tr><td class="p-2"><code>app/Models/MarketingUnsubscribe.php</code></td><td class="p-2">Unsubscribe list management</td></tr>
+                                <tr><td class="p-2"><code>app/Mail/MarketingEmail.php</code></td><td class="p-2">Mailable class for sending</td></tr>
+                                <tr><td class="p-2"><code>app/Jobs/SendEmailCampaignJob.php</code></td><td class="p-2">Background job for sending campaigns</td></tr>
+                                <tr><td class="p-2"><code>app/Nova/Actions/SendEmailCampaign.php</code></td><td class="p-2">Nova action to trigger sending</td></tr>
+                                <tr><td class="p-2"><code>app/Http/Controllers/MarketingUnsubscribeController.php</code></td><td class="p-2">Handles unsubscribe flow</td></tr>
+                                <tr><td class="p-2"><code>resources/views/emails/marketing.blade.php</code></td><td class="p-2">Email HTML template</td></tr>
                             </tbody>
                         </table>
 

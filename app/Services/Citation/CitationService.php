@@ -35,12 +35,21 @@ class CitationService
      */
     public function getAvailablePlatforms(User $user): array
     {
-        // Platforms with web search capabilities for citation checking
+        // All supported platforms for citation checking
+        // AI Platforms:
         // - Perplexity: Native web search with source URLs
         // - Claude: Tavily Search + Claude analysis
         // - OpenAI: Tavily Search + GPT-4o analysis
-        // Note: Gemini removed - doesn't return source URLs
-        $supportedPlatforms = ['perplexity', 'claude', 'openai'];
+        // - Gemini: Google Search Grounding
+        // - DeepSeek: DeepSeek AI
+        // Search/Social Platforms:
+        // - Google: Google Search results + AI Overviews
+        // - YouTube: Video search for brand mentions
+        // - Facebook: Social mentions via site search
+        $supportedPlatforms = [
+            'perplexity', 'claude', 'openai', 'gemini', 'deepseek',
+            'google', 'youtube', 'facebook',
+        ];
 
         if ($user->is_admin) {
             return $supportedPlatforms;

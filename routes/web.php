@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\GoogleController;
+use App\Http\Controllers\MarketingUnsubscribeController;
 use App\Http\Controllers\ScanController;
 use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
@@ -51,3 +52,10 @@ require __DIR__.'/scheduled-scans.php';
 require __DIR__.'/resources.php';
 require __DIR__.'/citations.php';
 require __DIR__.'/blog.php';
+
+// Marketing email unsubscribe
+Route::get('/unsubscribe', [MarketingUnsubscribeController::class, 'unsubscribe'])->name('marketing.unsubscribe');
+Route::post('/unsubscribe', [MarketingUnsubscribeController::class, 'processUnsubscribe'])->name('marketing.unsubscribe.process');
+Route::get('/unsubscribe/success', [MarketingUnsubscribeController::class, 'success'])->name('marketing.unsubscribe.success');
+Route::get('/email/track/open', [MarketingUnsubscribeController::class, 'trackOpen'])->name('marketing.track-open');
+Route::get('/email/track/click', [MarketingUnsubscribeController::class, 'trackClick'])->name('marketing.track-click');

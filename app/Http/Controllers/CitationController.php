@@ -256,6 +256,76 @@ class CitationController extends Controller
     }
 
     /**
+     * Run checks on multiple platforms at once.
+     */
+    public function checkAll(CitationQuery $query, Request $request)
+    {
+        $request->validate([
+            'platforms' => 'required|array|min:1',
+            'platforms.*' => 'string',
+        ]);
+
+        $user = $request->user();
+
+        // Authorization: user must own the query or be a member of the query's team
+        if ($query->user_id !== $user->id) {
+            if (! $query->team_id || ! $user->allTeams()->contains('id', $query->team_id)) {
+                abort(403);
+            }
+        }
+
+        // Get available platforms for user
+        $availablePlatforms = $this->citationService->getAvailablePlatforms($user);
+        $requestedPlatforms = array_intersect($request->platforms, $availablePlatforms);
+
+        if (empty($requestedPlatforms)) {
+            return back()->withErrors([
+                'platforms' => 'No valid platforms specified.',
+            ]);
+        }
+
+        // Check if user has enough quota for all platforms
+        $remainingChecks = $this->citationService->getChecksRemainingToday($user);
+        if ($remainingChecks !== -1 && $remainingChecks < count($requestedPlatforms)) {
+            return back()->withErrors([
+                'limit' => "You can only perform {$remainingChecks} more checks today.",
+            ]);
+        }
+
+        $checks = [];
+
+        try {
+            $checks = DB::transaction(function () use ($user, $query, $requestedPlatforms) {
+                // Lock user for quota check
+                $lockedUser = User::where('id', $user->id)->lockForUpdate()->first();
+
+                // Re-verify quota within transaction
+                $remaining = $this->citationService->getChecksRemainingToday($lockedUser);
+                if ($remaining !== -1 && $remaining < count($requestedPlatforms)) {
+                    throw new \Exception('Not enough daily checks remaining.');
+                }
+
+                $createdChecks = [];
+                foreach ($requestedPlatforms as $platform) {
+                    $createdChecks[] = $this->citationService->createCheck($query, $platform, $lockedUser);
+                }
+
+                return $createdChecks;
+            });
+        } catch (\Exception $e) {
+            return back()->withErrors(['limit' => $e->getMessage()]);
+        }
+
+        // Dispatch jobs for all checks
+        foreach ($checks as $check) {
+            CheckCitationJob::dispatch($check);
+        }
+
+        return redirect()->route('citations.queries.show', $query)
+            ->with('success', count($checks) . ' checks started.');
+    }
+
+    /**
      * Get check status for polling.
      */
     public function checkStatus(CitationCheck $check, Request $request)

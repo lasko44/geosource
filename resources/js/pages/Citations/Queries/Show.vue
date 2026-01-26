@@ -158,6 +158,7 @@ onUnmounted(() => {
 
 // Run check
 const runningCheck = ref<string | null>(null);
+const runningAllChecks = ref(false);
 
 const runCheck = (platform: string) => {
     runningCheck.value = platform;
@@ -176,6 +177,40 @@ const runCheck = (platform: string) => {
         },
     });
 };
+
+// Run all checks using bulk endpoint
+const runAllChecks = () => {
+    if (!props.usage.can_perform_check || runningAllChecks.value) return;
+
+    // Filter platforms that don't have checks in progress
+    const platformsToCheck = props.availablePlatforms.filter(
+        platform => !isCheckInProgress(platform)
+    );
+
+    if (platformsToCheck.length === 0) return;
+
+    runningAllChecks.value = true;
+
+    router.post(`/citations/queries/${props.query.uuid}/check-all`, {
+        platforms: platformsToCheck,
+    }, {
+        preserveScroll: true,
+        onSuccess: () => {
+            updatePendingChecks();
+            if (!pollInterval) {
+                pollInterval = setInterval(pollCheckStatus, 2000);
+            }
+        },
+        onFinish: () => {
+            runningAllChecks.value = false;
+        },
+    });
+};
+
+// Check if any platform has a check in progress
+const hasAnyCheckInProgress = computed(() => {
+    return props.availablePlatforms.some(platform => isCheckInProgress(platform));
+});
 
 // Edit modal
 const showEditModal = ref(false);
@@ -274,6 +309,14 @@ const isCheckInProgress = (platform: string) => {
                 </div>
 
                 <div class="flex gap-2">
+                    <Button
+                        @click="runAllChecks"
+                        :disabled="!usage.can_perform_check || runningAllChecks || hasAnyCheckInProgress"
+                    >
+                        <Play v-if="!runningAllChecks && !hasAnyCheckInProgress" class="mr-2 h-4 w-4" />
+                        <Loader2 v-else class="mr-2 h-4 w-4 animate-spin" />
+                        {{ runningAllChecks ? 'Running...' : hasAnyCheckInProgress ? 'Checking...' : 'Run All' }}
+                    </Button>
                     <Button variant="outline" @click="showEditModal = true">
                         <Settings class="mr-2 h-4 w-4" />
                         Settings

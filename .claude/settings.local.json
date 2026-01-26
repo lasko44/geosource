@@ -27,7 +27,8 @@
       "Bash(composer update:*)",
       "Bash(npx vue-tsc:*)",
       "Bash(composer require:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "WebFetch(domain:api-docs.deepseek.com)"
     ]
   }
 }

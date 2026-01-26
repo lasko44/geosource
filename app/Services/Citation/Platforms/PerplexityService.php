@@ -33,6 +33,7 @@ class PerplexityService
 
         // Make the API request
         $response = Http::timeout($timeout)
+            ->withoutRedirecting()
             ->withHeaders([
                 'Authorization' => 'Bearer '.$apiKey,
                 'Content-Type' => 'application/json',
@@ -42,7 +43,7 @@ class PerplexityService
                 'messages' => [
                     [
                         'role' => 'system',
-                        'content' => 'You are a helpful research assistant. Provide comprehensive, accurate information with sources when available. Always cite your sources.',
+                        'content' => 'You are a helpful research assistant. Provide comprehensive, accurate information with sources when available. Always cite your sources with URLs.',
                     ],
                     [
                         'role' => 'user',
@@ -51,18 +52,33 @@ class PerplexityService
                 ],
                 'temperature' => 0.2,
                 'top_p' => 0.9,
-                'return_citations' => true,
-                'search_domain_filter' => [],
-                'search_recency_filter' => 'month',
+                'web_search_options' => [
+                    'search_context_size' => 'high',
+                ],
             ]);
 
         if (! $response->successful()) {
+            $status = $response->status();
             $errorData = $response->json();
-            $sanitizedError = $errorData['error']['message'] ?? $errorData['detail'] ?? 'Unknown error (status: ' . $response->status() . ')';
+
+            // Handle redirects specifically
+            if ($status === 302 || $status === 301) {
+                $location = $response->header('Location');
+                Log::error('Perplexity API redirect', [
+                    'status' => $status,
+                    'location' => $location,
+                    'query_id' => $query->id,
+                    'base_url' => $baseUrl,
+                ]);
+                throw new \RuntimeException('Perplexity API redirected (status: ' . $status . '). Check API endpoint configuration. Location: ' . ($location ?? 'unknown'));
+            }
+
+            $sanitizedError = $errorData['error']['message'] ?? $errorData['detail'] ?? 'Unknown error (status: ' . $status . ')';
             Log::error('Perplexity API error', [
-                'status' => $response->status(),
+                'status' => $status,
                 'error' => $sanitizedError,
                 'query_id' => $query->id,
+                'response_body' => $response->body(),
             ]);
 
             throw new \RuntimeException('Perplexity API request failed: ' . $sanitizedError);

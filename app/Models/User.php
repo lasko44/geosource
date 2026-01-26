@@ -7,6 +7,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Cashier\Billable;
@@ -204,5 +205,21 @@ class User extends Authenticatable implements MustVerifyEmail
     public function hasUnlimitedAccess(): bool
     {
         return $this->is_admin || $this->subscriptionService()->isAgencyTier($this);
+    }
+
+    /**
+     * Get the marketing unsubscribe record for this user.
+     */
+    public function marketingUnsubscribe(): HasOne
+    {
+        return $this->hasOne(MarketingUnsubscribe::class);
+    }
+
+    /**
+     * Check if user is unsubscribed from marketing emails.
+     */
+    public function isUnsubscribedFromMarketing(): bool
+    {
+        return $this->marketingUnsubscribe()->exists();
     }
 }

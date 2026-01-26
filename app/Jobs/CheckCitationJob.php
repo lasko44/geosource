@@ -6,9 +6,13 @@ use App\Models\CitationCheck;
 use App\Services\Citation\CitationAnalyzerService;
 use App\Services\Citation\CitationService;
 use App\Services\Citation\Platforms\ClaudeService;
+use App\Services\Citation\Platforms\DeepSeekService;
+use App\Services\Citation\Platforms\FacebookService;
 use App\Services\Citation\Platforms\GeminiService;
+use App\Services\Citation\Platforms\GoogleSearchService;
 use App\Services\Citation\Platforms\OpenAIBrowsingService;
 use App\Services\Citation\Platforms\PerplexityService;
+use App\Services\Citation\Platforms\YouTubeService;
 use App\Services\SubscriptionService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -43,6 +47,10 @@ class CheckCitationJob implements ShouldQueue
         OpenAIBrowsingService $openAIService,
         ClaudeService $claudeService,
         GeminiService $geminiService,
+        DeepSeekService $deepSeekService,
+        GoogleSearchService $googleSearchService,
+        YouTubeService $youTubeService,
+        FacebookService $facebookService,
         CitationAnalyzerService $analyzerService
     ): void {
         // Re-verify subscription before completing the check
@@ -67,10 +75,16 @@ class CheckCitationJob implements ShouldQueue
             $this->updateProgress('querying_platform');
 
             $result = match ($this->check->platform) {
+                // AI Platforms
                 CitationCheck::PLATFORM_PERPLEXITY => $perplexityService->check($query, $this->check),
                 CitationCheck::PLATFORM_OPENAI => $openAIService->check($query, $this->check),
                 CitationCheck::PLATFORM_CLAUDE => $claudeService->check($query, $this->check),
                 CitationCheck::PLATFORM_GEMINI => $geminiService->check($query, $this->check),
+                CitationCheck::PLATFORM_DEEPSEEK => $deepSeekService->check($query, $this->check),
+                // Search/Social Platforms
+                CitationCheck::PLATFORM_GOOGLE => $googleSearchService->check($query, $this->check),
+                CitationCheck::PLATFORM_YOUTUBE => $youTubeService->check($query, $this->check),
+                CitationCheck::PLATFORM_FACEBOOK => $facebookService->check($query, $this->check),
                 default => throw new \RuntimeException("Unsupported platform: {$this->check->platform}"),
             };
 

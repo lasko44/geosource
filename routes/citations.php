@@ -35,6 +35,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('throttle:5,1')
         ->name('citations.queries.check');
 
+    // Bulk Citation Checks - run all platforms at once
+    Route::post('/citations/queries/{query}/check-all', [CitationController::class, 'checkAll'])
+        ->middleware('throttle:2,1')
+        ->name('citations.queries.check-all');
+
     // Check Status (for polling)
     Route::get('/citations/checks/{check}/status', [CitationController::class, 'checkStatus'])
         ->name('citations.checks.status');

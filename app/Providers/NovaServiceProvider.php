@@ -36,9 +36,21 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
                     MenuItem::resource(\App\Nova\ScheduledScan::class),
                 ])->icon('clock')->collapsable(),
 
+                MenuSection::make('Citations', [
+                    MenuItem::resource(\App\Nova\CitationQuery::class),
+                    MenuItem::resource(\App\Nova\CitationCheck::class),
+                    MenuItem::resource(\App\Nova\CitationAlert::class),
+                ])->icon('bookmark')->collapsable(),
+
                 MenuSection::make('Content', [
                     MenuItem::resource(\App\Nova\BlogPost::class),
                 ])->icon('document-text')->collapsable(),
+
+                MenuSection::make('Marketing', [
+                    MenuItem::resource(\App\Nova\EmailTemplate::class),
+                    MenuItem::resource(\App\Nova\EmailCampaign::class),
+                    MenuItem::resource(\App\Nova\MarketingUnsubscribe::class),
+                ])->icon('mail')->collapsable(),
 
                 MenuSection::make('Queue', [
                     MenuItem::resource(\App\Nova\PendingJob::class),

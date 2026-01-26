@@ -13,9 +13,9 @@ return [
 
     'perplexity' => [
         'api_key' => env('PERPLEXITY_API_KEY'),
-        'base_url' => 'https://api.perplexity.ai',
-        'model' => 'sonar',
-        'timeout' => 60,
+        'base_url' => env('PERPLEXITY_BASE_URL', 'https://api.perplexity.ai'),
+        'model' => env('PERPLEXITY_MODEL', 'sonar-pro'),
+        'timeout' => 90,
     ],
 
     /*
@@ -71,6 +71,37 @@ return [
     'tavily' => [
         'api_key' => env('TAVILY_API_KEY'),
         'base_url' => 'https://api.tavily.com',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | DeepSeek API Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configuration for DeepSeek AI API integration.
+    | Get an API key at: https://platform.deepseek.com
+    |
+    */
+
+    'deepseek' => [
+        'api_key' => env('DEEPSEEK_API_KEY'),
+        'base_url' => env('DEEPSEEK_BASE_URL', 'https://api.deepseek.com'),
+        'model' => env('DEEPSEEK_MODEL', 'deepseek-chat'),
+        'timeout' => 90,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | SerpAPI Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Used for Google Search, YouTube, and Facebook citation checks.
+    | Get an API key at: https://serpapi.com
+    |
+    */
+
+    'serpapi' => [
+        'api_key' => env('SERPAPI_API_KEY'),
     ],
 
     /*
@@ -137,25 +168,55 @@ return [
     */
 
     'platforms' => [
+        // AI Platforms
         'perplexity' => [
             'name' => 'Perplexity AI',
             'color' => '#20B2AA',
             'icon' => 'perplexity',
+            'type' => 'ai',
         ],
         'openai' => [
             'name' => 'ChatGPT',
             'color' => '#10A37F',
             'icon' => 'openai',
+            'type' => 'ai',
         ],
         'claude' => [
             'name' => 'Claude',
             'color' => '#D97706',
             'icon' => 'claude',
+            'type' => 'ai',
         ],
         'gemini' => [
             'name' => 'Google Gemini',
             'color' => '#4285F4',
             'icon' => 'gemini',
+            'type' => 'ai',
+        ],
+        'deepseek' => [
+            'name' => 'DeepSeek',
+            'color' => '#6366F1',
+            'icon' => 'deepseek',
+            'type' => 'ai',
+        ],
+        // Search/Social Platforms
+        'google' => [
+            'name' => 'Google Search',
+            'color' => '#EA4335',
+            'icon' => 'google',
+            'type' => 'search',
+        ],
+        'youtube' => [
+            'name' => 'YouTube',
+            'color' => '#FF0000',
+            'icon' => 'youtube',
+            'type' => 'search',
+        ],
+        'facebook' => [
+            'name' => 'Facebook',
+            'color' => '#1877F2',
+            'icon' => 'facebook',
+            'type' => 'social',
         ],
     ],
 

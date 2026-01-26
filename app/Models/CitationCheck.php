@@ -30,11 +30,17 @@ class CitationCheck extends Model
         'completed_at',
     ];
 
-    // Platform constants
+    // AI Platform constants
     public const PLATFORM_PERPLEXITY = 'perplexity';
     public const PLATFORM_OPENAI = 'openai';
     public const PLATFORM_CLAUDE = 'claude';
     public const PLATFORM_GEMINI = 'gemini';
+    public const PLATFORM_DEEPSEEK = 'deepseek';
+
+    // Search/Social Platform constants
+    public const PLATFORM_GOOGLE = 'google';
+    public const PLATFORM_YOUTUBE = 'youtube';
+    public const PLATFORM_FACEBOOK = 'facebook';
 
     // Status constants
     public const STATUS_PENDING = 'pending';
@@ -128,6 +134,10 @@ class CitationCheck extends Model
             self::PLATFORM_OPENAI => 'ChatGPT',
             self::PLATFORM_CLAUDE => 'Claude',
             self::PLATFORM_GEMINI => 'Google Gemini',
+            self::PLATFORM_DEEPSEEK => 'DeepSeek',
+            self::PLATFORM_GOOGLE => 'Google Search',
+            self::PLATFORM_YOUTUBE => 'YouTube',
+            self::PLATFORM_FACEBOOK => 'Facebook',
             default => ucfirst($this->platform),
         };
     }
@@ -142,8 +152,57 @@ class CitationCheck extends Model
             self::PLATFORM_OPENAI => 'bg-green-500',
             self::PLATFORM_CLAUDE => 'bg-orange-500',
             self::PLATFORM_GEMINI => 'bg-purple-500',
+            self::PLATFORM_DEEPSEEK => 'bg-indigo-500',
+            self::PLATFORM_GOOGLE => 'bg-red-500',
+            self::PLATFORM_YOUTUBE => 'bg-red-600',
+            self::PLATFORM_FACEBOOK => 'bg-blue-600',
             default => 'bg-gray-500',
         };
+    }
+
+    /**
+     * Get all available platforms.
+     */
+    public static function getAvailablePlatforms(): array
+    {
+        return [
+            // AI Platforms
+            self::PLATFORM_PERPLEXITY => 'Perplexity AI',
+            self::PLATFORM_OPENAI => 'ChatGPT',
+            self::PLATFORM_CLAUDE => 'Claude',
+            self::PLATFORM_GEMINI => 'Google Gemini',
+            self::PLATFORM_DEEPSEEK => 'DeepSeek',
+            // Search/Social Platforms
+            self::PLATFORM_GOOGLE => 'Google Search',
+            self::PLATFORM_YOUTUBE => 'YouTube',
+            self::PLATFORM_FACEBOOK => 'Facebook',
+        ];
+    }
+
+    /**
+     * Get AI platforms only.
+     */
+    public static function getAiPlatforms(): array
+    {
+        return [
+            self::PLATFORM_PERPLEXITY,
+            self::PLATFORM_OPENAI,
+            self::PLATFORM_CLAUDE,
+            self::PLATFORM_GEMINI,
+            self::PLATFORM_DEEPSEEK,
+        ];
+    }
+
+    /**
+     * Get search/social platforms only.
+     */
+    public static function getSearchPlatforms(): array
+    {
+        return [
+            self::PLATFORM_GOOGLE,
+            self::PLATFORM_YOUTUBE,
+            self::PLATFORM_FACEBOOK,
+        ];
     }
 
     /**
