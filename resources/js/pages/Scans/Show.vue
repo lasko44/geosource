@@ -25,6 +25,9 @@ import {
     Repeat,
     Ban,
     XOctagon,
+    ChevronRight,
+    XCircle,
+    Info,
 } from 'lucide-vue-next';
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
 
@@ -391,6 +394,57 @@ const pillarIcons: Record<string, any> = {
     multimedia: Image,
 };
 
+const pillarResources: Record<string, Array<{ title: string; url: string }>> = {
+    definitions: [
+        { title: 'What Is GEO?', url: '/blog/what-is-geo-complete-guide' },
+        { title: '10 Ways to Optimize Content for AI', url: '/blog/10-ways-optimize-content-chatgpt-perplexity' },
+    ],
+    structure: [
+        { title: 'Why SSR Matters for GEO', url: '/blog/why-server-side-rendering-ssr-matters-for-geo-and-ai-visibility' },
+        { title: '10 Ways to Optimize Content for AI', url: '/blog/10-ways-optimize-content-chatgpt-perplexity' },
+    ],
+    authority: [
+        { title: 'How AI Search Engines Cite Sources', url: '/blog/how-ai-search-engines-cite-sources' },
+        { title: 'GEO vs SEO: Key Differences', url: '/blog/geo-vs-seo-key-differences' },
+    ],
+    machine_readable: [
+        { title: 'Why SSR Matters for GEO', url: '/blog/why-server-side-rendering-ssr-matters-for-geo-and-ai-visibility' },
+        { title: 'What Is GEO?', url: '/blog/what-is-geo-complete-guide' },
+    ],
+    answerability: [
+        { title: 'How AI Search Engines Cite Sources', url: '/blog/how-ai-search-engines-cite-sources' },
+        { title: '10 Ways to Optimize Content for AI', url: '/blog/10-ways-optimize-content-chatgpt-perplexity' },
+    ],
+    eeat: [
+        { title: 'How AI Search Engines Cite Sources', url: '/blog/how-ai-search-engines-cite-sources' },
+        { title: 'GEO vs SEO: Key Differences', url: '/blog/geo-vs-seo-key-differences' },
+    ],
+    citations: [
+        { title: 'How AI Search Engines Cite Sources', url: '/blog/how-ai-search-engines-cite-sources' },
+        { title: '10 Ways to Optimize Content for AI', url: '/blog/10-ways-optimize-content-chatgpt-perplexity' },
+    ],
+    ai_accessibility: [
+        { title: 'Why SSR Matters for GEO', url: '/blog/why-server-side-rendering-ssr-matters-for-geo-and-ai-visibility' },
+        { title: 'The Rise of AI Search', url: '/blog/rise-of-ai-search-content-creators' },
+    ],
+    freshness: [
+        { title: 'GEO vs SEO: Key Differences', url: '/blog/geo-vs-seo-key-differences' },
+        { title: 'The Rise of AI Search', url: '/blog/rise-of-ai-search-content-creators' },
+    ],
+    readability: [
+        { title: '10 Ways to Optimize Content for AI', url: '/blog/10-ways-optimize-content-chatgpt-perplexity' },
+        { title: 'What Is GEO?', url: '/blog/what-is-geo-complete-guide' },
+    ],
+    question_coverage: [
+        { title: 'How AI Search Engines Cite Sources', url: '/blog/how-ai-search-engines-cite-sources' },
+        { title: '10 Ways to Optimize Content for AI', url: '/blog/10-ways-optimize-content-chatgpt-perplexity' },
+    ],
+    multimedia: [
+        { title: 'GEO vs SEO: Key Differences', url: '/blog/geo-vs-seo-key-differences' },
+        { title: 'What Is GEO?', url: '/blog/what-is-geo-complete-guide' },
+    ],
+};
+
 const getTierBadge = (tier: string) => {
     if (tier === 'pro') return { label: 'Pro', class: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' };
     if (tier === 'agency') return { label: 'Agency', class: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300' };
@@ -421,6 +475,425 @@ const recommendations = computed(() => {
 });
 
 const summary = computed(() => props.scan.results?.summary);
+
+// Pillar explanation dialog
+const showPillarDialog = ref(false);
+const selectedPillar = ref<any>(null);
+
+const openPillarDetails = (pillar: any) => {
+    selectedPillar.value = pillar;
+    showPillarDialog.value = true;
+};
+
+// Generate explanation items for why a pillar didn't score 100%
+const getPillarExplanations = (pillar: any): Array<{ label: string; achieved: boolean; points: string; tip?: string }> => {
+    const details = pillar.details || {};
+    const breakdown = details.breakdown || pillar.breakdown || {};
+    const explanations: Array<{ label: string; achieved: boolean; points: string; tip?: string }> = [];
+
+    switch (pillar.key) {
+        case 'definitions':
+            explanations.push({
+                label: 'Definition phrases',
+                achieved: (breakdown.definition_phrases || 0) >= 6,
+                points: `${breakdown.definition_phrases || 0}/8`,
+                tip: (breakdown.definition_phrases || 0) < 6 ? `${details.definitions_found?.length || 0} found. Add "X is...", "X refers to...", "X means..." phrases.` : undefined,
+            });
+            explanations.push({
+                label: 'Early definition',
+                achieved: (breakdown.early_definition || 0) >= 6,
+                points: `${breakdown.early_definition || 0}/6`,
+                tip: (breakdown.early_definition || 0) < 6 ? 'Move your primary definition to the first 20% of content.' : undefined,
+            });
+            explanations.push({
+                label: 'Entity in definition',
+                achieved: (breakdown.entity_mention || 0) >= 6,
+                points: `${breakdown.entity_mention || 0}/6`,
+                tip: (breakdown.entity_mention || 0) < 6 ? `Include "${details.entity || 'your main topic'}" in the definition sentence.` : undefined,
+            });
+            break;
+
+        case 'structure':
+            const headings = details.headings || {};
+            const lists = details.lists || {};
+            const sections = details.sections || {};
+            const hierarchy = details.hierarchy || {};
+
+            explanations.push({
+                label: 'Headings structure',
+                achieved: (breakdown.headings || 0) >= 4,
+                points: `${breakdown.headings || 0}/6`,
+                tip: (breakdown.headings || 0) < 4 ? `H1: ${headings.h1?.count || 0}, H2: ${headings.h2?.count || 0}. Need 1 H1 and multiple H2s.` : undefined,
+            });
+            explanations.push({
+                label: 'List usage',
+                achieved: (breakdown.lists || 0) >= 3,
+                points: `${breakdown.lists || 0}/5`,
+                tip: (breakdown.lists || 0) < 3 ? `${lists.total_lists || 0} lists with ${lists.total_items || 0} items. Add more lists with 6+ items.` : undefined,
+            });
+            explanations.push({
+                label: 'Content sections',
+                achieved: (breakdown.sections || 0) >= 2,
+                points: `${breakdown.sections || 0}/4`,
+                tip: (breakdown.sections || 0) < 2 ? `${sections.semantic_sections || 0} semantic sections. Use <section>, <article>, <aside> tags.` : undefined,
+            });
+            explanations.push({
+                label: 'Heading hierarchy',
+                achieved: (breakdown.hierarchy || 0) >= 4,
+                points: `${breakdown.hierarchy || 0}/5`,
+                tip: (breakdown.hierarchy || 0) < 4 ? (hierarchy.violations?.length ? `Issue: ${hierarchy.violations[0]}` : 'Ensure proper heading nesting (H1→H2→H3).') : undefined,
+            });
+            break;
+
+        case 'authority':
+            const coherence = details.topic_coherence || {};
+            const keyword = details.keyword_density || {};
+            const depth = details.topic_depth || {};
+            const links = details.internal_links || {};
+            const similarity = details.semantic_similarity || {};
+
+            explanations.push({
+                label: 'Topic coherence',
+                achieved: (breakdown.topic_coherence || 0) >= 4,
+                points: `${breakdown.topic_coherence || 0}/6`,
+                tip: (breakdown.topic_coherence || 0) < 4 ? `Coherence ratio: ${((coherence.coherence_ratio || 0) * 100).toFixed(1)}%. Use consistent terminology throughout.` : undefined,
+            });
+            explanations.push({
+                label: 'Keyword optimization',
+                achieved: (breakdown.keyword_density || 0) >= 3,
+                points: `${breakdown.keyword_density || 0}/5`,
+                tip: (breakdown.keyword_density || 0) < 3 ? `Density: ${keyword.density_percent || 0}%. Aim for 1-3% keyword density with good distribution.` : undefined,
+            });
+            explanations.push({
+                label: 'Content depth',
+                achieved: (breakdown.topic_depth || 0) >= 4,
+                points: `${breakdown.topic_depth || 0}/6`,
+                tip: (breakdown.topic_depth || 0) < 4 ? `${depth.word_count || 0} words, ${depth.total_indicators || 0} depth indicators. Add examples, evidence, and explanations.` : undefined,
+            });
+            explanations.push({
+                label: 'Internal linking',
+                achieved: (breakdown.internal_links || 0) >= 2.5,
+                points: `${breakdown.internal_links || 0}/4`,
+                tip: (breakdown.internal_links || 0) < 2.5 ? `${links.internal_count || 0} internal links. Add more links to related content.` : undefined,
+            });
+            explanations.push({
+                label: 'Semantic similarity',
+                achieved: (breakdown.semantic_similarity || 0) >= 2,
+                points: `${breakdown.semantic_similarity || 0}/4`,
+                tip: (breakdown.semantic_similarity || 0) < 2 ? (similarity.topic_focus ? `Topic focus: ${similarity.topic_focus}. Build more related content on your site.` : 'Add more related content to your site to build topical authority.') : undefined,
+            });
+            break;
+
+        case 'machine_readable':
+            const schema = details.schema || {};
+            const semantic = details.semantic_html || {};
+            const faq = details.faq || {};
+            const meta = details.meta || {};
+            const llmsTxt = details.llms_txt || {};
+
+            explanations.push({
+                label: 'Schema.org structured data',
+                achieved: (breakdown.schema || 0) >= 3,
+                points: `${breakdown.schema || 0}/5`,
+                tip: (breakdown.schema || 0) < 3 ? (schema.found ? `Found ${schema.found} schema(s). Add JSON-LD with valuable types (Article, FAQPage).` : 'Add Schema.org structured data (JSON-LD recommended).') : undefined,
+            });
+            explanations.push({
+                label: 'Semantic HTML',
+                achieved: (breakdown.semantic_html || 0) >= 2,
+                points: `${breakdown.semantic_html || 0}/3`,
+                tip: (breakdown.semantic_html || 0) < 2 ? `${semantic.unique_elements_used || 0} semantic elements, ${semantic.images?.alt_coverage || 0}% alt coverage. Use more semantic tags and add alt text.` : undefined,
+            });
+            explanations.push({
+                label: 'FAQ content',
+                achieved: (breakdown.faq || 0) >= 2,
+                points: `${breakdown.faq || 0}/3`,
+                tip: (breakdown.faq || 0) < 2 ? (faq.has_faq_schema ? 'Has FAQ schema.' : 'Add FAQPage schema and a dedicated FAQ section.') : undefined,
+            });
+            explanations.push({
+                label: 'Meta tags',
+                achieved: (breakdown.meta || 0) >= 1,
+                points: `${breakdown.meta || 0}/2`,
+                tip: (breakdown.meta || 0) < 1 ? 'Add title, description, and Open Graph tags.' : undefined,
+            });
+            explanations.push({
+                label: 'llms.txt file',
+                achieved: (breakdown.llms_txt || 0) >= 1,
+                points: `${breakdown.llms_txt || 0}/2`,
+                tip: (breakdown.llms_txt || 0) < 1 ? (llmsTxt.exists ? `Quality: ${llmsTxt.quality_score || 0}%. Improve content.` : 'Add an llms.txt file to your site root.') : undefined,
+            });
+            break;
+
+        case 'answerability':
+            const declarative = details.declarative || {};
+            const uncertainty = details.uncertainty || {};
+            const confidence = details.confidence || {};
+            const snippets = details.snippets || {};
+            const directness = details.directness || {};
+
+            explanations.push({
+                label: 'Declarative language',
+                achieved: (breakdown.declarative_language || 0) >= 4,
+                points: `${breakdown.declarative_language || 0}/5`,
+                tip: (breakdown.declarative_language || 0) < 4 ? `${Math.round((declarative.declarative_ratio || 0) * 100)}% declarative. Use more "X is Y" statements.` : undefined,
+            });
+            explanations.push({
+                label: 'Low uncertainty',
+                achieved: (breakdown.low_uncertainty || 0) >= 3,
+                points: `${breakdown.low_uncertainty || 0}/4`,
+                tip: (breakdown.low_uncertainty || 0) < 3 ? `${uncertainty.hedging_count || 0} hedging words. Reduce "maybe", "perhaps", "possibly".` : undefined,
+            });
+            explanations.push({
+                label: 'Confidence indicators',
+                achieved: (breakdown.confidence_indicators || 0) >= 3,
+                points: `${breakdown.confidence_indicators || 0}/4`,
+                tip: (breakdown.confidence_indicators || 0) < 3 ? `${confidence.confidence_count || 0} found. Add phrases like "is defined as", "research shows".` : undefined,
+            });
+            explanations.push({
+                label: 'Quotable snippets',
+                achieved: (breakdown.quotable_snippets || 0) >= 3,
+                points: `${breakdown.quotable_snippets || 0}/4`,
+                tip: (breakdown.quotable_snippets || 0) < 3 ? `${snippets.count || 0} snippets. Add 50-200 char self-contained statements.` : undefined,
+            });
+            explanations.push({
+                label: 'Directness',
+                achieved: (breakdown.directness || 0) >= 2,
+                points: `${breakdown.directness || 0}/3`,
+                tip: (breakdown.directness || 0) < 2 ? (!directness.starts_with_answer ? 'Start with the answer, avoid "In this article..."' : 'Add more lists, steps, and bold emphasis.') : undefined,
+            });
+            break;
+
+        case 'eeat':
+            const author = details.author || {};
+            const trust = details.trust_signals || {};
+            const contact = details.contact || {};
+            const credentials = details.credentials || {};
+
+            explanations.push({
+                label: 'Author signals',
+                achieved: (breakdown.author || 0) >= 3,
+                points: `${breakdown.author || 0}/5`,
+                tip: (breakdown.author || 0) < 3 ? (author.has_author ? 'Add author bio, image, and link to profile.' : 'Add author attribution with name and bio.') : undefined,
+            });
+            explanations.push({
+                label: 'Trust signals',
+                achieved: (breakdown.trust_signals || 0) >= 2,
+                points: `${breakdown.trust_signals || 0}/4`,
+                tip: (breakdown.trust_signals || 0) < 2 ? `${trust.trust_indicators_count || 0} indicators. Add reviews, testimonials, or certifications.` : undefined,
+            });
+            explanations.push({
+                label: 'Contact information',
+                achieved: (breakdown.contact || 0) >= 2,
+                points: `${breakdown.contact || 0}/3`,
+                tip: (breakdown.contact || 0) < 2 ? 'Add contact page link, email/phone, and social links.' : undefined,
+            });
+            explanations.push({
+                label: 'Credentials',
+                achieved: (breakdown.credentials || 0) >= 2,
+                points: `${breakdown.credentials || 0}/3`,
+                tip: (breakdown.credentials || 0) < 2 ? 'Highlight expertise, years of experience, and qualifications.' : undefined,
+            });
+            break;
+
+        case 'citations':
+            const extLinks = details.external_links || {};
+            const citationsData = details.citations || {};
+            const stats = details.statistics || {};
+            const refs = details.references || {};
+
+            explanations.push({
+                label: 'External links',
+                achieved: (breakdown.external_links || 0) >= 3,
+                points: `${breakdown.external_links || 0}/5`,
+                tip: (breakdown.external_links || 0) < 3 ? `${extLinks.authoritative_count || 0} authoritative, ${extLinks.reputable_count || 0} reputable links. Add .gov, .edu, research sources.` : undefined,
+            });
+            explanations.push({
+                label: 'Inline citations',
+                achieved: (breakdown.citations || 0) >= 2,
+                points: `${breakdown.citations || 0}/3`,
+                tip: (breakdown.citations || 0) < 2 ? `${citationsData.citation_count || 0} citations. Use "according to", "study shows", blockquotes.` : undefined,
+            });
+            explanations.push({
+                label: 'Statistics & data',
+                achieved: (breakdown.statistics || 0) >= 1,
+                points: `${breakdown.statistics || 0}/2`,
+                tip: (breakdown.statistics || 0) < 1 ? 'Include percentages, numbers with context (e.g., "5 million users").': undefined,
+            });
+            explanations.push({
+                label: 'References section',
+                achieved: (breakdown.references || 0) >= 1,
+                points: `${breakdown.references || 0}/2`,
+                tip: (breakdown.references || 0) < 1 ? 'Add a References/Sources section with cited links.' : undefined,
+            });
+            break;
+
+        case 'ai_accessibility':
+            const robots = details.robots_txt || {};
+            const metaRobots = details.meta_robots || {};
+            const aiMeta = details.ai_meta_tags || {};
+
+            explanations.push({
+                label: 'robots.txt configuration',
+                achieved: (breakdown.robots_txt || 0) >= 3,
+                points: `${breakdown.robots_txt || 0}/5`,
+                tip: (breakdown.robots_txt || 0) < 3 ? (robots.allows_all_ai ? (robots.has_sitemap ? undefined : 'Add Sitemap reference to robots.txt.') : `Blocked: ${(robots.blocked_bots || []).slice(0, 3).join(', ')}. Allow AI crawlers.`) : undefined,
+            });
+            explanations.push({
+                label: 'Meta robots directives',
+                achieved: (breakdown.meta_robots || 0) >= 1.5,
+                points: `${breakdown.meta_robots || 0}/2`,
+                tip: (breakdown.meta_robots || 0) < 1.5 ? (metaRobots.noindex ? 'Remove noindex directive.' : (metaRobots.nosnippet ? 'Remove nosnippet directive.' : undefined)) : undefined,
+            });
+            explanations.push({
+                label: 'AI-specific meta tags',
+                achieved: (breakdown.ai_meta_tags || 0) >= 0.75,
+                points: `${breakdown.ai_meta_tags || 0}/1`,
+                tip: (breakdown.ai_meta_tags || 0) < 0.75 ? 'Consider adding AI-specific meta declarations (emerging standard).' : undefined,
+            });
+            break;
+
+        case 'freshness':
+            const dates = details.dates || {};
+            const updateSignals = details.update_signals || {};
+            const temporal = details.temporal_references || {};
+            const schemaD = details.schema_dates || {};
+
+            explanations.push({
+                label: 'Date visibility',
+                achieved: (breakdown.dates || 0) >= 2.5,
+                points: `${breakdown.dates || 0}/4`,
+                tip: (breakdown.dates || 0) < 2.5 ? (dates.has_publish_date ? (dates.has_modified_date ? `Age: ${dates.age_category}. Update content.` : 'Add "Last updated" date.') : 'Add visible publication date.') : undefined,
+            });
+            explanations.push({
+                label: 'Update signals',
+                achieved: (breakdown.update_signals || 0) >= 2,
+                points: `${breakdown.update_signals || 0}/3`,
+                tip: (breakdown.update_signals || 0) < 2 ? 'Add "Last updated" notice, revision history, or changelog.' : undefined,
+            });
+            explanations.push({
+                label: 'Temporal references',
+                achieved: (breakdown.temporal_references || 0) >= 1.5,
+                points: `${breakdown.temporal_references || 0}/2`,
+                tip: (breakdown.temporal_references || 0) < 1.5 ? (temporal.current_year_mentioned ? undefined : 'Include current year references where relevant.') : undefined,
+            });
+            explanations.push({
+                label: 'Schema dates',
+                achieved: (breakdown.schema_dates || 0) >= 0.5,
+                points: `${breakdown.schema_dates || 0}/1`,
+                tip: (breakdown.schema_dates || 0) < 0.5 ? 'Add datePublished and dateModified to Schema.org.' : undefined,
+            });
+            break;
+
+        case 'readability':
+            const fk = details.flesch_kincaid || {};
+            const sentenceAnalysis = details.sentence_analysis || {};
+            const paragraphAnalysis = details.paragraph_analysis || {};
+            const wordAnalysis = details.word_analysis || {};
+
+            explanations.push({
+                label: 'Reading ease',
+                achieved: (breakdown.flesch_kincaid || 0) >= 3,
+                points: `${breakdown.flesch_kincaid || 0}/4`,
+                tip: (breakdown.flesch_kincaid || 0) < 3 ? `Score: ${fk.reading_ease || 0}, Level: ${fk.reading_level || 'unknown'}. Aim for 60-80 (8th-9th grade).` : undefined,
+            });
+            explanations.push({
+                label: 'Sentence structure',
+                achieved: (breakdown.sentence_structure || 0) >= 2,
+                points: `${breakdown.sentence_structure || 0}/3`,
+                tip: (breakdown.sentence_structure || 0) < 2 ? `Avg: ${sentenceAnalysis.avg_length || 0} words. Aim for 15-20 with variety.` : undefined,
+            });
+            explanations.push({
+                label: 'Paragraph structure',
+                achieved: (breakdown.paragraph_structure || 0) >= 1.5,
+                points: `${breakdown.paragraph_structure || 0}/2`,
+                tip: (breakdown.paragraph_structure || 0) < 1.5 ? `Avg: ${paragraphAnalysis.avg_length || 0} words. Aim for 50-100.` : undefined,
+            });
+            explanations.push({
+                label: 'Word complexity',
+                achieved: (breakdown.word_complexity || 0) >= 0.75,
+                points: `${breakdown.word_complexity || 0}/1`,
+                tip: (breakdown.word_complexity || 0) < 0.75 ? `${wordAnalysis.complex_ratio || 0}% complex words. Balance simplicity and expertise.` : undefined,
+            });
+            break;
+
+        case 'question_coverage':
+            const questions = details.questions || {};
+            const answersData = details.answers || {};
+            const qaPatterns = details.qa_patterns || {};
+            const anticipation = details.anticipation || {};
+
+            explanations.push({
+                label: 'Question presence',
+                achieved: (breakdown.questions || 0) >= 2,
+                points: `${breakdown.questions || 0}/3`,
+                tip: (breakdown.questions || 0) < 2 ? `${questions.heading_questions?.length || 0} question headings. Add "What is...", "How to..." headings.` : undefined,
+            });
+            explanations.push({
+                label: 'Answer quality',
+                achieved: (breakdown.answers || 0) >= 2,
+                points: `${breakdown.answers || 0}/3`,
+                tip: (breakdown.answers || 0) < 2 ? `${answersData.total_answers || 0} answers found. Add direct answers after question headings.` : undefined,
+            });
+            explanations.push({
+                label: 'Q&A patterns',
+                achieved: (breakdown.qa_patterns || 0) >= 1.5,
+                points: `${breakdown.qa_patterns || 0}/2`,
+                tip: (breakdown.qa_patterns || 0) < 1.5 ? (qaPatterns.has_faq_section ? (qaPatterns.has_qa_schema ? undefined : 'Add FAQPage schema.') : 'Add FAQ section with question headings.') : undefined,
+            });
+            explanations.push({
+                label: 'Question anticipation',
+                achieved: (breakdown.anticipation || 0) >= 1.5,
+                points: `${breakdown.anticipation || 0}/2`,
+                tip: (breakdown.anticipation || 0) < 1.5 ? `Coverage: ${anticipation.coverage_score || 0}%. Cover what/how/why/when questions.` : undefined,
+            });
+            break;
+
+        case 'multimedia':
+            const images = details.images || {};
+            const videos = details.videos || {};
+            const tables = details.tables || {};
+            const visuals = details.visual_elements || {};
+
+            explanations.push({
+                label: 'Image optimization',
+                achieved: (breakdown.images || 0) >= 2.5,
+                points: `${breakdown.images || 0}/4`,
+                tip: (breakdown.images || 0) < 2.5 ? `${images.total_images || 0} images, alt quality: ${images.alt_quality || 'none'}. Add images with descriptive alt text.` : undefined,
+            });
+            explanations.push({
+                label: 'Video content',
+                achieved: (breakdown.videos || 0) >= 1.5,
+                points: `${breakdown.videos || 0}/2`,
+                tip: (breakdown.videos || 0) < 1.5 ? (videos.has_video ? 'Add VideoObject schema.' : 'Consider embedding relevant videos.') : undefined,
+            });
+            explanations.push({
+                label: 'Tables & data',
+                achieved: (breakdown.tables || 0) >= 1,
+                points: `${breakdown.tables || 0}/2`,
+                tip: (breakdown.tables || 0) < 1 ? (tables.has_tables ? 'Add table headers and comparison tables.' : 'Add tables for comparisons or data.') : undefined,
+            });
+            explanations.push({
+                label: 'Visual variety',
+                achieved: (breakdown.visual_elements || 0) >= 1.5,
+                points: `${breakdown.visual_elements || 0}/2`,
+                tip: (breakdown.visual_elements || 0) < 1.5 ? `${visuals.visual_variety || 0} types used. Add diagrams, callouts, code blocks, icons.` : undefined,
+            });
+            break;
+
+        default:
+            // Generic breakdown display
+            if (breakdown && typeof breakdown === 'object') {
+                Object.entries(breakdown).forEach(([key, value]) => {
+                    explanations.push({
+                        label: key.replace(/_/g, ' '),
+                        achieved: (value as number) > 0,
+                        points: `${value}`,
+                    });
+                });
+            }
+    }
+
+    return explanations;
+};
 </script>
 
 <template>
@@ -657,8 +1130,14 @@ const summary = computed(() => props.scan.results?.summary);
             <!-- Pillar Scores (only show when completed) -->
             <div v-if="isCompleted">
                 <h2 class="mb-4 text-xl font-semibold">Score Breakdown</h2>
+                <p class="mb-4 text-sm text-muted-foreground">Click any card to see why you didn't score 100%</p>
                 <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    <Card v-for="pillar in pillars" :key="pillar.key">
+                    <Card
+                        v-for="pillar in pillars"
+                        :key="pillar.key"
+                        class="cursor-pointer transition-all hover:border-primary/50 hover:shadow-md"
+                        @click="openPillarDetails(pillar)"
+                    >
                         <CardHeader class="pb-2">
                             <div class="flex items-center justify-between">
                                 <CardTitle class="flex items-center gap-2 text-base">
@@ -672,7 +1151,10 @@ const summary = computed(() => props.scan.results?.summary);
                                         {{ pillar.tierBadge.label }}
                                     </span>
                                 </CardTitle>
-                                <span class="text-2xl font-bold">{{ pillar.score.toFixed(1) }}</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-2xl font-bold">{{ pillar.score.toFixed(1) }}</span>
+                                    <ChevronRight class="h-5 w-5 text-muted-foreground" />
+                                </div>
                             </div>
                             <CardDescription>out of {{ pillar.max_score }}</CardDescription>
                         </CardHeader>
@@ -686,73 +1168,8 @@ const summary = computed(() => props.scan.results?.summary);
                                 />
                             </div>
                             <p class="mt-2 text-right text-sm font-medium">{{ pillar.percentage.toFixed(0) }}%</p>
-
-                            <!-- Breakdown if available -->
-                            <div v-if="pillar.breakdown" class="mt-4 space-y-2 border-t pt-4">
-                                <div
-                                    v-for="(value, key) in pillar.breakdown"
-                                    :key="key"
-                                    class="flex items-center justify-between text-sm"
-                                >
-                                    <span class="text-muted-foreground">{{ String(key).replace(/_/g, ' ') }}</span>
-                                    <span class="font-medium">{{ typeof value === 'number' ? value.toFixed(1) : value }}</span>
-                                </div>
-                            </div>
                         </CardContent>
                     </Card>
-                </div>
-            </div>
-
-            <!-- Recommendations (only show when completed) -->
-            <div v-if="isCompleted && recommendations.length > 0">
-                <h2 class="mb-4 text-xl font-semibold">Recommendations</h2>
-                <div class="space-y-4">
-                    <Alert
-                        v-for="rec in recommendations"
-                        :key="rec.key"
-                        :class="{
-                            'border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-950': rec.priority === 'high',
-                            'border-yellow-300 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950': rec.priority === 'medium',
-                            'border-green-300 bg-green-50 dark:border-green-800 dark:bg-green-950': rec.priority === 'low',
-                        }"
-                    >
-                        <AlertTitle class="flex items-center gap-2 text-foreground">
-                            {{ rec.pillar }}
-                            <span
-                                v-if="rec.tierBadge"
-                                class="rounded-full px-2 py-0.5 text-xs font-medium"
-                                :class="rec.tierBadge.class"
-                            >
-                                {{ rec.tierBadge.label }}
-                            </span>
-                            <span
-                                class="rounded-full px-2 py-0.5 text-xs font-medium"
-                                :class="getPriorityColor(rec.priority)"
-                            >
-                                {{ rec.priority }} priority
-                            </span>
-                            <span class="ml-auto text-sm text-muted-foreground">{{ rec.current_score }}</span>
-                        </AlertTitle>
-                        <AlertDescription class="text-muted-foreground">
-                            <ul class="mt-2 list-inside list-disc space-y-1">
-                                <li v-for="(action, index) in rec.actions" :key="index">
-                                    {{ action }}
-                                </li>
-                            </ul>
-                            <div v-if="rec.resources && rec.resources.length > 0" class="mt-3 flex flex-wrap items-center gap-2 border-t pt-3">
-                                <span class="text-xs font-medium">Learn more:</span>
-                                <Link
-                                    v-for="(resource, idx) in rec.resources"
-                                    :key="idx"
-                                    :href="resource.url"
-                                    class="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/20 transition-colors"
-                                >
-                                    {{ resource.title }}
-                                    <ExternalLink class="h-3 w-3" />
-                                </Link>
-                            </div>
-                        </AlertDescription>
-                    </Alert>
                 </div>
             </div>
 
@@ -815,6 +1232,106 @@ const summary = computed(() => props.scan.results?.summary);
                         <Loader2 v-if="sendingEmail" class="mr-2 h-4 w-4 animate-spin" />
                         <Mail v-else class="mr-2 h-4 w-4" />
                         {{ sendingEmail ? 'Sending...' : 'Send Report' }}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+
+        <!-- Pillar Details Modal -->
+        <Dialog v-model:open="showPillarDialog">
+            <DialogContent class="sm:max-w-lg max-h-[85vh] overflow-y-auto">
+                <DialogHeader v-if="selectedPillar">
+                    <DialogTitle class="flex items-center gap-3">
+                        <component :is="selectedPillar.icon" class="h-6 w-6 text-muted-foreground" />
+                        {{ selectedPillar.name }}
+                        <span
+                            v-if="selectedPillar.tierBadge"
+                            class="rounded-full px-2 py-0.5 text-xs font-medium"
+                            :class="selectedPillar.tierBadge.class"
+                        >
+                            {{ selectedPillar.tierBadge.label }}
+                        </span>
+                    </DialogTitle>
+                    <DialogDescription>
+                        <div class="flex items-center justify-between mt-2">
+                            <span>Score breakdown and improvement tips</span>
+                            <span class="text-lg font-bold text-foreground">
+                                {{ selectedPillar.score.toFixed(1) }} / {{ selectedPillar.max_score }}
+                                <span class="text-sm font-normal text-muted-foreground ml-1">({{ selectedPillar.percentage.toFixed(0) }}%)</span>
+                            </span>
+                        </div>
+                        <!-- Progress Bar -->
+                        <div class="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
+                            <div
+                                class="h-full rounded-full transition-all"
+                                :class="getScoreColor(selectedPillar.percentage)"
+                                :style="{ width: `${selectedPillar.percentage}%` }"
+                            />
+                        </div>
+                    </DialogDescription>
+                </DialogHeader>
+
+                <div v-if="selectedPillar" class="space-y-3 py-4">
+                    <div
+                        v-for="(item, index) in getPillarExplanations(selectedPillar)"
+                        :key="index"
+                        class="rounded-lg border p-3"
+                        :class="item.achieved ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/50' : 'border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/50'"
+                    >
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="flex items-start gap-2">
+                                <CheckCircle2 v-if="item.achieved" class="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5 shrink-0" />
+                                <XCircle v-else class="h-5 w-5 text-orange-600 dark:text-orange-400 mt-0.5 shrink-0" />
+                                <div>
+                                    <p class="font-medium text-sm" :class="item.achieved ? 'text-green-800 dark:text-green-200' : 'text-orange-800 dark:text-orange-200'">
+                                        {{ item.label }}
+                                    </p>
+                                    <p v-if="item.tip" class="text-xs mt-1 text-orange-700 dark:text-orange-300">
+                                        <Info class="h-3 w-3 inline mr-1" />
+                                        {{ item.tip }}
+                                    </p>
+                                </div>
+                            </div>
+                            <span
+                                class="text-xs font-mono px-2 py-1 rounded shrink-0"
+                                :class="item.achieved ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' : 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300'"
+                            >
+                                {{ item.points }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Perfect score message -->
+                    <div v-if="selectedPillar.percentage >= 100" class="rounded-lg border border-green-300 bg-green-100 p-4 dark:border-green-700 dark:bg-green-900/50">
+                        <div class="flex items-center gap-2">
+                            <CheckCircle2 class="h-5 w-5 text-green-600 dark:text-green-400" />
+                            <p class="font-medium text-green-800 dark:text-green-200">Perfect score! Great job optimizing this pillar.</p>
+                        </div>
+                    </div>
+
+                    <!-- Resource Links -->
+                    <div v-if="pillarResources[selectedPillar.key]?.length" class="rounded-lg border bg-muted/30 p-4">
+                        <p class="text-sm font-medium mb-3 flex items-center gap-2">
+                            <BookOpen class="h-4 w-4" />
+                            Learn more about {{ selectedPillar.name }}
+                        </p>
+                        <div class="flex flex-wrap gap-2">
+                            <Link
+                                v-for="(resource, idx) in pillarResources[selectedPillar.key]"
+                                :key="idx"
+                                :href="resource.url"
+                                class="inline-flex items-center gap-1.5 rounded-md bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/20 transition-colors"
+                            >
+                                {{ resource.title }}
+                                <ExternalLink class="h-3.5 w-3.5" />
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+
+                <DialogFooter>
+                    <Button variant="outline" @click="showPillarDialog = false">
+                        Close
                     </Button>
                 </DialogFooter>
             </DialogContent>
