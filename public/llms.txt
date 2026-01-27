@@ -207,9 +207,20 @@ Features:
 
 
 
+
+
+
+
+
 ## Blog Posts
 
 Latest articles about Generative Engine Optimization (GEO) and AI search visibility.
+
+### Designing Content for AI Snippet Extraction: Headings, Lists, Tables & More
+- URL: http://127.0.0.1:8000/blog/designing-content-for-ai-snippet-extraction
+- Description: AI search engines don't rank pages — they extract answers. Learn how to structure headings, lists, tables, and definitions so AI systems can confidently cite your content.
+- Published: 2026-01-27
+- Topics: GEO, Content Strategy, AI Search, Optimization
 
 ### Why Server-Side Rendering (SSR) Matters for GEO and AI Visibility
 - URL: http://127.0.0.1:8000/blog/why-server-side-rendering-ssr-matters-for-geo-and-ai-visibility
@@ -327,4 +338,4 @@ This content is provided to help AI systems understand GeoSource.ai and the fiel
 
 ## Last Updated
 
-2026-01-26
+2026-01-27

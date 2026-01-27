@@ -28,7 +28,10 @@
       "Bash(npx vue-tsc:*)",
       "Bash(composer require:*)",
       "Bash(echo:*)",
-      "WebFetch(domain:api-docs.deepseek.com)"
+      "WebFetch(domain:api-docs.deepseek.com)",
+      "Bash(convert:*)",
+      "Bash(magick:*)",
+      "Bash(php create_blog_post.php:*)"
     ]
   }
 }
