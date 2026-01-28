@@ -25,13 +25,10 @@ export default defineConfig({
         }),
     ],
     build: {
-        minify: 'terser',
-        terserOptions: {
-            compress: {
-                drop_console: true,
-                drop_debugger: true,
-            },
-        },
+        minify: 'esbuild',
         cssMinify: true,
+    },
+    esbuild: {
+        drop: ['console', 'debugger'],
     },
 });
