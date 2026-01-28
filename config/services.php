@@ -49,4 +49,8 @@ return [
         'redirect' => '/auth/google/callback',
     ],
 
+    'serpapi' => [
+        'key' => env('SERPAPI_KEY'),
+    ],
+
 ];

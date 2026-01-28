@@ -31,7 +31,8 @@
       "WebFetch(domain:api-docs.deepseek.com)",
       "Bash(convert:*)",
       "Bash(magick:*)",
-      "Bash(php create_blog_post.php:*)"
+      "Bash(php create_blog_post.php:*)",
+      "Bash(wc:*)"
     ]
   }
 }

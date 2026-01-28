@@ -42,6 +42,12 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
                     MenuItem::resource(\App\Nova\CitationAlert::class),
                 ])->icon('bookmark')->collapsable(),
 
+                MenuSection::make('Research', [
+                    MenuItem::resource(\App\Nova\GeoStudy::class),
+                    MenuItem::resource(\App\Nova\GeoStudyResult::class),
+                    MenuItem::link('Dashboard', '/dashboards/geo-study-dashboard'),
+                ])->icon('beaker')->collapsable(),
+
                 MenuSection::make('Content', [
                     MenuItem::resource(\App\Nova\BlogPost::class),
                 ])->icon('document-text')->collapsable(),
@@ -121,6 +127,7 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
     {
         return [
             new \App\Nova\Dashboards\Main,
+            new \App\Nova\Dashboards\GeoStudyDashboard,
         ];
     }
 
