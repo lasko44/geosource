@@ -234,7 +234,6 @@ class ScanWebsiteJob implements ShouldQueue
                 ->setNpmBinary(config('browsershot.npm_binary', '/usr/bin/npm'))
                 ->noSandbox()
                 ->dismissDialogs()
-                ->waitForFunction('document.readyState === "complete"', 30000)
                 ->timeout(60)
                 // Stealth options to bypass bot detection
                 ->userAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')

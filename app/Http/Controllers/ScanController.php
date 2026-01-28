@@ -133,8 +133,8 @@ class ScanController extends Controller
             // Show team scans (all scans belonging to this team)
             $scanQuery = Scan::where('team_id', $currentTeamId);
         } else {
-            // Show personal scans (user's own scans, excluding team scans)
-            $scanQuery = Scan::where('user_id', $user->id)->whereNull('team_id');
+            // Show personal scans (user's own scans - including team scans they created)
+            $scanQuery = Scan::where('user_id', $user->id);
         }
 
         if ($historyDays !== -1 && $historyDays !== null) {
@@ -713,8 +713,26 @@ class ScanController extends Controller
 
         $user = $request->user();
 
-        // Build base query
-        $query = Scan::where('user_id', $user->id);
+        // Get current team context
+        $currentTeamId = session('current_team_id');
+        $currentTeamId = ($currentTeamId && $currentTeamId !== 'personal') ? (int) $currentTeamId : null;
+
+        // Build base query based on team context (same logic as dashboard)
+        if ($currentTeamId && ($this->subscriptionService->isAgencyTier($user) || $user->is_admin)) {
+            // Verify user has access to this team
+            $hasAccess = $user->allTeams()->contains('id', $currentTeamId);
+            if ($hasAccess) {
+                // Show team scans (all scans belonging to this team)
+                $query = Scan::where('team_id', $currentTeamId);
+            } else {
+                // Fallback to personal scans if no team access
+                $query = Scan::where('user_id', $user->id)->whereNull('team_id');
+                $currentTeamId = null;
+            }
+        } else {
+            // Show personal scans (all scans created by the user)
+            $query = Scan::where('user_id', $user->id);
+        }
 
         // Apply search filter
         if ($search = $request->input('search')) {
@@ -765,17 +783,17 @@ class ScanController extends Controller
         // Paginate results with user relationship
         $scans = $query->with('user:id,name')->paginate($perPage)->withQueryString();
 
-        // Get filter options for the UI
-        $grades = Scan::where('user_id', $user->id)
+        // Get filter options for the UI (use same context as main query)
+        $gradesQuery = $currentTeamId
+            ? Scan::where('team_id', $currentTeamId)
+            : Scan::where('user_id', $user->id);
+
+        $grades = $gradesQuery
             ->whereNotNull('grade')
             ->distinct()
             ->pluck('grade')
             ->sort()
             ->values();
-
-        // Get current team context for scan form
-        $currentTeamId = session('current_team_id');
-        $currentTeamId = ($currentTeamId && $currentTeamId !== 'personal') ? (int) $currentTeamId : null;
 
         return Inertia::render('Scans/Index', [
             'scans' => $scans,
