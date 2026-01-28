@@ -8,6 +8,7 @@ use Laravel\Nova\Fields\Badge;
 use Laravel\Nova\Fields\BelongsTo;
 use Laravel\Nova\Fields\Code;
 use Laravel\Nova\Fields\DateTime;
+use Laravel\Nova\Fields\HasMany;
 use Laravel\Nova\Fields\ID;
 use Laravel\Nova\Fields\Image;
 use Laravel\Nova\Fields\Markdown;
@@ -152,10 +153,18 @@ class BlogPost extends Resource
                 ->sortable()
                 ->exceptOnForms(),
 
+            Number::make('Shares', function () {
+                return $this->shares()->count();
+            })
+                ->sortable()
+                ->exceptOnForms(),
+
             DateTime::make('Created At')
                 ->sortable()
                 ->exceptOnForms()
                 ->hideFromIndex(),
+
+            HasMany::make('Shares', 'shares', BlogShare::class),
         ];
     }
 

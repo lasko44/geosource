@@ -37,7 +37,23 @@ const getShareUrl = () => {
     return `https://geosource.ai/blog/${props.post.slug}`;
 };
 
+const trackShare = async (platform: string) => {
+    try {
+        await fetch(`/blog/${props.post.slug}/share`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+            },
+            body: JSON.stringify({ platform }),
+        });
+    } catch (err) {
+        // Silently fail - tracking is non-critical
+    }
+};
+
 const shareOnTwitter = () => {
+    trackShare('twitter');
     const url = encodeURIComponent(getShareUrl());
     const text = encodeURIComponent(props.post.title);
     window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank', 'width=550,height=420');
@@ -45,12 +61,14 @@ const shareOnTwitter = () => {
 };
 
 const shareOnLinkedIn = () => {
+    trackShare('linkedin');
     const url = encodeURIComponent(getShareUrl());
     window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank', 'width=550,height=420');
     shareMenuOpen.value = false;
 };
 
 const shareOnFacebook = () => {
+    trackShare('facebook');
     const url = encodeURIComponent(getShareUrl());
     window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank', 'width=550,height=420');
     shareMenuOpen.value = false;
@@ -59,6 +77,7 @@ const shareOnFacebook = () => {
 const copyLink = async () => {
     try {
         await navigator.clipboard.writeText(getShareUrl());
+        trackShare('copy_link');
         copied.value = true;
         setTimeout(() => {
             copied.value = false;

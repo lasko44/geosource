@@ -6,4 +6,5 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('blog')->group(function () {
     Route::get('/', [BlogController::class, 'index'])->name('blog.index');
     Route::get('/{post}', [BlogController::class, 'show'])->name('blog.show');
+    Route::post('/{post}/share', [BlogController::class, 'trackShare'])->name('blog.share');
 });
