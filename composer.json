@@ -12,6 +12,7 @@
         "php": "^8.2",
         "barryvdh/laravel-dompdf": "^3.1",
         "geosource/documentation": "@dev",
+        "geosource/user-actions": "@dev",
         "guzzlehttp/guzzle": "^7.10",
         "inertiajs/inertia-laravel": "^2.0",
         "laravel/cashier": "^16.2",
@@ -119,6 +120,10 @@
         {
             "type": "path",
             "url": "./nova-components/Documentation"
+        },
+        {
+            "type": "path",
+            "url": "./nova-components/UserActions"
         }
     ]
 }

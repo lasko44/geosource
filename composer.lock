@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7c0baa84bf5277de423e51e5ebf33e09",
+    "content-hash": "d94a3ea741fd5186500cda8931a19614",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -1212,6 +1212,47 @@
                 "MIT"
             ],
             "description": "A Laravel Nova tool.",
+            "keywords": [
+                "laravel",
+                "nova"
+            ],
+            "transport-options": {
+                "relative": true
+            }
+        },
+        {
+            "name": "geosource/user-actions",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "./nova-components/UserActions",
+                "reference": "14e4505bdcc4575f3d60a4fe7a2e123a4e28f1ba"
+            },
+            "require": {
+                "illuminate/support": "^10.0|^11.0|^12.0",
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "laravel/nova": "^5.0",
+                "laravel/nova-devtool": "^1.7"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Geosource\\UserActions\\ToolServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Geosource\\UserActions\\": "src/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "A Laravel Nova resource tool for user actions.",
             "keywords": [
                 "laravel",
                 "nova"
@@ -11711,7 +11752,8 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "geosource/documentation": 20
+        "geosource/documentation": 20,
+        "geosource/user-actions": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,

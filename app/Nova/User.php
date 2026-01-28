@@ -2,8 +2,10 @@
 
 namespace App\Nova;
 
+use Geosource\UserActions\UserActions;
 use Illuminate\Http\Request;
 use Laravel\Nova\Auth\PasswordValidationRules;
+use Laravel\Nova\Fields\Badge;
 use Laravel\Nova\Fields\Boolean;
 use Laravel\Nova\Fields\DateTime;
 use Laravel\Nova\Fields\Gravatar;
@@ -66,6 +68,26 @@ class User extends Resource
             Boolean::make('Admin', 'is_admin')
                 ->sortable()
                 ->filterable(),
+
+            Badge::make('Email Verified', function () {
+                return $this->hasVerifiedEmail() ? 'Verified' : 'Unverified';
+            })->map([
+                'Verified' => 'success',
+                'Unverified' => 'danger',
+            ])->filterable(function ($request, $query, $value, $attribute) {
+                if ($value === 'Verified') {
+                    $query->whereNotNull('email_verified_at');
+                } else {
+                    $query->whereNull('email_verified_at');
+                }
+            }),
+
+            DateTime::make('Email Verified At')
+                ->onlyOnDetail()
+                ->exceptOnForms(),
+
+            UserActions::make()
+                ->isVerified($this->resource?->hasVerifiedEmail() ?? false),
 
             Number::make('Total Scans', function () {
                 return $this->scans()->count();

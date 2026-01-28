@@ -23,6 +23,10 @@ class ImportBlogPost extends Command
             $this->importAiSearchIsStealingYourTraffic();
         }
 
+        if ($slug === 'topical-authority-matters-more-than-backlinks-in-ai-search' || ! $slug) {
+            $this->importTopicalAuthorityMattersMoreThanBacklinks();
+        }
+
         return 0;
     }
 
@@ -711,5 +715,484 @@ MARKDOWN;
         ]);
 
         $this->info("✓ Imported blog post: {$slug}");
+    }
+
+    protected function importTopicalAuthorityMattersMoreThanBacklinks(): void
+    {
+        $slug = 'topical-authority-matters-more-than-backlinks-in-ai-search';
+
+        if (BlogPost::where('slug', $slug)->exists()) {
+            $this->warn("Blog post '{$slug}' already exists. Skipping.");
+
+            return;
+        }
+
+        $content = <<<'MARKDOWN'
+For more than 20 years, backlinks were treated like the ultimate ranking signal.
+
+More links meant more authority.
+More authority meant more traffic.
+
+That belief is now actively misleading people.
+
+**Because AI search doesn't rank pages — it chooses sources.**
+
+When an AI engine like ChatGPT, Perplexity, or Google's AI Overviews generates an answer, it doesn't care how many websites link to you.
+
+It cares whether you actually understand the topic.
+
+This is why sites with massive backlink profiles are being ignored in AI answers — while smaller, tightly focused websites with far fewer links are being cited instead.
+
+**Backlinks measure popularity.**
+
+**AI search rewards understanding.**
+
+And that changes everything.
+
+---
+
+## TL;DR
+
+- In AI search, backlinks signal popularity — not comprehension.
+- Generative engines prioritize topical authority: consistent, structured coverage of a subject across multiple pages.
+- If your site doesn't demonstrate deep topic understanding, it won't be cited — regardless of how many links you have.
+
+---
+
+## Backlinks Were Built for Ranking Pages, Not Answering Questions
+
+Traditional search engines needed a way to decide which page deserved to rank first.
+
+Backlinks solved that problem.
+
+They acted as votes — signals of trust and popularity across the web.
+
+But AI search is not ranking ten blue links.
+
+**It is generating a synthesized answer.**
+
+That distinction matters.
+
+Ranking pages requires popularity signals.
+Answering questions requires understanding.
+
+Backlinks were never designed to measure understanding.
+
+---
+
+## How AI Search Actually Chooses Sources
+
+When an AI engine generates an answer, it doesn't look at a single page in isolation.
+
+**It evaluates topic-level confidence.**
+
+AI systems look for sources that demonstrate:
+
+- Consistent coverage of a subject
+- Repeated explanation of related concepts
+- Aligned terminology and definitions
+- Clear, structured presentation
+
+This is why AI answers often reference sites that don't rank #1 in Google.
+
+They aren't being chosen for authority in the traditional sense.
+
+**They're being chosen for comprehension.**
+
+This shift is part of a broader transformation in how information is discovered online, which is explored more deeply in [The Rise of AI Search: What It Means for Content Creators](/blog/rise-of-ai-search-content-creators).
+
+---
+
+## What Topical Authority Means in AI Search
+
+Topical authority is not one great article.
+
+**It's a pattern.**
+
+AI systems build confidence when they see a website repeatedly explain the same subject from multiple angles.
+
+That includes:
+
+- Beginner explanations
+- Technical breakdowns
+- Comparisons
+- Implications
+- Related subtopics
+
+This consistency tells the model:
+
+> "This source understands the domain."
+
+This is the foundation of Generative Engine Optimization (GEO) — where visibility comes from being understood, not merely ranked.
+
+For a deeper explanation of this shift, see [What Is GEO? A Complete Guide to Generative Engine Optimization](/blog/what-is-geo-complete-guide).
+
+---
+
+## Why Backlinks Are Weaker Signals for AI
+
+Backlinks still matter — but they matter differently.
+
+A backlink says:
+
+> "Someone referenced this page."
+
+It does not say:
+
+> "This site deeply understands the topic."
+
+AI systems care far more about reducing uncertainty than measuring popularity.
+
+From an AI perspective, a source with consistent explanations across many pages is safer than a highly linked page that barely covers the subject.
+
+That's why backlink-heavy sites can lose visibility in AI answers, while smaller niche publishers gain it.
+
+---
+
+## AI Engines Think in Topics, Not Keywords
+
+Traditional SEO was keyword-first.
+
+**AI search is concept-first.**
+
+Instead of ranking for phrases like:
+
+> "AI search optimization"
+
+AI systems map relationships between ideas such as:
+
+- Generative answers
+- Source citation
+- Content structure
+- Entity relevance
+- Topical depth
+
+Sites that repeatedly reinforce these concepts build stronger semantic identity.
+
+This is why topical focus matters more than keyword coverage.
+
+---
+
+## Repetition Builds Authority — Not Redundancy
+
+In classic SEO, repetition was often discouraged.
+
+**In AI search, repetition builds confidence.**
+
+When an AI model encounters the same concept explained clearly across multiple articles, it strengthens retrieval certainty.
+
+This isn't keyword stuffing.
+
+**It's semantic reinforcement.**
+
+Explaining the same idea from different angles increases trust — not dilution.
+
+---
+
+## Why Single Viral Articles Don't Build AI Visibility
+
+A single viral post can drive traffic.
+
+It rarely builds authority.
+
+**AI systems don't trust spikes.**
+
+**They trust consistency.**
+
+Topical authority emerges when a site publishes:
+
+- Multiple related articles
+- Interconnected explanations
+- Aligned terminology
+- Internal links reinforcing context
+
+One article cannot establish that pattern.
+
+Ten connected ones can.
+
+---
+
+## Topical Authority Compounds Over Time
+
+Backlinks are largely static.
+
+**Topical authority compounds.**
+
+Every new related article:
+
+- Strengthens previous pages
+- Reinforces entity associations
+- Increases citation likelihood
+- Improves retrieval confidence
+
+This is why AI visibility often appears suddenly.
+
+The groundwork was happening long before the first citation.
+
+---
+
+## Why New Sites Can Compete Faster in AI Search
+
+This shift explains something many creators are noticing:
+
+**New, focused websites can appear in AI answers surprisingly fast.**
+
+They may not outrank major domains in Google SERPs — but they can still be cited.
+
+Why?
+
+Because AI engines do not require years of link accumulation to evaluate understanding.
+
+**They only require clarity.**
+
+This is also why technical foundations matter, especially for AI crawlers — including how content is rendered and indexed, as explained in [Why Server-Side Rendering (SSR) Matters for GEO and AI Visibility](/blog/why-server-side-rendering-ssr-matters-for-geo-and-ai-visibility).
+
+---
+
+## The Role of Structure in Topical Authority
+
+Structure plays a major role in how AI systems evaluate expertise.
+
+AI prefers content that is:
+
+- Logically segmented
+- Clearly titled
+- Declarative in headings
+- Easy to extract
+
+Formatting isn't cosmetic.
+
+**It's interpretive.**
+
+This is why headings, lists, summaries, and tables increase citation probability — a concept covered in [Designing Content for AI Snippet Extraction](/blog/designing-content-for-ai-snippet-extraction).
+
+---
+
+## What Actually Builds Topical Authority
+
+Strong topical authority comes from:
+
+- Narrow content focus
+- Consistent terminology
+- Internal linking between related posts
+- Clear definitions and summaries
+- Repeated coverage of core concepts
+
+Together, these signals tell AI systems:
+
+> "This site specializes here."
+
+That specialization matters more than popularity.
+
+---
+
+## When Backlinks Still Matter
+
+Backlinks still play a role.
+
+They help with:
+
+- Discovery
+- Traditional rankings
+- External trust validation
+
+But they are no longer the primary signal for visibility inside AI-generated answers.
+
+**Think of backlinks as permission.**
+
+**Think of topical authority as qualification.**
+
+AI will not cite you because you are popular.
+
+It will cite you because you are reliable.
+
+---
+
+## Why This Changes Content Strategy Entirely
+
+If topical authority matters more than backlinks, then content strategy must change.
+
+That means:
+
+- Fewer unrelated posts
+- Deeper topical coverage
+- Stronger internal linking
+- Clearer conceptual positioning
+
+Instead of asking:
+
+> "What keywords should we target next?"
+
+The better question becomes:
+
+> "What topic do we want to own?"
+
+That mindset shift defines GEO.
+
+---
+
+## Topical Authority Is the Core of GEO
+
+Generative Engine Optimization is not about ranking pages.
+
+**It's about becoming a trusted source within a topic.**
+
+AI engines surface sources that:
+
+- Demonstrate consistent understanding
+- Reduce hallucination risk
+- Explain concepts clearly
+- Maintain alignment across content
+
+This is why GEO success often appears before traffic growth.
+
+Visibility comes first.
+
+Clicks come later — if at all.
+
+---
+
+## Final Thought: Understanding Beats Popularity
+
+The old web rewarded popularity.
+
+**The new web rewards understanding.**
+
+Backlinks measure who talks about you.
+Topical authority measures how well you understand something.
+
+**In AI search, understanding wins.**
+
+If your goal is to appear in answers — not just rankings — then your strategy must shift away from chasing links and toward building deep, consistent topical coverage.
+
+That's how sites become visible in AI search.
+
+And that's how authority is earned in the generative era.
+MARKDOWN;
+
+        $faq = [
+            [
+                'question' => 'Do backlinks still matter for AI search?',
+                'answer' => 'Backlinks still help with discovery, traditional rankings, and external trust validation. However, they are no longer the primary signal for visibility inside AI-generated answers. AI engines prioritize topical authority — consistent, structured coverage of a subject — over link popularity.',
+            ],
+            [
+                'question' => 'What is topical authority in the context of AI search?',
+                'answer' => 'Topical authority is a pattern of consistent coverage across multiple pages on the same subject. AI systems build confidence when they see a website repeatedly explain related concepts with aligned terminology, clear definitions, and structured presentation.',
+            ],
+            [
+                'question' => 'Can new websites compete in AI search without backlinks?',
+                'answer' => 'Yes. AI engines do not require years of link accumulation to evaluate understanding. New, focused websites can appear in AI answers by demonstrating clarity and deep topical coverage, even without strong backlink profiles.',
+            ],
+            [
+                'question' => 'Why does topical authority compound over time?',
+                'answer' => 'Every new related article strengthens previous pages, reinforces entity associations, increases citation likelihood, and improves retrieval confidence. Unlike backlinks which are largely static, topical authority grows with each piece of connected content.',
+            ],
+            [
+                'question' => 'How does GEO differ from traditional SEO link building?',
+                'answer' => 'Traditional SEO link building focuses on acquiring external links to signal popularity. GEO focuses on building deep, consistent topical coverage so AI engines can understand, trust, and cite your content. The shift is from popularity to comprehension.',
+            ],
+        ];
+
+        $quickLinks = [
+            ['title' => 'TL;DR', 'anchor' => 'tldr'],
+            ['title' => 'Backlinks vs Questions', 'anchor' => 'backlinks-were-built-for-ranking-pages-not-answering-questions'],
+            ['title' => 'How AI Chooses Sources', 'anchor' => 'how-ai-search-actually-chooses-sources'],
+            ['title' => 'What Topical Authority Means', 'anchor' => 'what-topical-authority-means-in-ai-search'],
+            ['title' => 'Why Backlinks Are Weaker', 'anchor' => 'why-backlinks-are-weaker-signals-for-ai'],
+            ['title' => 'Topics Not Keywords', 'anchor' => 'ai-engines-think-in-topics-not-keywords'],
+            ['title' => 'Repetition Builds Authority', 'anchor' => 'repetition-builds-authority--not-redundancy'],
+            ['title' => 'Viral Articles Don\'t Build Visibility', 'anchor' => 'why-single-viral-articles-dont-build-ai-visibility'],
+            ['title' => 'Authority Compounds', 'anchor' => 'topical-authority-compounds-over-time'],
+            ['title' => 'New Sites Can Compete', 'anchor' => 'why-new-sites-can-compete-faster-in-ai-search'],
+            ['title' => 'Role of Structure', 'anchor' => 'the-role-of-structure-in-topical-authority'],
+            ['title' => 'What Builds Authority', 'anchor' => 'what-actually-builds-topical-authority'],
+            ['title' => 'When Backlinks Still Matter', 'anchor' => 'when-backlinks-still-matter'],
+            ['title' => 'Content Strategy Changes', 'anchor' => 'why-this-changes-content-strategy-entirely'],
+            ['title' => 'Core of GEO', 'anchor' => 'topical-authority-is-the-core-of-geo'],
+        ];
+
+        $schemaJson = [
+            '@context' => 'https://schema.org',
+            '@graph' => [
+                [
+                    '@type' => 'BlogPosting',
+                    'headline' => 'Topical Authority Matters More Than Backlinks in AI Search',
+                    'description' => 'In AI search, backlinks signal popularity — not comprehension. Learn why topical authority is the real driver of AI visibility and how to build it.',
+                    'url' => 'https://geosource.ai/blog/topical-authority-matters-more-than-backlinks-in-ai-search',
+                    'datePublished' => '2026-01-28',
+                    'dateModified' => '2026-01-28',
+                    'author' => [
+                        '@type' => 'Organization',
+                        'name' => 'GeoSource.ai',
+                        'url' => 'https://geosource.ai',
+                    ],
+                    'publisher' => [
+                        '@type' => 'Organization',
+                        'name' => 'GeoSource.ai',
+                        'url' => 'https://geosource.ai',
+                    ],
+                    'image' => 'https://geosource.ai/images/blog/topical-authority-matters-more-than-backlinks-in-ai-search.png',
+                    'mainEntityOfPage' => [
+                        '@type' => 'WebPage',
+                        '@id' => 'https://geosource.ai/blog/topical-authority-matters-more-than-backlinks-in-ai-search',
+                    ],
+                    'about' => [
+                        '@type' => 'Thing',
+                        'name' => 'Topical Authority in AI Search',
+                        'description' => 'The concept that AI search engines prioritize consistent, structured coverage of a subject over backlink-based popularity signals when choosing sources to cite.',
+                    ],
+                ],
+                [
+                    '@type' => 'FAQPage',
+                    'mainEntity' => [
+                        [
+                            '@type' => 'Question',
+                            'name' => 'Do backlinks still matter for AI search?',
+                            'acceptedAnswer' => [
+                                '@type' => 'Answer',
+                                'text' => 'Backlinks still help with discovery and traditional rankings, but they are no longer the primary signal for visibility inside AI-generated answers. AI engines prioritize topical authority over link popularity.',
+                            ],
+                        ],
+                        [
+                            '@type' => 'Question',
+                            'name' => 'What is topical authority in AI search?',
+                            'acceptedAnswer' => [
+                                '@type' => 'Answer',
+                                'text' => 'Topical authority is a pattern of consistent coverage across multiple pages on the same subject, with aligned terminology, clear definitions, and structured presentation.',
+                            ],
+                        ],
+                        [
+                            '@type' => 'Question',
+                            'name' => 'Can new websites compete in AI search without backlinks?',
+                            'acceptedAnswer' => [
+                                '@type' => 'Answer',
+                                'text' => 'Yes. AI engines do not require years of link accumulation. New, focused websites can appear in AI answers by demonstrating clarity and deep topical coverage.',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $author = \App\Models\User::where('email', 'matthew.laszkewicz@gmail.com')->first();
+
+        BlogPost::create([
+            'title' => 'Topical Authority Matters More Than Backlinks in AI Search',
+            'slug' => $slug,
+            'author_id' => $author?->id,
+            'excerpt' => 'AI search doesn\'t rank pages — it chooses sources. Learn why topical authority has replaced backlinks as the primary driver of visibility in AI-generated answers.',
+            'content' => $content,
+            'featured_image' => '/images/blog/topical-authority-matters-more-than-backlinks-in-ai-search.svg',
+            'meta_title' => 'Topical Authority Matters More Than Backlinks in AI Search | GeoSource.ai',
+            'meta_description' => 'Backlinks measure popularity. AI search rewards understanding. Learn why topical authority is now more important than backlinks for AI visibility and citations.',
+            'schema_json' => $schemaJson,
+            'tags' => ['GEO', 'Topical Authority', 'Backlinks', 'AI Search', 'Content Strategy'],
+            'faq' => $faq,
+            'quick_links' => $quickLinks,
+            'status' => 'draft',
+            'published_at' => null,
+        ]);
+
+        $this->info("✓ Imported blog post: {$slug} (draft)");
     }
 }
