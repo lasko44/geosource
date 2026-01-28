@@ -114,6 +114,15 @@ class Scan extends Resource
                 ->sortable()
                 ->filterable(),
 
+            Text::make('Error Message')
+                ->onlyOnDetail()
+                ->nullable(),
+
+            Text::make('Internal Error')
+                ->onlyOnDetail()
+                ->nullable()
+                ->help('Detailed error for debugging - not shown to users'),
+
             DateTime::make('Scanned At', 'created_at')
                 ->sortable()
                 ->filterable()

@@ -25,6 +25,7 @@ class Scan extends Model
         'progress_step',
         'progress_percent',
         'error_message',
+        'internal_error',
         'started_at',
         'completed_at',
     ];

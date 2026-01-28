@@ -56,7 +56,7 @@ class ScanWebsiteJob implements ShouldQueue
         // Re-verify subscription before completing the scan
         // This prevents downgraded users from completing queued scans
         if (! $this->verifySubscriptionStillValid($subscriptionService)) {
-            $this->markFailed('Your subscription has changed and this scan cannot be completed. Please try again.');
+            $this->markFailed('Subscription changed during scan', 'Your subscription has changed and this scan cannot be completed. Please try again.');
 
             return;
         }
@@ -142,7 +142,7 @@ class ScanWebsiteJob implements ShouldQueue
                 }
             }
         } catch (\Exception $e) {
-            $this->markFailed($e->getMessage());
+            $this->markFailed('Exception during scan: ' . $e->getMessage());
         }
     }
 
@@ -158,15 +158,52 @@ class ScanWebsiteJob implements ShouldQueue
         ]);
     }
 
-    private function markFailed(string $message): void
+    private function markFailed(string $internalMessage, ?string $userMessage = null): void
     {
+        // Generic user-facing message
+        $userMessage = $userMessage ?? 'We were unable to scan this URL. Please try again or contact support.';
+
         $this->scan->update([
             'status' => 'failed',
             'progress_step' => 'Failed',
             'progress_percent' => 0,
-            'error_message' => $message,
+            'error_message' => $userMessage,
+            'internal_error' => $internalMessage, // Detailed error for Nova
             'completed_at' => now(),
         ]);
+
+        // Log detailed error
+        Log::error('Scan failed', [
+            'scan_id' => $this->scan->id,
+            'scan_uuid' => $this->scan->uuid,
+            'url' => $this->scan->url,
+            'user_id' => $this->scan->user_id,
+            'error' => $internalMessage,
+        ]);
+
+        // Email notification to admin
+        $this->notifyAdminOfFailure($internalMessage);
+    }
+
+    private function notifyAdminOfFailure(string $error): void
+    {
+        try {
+            \Illuminate\Support\Facades\Mail::raw(
+                "Scan Failed\n\n" .
+                "URL: {$this->scan->url}\n" .
+                "Scan ID: {$this->scan->id}\n" .
+                "UUID: {$this->scan->uuid}\n" .
+                "User ID: {$this->scan->user_id}\n" .
+                "Error: {$error}\n" .
+                "Time: " . now()->toDateTimeString(),
+                function ($message) {
+                    $message->to('matt@geosource.ai')
+                        ->subject('GeoSource Scan Failed: ' . parse_url($this->scan->url, PHP_URL_HOST));
+                }
+            );
+        } catch (\Exception $e) {
+            Log::warning('Failed to send scan failure notification email: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -217,7 +254,12 @@ class ScanWebsiteJob implements ShouldQueue
         }
 
         // For other errors (404, 500, etc.), fail immediately
-        $this->markFailed("Failed to fetch URL. Status: {$status}");
+        $userMessage = match ($status) {
+            404 => 'The page was not found. Please check the URL is correct.',
+            500, 502, 503, 504 => 'The website is experiencing issues. Please try again later.',
+            default => null,
+        };
+        $this->markFailed("HTTP request failed with status {$status}", $userMessage);
 
         return null;
     }
@@ -234,15 +276,14 @@ class ScanWebsiteJob implements ShouldQueue
                 ->setNpmBinary(config('browsershot.npm_binary', '/usr/bin/npm'))
                 ->noSandbox()
                 ->dismissDialogs()
-                ->timeout(60)
+                ->timeout(90)
                 // Stealth options to bypass bot detection
-                ->userAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
+                ->userAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36')
                 ->windowSize(1920, 1080)
                 ->addChromiumArguments([
                     'disable-blink-features' => 'AutomationControlled',
-                    'disable-features' => 'IsolateOrigins,site-per-process',
+                    'disable-features' => 'IsolateOrigins,site-per-process,TranslateUI',
                     'disable-site-isolation-trials',
-                    'disable-web-security',
                     'disable-dev-shm-usage',
                     'disable-gpu',
                     'no-first-run',
@@ -250,13 +291,31 @@ class ScanWebsiteJob implements ShouldQueue
                     'disable-infobars',
                     'disable-extensions',
                     'disable-popup-blocking',
+                    'disable-background-networking',
+                    'disable-sync',
+                    'metrics-recording-only',
+                    'disable-default-apps',
+                    'mute-audio',
+                    'no-zygote',
+                    'single-process',
+                    'disable-hang-monitor',
+                    'disable-prompt-on-repost',
+                    'disable-client-side-phishing-detection',
                 ])
                 ->setExtraHttpHeaders([
                     'Accept-Language' => 'en-US,en;q=0.9',
                     'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+                    'Sec-Ch-Ua' => '"Chromium";v="122", "Not(A:Brand";v="24", "Google Chrome";v="122"',
+                    'Sec-Ch-Ua-Mobile' => '?0',
+                    'Sec-Ch-Ua-Platform' => '"Windows"',
+                    'Sec-Fetch-Dest' => 'document',
+                    'Sec-Fetch-Mode' => 'navigate',
+                    'Sec-Fetch-Site' => 'none',
+                    'Sec-Fetch-User' => '?1',
+                    'Upgrade-Insecure-Requests' => '1',
                 ])
-                // Wait for Cloudflare challenge to resolve
-                ->setDelay(3000);
+                // Wait for page to fully load
+                ->setDelay(5000);
 
             // Use custom Chrome path if specified
             if ($chromePath = config('browsershot.chrome_path')) {
@@ -266,23 +325,30 @@ class ScanWebsiteJob implements ShouldQueue
             $html = $browsershot->bodyHtml();
 
             if (empty($html)) {
-                $this->markFailed('Failed to fetch URL: Empty response from browser');
+                $this->markFailed('Browsershot returned empty response for ' . $url);
 
                 return null;
             }
 
-            // Check if we got a Cloudflare challenge page
-            if (str_contains($html, 'challenge-platform') || str_contains($html, 'cf-browser-verification')) {
-                Log::warning("Cloudflare challenge detected for {$url}, waiting longer...");
+            // Check if we got a Cloudflare challenge page or access denied
+            if (str_contains($html, 'challenge-platform') || str_contains($html, 'cf-browser-verification') || str_contains($html, 'Access denied') || str_contains($html, 'Just a moment')) {
+                Log::warning("Bot protection detected for {$url}, waiting longer...");
 
                 // Try again with longer delay
-                $html = $browsershot->setDelay(8000)->bodyHtml();
+                $html = $browsershot->setDelay(10000)->bodyHtml();
+
+                // If still blocked, fail with helpful message
+                if (str_contains($html, 'challenge-platform') || str_contains($html, 'Access denied') || str_contains($html, 'Just a moment')) {
+                    $this->markFailed('Bot protection (Cloudflare/etc) blocked scan after retry for ' . $url);
+
+                    return null;
+                }
             }
 
             return $html;
         } catch (\Exception $e) {
             Log::error("Browsershot failed for {$url}: ".$e->getMessage());
-            $this->markFailed('Failed to fetch URL: '.$e->getMessage());
+            $this->markFailed('Browsershot exception: ' . $e->getMessage());
 
             return null;
         }
@@ -439,20 +505,24 @@ class ScanWebsiteJob implements ShouldQueue
      */
     public function failed(?\Throwable $exception): void
     {
-        $message = $exception?->getMessage() ?? 'Job failed after maximum attempts';
+        $internalMessage = $exception?->getMessage() ?? 'Job failed after maximum attempts';
 
         $this->scan->update([
             'status' => 'failed',
             'progress_step' => 'Failed',
             'progress_percent' => 0,
-            'error_message' => $message,
+            'error_message' => 'We were unable to scan this URL. Please try again or contact support.',
+            'internal_error' => 'Job failure: ' . $internalMessage,
             'completed_at' => now(),
         ]);
 
         Log::error('Scan job failed', [
             'scan_id' => $this->scan->id,
             'url' => $this->scan->url,
-            'error' => $message,
+            'error' => $internalMessage,
         ]);
+
+        // Email notification to admin
+        $this->notifyAdminOfFailure('Job failure: ' . $internalMessage);
     }
 }
