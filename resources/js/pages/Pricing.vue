@@ -184,8 +184,6 @@ const getPlanLimit = (planKey: string, limitKey: string) => {
         <meta name="twitter:title" content="Pricing - GEO Analysis Plans | GeoSource.ai" />
         <meta name="twitter:description" content="Simple, transparent pricing for GEO analysis. Start free or upgrade to Pro." />
         <link rel="canonical" href="https://geosource.ai/pricing" />
-        <link rel="preconnect" href="https://rsms.me/" />
-        <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     </Head>
 
     <div class="min-h-screen bg-background text-foreground">

@@ -152,8 +152,6 @@ const faqItems = [
         <meta name="twitter:description" content="Free GEO score tool to measure AI search visibility. Optimize content for ChatGPT, Perplexity & Claude." />
         <meta name="twitter:image" content="https://geosource.ai/images/og/geosource-homepage.png" />
         <link rel="canonical" href="https://geosource.ai/" />
-        <link rel="preconnect" href="https://rsms.me/" />
-        <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
         <!-- JSON-LD Structured Data -->
         <component :is="'script'" type="application/ld+json">
         {
