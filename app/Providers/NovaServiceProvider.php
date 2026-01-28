@@ -46,6 +46,10 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
                     MenuItem::resource(\App\Nova\BlogPost::class),
                 ])->icon('document-text')->collapsable(),
 
+                MenuSection::make('Analytics', [
+                    MenuItem::resource(\App\Nova\PageView::class),
+                ])->icon('chart-pie')->collapsable(),
+
                 MenuSection::make('Marketing', [
                     MenuItem::resource(\App\Nova\EmailTemplate::class),
                     MenuItem::resource(\App\Nova\EmailCampaign::class),
