@@ -27,12 +27,15 @@ class TopBlogPosts extends Partition
             ->limit(10)
             ->get()
             ->mapWithKeys(function ($post) {
-                // Truncate title if too long
-                $title = strlen($post->title) > 40
-                    ? substr($post->title, 0, 37) . '...'
-                    : $post->title;
+                // Convert encoding and truncate title if too long
+                $title = mb_convert_encoding($post->title ?? '', 'UTF-8', 'UTF-8');
+                $title = preg_replace('/[\x00-\x1F\x7F]/u', '', $title); // Remove control characters
 
-                return [$title => $post->view_count];
+                if (mb_strlen($title) > 40) {
+                    $title = mb_substr($title, 0, 37) . '...';
+                }
+
+                return [$title => $post->view_count ?? 0];
             })
             ->toArray();
 

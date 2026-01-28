@@ -364,7 +364,7 @@ MARKDOWN;
         BlogPost::create([
             'title' => 'Designing Content for AI Snippet Extraction: Headings, Lists, Tables & More',
             'slug' => $slug,
-            'excerpt' => 'AI search engines don\'t rank pages — they extract answers. Learn how to structure headings, lists, tables, and definitions so AI systems can confidently cite your content.',
+            'excerpt' => 'AI search engines don\'t rank pages - they extract answers. Learn how to structure headings, lists, tables, and definitions so AI systems can confidently cite your content.',
             'content' => $content,
             'featured_image' => '/images/blog/designing-content-for-ai-snippet-extraction.png',
             'meta_title' => 'Designing Content for AI Snippet Extraction | GEO Guide',
@@ -636,7 +636,7 @@ MARKDOWN;
             '@graph' => [
                 [
                     '@type' => 'BlogPosting',
-                    'headline' => 'AI Search Is Stealing Your Traffic — Here\'s How to Get It Back',
+                    'headline' => 'AI Search Is Stealing Your Traffic - Here\'s How to Get It Back',
                     'description' => 'AI search is already taking traffic from websites. Learn why your content isn\'t appearing in AI answers and how Generative Engine Optimization (GEO) helps you reclaim visibility.',
                     'url' => 'https://geosource.ai/blog/ai-search-is-stealing-your-traffic',
                     'datePublished' => '2026-01-27',
@@ -695,12 +695,12 @@ MARKDOWN;
         ];
 
         BlogPost::create([
-            'title' => 'AI Search Is Stealing Your Traffic — Here\'s How to Get It Back',
+            'title' => 'AI Search Is Stealing Your Traffic - Here\'s How to Get It Back',
             'slug' => $slug,
-            'excerpt' => 'AI search is already taking traffic from websites. Not in the future — right now. Learn why your content isn\'t appearing in AI answers and how GEO helps you reclaim visibility.',
+            'excerpt' => 'AI search is already taking traffic from websites. Not in the future - right now. Learn why your content isn\'t appearing in AI answers and how GEO helps you reclaim visibility.',
             'content' => $content,
             'featured_image' => '/images/blog/ai-search-is-stealing-your-traffic.png',
-            'meta_title' => 'AI Search Is Stealing Your Traffic — Here\'s How to Get It Back | GeoSource.ai',
+            'meta_title' => 'AI Search Is Stealing Your Traffic - Here\'s How to Get It Back | GeoSource.ai',
             'meta_description' => 'AI search is taking website traffic. Learn why your content isn\'t in AI answers and how Generative Engine Optimization (GEO) helps you get cited by ChatGPT, Perplexity, and Gemini.',
             'schema_json' => $schemaJson,
             'tags' => ['AI Search', 'GEO', 'Traffic Loss', 'Content Strategy', 'AI Visibility'],

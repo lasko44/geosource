@@ -52,7 +52,7 @@ class BlogPost extends Resource
     public function fields(NovaRequest $request): array
     {
         return [
-            ID::make()->sortable(),
+            ID::make()->sortable()->hideFromIndex(),
 
             Text::make('Title')
                 ->sortable()
@@ -100,13 +100,29 @@ class BlogPost extends Resource
             DateTime::make('Published At')
                 ->sortable()
                 ->filterable()
-                ->nullable(),
+                ->nullable()
+                ->help('Time is displayed in Central Time (CST/CDT)')
+                ->displayUsing(fn ($value) => $value?->setTimezone('America/Chicago')->format('M d, Y g:i A T'))
+                ->fillUsing(function ($request, $model, $attribute, $requestAttribute) {
+                    $value = $request->input($requestAttribute);
+                    if ($value) {
+                        // Parse as CST and convert to UTC for storage
+                        $model->{$attribute} = \Carbon\Carbon::parse($value, 'America/Chicago')->utc();
+                    } else {
+                        $model->{$attribute} = null;
+                    }
+                }),
 
             BelongsTo::make('Author', 'author', User::class)
                 ->sortable()
                 ->filterable()
                 ->nullable()
-                ->default($request->user()?->id)
+                ->default(function () {
+                    return \App\Models\User::where('email', 'matthew.laszkiewicz@gmail.com')->first()?->id;
+                })
+                ->relatableQueryUsing(function (NovaRequest $request, $query) {
+                    $query->where('email', 'matthew.laszkiewicz@gmail.com');
+                })
                 ->hideFromIndex(),
 
             Text::make('Tags')
@@ -142,7 +158,8 @@ class BlogPost extends Resource
             Text::make('Meta Title')
                 ->nullable()
                 ->rules('nullable', 'max:70')
-                ->help('Leave blank to use the post title'),
+                ->help('Leave blank to use the post title')
+                ->hideFromIndex(),
 
             Textarea::make('Meta Description')
                 ->nullable()
