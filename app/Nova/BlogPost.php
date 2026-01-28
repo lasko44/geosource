@@ -97,13 +97,18 @@ class BlogPost extends Resource
                 ])
                 ->onlyOnIndex(),
 
-            DateTime::make('Published At (CST)', 'published_at')
+            Text::make('Published At (CST)', 'published_at')
                 ->sortable()
-                ->filterable()
                 ->nullable()
+                ->withMeta(['type' => 'datetime-local'])
                 ->resolveUsing(function ($value) {
                     // Convert UTC to CST for display/editing
-                    return $value?->setTimezone('America/Chicago');
+                    if (!$value) return null;
+                    return \Carbon\Carbon::parse($value)->setTimezone('America/Chicago')->format('Y-m-d\TH:i');
+                })
+                ->displayUsing(function ($value) {
+                    if (!$value) return null;
+                    return \Carbon\Carbon::parse($value)->setTimezone('America/Chicago')->format('M d, Y g:i A') . ' CST';
                 })
                 ->fillUsing(function ($request, $model, $attribute, $requestAttribute) {
                     $value = $request->input($requestAttribute);
