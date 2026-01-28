@@ -97,12 +97,14 @@ class BlogPost extends Resource
                 ])
                 ->onlyOnIndex(),
 
-            DateTime::make('Published At')
+            DateTime::make('Published At (CST)', 'published_at')
                 ->sortable()
                 ->filterable()
                 ->nullable()
-                ->help('Time is displayed in Central Time (CST/CDT)')
-                ->displayUsing(fn ($value) => $value?->setTimezone('America/Chicago')->format('M d, Y g:i A T'))
+                ->resolveUsing(function ($value) {
+                    // Convert UTC to CST for display/editing
+                    return $value?->setTimezone('America/Chicago');
+                })
                 ->fillUsing(function ($request, $model, $attribute, $requestAttribute) {
                     $value = $request->input($requestAttribute);
                     if ($value) {
