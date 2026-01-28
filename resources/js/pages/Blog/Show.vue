@@ -20,8 +20,70 @@ import {
     ChevronUp,
     List,
     HelpCircle,
+    Share2,
+    Twitter,
+    Linkedin,
+    Facebook,
+    Link as LinkIcon,
+    Check,
 } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
+
+// Share functionality
+const copied = ref(false);
+const shareMenuOpen = ref(false);
+
+const getShareUrl = () => {
+    return `https://geosource.ai/blog/${props.post.slug}`;
+};
+
+const shareOnTwitter = () => {
+    const url = encodeURIComponent(getShareUrl());
+    const text = encodeURIComponent(props.post.title);
+    window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank', 'width=550,height=420');
+    shareMenuOpen.value = false;
+};
+
+const shareOnLinkedIn = () => {
+    const url = encodeURIComponent(getShareUrl());
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank', 'width=550,height=420');
+    shareMenuOpen.value = false;
+};
+
+const shareOnFacebook = () => {
+    const url = encodeURIComponent(getShareUrl());
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank', 'width=550,height=420');
+    shareMenuOpen.value = false;
+};
+
+const copyLink = async () => {
+    try {
+        await navigator.clipboard.writeText(getShareUrl());
+        copied.value = true;
+        setTimeout(() => {
+            copied.value = false;
+            shareMenuOpen.value = false;
+        }, 2000);
+    } catch (err) {
+        console.error('Failed to copy:', err);
+    }
+};
+
+// Close share menu when clicking outside
+const handleClickOutside = (event: MouseEvent) => {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.share-menu-container')) {
+        shareMenuOpen.value = false;
+    }
+};
+
+onMounted(() => {
+    document.addEventListener('click', handleClickOutside);
+});
+
+onUnmounted(() => {
+    document.removeEventListener('click', handleClickOutside);
+});
 
 interface Author {
     id: number;
@@ -234,19 +296,84 @@ const jsonLd = computed(() => {
                         <p class="mt-4 text-xl text-muted-foreground">
                             {{ post.excerpt }}
                         </p>
-                        <div class="mt-6 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                            <span class="flex items-center gap-1.5">
-                                <Calendar class="h-4 w-4" aria-hidden="true" />
-                                <time :datetime="post.published_at">{{ formatDate(post.published_at) }}</time>
-                            </span>
-                            <span class="flex items-center gap-1.5">
-                                <Clock class="h-4 w-4" aria-hidden="true" />
-                                {{ readingTime }} min read
-                            </span>
-                            <span v-if="post.author" class="flex items-center gap-1.5">
-                                <User class="h-4 w-4" aria-hidden="true" />
-                                {{ post.author.name }}
-                            </span>
+                        <div class="mt-6 flex flex-wrap items-center justify-between gap-4">
+                            <div class="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                                <span class="flex items-center gap-1.5">
+                                    <Calendar class="h-4 w-4" aria-hidden="true" />
+                                    <time :datetime="post.published_at">{{ formatDate(post.published_at) }}</time>
+                                </span>
+                                <span class="flex items-center gap-1.5">
+                                    <Clock class="h-4 w-4" aria-hidden="true" />
+                                    {{ readingTime }} min read
+                                </span>
+                                <span v-if="post.author" class="flex items-center gap-1.5">
+                                    <User class="h-4 w-4" aria-hidden="true" />
+                                    {{ post.author.name }}
+                                </span>
+                            </div>
+
+                            <!-- Share Button -->
+                            <div class="relative share-menu-container">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    @click="shareMenuOpen = !shareMenuOpen"
+                                    class="gap-2"
+                                    :class="{ 'bg-muted': shareMenuOpen }"
+                                >
+                                    <Share2 class="h-4 w-4" />
+                                    Share
+                                </Button>
+
+                                <!-- Share Dropdown -->
+                                <Transition
+                                    enter-active-class="transition ease-out duration-100"
+                                    enter-from-class="transform opacity-0 scale-95"
+                                    enter-to-class="transform opacity-100 scale-100"
+                                    leave-active-class="transition ease-in duration-75"
+                                    leave-from-class="transform opacity-100 scale-100"
+                                    leave-to-class="transform opacity-0 scale-95"
+                                >
+                                    <div
+                                        v-show="shareMenuOpen"
+                                        class="absolute right-0 top-full mt-2 z-50 w-52 rounded-md border bg-popover p-1 shadow-md"
+                                    >
+                                        <button
+                                            @click="shareOnTwitter"
+                                            class="flex w-full items-center gap-3 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground transition-colors"
+                                        >
+                                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                            </svg>
+                                            Share on X
+                                        </button>
+                                        <button
+                                            @click="shareOnLinkedIn"
+                                            class="flex w-full items-center gap-3 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground transition-colors"
+                                        >
+                                            <Linkedin class="h-4 w-4" />
+                                            Share on LinkedIn
+                                        </button>
+                                        <button
+                                            @click="shareOnFacebook"
+                                            class="flex w-full items-center gap-3 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground transition-colors"
+                                        >
+                                            <Facebook class="h-4 w-4" />
+                                            Share on Facebook
+                                        </button>
+                                        <div class="my-1 h-px bg-border"></div>
+                                        <button
+                                            @click="copyLink"
+                                            class="flex w-full items-center gap-3 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground transition-colors"
+                                            :class="{ 'text-green-600 dark:text-green-400': copied }"
+                                        >
+                                            <Check v-if="copied" class="h-4 w-4" />
+                                            <LinkIcon v-else class="h-4 w-4" />
+                                            {{ copied ? 'Copied!' : 'Copy link' }}
+                                        </button>
+                                    </div>
+                                </Transition>
+                            </div>
                         </div>
                     </header>
 

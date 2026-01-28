@@ -32,8 +32,7 @@ class BlogPostObserver
      */
     public function deleted(BlogPost $blogPost): void
     {
-        // Update llms.txt to remove the deleted post
-        $this->geoService->updateLlmsTxt();
+        // llms.txt is now manually managed - no auto-regeneration
     }
 
     /**
@@ -45,16 +44,12 @@ class BlogPostObserver
     }
 
     /**
-     * Update GEO data (schema.json and llms.txt) for a blog post.
+     * Update GEO data (schema.json only) for a blog post.
+     * Note: llms.txt is now manually managed and not auto-regenerated.
      */
     private function updateGeoData(BlogPost $blogPost): void
     {
         // Generate and save schema.org JSON-LD
         $this->geoService->updatePostSchema($blogPost);
-
-        // Update llms.txt if the post is published
-        if ($blogPost->isPublished()) {
-            $this->geoService->updateLlmsTxt();
-        }
     }
 }

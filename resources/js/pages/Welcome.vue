@@ -97,47 +97,156 @@ const faqItems = [
         answer: 'Generative Engine Optimization (GEO) is the process of optimizing website content so AI systems like ChatGPT, Perplexity, Claude, and Gemini can clearly understand, trust, and reference it when generating answers. Unlike SEO, GEO focuses on structure, definitions, answerability, authority, and machine readability.',
     },
     {
-        question: 'How is GEO different from SEO?',
-        answer: 'SEO focuses on ranking pages in search engine results. GEO focuses on whether AI models can confidently summarize, cite, or reference your content inside generated responses. A page can rank well in Google but still be invisible to AI systems.',
+        question: 'What are the GEO vs SEO differences?',
+        answer: 'The key GEO vs SEO differences: SEO focuses on ranking pages in search engine results while GEO focuses on AI citation vs traditional ranking. SEO helps users find your page; GEO helps AI systems use your page. A page can rank well in Google but still be invisible to AI systems. Modern search strategies require both AI search vs SEO approaches.',
     },
     {
-        question: 'What is a GEO score?',
-        answer: 'A GEO score is a numerical rating from 0 to 100 that measures how optimized a webpage is for AI search engines. GeoSource.ai calculates this score using 12 AI evaluation pillars, including definition clarity, topic authority, citation quality, and answerability.',
+        question: 'How do I get my GEO score explained?',
+        answer: 'A GEO score is a numerical rating from 0 to 100 that measures how optimized a webpage is for AI search engines. GeoSource.ai\'s GEO score tool calculates this using 12 AI content scoring metrics including definition clarity, topic authority, citation quality, and answerability. Each metric reveals why AI systems may struggle to cite your content.',
+    },
+    {
+        question: 'How to optimize for AI search engines?',
+        answer: 'To optimize for AI search engines: 1) Use clear definitions in "X is Y" format, 2) Structure content with proper headings, 3) Write answer-first content blocks, 4) Include FAQ sections, 5) Use tables and lists, 6) Build E-E-A-T signals, 7) Ensure AI-friendly content structure with semantic HTML. GeoSource.ai provides specific recommendations for each page.',
+    },
+    {
+        question: 'What is a GEO score tool?',
+        answer: 'A GEO score tool is an AI content performance scanner that analyzes webpages for AI search visibility. GeoSource.ai\'s GEO score tool measures 12 pillars including definition clarity, content structure, topic authority, machine readability, answerability, and E-E-A-T signals to provide actionable AI content optimization recommendations.',
+    },
+    {
+        question: 'What are AI content optimization best practices?',
+        answer: 'AI content optimization best practices include: clear definitions, structured headings (H1-H3), answer-first paragraphs, FAQ sections, comparison tables, bullet lists, schema markup, and strong E-E-A-T signals. Our AI-friendly content structure guide in each scan shows exactly what to fix.',
+    },
+    {
+        question: 'What are generative search visibility strategies?',
+        answer: 'Generative search visibility strategies focus on making content extractable by AI systems. Key strategies include: explicit definitions, answering questions directly, using structured data, building topic authority through depth, and ensuring AI crawlers can access your content. GeoSource.ai tracks your progress with AI content scoring metrics.',
     },
     {
         question: 'Which AI platforms does GeoSource.ai support?',
-        answer: 'GeoSource.ai analyzes content for visibility in major AI platforms, including ChatGPT (OpenAI), Perplexity, Claude, and Gemini. The analysis simulates how large language models evaluate content.',
-    },
-    {
-        question: 'Can GeoSource.ai help my site appear in AI answers?',
-        answer: 'Yes. GeoSource.ai identifies the specific issues that prevent AI systems from using your content and provides actionable recommendations to improve AI readability and trust. While no tool can guarantee citations, GEO optimization significantly increases your likelihood of being referenced.',
+        answer: 'GeoSource.ai analyzes content for visibility in major AI platforms including ChatGPT (OpenAI), Perplexity, Claude, and Google Gemini. Our AI citation tracker monitors actual citations across these platforms, and our AI search visibility tool simulates how LLMs evaluate content.',
     },
     {
         question: 'Does GEO replace SEO?',
-        answer: 'No. GEO complements SEO. SEO helps users find your page. GEO helps AI systems use your page. Modern search strategies require both.',
-    },
-    {
-        question: 'Who is GeoSource.ai for?',
-        answer: 'GeoSource.ai is designed for SaaS founders, content creators, SEO professionals, digital agencies, publishers preparing for AI search, and anyone who wants visibility inside AI-generated results.',
+        answer: 'No. GEO complements SEO. Understanding AI search vs SEO differences is key: SEO helps users find your page while GEO helps AI systems use your page. The AI citation vs traditional ranking difference means you need both strategies for modern visibility.',
     },
 ];
 </script>
 
 <template>
-    <Head title="GEO Scoring Platform for AI Search Visibility | GeoSource.ai">
-        <meta name="description" content="GeoSource.ai helps you measure and improve how visible your content is inside AI search engines like ChatGPT, Perplexity, Claude, and Gemini. Scan any URL. Get a GEO score. Fix what AI systems don't understand." />
-        <meta property="og:title" content="Generative Engine Optimization (GEO) Scoring Platform for AI Search Visibility" />
-        <meta property="og:description" content="Measure and improve your website's visibility to AI search systems. Get your GEO Score and actionable optimization recommendations." />
+    <Head title="GEO Score Tool & AI Search Visibility Platform | GeoSource.ai">
+        <meta name="description" content="GEO score tool for AI search optimization. Measure AI visibility, analyze content for ChatGPT, Perplexity & Claude. Get your GEO score and optimize for AI search engines." />
+        <meta name="keywords" content="GEO score tool, AI search visibility tool, Generative Engine Optimization, AI content analyzer, AI citation tracker, GEO vs SEO, AI search optimization" />
+        <meta name="robots" content="index, follow" />
+        <meta property="og:title" content="GEO Score Tool - Optimize for AI Search Engines | GeoSource.ai" />
+        <meta property="og:description" content="The leading GEO score tool for AI search visibility. Analyze content for ChatGPT, Perplexity, Claude & Gemini. Get actionable AI content optimization recommendations." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://geosource.ai/" />
+        <meta property="og:image" content="https://geosource.ai/images/og/geosource-homepage.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:site_name" content="GeoSource.ai" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:site" content="@geosource_ai" />
         <meta name="twitter:creator" content="@geosource_ai" />
-        <meta name="twitter:title" content="GeoSource.ai - GEO Scoring Platform for AI Search Visibility" />
-        <meta name="twitter:description" content="Measure and improve your website's visibility to AI search systems." />
+        <meta name="twitter:title" content="GEO Score Tool - AI Search Visibility Platform | GeoSource.ai" />
+        <meta name="twitter:description" content="Measure and optimize your content for AI search engines. Get your GEO score and AI visibility recommendations." />
+        <meta name="twitter:image" content="https://geosource.ai/images/og/geosource-homepage.png" />
         <link rel="canonical" href="https://geosource.ai/" />
         <link rel="preconnect" href="https://rsms.me/" />
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+        <!-- JSON-LD Structured Data -->
+        <component :is="'script'" type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@graph": [
+                {
+                    "@type": "Organization",
+                    "@id": "https://geosource.ai/#organization",
+                    "name": "GeoSource.ai",
+                    "url": "https://geosource.ai",
+                    "logo": "https://geosource.ai/images/logo.png",
+                    "description": "GeoSource.ai is the leading GEO score tool and AI search optimization platform for measuring and improving content visibility in AI search engines.",
+                    "sameAs": ["https://x.com/geosource_ai"]
+                },
+                {
+                    "@type": "WebSite",
+                    "@id": "https://geosource.ai/#website",
+                    "url": "https://geosource.ai",
+                    "name": "GeoSource.ai",
+                    "publisher": {"@id": "https://geosource.ai/#organization"},
+                    "description": "GEO Score Tool and AI Search Visibility Platform"
+                },
+                {
+                    "@type": "SoftwareApplication",
+                    "@id": "https://geosource.ai/#software",
+                    "name": "GeoSource.ai GEO Score Tool",
+                    "applicationCategory": "BusinessApplication",
+                    "operatingSystem": "Web",
+                    "description": "GEO score tool that measures how optimized webpages are for AI search engines like ChatGPT, Perplexity, Claude, and Gemini. Provides AI content scoring metrics and optimization recommendations.",
+                    "offers": {
+                        "@type": "AggregateOffer",
+                        "lowPrice": "0",
+                        "highPrice": "99",
+                        "priceCurrency": "USD",
+                        "offerCount": "3"
+                    },
+                    "featureList": [
+                        "GEO Score Analysis (0-100)",
+                        "AI Content Performance Scanner",
+                        "AI-Ready Content Checker",
+                        "AI Citation Tracker",
+                        "12 GEO Evaluation Pillars",
+                        "AI Visibility Optimization Recommendations"
+                    ]
+                },
+                {
+                    "@type": "FAQPage",
+                    "@id": "https://geosource.ai/#faq",
+                    "mainEntity": [
+                        {
+                            "@type": "Question",
+                            "name": "What is Generative Engine Optimization (GEO)?",
+                            "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "Generative Engine Optimization (GEO) is the process of optimizing website content so AI systems like ChatGPT, Perplexity, Claude, and Gemini can clearly understand, trust, and reference it when generating answers. Unlike SEO, GEO focuses on structure, definitions, answerability, authority, and machine readability."
+                            }
+                        },
+                        {
+                            "@type": "Question",
+                            "name": "What are the GEO vs SEO differences?",
+                            "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "SEO focuses on ranking pages in search engine results. GEO focuses on whether AI models can confidently summarize, cite, or reference your content inside generated responses. A page can rank well in Google but still be invisible to AI systems. SEO helps users find your page while GEO helps AI systems use your page."
+                            }
+                        },
+                        {
+                            "@type": "Question",
+                            "name": "What is a GEO score?",
+                            "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "A GEO score is a numerical rating from 0 to 100 that measures how optimized a webpage is for AI search engines. GeoSource.ai calculates this score using 12 AI evaluation pillars, including definition clarity, topic authority, citation quality, and answerability."
+                            }
+                        },
+                        {
+                            "@type": "Question",
+                            "name": "How to optimize for AI search engines?",
+                            "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "To optimize for AI search engines: 1) Use clear definitions and structured headings, 2) Write answer-first content blocks, 3) Include FAQ sections, 4) Use tables and lists for structured data, 5) Build E-E-A-T signals, 6) Ensure content is machine-readable with proper HTML semantics and schema markup."
+                            }
+                        },
+                        {
+                            "@type": "Question",
+                            "name": "Which AI platforms does GeoSource.ai support?",
+                            "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "GeoSource.ai analyzes content for visibility in major AI platforms, including ChatGPT (OpenAI), Perplexity, Claude, and Gemini. The analysis simulates how large language models evaluate content."
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+        </component>
     </Head>
 
     <div class="min-h-screen bg-background text-foreground">
@@ -238,22 +347,21 @@ const faqItems = [
                     <div class="mx-auto max-w-3xl text-center">
                         <Badge variant="secondary" class="mb-6">
                             <Sparkles class="mr-1 h-3 w-3" aria-hidden="true" />
-                            AI-Powered Analysis
+                            GEO Score Tool & AI Content Analyzer
                         </Badge>
                         <h1 id="hero-heading" class="text-4xl font-bold tracking-tight sm:text-6xl">
-                            <span class="sr-only">Generative Engine Optimization (GEO) Scoring Platform for AI Search Visibility: </span>
-                            Optimize Your Website for AI Search
+                            The GEO Score Tool for AI Search Visibility
                         </h1>
                         <p class="mt-6 text-lg leading-8 text-muted-foreground">
-                            GeoSource.ai helps you measure and improve how visible your content is inside AI search engines like ChatGPT, Perplexity, Claude, and Gemini.
+                            <strong>Generative Engine Optimization (GEO)</strong> is how you optimize for AI search engines. GeoSource.ai measures and improves your content's visibility inside ChatGPT, Perplexity, Claude, and Gemini.
                         </p>
                         <p class="mt-4 text-base font-medium text-foreground">
-                            Scan any URL. Get a GEO score. Fix what AI systems don't understand.
+                            Scan any URL. Get your GEO score. Fix what AI systems don't understand.
                         </p>
                         <div class="mt-10 flex flex-col items-center gap-4">
                             <Link :href="register()">
                                 <Button size="lg" class="gap-2">
-                                    Start Free GEO Scan
+                                    Get Your Free GEO Score
                                     <ArrowRight class="h-4 w-4" aria-hidden="true" />
                                 </Button>
                             </Link>
@@ -263,18 +371,53 @@ const faqItems = [
                 </div>
             </section>
 
-            <!-- SEO vs GEO Section -->
+            <!-- GEO vs SEO Section -->
             <section class="border-t bg-muted/30 py-20" aria-labelledby="seo-geo-heading">
                 <article class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div class="mx-auto max-w-3xl">
                         <h2 id="seo-geo-heading" class="text-center text-3xl font-bold tracking-tight sm:text-4xl">
-                            SEO Shows Rankings. GEO Shows AI Visibility.
+                            GEO vs SEO: Understanding the Key Differences
                         </h2>
                         <p class="mt-6 text-center text-lg text-muted-foreground">
-                            AI search doesn't rank pages — it selects answers.
+                            <strong>AI search vs SEO</strong> — AI doesn't rank pages, it selects answers. Understanding the GEO vs SEO differences is critical for modern visibility.
                         </p>
-                        <p class="mt-4 text-center text-base text-muted-foreground">
-                            GeoSource.ai analyzes your content the same way AI models do and shows whether your site is:
+
+                        <!-- Comparison Table -->
+                        <div class="mt-8 overflow-hidden rounded-lg border">
+                            <table class="w-full text-left">
+                                <thead class="bg-muted">
+                                    <tr>
+                                        <th class="px-6 py-4 font-semibold">Traditional SEO</th>
+                                        <th class="px-6 py-4 font-semibold">Generative Engine Optimization (GEO)</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y">
+                                    <tr>
+                                        <td class="px-6 py-4">Optimizes for rankings</td>
+                                        <td class="px-6 py-4">Optimizes for AI citations</td>
+                                    </tr>
+                                    <tr class="bg-muted/30">
+                                        <td class="px-6 py-4">Targets keywords</td>
+                                        <td class="px-6 py-4">Targets semantic clarity</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4">Measures backlinks</td>
+                                        <td class="px-6 py-4">Measures AI content scoring metrics</td>
+                                    </tr>
+                                    <tr class="bg-muted/30">
+                                        <td class="px-6 py-4">Helps users find your page</td>
+                                        <td class="px-6 py-4">Helps AI systems use your page</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4">Page ranking in SERPs</td>
+                                        <td class="px-6 py-4">AI citation vs traditional ranking</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <p class="mt-6 text-center text-base text-muted-foreground">
+                            Our AI search visibility tool analyzes your content the same way AI models do and shows whether your site is:
                         </p>
                         <ul class="mt-8 grid gap-4 sm:grid-cols-3" role="list" aria-label="AI visibility criteria">
                             <li v-for="point in aiUnderstandingPoints" :key="point.text">
@@ -297,6 +440,11 @@ const faqItems = [
                                 it won't reference it.
                             </p>
                         </aside>
+                        <div class="mt-6 text-center">
+                            <Link href="/resources/geo-vs-seo" class="text-primary hover:underline font-medium">
+                                Learn more about GEO vs SEO differences →
+                            </Link>
+                        </div>
                     </div>
                 </article>
             </section>
@@ -306,13 +454,22 @@ const faqItems = [
                 <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div class="mx-auto max-w-3xl">
                         <h2 id="scanning-heading" class="text-center text-3xl font-bold tracking-tight sm:text-4xl">
-                            GEO Scanning & AI Content Analysis
+                            How to Optimize for AI Search Engines
                         </h2>
+
+                        <!-- Definition Block -->
+                        <div class="mt-8 rounded-lg border-l-4 border-primary bg-primary/5 p-6">
+                            <p class="font-semibold text-lg">What is Generative Engine Optimization?</p>
+                            <p class="mt-2 text-muted-foreground">
+                                <strong>Generative Engine Optimization (GEO)</strong> is the practice of structuring content so AI search engines like ChatGPT, Perplexity, Claude, and Gemini can understand, trust, and cite it in their responses. It's the AI content optimization best practice for the age of generative search.
+                            </p>
+                        </div>
+
                         <h3 class="mt-8 text-center text-xl font-semibold">
-                            Scan Any Page for AI Readiness
+                            AI Content Performance Scanner
                         </h3>
                         <p class="mt-4 text-center text-lg text-muted-foreground">
-                            Enter a URL and instantly see how well your content performs inside AI systems.
+                            Enter a URL and instantly see how well your content performs inside AI systems. Our AI-ready content checker analyzes every page.
                         </p>
                         <Card class="mt-8 border-primary/50 bg-primary/5">
                             <CardContent class="pt-6">
@@ -325,11 +482,16 @@ const faqItems = [
                             </CardContent>
                         </Card>
                         <h3 class="mt-8 text-center text-lg font-semibold">
-                            Track Improvements Over Time
+                            Track Your Generative Search Visibility
                         </h3>
                         <p class="mt-4 text-center text-base text-muted-foreground">
-                            Built specifically for generative search. Re-scan pages after making improvements to measure your progress.
+                            Built specifically for generative search visibility strategies. Re-scan pages after making improvements to measure your progress.
                         </p>
+                        <div class="mt-6 text-center">
+                            <Link href="/resources/what-is-geo" class="text-primary hover:underline font-medium">
+                                Learn: What is Generative Engine Optimization? →
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -339,13 +501,22 @@ const faqItems = [
                 <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div class="mx-auto max-w-3xl">
                         <h2 id="score-heading" class="text-center text-3xl font-bold tracking-tight sm:text-4xl">
-                            How GeoSource.ai Calculates Your GEO Score
+                            GEO Score Explained: AI Content Scoring Metrics
                         </h2>
+
+                        <!-- Definition Block -->
+                        <div class="mt-8 rounded-lg border-l-4 border-primary bg-primary/5 p-6">
+                            <p class="font-semibold text-lg">What is a GEO Score?</p>
+                            <p class="mt-2 text-muted-foreground">
+                                A <strong>GEO score</strong> is a numerical rating from 0 to 100 that measures how optimized a webpage is for AI search engines. Our GEO score tool calculates this using 12 AI content scoring metrics that determine whether AI systems can understand, trust, and cite your content.
+                            </p>
+                        </div>
+
                         <h3 class="mt-8 text-center text-xl font-semibold">
-                            12 AI Ranking Factors Explained
+                            12 AI Content Scoring Metrics Explained
                         </h3>
                         <p class="mt-4 text-center text-lg text-muted-foreground">
-                            GeoSource.ai evaluates content using 12 GEO pillars including:
+                            Our AI content performance scanner evaluates content using 12 GEO pillars:
                         </p>
                         <ul class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" role="list" aria-label="GEO score factors">
                             <li v-for="factor in geoScoreFactors" :key="factor.text">
@@ -360,10 +531,10 @@ const faqItems = [
                         <div class="mt-8 grid gap-6 md:grid-cols-2">
                             <Card>
                                 <CardHeader>
-                                    <CardTitle class="text-lg">Content Structure and Answerability</CardTitle>
+                                    <CardTitle class="text-lg">AI-Friendly Content Structure</CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <p class="text-muted-foreground">Evaluates how well your content is organized for AI extraction and direct answer generation.</p>
+                                    <p class="text-muted-foreground">Our AI-ready content checker evaluates how well your content is organized for AI extraction and direct answer generation.</p>
                                 </CardContent>
                             </Card>
                             <Card>
@@ -371,13 +542,18 @@ const faqItems = [
                                     <CardTitle class="text-lg">E-E-A-T and Citation Signals</CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <p class="text-muted-foreground">Measures experience, expertise, authoritativeness, and trustworthiness signals that AI uses to select sources.</p>
+                                    <p class="text-muted-foreground">Measures experience, expertise, authoritativeness, and trustworthiness signals that AI uses to select sources for citation.</p>
                                 </CardContent>
                             </Card>
                         </div>
                         <p class="mt-8 text-center text-lg font-medium text-foreground">
                             Each pillar reveals exactly why AI systems struggle to use your content.
                         </p>
+                        <div class="mt-6 text-center">
+                            <Link href="/geo-score-explained" class="text-primary hover:underline font-medium">
+                                Deep dive: How GEO scoring works →
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -387,20 +563,20 @@ const faqItems = [
                 <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div class="mx-auto max-w-3xl">
                         <h2 id="recommendations-heading" class="text-center text-3xl font-bold tracking-tight sm:text-4xl">
-                            Actionable GEO Optimization Recommendations
+                            AI Content Optimization Best Practices
                         </h2>
                         <h3 class="mt-8 text-center text-xl font-semibold">
-                            Fix What AI Doesn't Understand
+                            Your AI-Friendly Content Structure Guide
                         </h3>
                         <p class="mt-4 text-center text-lg text-muted-foreground">
-                            Every scan includes actionable recommendations:
+                            Every scan includes actionable AI visibility optimization recommendations:
                         </p>
                         <div class="mt-8 grid gap-4 sm:grid-cols-3">
                             <Card>
                                 <CardContent class="flex flex-col items-center pt-6 text-center">
                                     <Target class="h-8 w-8 text-primary" aria-hidden="true" />
                                     <h4 class="mt-3 font-semibold">Personalized fixes</h4>
-                                    <p class="mt-2 text-sm text-muted-foreground">Tailored to your specific content issues</p>
+                                    <p class="mt-2 text-sm text-muted-foreground">AI content optimization tailored to your specific issues</p>
                                 </CardContent>
                             </Card>
                             <Card>
@@ -413,14 +589,19 @@ const faqItems = [
                             <Card>
                                 <CardContent class="flex flex-col items-center pt-6 text-center">
                                     <Zap class="h-8 w-8 text-primary" aria-hidden="true" />
-                                    <h4 class="mt-3 font-semibold">Clear Steps to Improve AI Visibility</h4>
-                                    <p class="mt-2 text-sm text-muted-foreground">Apply improvements immediately</p>
+                                    <h4 class="mt-3 font-semibold">Clear Steps to Improve</h4>
+                                    <p class="mt-2 text-sm text-muted-foreground">Generative search visibility strategies you can apply immediately</p>
                                 </CardContent>
                             </Card>
                         </div>
                         <p class="mt-8 text-center text-lg font-medium text-foreground">
-                            No vague SEO advice. Only AI-focused improvements.
+                            No vague SEO advice. Only AI-focused improvements based on AI content optimization best practices.
                         </p>
+                        <div class="mt-6 text-center">
+                            <Link href="/geo-optimization-checklist" class="text-primary hover:underline font-medium">
+                                Get the full GEO Optimization Checklist →
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </section>

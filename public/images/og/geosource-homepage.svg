@@ -1,0 +1,92 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="50%" style="stop-color:#1e293b"/>
+      <stop offset="100%" style="stop-color:#0f172a"/>
+    </linearGradient>
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#3b82f6"/>
+      <stop offset="100%" style="stop-color:#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#22c55e"/>
+      <stop offset="100%" style="stop-color:#16a34a"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bgGradient)"/>
+
+  <!-- Decorative circles -->
+  <circle cx="100" cy="100" r="200" fill="#3b82f6" opacity="0.05"/>
+  <circle cx="1100" cy="530" r="250" fill="#8b5cf6" opacity="0.05"/>
+  <circle cx="600" cy="315" r="350" fill="#3b82f6" opacity="0.03"/>
+
+  <!-- Grid pattern -->
+  <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#334155" stroke-width="0.5" opacity="0.3"/>
+  </pattern>
+  <rect width="1200" height="630" fill="url(#grid)" opacity="0.5"/>
+
+  <!-- Logo/Brand -->
+  <g transform="translate(80, 60)">
+    <!-- Globe icon -->
+    <circle cx="24" cy="24" r="22" stroke="url(#accentGradient)" stroke-width="3" fill="none"/>
+    <ellipse cx="24" cy="24" rx="10" ry="22" stroke="url(#accentGradient)" stroke-width="2" fill="none"/>
+    <line x1="2" y1="24" x2="46" y2="24" stroke="url(#accentGradient)" stroke-width="2"/>
+    <text x="60" y="34" font-family="Inter, system-ui, sans-serif" font-size="28" font-weight="700" fill="white">GeoSource.ai</text>
+  </g>
+
+  <!-- Main headline -->
+  <text x="600" y="220" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="64" font-weight="800" fill="white">
+    GEO Score Tool
+  </text>
+  <text x="600" y="295" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="42" font-weight="600" fill="#94a3b8">
+    AI Search Visibility Platform
+  </text>
+
+  <!-- Score visualization -->
+  <g transform="translate(340, 340)">
+    <!-- Score circle background -->
+    <circle cx="80" cy="80" r="70" fill="#1e293b" stroke="#334155" stroke-width="2"/>
+    <!-- Score arc -->
+    <circle cx="80" cy="80" r="60" fill="none" stroke="#334155" stroke-width="12" stroke-linecap="round"/>
+    <circle cx="80" cy="80" r="60" fill="none" stroke="url(#scoreGradient)" stroke-width="12" stroke-linecap="round"
+            stroke-dasharray="340" stroke-dashoffset="50" transform="rotate(-90 80 80)"/>
+    <!-- Score text -->
+    <text x="80" y="75" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="36" font-weight="800" fill="#22c55e">87</text>
+    <text x="80" y="100" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="14" font-weight="600" fill="#64748b">GEO SCORE</text>
+  </g>
+
+  <!-- Feature pills -->
+  <g transform="translate(500, 360)">
+    <rect x="0" y="0" width="180" height="40" rx="20" fill="#1e3a5f"/>
+    <text x="90" y="26" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="14" font-weight="600" fill="#3b82f6">AI Content Analyzer</text>
+
+    <rect x="200" y="0" width="160" height="40" rx="20" fill="#1e3a5f"/>
+    <text x="280" y="26" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="14" font-weight="600" fill="#3b82f6">Citation Tracker</text>
+
+    <rect x="380" y="0" width="200" height="40" rx="20" fill="#1e3a5f"/>
+    <text x="480" y="26" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="14" font-weight="600" fill="#3b82f6">12 GEO Pillars</text>
+  </g>
+
+  <g transform="translate(500, 420)">
+    <rect x="0" y="0" width="200" height="40" rx="20" fill="#1e3a5f"/>
+    <text x="100" y="26" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="14" font-weight="600" fill="#8b5cf6">ChatGPT + Perplexity</text>
+
+    <rect x="220" y="0" width="160" height="40" rx="20" fill="#1e3a5f"/>
+    <text x="300" y="26" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="14" font-weight="600" fill="#8b5cf6">Claude + Gemini</text>
+  </g>
+
+  <!-- Tagline -->
+  <text x="600" y="530" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="24" font-weight="500" fill="#64748b">
+    Optimize your content for AI search engines
+  </text>
+
+  <!-- URL -->
+  <text x="600" y="580" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="20" font-weight="600" fill="url(#accentGradient)">
+    geosource.ai
+  </text>
+</svg>

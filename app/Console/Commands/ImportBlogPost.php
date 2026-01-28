@@ -19,6 +19,10 @@ class ImportBlogPost extends Command
             $this->importDesigningContentForAiSnippetExtraction();
         }
 
+        if ($slug === 'ai-search-is-stealing-your-traffic' || ! $slug) {
+            $this->importAiSearchIsStealingYourTraffic();
+        }
+
         return 0;
     }
 
@@ -367,6 +371,338 @@ MARKDOWN;
             'meta_description' => 'Learn how to structure content for AI extraction. Covers headings, lists, tables, definitions, schema markup, and FAQ sections for maximum GEO visibility.',
             'schema_json' => $schemaJson,
             'tags' => ['GEO', 'Content Strategy', 'AI Search', 'Optimization'],
+            'faq' => $faq,
+            'quick_links' => $quickLinks,
+            'status' => 'published',
+            'published_at' => now(),
+        ]);
+
+        $this->info("✓ Imported blog post: {$slug}");
+    }
+
+    protected function importAiSearchIsStealingYourTraffic(): void
+    {
+        $slug = 'ai-search-is-stealing-your-traffic';
+
+        // Check if already exists
+        if (BlogPost::where('slug', $slug)->exists()) {
+            $this->warn("Blog post '{$slug}' already exists. Skipping.");
+
+            return;
+        }
+
+        $content = <<<'MARKDOWN'
+Let's say the quiet part out loud.
+
+**AI search is already taking traffic away from websites.**
+
+Not in the future. Not "eventually." Right now.
+
+And most marketing teams are pretending it's not happening.
+
+---
+
+## The Click Is Disappearing
+
+For years, the content playbook was simple:
+
+**Write → Rank → Get Clicks**
+
+That loop is breaking.
+
+When users ask ChatGPT, Gemini, or Perplexity a question, they don't see ten results. They see one synthesized answer.
+
+That answer often replaces the click entirely.
+
+And when it doesn't? Only a few sources get cited.
+
+**Everyone else gets nothing.**
+
+---
+
+## This Isn't a Google Update — It's a New Interface
+
+SEO professionals keep treating AI search like another algorithm change.
+
+It's not.
+
+| Google Updates | AI Search |
+|----------------|-----------|
+| Tweak rankings | Change behavior |
+| Adjust signals | Replace interface |
+| Reward optimization | Reward clarity |
+
+The interface itself has changed.
+
+Users aren't searching — they're asking.
+
+And the system responding doesn't care who ranks #1. **It cares who explains the topic best.**
+
+---
+
+## "But My Content Is Good"
+
+That's what everyone says.
+
+And they're probably right.
+
+The problem isn't quality. **The problem is that AI systems don't reward effort — they reward clarity.**
+
+If your page:
+
+- Buries the answer
+- Mixes multiple intents
+- Rambles before explaining
+- Lacks structure
+- Assumes human context
+
+...the model won't touch it.
+
+Not because it's wrong — **because it's risky.**
+
+AI engines avoid uncertainty. They cite what they can confidently extract.
+
+---
+
+## AI Doesn't Want Your Blog Post — It Wants Your Explanation
+
+This is the mindset shift most marketers miss.
+
+AI isn't browsing your article. It's scanning for:
+
+- **Definitions** — What is X?
+- **Relationships** — How does X relate to Y?
+- **Explanations** — Why does X matter?
+- **Structured ideas** — Steps, lists, comparisons
+- **Reliable signals** — Authority, freshness, clarity
+
+If your content doesn't present those cleanly, it becomes invisible.
+
+You didn't lose traffic because your SEO failed. **You lost traffic because your content wasn't built for selection.**
+
+---
+
+## The Uncomfortable Truth
+
+AI search is collapsing the funnel.
+
+Top-of-funnel traffic used to belong to everyone who ranked. Now it belongs to whoever the AI trusts enough to quote.
+
+That's a brutal filter.
+
+And it's why early movers will dominate visibility while everyone else debates terminology.
+
+---
+
+## This Is Why GEO Exists
+
+**Generative Engine Optimization (GEO)** isn't a buzzword. It's a response to a real problem:
+
+> "Why isn't my content showing up in AI answers?"
+
+GEO focuses on:
+
+- How content is **structured**
+- How ideas are **expressed**
+- How entities are **defined**
+- How answers are **extracted**
+- How trust is **signaled**
+
+In other words: whether AI can actually use your content.
+
+---
+
+## Most Teams Are Flying Blind
+
+Here's the scary part.
+
+Right now, most companies have:
+
+- ❌ No AI visibility metrics
+- ❌ No citation tracking
+- ❌ No understanding of extractability
+- ❌ No idea which pages are usable by AI
+
+They're publishing content without knowing if it can even be read by the systems shaping discovery.
+
+That's not strategy. **That's hope.**
+
+---
+
+## How GeoSource.ai Helps You Take Control
+
+[GeoSource.ai](/) exists for one reason:
+
+**To make AI visibility measurable.**
+
+Instead of guessing, you can:
+
+1. **Scan any page** — Enter a URL and analyze it
+2. **See its GEO score** — 0-100 rating across 12 pillars
+3. **Identify structural blind spots** — What's blocking AI understanding
+4. **Fix what matters** — Prioritized recommendations
+5. **Rescan and measure** — Track improvement over time
+
+It turns AI optimization into something actionable — not theoretical.
+
+No fluff. No vague advice. **Just clarity.**
+
+---
+
+## You Don't Need More Content
+
+You need content AI can select.
+
+Publishing more blog posts won't fix invisibility. **Improving how your best pages are understood will.**
+
+One optimized page that AI consistently cites is worth more than ten that never appear.
+
+---
+
+## The Brands That Win Won't Be Louder — They'll Be Clearer
+
+AI search rewards:
+
+| Not This | This |
+|----------|------|
+| Cleverness | Clarity |
+| Storytelling | Structure |
+| Volume | Understanding |
+
+The sooner your content reflects that, the faster you reclaim traffic you didn't even realize you were losing.
+
+---
+
+## The Bottom Line
+
+If AI is the new front door to the internet, then **GEO is how you make sure your brand is standing in it.**
+
+---
+
+## Next Step
+
+Run your highest-traffic page through [GeoSource.ai](/).
+
+If AI can't understand it, neither can your future customers.
+
+---
+
+## Related Reading
+
+- [How AI Search Engines Cite Sources](/blog/how-ai-search-engines-cite-sources) — Understand what makes content citable
+- [Designing Content for AI Snippet Extraction](/blog/designing-content-for-ai-snippet-extraction) — Tactical guide to structure
+- [GEO Optimization Checklist](/geo-optimization-checklist) — Step-by-step framework
+MARKDOWN;
+
+        $faq = [
+            [
+                'question' => 'Is AI search really taking traffic from websites?',
+                'answer' => 'Yes. When users ask AI systems like ChatGPT, Perplexity, or Gemini a question, they often get a complete answer without clicking through to any website. Only sources that get cited receive traffic — everyone else gets nothing.',
+            ],
+            [
+                'question' => 'Why isn\'t my content showing up in AI answers?',
+                'answer' => 'AI systems avoid content that\'s risky to cite. If your page buries the answer, lacks structure, mixes multiple intents, or assumes human context, AI won\'t extract from it — not because it\'s wrong, but because it\'s unclear.',
+            ],
+            [
+                'question' => 'What is Generative Engine Optimization (GEO)?',
+                'answer' => 'GEO is the practice of structuring content so AI search engines can understand, trust, and cite it. It focuses on how content is structured, how ideas are expressed, how entities are defined, how answers are extracted, and how trust is signaled.',
+            ],
+            [
+                'question' => 'How do I know if AI can use my content?',
+                'answer' => 'Use a GEO score tool like GeoSource.ai to scan your pages. It analyzes content across 12 AI evaluation pillars and shows exactly what\'s blocking AI understanding, with prioritized recommendations to fix it.',
+            ],
+            [
+                'question' => 'Do I need to create more content for AI visibility?',
+                'answer' => 'No. You need content AI can select. One optimized page that AI consistently cites is worth more than ten pages that never appear in AI answers. Focus on improving your best existing content first.',
+            ],
+        ];
+
+        $quickLinks = [
+            ['title' => 'The Click Is Disappearing', 'anchor' => 'the-click-is-disappearing'],
+            ['title' => 'This Isn\'t a Google Update', 'anchor' => 'this-isnt-a-google-update--its-a-new-interface'],
+            ['title' => 'But My Content Is Good', 'anchor' => 'but-my-content-is-good'],
+            ['title' => 'AI Wants Your Explanation', 'anchor' => 'ai-doesnt-want-your-blog-post--it-wants-your-explanation'],
+            ['title' => 'The Uncomfortable Truth', 'anchor' => 'the-uncomfortable-truth'],
+            ['title' => 'This Is Why GEO Exists', 'anchor' => 'this-is-why-geo-exists'],
+            ['title' => 'Most Teams Are Flying Blind', 'anchor' => 'most-teams-are-flying-blind'],
+            ['title' => 'How GeoSource.ai Helps', 'anchor' => 'how-geosourceai-helps-you-take-control'],
+            ['title' => 'You Don\'t Need More Content', 'anchor' => 'you-dont-need-more-content'],
+            ['title' => 'Clarity Over Cleverness', 'anchor' => 'the-brands-that-win-wont-be-louder--theyll-be-clearer'],
+        ];
+
+        $schemaJson = [
+            '@context' => 'https://schema.org',
+            '@graph' => [
+                [
+                    '@type' => 'BlogPosting',
+                    'headline' => 'AI Search Is Stealing Your Traffic — Here\'s How to Get It Back',
+                    'description' => 'AI search is already taking traffic from websites. Learn why your content isn\'t appearing in AI answers and how Generative Engine Optimization (GEO) helps you reclaim visibility.',
+                    'url' => 'https://geosource.ai/blog/ai-search-is-stealing-your-traffic',
+                    'datePublished' => '2026-01-27',
+                    'dateModified' => '2026-01-27',
+                    'author' => [
+                        '@type' => 'Organization',
+                        'name' => 'GeoSource.ai',
+                        'url' => 'https://geosource.ai',
+                    ],
+                    'publisher' => [
+                        '@type' => 'Organization',
+                        'name' => 'GeoSource.ai',
+                        'url' => 'https://geosource.ai',
+                    ],
+                    'image' => 'https://geosource.ai/images/blog/ai-search-is-stealing-your-traffic.png',
+                    'mainEntityOfPage' => [
+                        '@type' => 'WebPage',
+                        '@id' => 'https://geosource.ai/blog/ai-search-is-stealing-your-traffic',
+                    ],
+                    'about' => [
+                        '@type' => 'Thing',
+                        'name' => 'AI Search Traffic Loss',
+                        'description' => 'The phenomenon where websites lose traffic because AI search engines provide direct answers instead of linking to sources.',
+                    ],
+                ],
+                [
+                    '@type' => 'FAQPage',
+                    'mainEntity' => [
+                        [
+                            '@type' => 'Question',
+                            'name' => 'Is AI search really taking traffic from websites?',
+                            'acceptedAnswer' => [
+                                '@type' => 'Answer',
+                                'text' => 'Yes. When users ask AI systems like ChatGPT, Perplexity, or Gemini a question, they often get a complete answer without clicking through to any website.',
+                            ],
+                        ],
+                        [
+                            '@type' => 'Question',
+                            'name' => 'Why isn\'t my content showing up in AI answers?',
+                            'acceptedAnswer' => [
+                                '@type' => 'Answer',
+                                'text' => 'AI systems avoid content that\'s risky to cite. If your page buries the answer, lacks structure, or assumes human context, AI won\'t extract from it.',
+                            ],
+                        ],
+                        [
+                            '@type' => 'Question',
+                            'name' => 'What is Generative Engine Optimization (GEO)?',
+                            'acceptedAnswer' => [
+                                '@type' => 'Answer',
+                                'text' => 'GEO is the practice of structuring content so AI search engines can understand, trust, and cite it in their responses.',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        BlogPost::create([
+            'title' => 'AI Search Is Stealing Your Traffic — Here\'s How to Get It Back',
+            'slug' => $slug,
+            'excerpt' => 'AI search is already taking traffic from websites. Not in the future — right now. Learn why your content isn\'t appearing in AI answers and how GEO helps you reclaim visibility.',
+            'content' => $content,
+            'featured_image' => '/images/blog/ai-search-is-stealing-your-traffic.png',
+            'meta_title' => 'AI Search Is Stealing Your Traffic — Here\'s How to Get It Back | GeoSource.ai',
+            'meta_description' => 'AI search is taking website traffic. Learn why your content isn\'t in AI answers and how Generative Engine Optimization (GEO) helps you get cited by ChatGPT, Perplexity, and Gemini.',
+            'schema_json' => $schemaJson,
+            'tags' => ['AI Search', 'GEO', 'Traffic Loss', 'Content Strategy', 'AI Visibility'],
             'faq' => $faq,
             'quick_links' => $quickLinks,
             'status' => 'published',
