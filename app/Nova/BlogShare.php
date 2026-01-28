@@ -89,9 +89,9 @@ class BlogShare extends Resource
                 ->sortable()
                 ->filterable(),
 
-            Text::make('User', function () {
-                return $this->user?->name ?? '-';
-            })->sortable(),
+            Text::make('User ID', 'user_id')
+                ->displayUsing(fn ($value) => $value ?? '-')
+                ->sortable(),
 
             Text::make('Country')
                 ->sortable()

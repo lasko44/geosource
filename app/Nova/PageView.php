@@ -35,10 +35,6 @@ class PageView extends Resource
         'path', 'url', 'referrer_host', 'utm_source', 'country', 'city',
     ];
 
-    /**
-     * The default ordering for the resource.
-     */
-    public static $sort = ['created_at' => 'desc'];
 
     /**
      * Get the displayable label of the resource.
@@ -95,9 +91,9 @@ class PageView extends Resource
                 ->onlyOnDetail()
                 ->nullable(),
 
-            Text::make('User', function () {
-                return $this->user?->name ?? '-';
-            })->sortable(),
+            Text::make('User ID', 'user_id')
+                ->displayUsing(fn ($value) => $value ?? '-')
+                ->sortable(),
 
             // Referrer info
             Text::make('Referrer', 'referrer_host')
@@ -201,6 +197,15 @@ class PageView extends Resource
      */
     public function cards(NovaRequest $request): array
     {
+        // Only show metrics if the table has data
+        try {
+            if (\App\Models\PageView::count() === 0) {
+                return [];
+            }
+        } catch (\Exception $e) {
+            return [];
+        }
+
         return [
             (new \App\Nova\Metrics\PageViewsPerDay)->width('1/3'),
             (new \App\Nova\Metrics\UniqueVisitorsPerDay)->width('1/3'),
