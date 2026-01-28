@@ -2,7 +2,6 @@
 
 namespace App\Nova;
 
-use Laravel\Nova\Fields\Badge;
 use Laravel\Nova\Fields\Boolean;
 use Laravel\Nova\Fields\DateTime;
 use Laravel\Nova\Fields\ID;
@@ -66,16 +65,7 @@ class PageView extends Resource
                 ->sortable()
                 ->filterable(),
 
-            Badge::make('Page Type', 'page_type')
-                ->map([
-                    'home' => 'success',
-                    'blog' => 'info',
-                    'scan' => 'warning',
-                    'dashboard' => 'success',
-                    'pricing' => 'info',
-                    'login' => 'warning',
-                    'register' => 'warning',
-                ])
+            Text::make('Page Type', 'page_type')
                 ->sortable()
                 ->filterable(),
 
@@ -142,12 +132,7 @@ class PageView extends Resource
                 ->nullable(),
 
             // Device info
-            Badge::make('Device', 'device_type')
-                ->map([
-                    'desktop' => 'success',
-                    'mobile' => 'info',
-                    'tablet' => 'warning',
-                ])
+            Text::make('Device', 'device_type')
                 ->sortable()
                 ->filterable(),
 
