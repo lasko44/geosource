@@ -132,12 +132,13 @@ const faqItems = [
 </script>
 
 <template>
-    <Head title="GEO Score Tool & AI Search Visibility Platform | GeoSource.ai">
-        <meta name="description" content="GEO score tool for AI search optimization. Measure AI visibility, analyze content for ChatGPT, Perplexity & Claude. Get your GEO score and optimize for AI search engines." />
+    <Head>
+        <title>GEO Score Tool for AI Search Optimization | GeoSource.ai</title>
+        <meta name="description" content="Free GEO score tool to measure AI search visibility. Optimize content for ChatGPT, Perplexity & Claude with actionable recommendations." />
         <meta name="keywords" content="GEO score tool, AI search visibility tool, Generative Engine Optimization, AI content analyzer, AI citation tracker, GEO vs SEO, AI search optimization" />
         <meta name="robots" content="index, follow" />
-        <meta property="og:title" content="GEO Score Tool - Optimize for AI Search Engines | GeoSource.ai" />
-        <meta property="og:description" content="The leading GEO score tool for AI search visibility. Analyze content for ChatGPT, Perplexity, Claude & Gemini. Get actionable AI content optimization recommendations." />
+        <meta property="og:title" content="GEO Score Tool for AI Search Optimization | GeoSource.ai" />
+        <meta property="og:description" content="Free GEO score tool to measure AI search visibility. Optimize content for ChatGPT, Perplexity & Claude." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://geosource.ai/" />
         <meta property="og:image" content="https://geosource.ai/images/og/geosource-homepage.png" />
@@ -147,8 +148,8 @@ const faqItems = [
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:site" content="@geosource_ai" />
         <meta name="twitter:creator" content="@geosource_ai" />
-        <meta name="twitter:title" content="GEO Score Tool - AI Search Visibility Platform | GeoSource.ai" />
-        <meta name="twitter:description" content="Measure and optimize your content for AI search engines. Get your GEO score and AI visibility recommendations." />
+        <meta name="twitter:title" content="GEO Score Tool for AI Search Optimization | GeoSource.ai" />
+        <meta name="twitter:description" content="Free GEO score tool to measure AI search visibility. Optimize content for ChatGPT, Perplexity & Claude." />
         <meta name="twitter:image" content="https://geosource.ai/images/og/geosource-homepage.png" />
         <link rel="canonical" href="https://geosource.ai/" />
         <link rel="preconnect" href="https://rsms.me/" />
