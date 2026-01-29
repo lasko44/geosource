@@ -1,0 +1,87 @@
+<svg viewBox="-0.34813925570227866 1.4000000000000057 1206.3625450180073 628.6800000000001" xmlns="http://www.w3.org/2000/svg" style="max-height: 500px" width="1206.3625450180073" height="628.6800000000001">
+  <defs>
+    <linearGradient y2="100%" x2="100%" y1="0%" x1="0%" id="bg">
+      <stop style="stop-color:#0f172a" offset="0%"/>
+      <stop style="stop-color:#1e293b" offset="100%"/>
+    </linearGradient>
+    <linearGradient y2="0%" x2="100%" y1="0%" x1="0%" id="accent">
+      <stop style="stop-color:#3b82f6" offset="0%"/>
+      <stop style="stop-color:#8b5cf6" offset="100%"/>
+    </linearGradient>
+  </defs>
+
+  
+  <rect fill="url(#bg)" height="630" width="1200"/>
+
+  
+  <circle opacity="0.08" fill="#3b82f6" r="220" cy="120" cx="1050"/>
+  <circle opacity="0.08" fill="#8b5cf6" r="180" cy="500" cx="150"/>
+  <circle opacity="0.06" fill="#10b981" r="120" cy="480" cx="950"/>
+
+  
+  <g transform="translate(80, 130)">
+    
+    <circle stroke-width="2" stroke="#3b82f6" opacity="0.3" fill="#3b82f6" r="18" cy="60" cx="60"/>
+    <circle fill="#3b82f6" r="6" cy="60" cx="60"/>
+
+    
+    <circle stroke-width="1.5" stroke="#8b5cf6" opacity="0.2" fill="#8b5cf6" r="12" cy="20" cx="0"/>
+    <circle fill="#8b5cf6" r="4" cy="20" cx="0"/>
+    <line opacity="0.5" stroke-width="1.5" stroke="#8b5cf6" y2="50" x2="42" y1="24" x1="12"/>
+
+    <circle stroke-width="1.5" stroke="#8b5cf6" opacity="0.2" fill="#8b5cf6" r="12" cy="10" cx="120"/>
+    <circle fill="#8b5cf6" r="4" cy="10" cx="120"/>
+    <line opacity="0.5" stroke-width="1.5" stroke="#8b5cf6" y2="48" x2="78" y1="16" x1="108"/>
+
+    <circle stroke-width="1.5" stroke="#10b981" opacity="0.2" fill="#10b981" r="12" cy="80" cx="130"/>
+    <circle fill="#10b981" r="4" cy="80" cx="130"/>
+    <line opacity="0.5" stroke-width="1.5" stroke="#10b981" y2="66" x2="78" y1="76" x1="118"/>
+
+    <circle stroke-width="1.5" stroke="#10b981" opacity="0.2" fill="#10b981" r="12" cy="110" cx="20"/>
+    <circle fill="#10b981" r="4" cy="110" cx="20"/>
+    <line opacity="0.5" stroke-width="1.5" stroke="#10b981" y2="76" x2="50" y1="100" x1="30"/>
+
+    <circle stroke-width="1.5" stroke="#3b82f6" opacity="0.2" fill="#3b82f6" r="12" cy="120" cx="100"/>
+    <circle fill="#3b82f6" r="4" cy="120" cx="100"/>
+    <line opacity="0.5" stroke-width="1.5" stroke="#3b82f6" y2="76" x2="70" y1="110" x1="90"/>
+
+    
+    <g transform="translate(180, 30)">
+      <ellipse transform="rotate(-30, 20, 30)" opacity="0.4" fill="none" stroke-width="2" stroke="#ef4444" ry="12" rx="18" cy="30" cx="20"/>
+      <ellipse transform="rotate(-30, 40, 30)" opacity="0.4" fill="none" stroke-width="2" stroke="#ef4444" ry="12" rx="18" cy="30" cx="40"/>
+      <line opacity="0.6" stroke-width="2.5" stroke="#ef4444" y2="10" x2="55" y1="50" x1="5"/>
+    </g>
+  </g>
+
+  
+  <rect opacity="0.2" fill="#3b82f6" rx="16" height="32" width="160" y="90" x="80"/>
+  <text text-anchor="middle" fill="#60a5fa" font-weight="600" font-size="14" font-family="system-ui, -apple-system, sans-serif" y="112" x="160">TOPICAL AUTHORITY</text>
+
+  
+  <text fill="white" font-weight="bold" font-size="48" font-family="system-ui, -apple-system, sans-serif" y="340" x="80">Topical Authority Matters</text>
+  <text fill="white" font-weight="bold" font-size="48" font-family="system-ui, -apple-system, sans-serif" y="400" x="80">More Than Backlinks</text>
+  <text fill="url(#accent)" font-weight="bold" font-size="48" font-family="system-ui, -apple-system, sans-serif" y="460" x="80">in AI Search</text>
+
+  
+  <text fill="#94a3b8" font-size="22" font-family="system-ui, -apple-system, sans-serif" y="510" x="80">Understanding beats popularity in the generative era</text>
+
+  
+  <g transform="translate(80, 545)">
+    <rect opacity="0.2" fill="#3b82f6" rx="18" height="36" width="150" y="0" x="0"/>
+    <text text-anchor="middle" fill="#60a5fa" font-size="14" font-family="system-ui, sans-serif" y="24" x="75">AI Visibility</text>
+
+    <rect opacity="0.2" fill="#10b981" rx="18" height="36" width="130" y="0" x="170"/>
+    <text text-anchor="middle" fill="#34d399" font-size="14" font-family="system-ui, sans-serif" y="24" x="235">GEO Strategy</text>
+
+    <rect opacity="0.2" fill="#8b5cf6" rx="18" height="36" width="180" y="0" x="320"/>
+    <text text-anchor="middle" fill="#a78bfa" font-size="14" font-family="system-ui, sans-serif" y="24" x="410">Content Authority</text>
+  </g>
+
+  
+  <g transform="translate(900, 550)">
+    <circle fill="none" stroke-width="2" stroke="#8B5CF6" r="16" cy="20" cx="20"/>
+    <path stroke-linejoin="round" stroke-linecap="round" fill="none" stroke-width="2" stroke="#8B5CF6" d="M20 4a23.2 23.2 0 0 0 0 32 23.2 23.2 0 0 0 0-32"/>
+    <path stroke-linejoin="round" stroke-linecap="round" fill="none" stroke-width="2" stroke="#8B5CF6" d="M4 20h32"/>
+    <text fill="#64748b" font-size="20" font-family="system-ui, sans-serif" y="27" x="50">geosource.ai</text>
+  </g>
+</svg>

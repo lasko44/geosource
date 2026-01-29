@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { Check, X, Sparkles, Zap, Building2, Globe, ArrowRight, Menu, Mail, BookOpen, Layers, Award, Code, MessageSquare, UserCheck, Quote, Bot, Clock, Type, HelpCircle, Image } from 'lucide-vue-next';
+import { Check, Sparkles, Coins, Building2, Globe, ArrowRight, Menu, Mail, BookOpen, Layers, Award, Code, MessageSquare, UserCheck, Quote, Bot, Clock, Type, HelpCircle, Image } from 'lucide-vue-next';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,18 +14,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-interface PlanWithLimits {
-    name: string;
-    description: string;
-    price: number;
-    interval: string;
-    features: string[];
-    popular?: boolean;
-    limits: Record<string, number | boolean>;
-}
-
 interface Props {
-    plans: Record<string, PlanWithLimits>;
     canRegister: boolean;
 }
 
@@ -48,141 +37,57 @@ const proPillars = [
     { name: 'AI Crawler Access', points: 8, icon: Bot },
 ];
 
-const agencyPillars = [
+const fullPillars = [
     { name: 'Content Freshness', points: 10, icon: Clock },
     { name: 'Readability', points: 10, icon: Type },
     { name: 'Question Coverage', points: 10, icon: HelpCircle },
     { name: 'Multimedia', points: 10, icon: Image },
 ];
 
-// Define the free tier for display
-const freeTier = {
-    name: 'Free',
-    description: 'Get started with basic GEO analysis',
-    price: 0,
-    interval: 'month' as const,
-    features: [
-        '3 scans per month',
-        '5 GEO pillars (100 pts max)',
-        'Top 3 recommendations',
-        '7-day scan history',
-    ],
-    limits: {
-        scans_per_month: 3,
-        history_days: 7,
-        team_members: 0,
-        recommendations_shown: 3,
-        white_label: false,
-        scheduled_scans: false,
-        pdf_export: false,
-        bulk_scanning: false,
-    },
-};
-
-// Feature comparison data
-const featureCategories = [
-    {
-        name: 'GEO Score Analysis',
-        features: [
-            { name: 'GEO Score pillars', key: 'geo_pillars', format: 'pillars' },
-            { name: 'Maximum score', key: 'max_score', format: 'points' },
-            { name: 'Recommendations shown', key: 'recommendations_shown', format: 'number' },
-        ],
-    },
-    {
-        name: 'Scanning',
-        features: [
-            { name: 'Scans per month', key: 'scans_per_month', format: 'number' },
-            { name: 'Scan history', key: 'history_days', format: 'days' },
-            { name: 'Bulk URL scanning', key: 'bulk_scanning', format: 'boolean' },
-            { name: 'Scheduled scans', key: 'scheduled_scans', format: 'boolean' },
-        ],
-    },
-    {
-        name: 'Export',
-        features: [
-            { name: 'PDF export', key: 'pdf_export', format: 'boolean' },
-        ],
-    },
-    {
-        name: 'Team & Branding',
-        features: [
-            { name: 'Team members', key: 'team_members', format: 'number' },
-            { name: 'White-label reports (team owners)', key: 'white_label', format: 'boolean' },
-        ],
-    },
+// Token packages
+const tokenPackages = [
+    { tokens: 50, price: 5, perToken: 0.10, savings: 0 },
+    { tokens: 200, price: 15, perToken: 0.075, savings: 25, popular: true },
+    { tokens: 500, price: 30, perToken: 0.06, savings: 40 },
+    { tokens: 1000, price: 50, perToken: 0.05, savings: 50, bestValue: true },
 ];
 
-const formatValue = (value: number | boolean | string | undefined, format: string, planKey: string) => {
-    if (format === 'boolean') {
-        return value;
-    }
-    if (format === 'number') {
-        if (value === -1) return 'Unlimited';
-        if (value === 0) return '—';
-        return value;
-    }
-    if (format === 'days') {
-        if (value === -1) return 'Unlimited';
-        return `${value} days`;
-    }
-    if (format === 'domains') {
-        if (value === -1) return 'Unlimited';
-        if (value === 0) return '—';
-        return `${value} domains`;
-    }
-    if (format === 'pillars') {
-        if (planKey === 'free') return '5 pillars';
-        if (planKey === 'pro') return '8 pillars';
-        if (planKey === 'agency') return '12 pillars';
-        return value;
-    }
-    if (format === 'points') {
-        if (planKey === 'free') return '100 pts';
-        if (planKey === 'pro') return '135 pts';
-        if (planKey === 'agency') return '175 pts';
-        return value;
-    }
-    if (format === 'text') {
-        if (planKey === 'free') return 'Basic';
-        return 'Full';
-    }
-    return value;
-};
-
-const getPlanLimit = (planKey: string, limitKey: string) => {
-    // Handle special GEO score keys
-    if (limitKey === 'geo_pillars') {
-        if (planKey === 'free') return 5;
-        if (planKey === 'pro') return 8;
-        if (planKey === 'agency') return 12;
-    }
-    if (limitKey === 'max_score') {
-        if (planKey === 'free') return 100;
-        if (planKey === 'pro') return 135;
-        if (planKey === 'agency') return 175;
-    }
-
-    if (planKey === 'free') {
-        return freeTier.limits[limitKey as keyof typeof freeTier.limits];
-    }
-    const plan = props.plans[planKey];
-    return plan?.limits?.[limitKey as keyof typeof plan.limits];
+// Token costs
+const tokenCosts = {
+    scans: [
+        { name: 'Basic Scan (5 pillars)', tokens: 'FREE', highlight: true },
+        { name: 'Pro Scan (8 pillars)', tokens: 5 },
+        { name: 'Full Scan (12 pillars)', tokens: 10 },
+    ],
+    citations: [
+        { name: 'DeepSeek', tokens: 1 },
+        { name: 'Gemini', tokens: 2 },
+        { name: 'Google Search', tokens: 2 },
+        { name: 'YouTube', tokens: 2 },
+        { name: 'Facebook', tokens: 2 },
+        { name: 'Perplexity', tokens: 3 },
+        { name: 'Claude', tokens: 3 },
+        { name: 'ChatGPT', tokens: 5 },
+    ],
+    other: [
+        { name: 'PDF Export', tokens: 2 },
+        { name: 'Scheduled Scan (per run)', tokens: 5 },
+    ],
 };
 </script>
 
 <template>
     <Head title="Pricing - GEO Analysis Plans | GeoSource.ai">
-        <meta name="description" content="Simple, transparent pricing for GEO analysis. Start free with 3 scans per month, or upgrade to Pro at $39/month for comprehensive Generative Engine Optimization features." />
+        <meta name="description" content="Pay only for what you use with our token-based pricing. Start free with unlimited basic scans, then buy tokens for advanced features. No subscriptions required." />
         <meta property="og:title" content="Pricing - GEO Analysis Plans | GeoSource.ai" />
-        <meta property="og:description" content="Simple, transparent pricing for GEO analysis. Start free or upgrade to Pro for comprehensive AI search optimization features." />
+        <meta property="og:description" content="Pay only for what you use with our token-based pricing. Start free with unlimited basic scans." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://geosource.ai/pricing" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:site" content="@geosource_ai" />
         <meta name="twitter:creator" content="@geosource_ai" />
         <meta name="twitter:title" content="Pricing - GEO Analysis Plans | GeoSource.ai" />
-        <meta name="twitter:description" content="Simple, transparent pricing for GEO analysis. Start free or upgrade to Pro." />
+        <meta name="twitter:description" content="Pay only for what you use. Start free with unlimited basic scans." />
         <link rel="canonical" href="https://geosource.ai/pricing" />
     </Head>
 
@@ -268,39 +173,63 @@ const getPlanLimit = (planKey: string, limitKey: string) => {
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="text-center">
                     <h1 class="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-                        Simple, transparent pricing
+                        Pay only for what you use
                     </h1>
                     <p class="mt-4 text-lg text-muted-foreground">
-                        Choose the plan that fits your needs. Start free, upgrade anytime.
+                        No subscriptions. No monthly fees. Buy tokens when you need them.
                     </p>
                 </div>
 
-                <!-- Plan Cards -->
+                <!-- Pricing Tiers -->
                 <div class="mx-auto mt-16 grid max-w-5xl gap-6 md:grid-cols-3">
-                    <!-- Free Plan -->
+                    <!-- Free Tier -->
                     <Card class="relative flex flex-col border-border">
                         <CardHeader class="pb-4">
                             <div class="flex items-center gap-2">
                                 <div class="rounded-lg bg-muted p-2">
                                     <Sparkles class="h-5 w-5 text-muted-foreground" />
                                 </div>
-                                <CardTitle class="text-xl">{{ freeTier.name }}</CardTitle>
+                                <CardTitle class="text-xl">Free</CardTitle>
                             </div>
-                            <CardDescription>{{ freeTier.description }}</CardDescription>
+                            <CardDescription>Get started with basic GEO analysis</CardDescription>
                         </CardHeader>
                         <CardContent class="flex flex-1 flex-col">
                             <div class="mb-6">
                                 <div class="flex items-baseline">
                                     <span class="text-4xl font-bold tracking-tight text-foreground">$0</span>
-                                    <span class="ml-1 text-lg text-muted-foreground">/month</span>
+                                    <span class="ml-1 text-lg text-muted-foreground">forever</span>
                                 </div>
                             </div>
                             <ul class="mb-8 flex-1 space-y-3">
-                                <li v-for="feature in freeTier.features" :key="feature" class="flex items-start gap-3">
+                                <li class="flex items-start gap-3">
                                     <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10">
                                         <Check class="h-3 w-3 text-primary" />
                                     </div>
-                                    <span class="text-sm text-muted-foreground">{{ feature }}</span>
+                                    <span class="text-sm text-muted-foreground">Unlimited basic scans (5 pillars)</span>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                                        <Check class="h-3 w-3 text-primary" />
+                                    </div>
+                                    <span class="text-sm text-muted-foreground">Basic GEO score (100 pts max)</span>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                                        <Check class="h-3 w-3 text-primary" />
+                                    </div>
+                                    <span class="text-sm text-muted-foreground">Top 3 recommendations</span>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                                        <Check class="h-3 w-3 text-primary" />
+                                    </div>
+                                    <span class="text-sm text-muted-foreground">7-day scan history</span>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                                        <Check class="h-3 w-3 text-primary" />
+                                    </div>
+                                    <span class="text-sm text-muted-foreground">No account required</span>
                                 </li>
                             </ul>
                             <Button
@@ -308,45 +237,73 @@ const getPlanLimit = (planKey: string, limitKey: string) => {
                                 class="w-full py-6 text-base"
                                 as-child
                             >
-                                <Link :href="register()">
-                                    Get Started Free
+                                <Link href="/">
+                                    Try Free Scan
                                 </Link>
                             </Button>
                         </CardContent>
                     </Card>
 
-                    <!-- Pro Plan -->
-                    <Card
-                        v-if="plans.pro"
-                        class="relative flex flex-col border-primary ring-2 ring-primary"
-                    >
+                    <!-- Token-Based (Pay As You Go) -->
+                    <Card class="relative flex flex-col border-primary ring-2 ring-primary">
                         <div class="absolute -top-3 left-1/2 -translate-x-1/2">
                             <span class="rounded-full bg-primary px-4 py-1 text-xs font-semibold text-primary-foreground">
-                                Most Popular
+                                Most Flexible
                             </span>
                         </div>
                         <CardHeader class="pb-4">
                             <div class="flex items-center gap-2">
                                 <div class="rounded-lg bg-blue-100 p-2 dark:bg-blue-950">
-                                    <Zap class="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                    <Coins class="h-5 w-5 text-blue-600 dark:text-blue-400" />
                                 </div>
-                                <CardTitle class="text-xl">{{ plans.pro.name }}</CardTitle>
+                                <CardTitle class="text-xl">Pay As You Go</CardTitle>
                             </div>
-                            <CardDescription>{{ plans.pro.description }}</CardDescription>
+                            <CardDescription>Buy tokens, use them anytime</CardDescription>
                         </CardHeader>
                         <CardContent class="flex flex-1 flex-col">
                             <div class="mb-6">
                                 <div class="flex items-baseline">
-                                    <span class="text-4xl font-bold tracking-tight text-foreground">${{ plans.pro.price }}</span>
-                                    <span class="ml-1 text-lg text-muted-foreground">/{{ plans.pro.interval }}</span>
+                                    <span class="text-4xl font-bold tracking-tight text-foreground">$0.05</span>
+                                    <span class="ml-1 text-lg text-muted-foreground">per token</span>
                                 </div>
+                                <p class="mt-1 text-sm text-muted-foreground">Starting at $5 for 50 tokens</p>
                             </div>
                             <ul class="mb-8 flex-1 space-y-3">
-                                <li v-for="feature in plans.pro.features" :key="feature" class="flex items-start gap-3">
+                                <li class="flex items-start gap-3">
                                     <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-950">
                                         <Check class="h-3 w-3 text-blue-600 dark:text-blue-400" />
                                     </div>
-                                    <span class="text-sm text-muted-foreground">{{ feature }}</span>
+                                    <span class="text-sm text-muted-foreground">Pro scans (8 pillars) - 5 tokens</span>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-950">
+                                        <Check class="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                                    </div>
+                                    <span class="text-sm text-muted-foreground">Full scans (12 pillars) - 10 tokens</span>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-950">
+                                        <Check class="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                                    </div>
+                                    <span class="text-sm text-muted-foreground">AI citation tracking (1-5 tokens)</span>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-950">
+                                        <Check class="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                                    </div>
+                                    <span class="text-sm text-muted-foreground">PDF exports - 2 tokens</span>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-950">
+                                        <Check class="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                                    </div>
+                                    <span class="text-sm text-muted-foreground">Tokens never expire</span>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-950">
+                                        <Check class="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                                    </div>
+                                    <span class="text-sm text-muted-foreground">Bulk discounts up to 50% off</span>
                                 </li>
                             </ul>
                             <Button
@@ -355,21 +312,18 @@ const getPlanLimit = (planKey: string, limitKey: string) => {
                                 as-child
                             >
                                 <Link :href="register()">
-                                    Start with Pro
+                                    Get Started
                                     <ArrowRight class="ml-2 h-4 w-4" />
                                 </Link>
                             </Button>
                         </CardContent>
                     </Card>
 
-                    <!-- Agency Plan -->
-                    <Card
-                        v-if="plans.agency"
-                        class="relative flex flex-col border-purple-500 ring-2 ring-purple-500"
-                    >
+                    <!-- Team Plan -->
+                    <Card class="relative flex flex-col border-purple-500 ring-2 ring-purple-500">
                         <div class="absolute -top-3 left-1/2 -translate-x-1/2">
                             <span class="rounded-full bg-purple-500 px-4 py-1 text-xs font-semibold text-white">
-                                Best Value
+                                For Teams
                             </span>
                         </div>
                         <CardHeader class="pb-4">
@@ -377,23 +331,54 @@ const getPlanLimit = (planKey: string, limitKey: string) => {
                                 <div class="rounded-lg bg-purple-100 p-2 dark:bg-purple-950">
                                     <Building2 class="h-5 w-5 text-purple-600 dark:text-purple-400" />
                                 </div>
-                                <CardTitle class="text-xl">{{ plans.agency.name }}</CardTitle>
+                                <CardTitle class="text-xl">Team</CardTitle>
                             </div>
-                            <CardDescription>{{ plans.agency.description }}</CardDescription>
+                            <CardDescription>For agencies and growing teams</CardDescription>
                         </CardHeader>
                         <CardContent class="flex flex-1 flex-col">
                             <div class="mb-6">
                                 <div class="flex items-baseline">
-                                    <span class="text-4xl font-bold tracking-tight text-foreground">${{ plans.agency.price }}</span>
-                                    <span class="ml-1 text-lg text-muted-foreground">/{{ plans.agency.interval }}</span>
+                                    <span class="text-4xl font-bold tracking-tight text-foreground">$99</span>
+                                    <span class="ml-1 text-lg text-muted-foreground">/month</span>
                                 </div>
+                                <p class="mt-1 text-sm text-muted-foreground">Includes 1,000 tokens/month</p>
                             </div>
                             <ul class="mb-8 flex-1 space-y-3">
-                                <li v-for="feature in plans.agency.features" :key="feature" class="flex items-start gap-3">
+                                <li class="flex items-start gap-3">
                                     <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-950">
                                         <Check class="h-3 w-3 text-purple-600 dark:text-purple-400" />
                                     </div>
-                                    <span class="text-sm text-muted-foreground">{{ feature }}</span>
+                                    <span class="text-sm text-muted-foreground">Everything in Pay As You Go</span>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-950">
+                                        <Check class="h-3 w-3 text-purple-600 dark:text-purple-400" />
+                                    </div>
+                                    <span class="text-sm text-muted-foreground">1,000 tokens included monthly</span>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-950">
+                                        <Check class="h-3 w-3 text-purple-600 dark:text-purple-400" />
+                                    </div>
+                                    <span class="text-sm text-muted-foreground">3 teams with 5 members each</span>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-950">
+                                        <Check class="h-3 w-3 text-purple-600 dark:text-purple-400" />
+                                    </div>
+                                    <span class="text-sm text-muted-foreground">White-label reports</span>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-950">
+                                        <Check class="h-3 w-3 text-purple-600 dark:text-purple-400" />
+                                    </div>
+                                    <span class="text-sm text-muted-foreground">GA4 AI Traffic Analytics</span>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-950">
+                                        <Check class="h-3 w-3 text-purple-600 dark:text-purple-400" />
+                                    </div>
+                                    <span class="text-sm text-muted-foreground">Priority support</span>
                                 </li>
                             </ul>
                             <Button
@@ -402,7 +387,7 @@ const getPlanLimit = (planKey: string, limitKey: string) => {
                                 as-child
                             >
                                 <Link :href="register()">
-                                    Start with Agency
+                                    Start Team Plan
                                     <ArrowRight class="ml-2 h-4 w-4" />
                                 </Link>
                             </Button>
@@ -410,23 +395,140 @@ const getPlanLimit = (planKey: string, limitKey: string) => {
                     </Card>
                 </div>
 
+                <!-- Token Packages Section -->
+                <div class="mx-auto mt-20 w-full max-w-5xl">
+                    <h2 class="mb-4 text-center text-2xl font-bold">Token Packages</h2>
+                    <p class="mb-8 text-center text-muted-foreground">
+                        Buy in bulk and save up to 50%. Tokens never expire.
+                    </p>
+
+                    <div class="grid gap-4 md:grid-cols-4">
+                        <Card
+                            v-for="pkg in tokenPackages"
+                            :key="pkg.tokens"
+                            class="relative text-center"
+                            :class="{
+                                'border-primary ring-2 ring-primary': pkg.popular,
+                                'border-green-500 ring-2 ring-green-500': pkg.bestValue && !pkg.popular,
+                            }"
+                        >
+                            <Badge
+                                v-if="pkg.popular"
+                                class="absolute -top-3 left-1/2 -translate-x-1/2"
+                            >
+                                Most Popular
+                            </Badge>
+                            <Badge
+                                v-else-if="pkg.bestValue"
+                                class="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500"
+                            >
+                                Best Value
+                            </Badge>
+                            <CardHeader class="pb-2">
+                                <CardTitle class="text-3xl">{{ pkg.tokens }}</CardTitle>
+                                <CardDescription>tokens</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <p class="text-2xl font-bold">${{ pkg.price }}</p>
+                                <p class="text-sm text-muted-foreground">${{ pkg.perToken.toFixed(3) }}/token</p>
+                                <p v-if="pkg.savings > 0" class="mt-1 text-sm font-medium text-green-600 dark:text-green-400">
+                                    Save {{ pkg.savings }}%
+                                </p>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
+
+                <!-- Token Costs Section -->
+                <div class="mx-auto mt-20 w-full max-w-5xl">
+                    <h2 class="mb-4 text-center text-2xl font-bold">What Do Tokens Cost?</h2>
+                    <p class="mb-8 text-center text-muted-foreground">
+                        Transparent pricing for every feature. Basic scans are always free.
+                    </p>
+
+                    <div class="grid gap-6 md:grid-cols-3">
+                        <!-- Scans -->
+                        <Card>
+                            <CardHeader>
+                                <CardTitle class="text-lg">Scans</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <ul class="space-y-3">
+                                    <li
+                                        v-for="item in tokenCosts.scans"
+                                        :key="item.name"
+                                        class="flex items-center justify-between"
+                                    >
+                                        <span class="text-sm">{{ item.name }}</span>
+                                        <Badge :variant="item.highlight ? 'default' : 'secondary'" :class="{ 'bg-green-500': item.highlight }">
+                                            {{ item.tokens }}
+                                        </Badge>
+                                    </li>
+                                </ul>
+                            </CardContent>
+                        </Card>
+
+                        <!-- Citations -->
+                        <Card>
+                            <CardHeader>
+                                <CardTitle class="text-lg">AI Citations</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <ul class="space-y-3">
+                                    <li
+                                        v-for="item in tokenCosts.citations"
+                                        :key="item.name"
+                                        class="flex items-center justify-between"
+                                    >
+                                        <span class="text-sm">{{ item.name }}</span>
+                                        <Badge variant="secondary">
+                                            {{ item.tokens }} {{ item.tokens === 1 ? 'token' : 'tokens' }}
+                                        </Badge>
+                                    </li>
+                                </ul>
+                            </CardContent>
+                        </Card>
+
+                        <!-- Other -->
+                        <Card>
+                            <CardHeader>
+                                <CardTitle class="text-lg">Other Features</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <ul class="space-y-3">
+                                    <li
+                                        v-for="item in tokenCosts.other"
+                                        :key="item.name"
+                                        class="flex items-center justify-between"
+                                    >
+                                        <span class="text-sm">{{ item.name }}</span>
+                                        <Badge variant="secondary">
+                                            {{ item.tokens }} tokens
+                                        </Badge>
+                                    </li>
+                                </ul>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
+
                 <!-- GEO Score Pillars Section -->
                 <div class="mx-auto mt-20 w-full max-w-5xl">
-                    <h2 class="mb-4 text-center text-2xl font-bold">GEO Score Pillars by Plan</h2>
+                    <h2 class="mb-4 text-center text-2xl font-bold">GEO Score Pillars by Scan Type</h2>
                     <p class="mb-8 text-center text-muted-foreground">
-                        Each plan unlocks additional scoring pillars for deeper AI optimization insights.
+                        Each scan type unlocks additional scoring pillars for deeper AI optimization insights.
                         <Link href="/geo-score-explained" class="text-primary hover:underline">Learn more about GEO scoring →</Link>
                     </p>
 
                     <div class="grid gap-6 md:grid-cols-3">
-                        <!-- Free Pillars -->
+                        <!-- Basic Scan Pillars -->
                         <Card>
                             <CardHeader class="pb-4">
                                 <div class="flex items-center justify-between">
-                                    <CardTitle class="text-lg">Free</CardTitle>
-                                    <Badge variant="secondary">100 pts max</Badge>
+                                    <CardTitle class="text-lg">Basic Scan</CardTitle>
+                                    <Badge variant="secondary" class="bg-green-500 text-white">FREE</Badge>
                                 </div>
-                                <CardDescription>5 core pillars</CardDescription>
+                                <CardDescription>5 core pillars (100 pts max)</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <ul class="space-y-2">
@@ -439,14 +541,14 @@ const getPlanLimit = (planKey: string, limitKey: string) => {
                             </CardContent>
                         </Card>
 
-                        <!-- Pro Pillars -->
+                        <!-- Pro Scan Pillars -->
                         <Card class="border-blue-500/50">
                             <CardHeader class="pb-4">
                                 <div class="flex items-center justify-between">
-                                    <CardTitle class="text-lg">Pro</CardTitle>
-                                    <Badge class="bg-blue-500">135 pts max</Badge>
+                                    <CardTitle class="text-lg">Pro Scan</CardTitle>
+                                    <Badge class="bg-blue-500">5 tokens</Badge>
                                 </div>
-                                <CardDescription>All Free pillars + 3 more</CardDescription>
+                                <CardDescription>All Basic + 3 more (135 pts max)</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <ul class="space-y-2">
@@ -465,20 +567,20 @@ const getPlanLimit = (planKey: string, limitKey: string) => {
                             </CardContent>
                         </Card>
 
-                        <!-- Agency Pillars -->
+                        <!-- Full Scan Pillars -->
                         <Card class="border-purple-500/50">
                             <CardHeader class="pb-4">
                                 <div class="flex items-center justify-between">
-                                    <CardTitle class="text-lg">Agency</CardTitle>
-                                    <Badge class="bg-purple-500">175 pts max</Badge>
+                                    <CardTitle class="text-lg">Full Scan</CardTitle>
+                                    <Badge class="bg-purple-500">10 tokens</Badge>
                                 </div>
-                                <CardDescription>All Pro pillars + 4 more</CardDescription>
+                                <CardDescription>All Pro + 4 more (175 pts max)</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <ul class="space-y-2">
                                     <li class="flex items-center gap-2 text-sm text-muted-foreground">
                                         <Check class="h-4 w-4 text-muted-foreground/50" />
-                                        <span class="flex-1">All Free pillars</span>
+                                        <span class="flex-1">All Basic pillars</span>
                                         <span>100 pts</span>
                                     </li>
                                     <li class="flex items-center gap-2 text-sm text-muted-foreground">
@@ -487,7 +589,7 @@ const getPlanLimit = (planKey: string, limitKey: string) => {
                                         <span>+35 pts</span>
                                     </li>
                                     <li class="border-t pt-2 mt-2"></li>
-                                    <li v-for="pillar in agencyPillars" :key="pillar.name" class="flex items-center gap-2 text-sm">
+                                    <li v-for="pillar in fullPillars" :key="pillar.name" class="flex items-center gap-2 text-sm">
                                         <component :is="pillar.icon" class="h-4 w-4 text-purple-500" />
                                         <span class="flex-1 font-medium">{{ pillar.name }}</span>
                                         <span class="text-purple-500">+{{ pillar.points }} pts</span>
@@ -498,59 +600,53 @@ const getPlanLimit = (planKey: string, limitKey: string) => {
                     </div>
                 </div>
 
-                <!-- Feature Comparison Table -->
-                <div class="mx-auto mt-20 w-full max-w-5xl">
-                    <h2 class="mb-8 text-center text-2xl font-bold">Compare Plans</h2>
-                    <div class="overflow-x-auto rounded-lg border">
-                        <table class="w-full">
-                            <thead>
-                                <tr class="border-b bg-muted/50">
-                                    <th class="px-6 py-4 text-left font-semibold">Feature</th>
-                                    <th class="px-6 py-4 text-center font-semibold">Free</th>
-                                    <th class="px-6 py-4 text-center font-semibold">Pro</th>
-                                    <th class="px-6 py-4 text-center font-semibold text-primary">Agency</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <template v-for="category in featureCategories" :key="category.name">
-                                    <tr class="border-b bg-muted/30">
-                                        <td colspan="4" class="px-6 py-3 text-sm font-semibold text-muted-foreground">
-                                            {{ category.name }}
-                                        </td>
-                                    </tr>
-                                    <tr v-for="feature in category.features" :key="feature.key" class="border-b">
-                                        <td class="px-6 py-3 text-sm">{{ feature.name }}</td>
-                                        <td class="px-6 py-3 text-center">
-                                            <template v-if="feature.format === 'boolean'">
-                                                <Check v-if="getPlanLimit('free', feature.key)" class="mx-auto h-5 w-5 text-green-600" />
-                                                <X v-else class="mx-auto h-5 w-5 text-muted-foreground/40" />
-                                            </template>
-                                            <span v-else class="text-sm text-muted-foreground">
-                                                {{ formatValue(getPlanLimit('free', feature.key), feature.format, 'free') }}
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-3 text-center">
-                                            <template v-if="feature.format === 'boolean'">
-                                                <Check v-if="getPlanLimit('pro', feature.key)" class="mx-auto h-5 w-5 text-green-600" />
-                                                <X v-else class="mx-auto h-5 w-5 text-muted-foreground/40" />
-                                            </template>
-                                            <span v-else class="text-sm">
-                                                {{ formatValue(getPlanLimit('pro', feature.key), feature.format, 'pro') }}
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-3 text-center">
-                                            <template v-if="feature.format === 'boolean'">
-                                                <Check v-if="getPlanLimit('agency', feature.key)" class="mx-auto h-5 w-5 text-green-600" />
-                                                <X v-else class="mx-auto h-5 w-5 text-muted-foreground/40" />
-                                            </template>
-                                            <span v-else class="text-sm font-medium text-primary">
-                                                {{ formatValue(getPlanLimit('agency', feature.key), feature.format, 'agency') }}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                </template>
-                            </tbody>
-                        </table>
+                <!-- FAQ Section -->
+                <div class="mx-auto mt-20 w-full max-w-3xl">
+                    <h2 class="mb-8 text-center text-2xl font-bold">Frequently Asked Questions</h2>
+                    <div class="space-y-4">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle class="text-base">Do tokens expire?</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p class="text-sm text-muted-foreground">
+                                    No, your tokens never expire. Use them whenever you need them.
+                                </p>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle class="text-base">Can I get a refund?</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p class="text-sm text-muted-foreground">
+                                    Unused tokens can be refunded within 30 days of purchase. Contact support for assistance.
+                                </p>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle class="text-base">What's included in the Team plan?</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p class="text-sm text-muted-foreground">
+                                    The Team plan includes 1,000 tokens per month, team collaboration features, white-label reports, GA4 integration, and priority support. Additional tokens can be purchased at standard rates.
+                                </p>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle class="text-base">Why is basic scanning free?</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p class="text-sm text-muted-foreground">
+                                    We believe everyone should be able to check their GEO optimization basics. Basic scans help you understand how AI search engines see your content at no cost.
+                                </p>
+                            </CardContent>
+                        </Card>
                     </div>
                 </div>
 
@@ -558,7 +654,7 @@ const getPlanLimit = (planKey: string, limitKey: string) => {
                 <div class="mt-20 text-center">
                     <h2 class="text-2xl font-bold">Ready to optimize for AI search?</h2>
                     <p class="mt-4 text-muted-foreground">
-                        Start with a free account and upgrade as you grow.
+                        Start with a free scan and upgrade when you need more.
                     </p>
                     <div class="mt-8">
                         <Link :href="register()">

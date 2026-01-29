@@ -12,6 +12,7 @@ import {
     ExternalLink,
     Quote,
     AlertCircle,
+    Coins,
 } from 'lucide-vue-next';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 
@@ -94,6 +95,8 @@ interface Usage {
     checks_remaining: number;
     checks_is_unlimited: boolean;
     available_frequencies: string[];
+    token_balance: number;
+    platform_costs: Record<string, number>;
 }
 
 interface Props {
@@ -265,6 +268,25 @@ const getPlatformName = (platform: string) => {
     return props.platforms[platform]?.name || platform;
 };
 
+const getPlatformCost = (platform: string) => {
+    return props.usage.platform_costs?.[platform] ?? 0;
+};
+
+const canAffordPlatform = (platform: string) => {
+    const cost = getPlatformCost(platform);
+    return props.usage.token_balance >= cost;
+};
+
+const totalCostForAllPlatforms = computed(() => {
+    return props.availablePlatforms
+        .filter(platform => !isCheckInProgress(platform))
+        .reduce((sum, platform) => sum + getPlatformCost(platform), 0);
+});
+
+const canAffordAllPlatforms = computed(() => {
+    return props.usage.token_balance >= totalCostForAllPlatforms.value;
+});
+
 const getLatestCheckForPlatform = (platform: string) => {
     return props.query.checks.find(c => c.platform === platform && c.status === 'completed');
 };
@@ -308,14 +330,28 @@ const isCheckInProgress = (platform: string) => {
                     </div>
                 </div>
 
-                <div class="flex gap-2">
+                <div class="flex items-center gap-3">
+                    <!-- Token Balance -->
+                    <div class="flex items-center gap-1 text-sm text-muted-foreground">
+                        <Coins class="h-4 w-4 text-primary" />
+                        <span class="font-medium">{{ usage.token_balance }}</span>
+                        <span>tokens</span>
+                    </div>
+
                     <Button
                         @click="runAllChecks"
-                        :disabled="!usage.can_perform_check || runningAllChecks || hasAnyCheckInProgress"
+                        :disabled="!usage.can_perform_check || runningAllChecks || hasAnyCheckInProgress || !canAffordAllPlatforms"
                     >
                         <Play v-if="!runningAllChecks && !hasAnyCheckInProgress" class="mr-2 h-4 w-4" />
                         <Loader2 v-else class="mr-2 h-4 w-4 animate-spin" />
-                        {{ runningAllChecks ? 'Running...' : hasAnyCheckInProgress ? 'Checking...' : 'Run All' }}
+                        <template v-if="runningAllChecks">Running...</template>
+                        <template v-else-if="hasAnyCheckInProgress">Checking...</template>
+                        <template v-else>
+                            Run All
+                            <span v-if="totalCostForAllPlatforms > 0" class="ml-1 text-xs opacity-75">
+                                ({{ totalCostForAllPlatforms }} tokens)
+                            </span>
+                        </template>
                     </Button>
                     <Button variant="outline" @click="showEditModal = true">
                         <Settings class="mr-2 h-4 w-4" />
@@ -379,22 +415,38 @@ const isCheckInProgress = (platform: string) => {
                             variant="outline"
                             size="sm"
                             class="w-full"
-                            :disabled="!usage.can_perform_check || isCheckInProgress(platform) || runningCheck === platform"
+                            :disabled="!usage.can_perform_check || isCheckInProgress(platform) || runningCheck === platform || !canAffordPlatform(platform)"
                             @click="runCheck(platform)"
                         >
                             <Play v-if="runningCheck !== platform && !isCheckInProgress(platform)" class="mr-2 h-4 w-4" />
                             <Loader2 v-else class="mr-2 h-4 w-4 animate-spin" />
-                            {{ isCheckInProgress(platform) ? 'Checking...' : 'Run Check' }}
+                            <template v-if="isCheckInProgress(platform)">Checking...</template>
+                            <template v-else>
+                                Run Check
+                                <span v-if="getPlatformCost(platform) > 0" class="ml-1 text-xs opacity-75">
+                                    ({{ getPlatformCost(platform) }} {{ getPlatformCost(platform) === 1 ? 'token' : 'tokens' }})
+                                </span>
+                            </template>
                         </Button>
+                        <!-- Not enough tokens warning -->
+                        <p v-if="!canAffordPlatform(platform) && !isCheckInProgress(platform)" class="text-xs text-red-500 mt-1 text-center">
+                            Need {{ getPlatformCost(platform) }} tokens
+                        </p>
                     </CardContent>
                 </Card>
             </div>
 
-            <!-- Check quota warning -->
-            <Alert v-if="!usage.can_perform_check">
+            <!-- Token warning -->
+            <Alert v-if="usage.token_balance === 0">
                 <AlertCircle class="h-4 w-4" />
-                <AlertDescription>
-                    You've reached your daily check limit. Checks reset at midnight.
+                <AlertDescription class="flex items-center justify-between">
+                    <span>You need tokens to run citation checks.</span>
+                    <Link href="/tokens">
+                        <Button variant="outline" size="sm">
+                            <Coins class="mr-2 h-4 w-4" />
+                            Buy Tokens
+                        </Button>
+                    </Link>
                 </AlertDescription>
             </Alert>
 

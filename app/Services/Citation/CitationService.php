@@ -7,17 +7,20 @@ use App\Models\CitationCheck;
 use App\Models\CitationQuery;
 use App\Models\Team;
 use App\Models\User;
+use App\Services\Analytics\GA4Service;
 use App\Services\SubscriptionService;
 use Illuminate\Support\Carbon;
 
 class CitationService
 {
     public function __construct(
-        protected SubscriptionService $subscriptionService
+        protected SubscriptionService $subscriptionService,
+        protected GA4Service $ga4Service,
     ) {}
 
     /**
      * Check if user can access citation features.
+     * Token-based: any user with tokens can access citations.
      */
     public function canAccessCitations(User $user): bool
     {
@@ -25,47 +28,64 @@ class CitationService
             return true;
         }
 
-        $limit = $this->subscriptionService->getLimit($user, 'citation_queries');
-
-        return $limit !== null && $limit !== 0;
+        // Token-based access - any user with tokens can access
+        return ($user->token_balance ?? 0) > 0;
     }
 
     /**
      * Get available platforms for the user.
+     * Token-based: all platforms available to users with tokens.
      */
     public function getAvailablePlatforms(User $user): array
     {
         // All supported platforms for citation checking
-        // AI Platforms:
-        // - Perplexity: Native web search with source URLs
-        // - Claude: Tavily Search + Claude analysis
-        // - OpenAI: Tavily Search + GPT-4o analysis
-        // - Gemini: Google Search Grounding
-        // - DeepSeek: DeepSeek AI
-        // Search/Social Platforms:
-        // - Google: Google Search results + AI Overviews
-        // - YouTube: Video search for brand mentions
-        // - Facebook: Social mentions via site search
         $supportedPlatforms = [
             'perplexity', 'claude', 'openai', 'gemini', 'deepseek',
             'google', 'youtube', 'facebook',
         ];
 
-        if ($user->is_admin) {
+        // Admins and users with tokens get all platforms
+        if ($user->is_admin || ($user->token_balance ?? 0) > 0) {
             return $supportedPlatforms;
         }
 
-        $userPlatforms = $this->subscriptionService->getLimit($user, 'citation_platforms') ?? [];
+        return [];
+    }
 
-        return array_intersect($userPlatforms, $supportedPlatforms);
+    /**
+     * Get the token cost for a citation check on a specific platform.
+     */
+    public function getTokenCost(string $platform): int
+    {
+        $providerKey = config("tokens.citation_providers.{$platform}");
+        if (!$providerKey) {
+            return 0;
+        }
+
+        return config("tokens.costs.{$providerKey}", 0);
+    }
+
+    /**
+     * Check if user can afford a citation check on a platform.
+     */
+    public function canAffordCheck(User $user, string $platform): bool
+    {
+        if ($user->is_admin) {
+            return true;
+        }
+
+        $cost = $this->getTokenCost($platform);
+        return ($user->token_balance ?? 0) >= $cost;
     }
 
     /**
      * Get available frequencies for the user.
+     * Token-based: all frequencies available (scheduled checks cost tokens per run).
      */
     public function getAvailableFrequencies(User $user): array
     {
-        if ($user->is_admin) {
+        // Admins and users with tokens get all frequencies
+        if ($user->is_admin || ($user->token_balance ?? 0) > 0) {
             return [
                 CitationQuery::FREQUENCY_MANUAL,
                 CitationQuery::FREQUENCY_DAILY,
@@ -73,19 +93,21 @@ class CitationService
             ];
         }
 
-        return $this->subscriptionService->getLimit($user, 'citation_frequency') ?? [];
+        return [];
     }
 
     /**
      * Get the maximum number of queries allowed.
+     * Token-based: unlimited queries (users pay per check, not per query).
      */
     public function getMaxQueries(User $user): int
     {
-        if ($user->is_admin) {
+        // Admins and users with tokens get unlimited queries
+        if ($user->is_admin || ($user->token_balance ?? 0) > 0) {
             return -1;
         }
 
-        return $this->subscriptionService->getLimit($user, 'citation_queries') ?? 0;
+        return 0;
     }
 
     /**
@@ -136,14 +158,16 @@ class CitationService
 
     /**
      * Get the daily check limit for the user.
+     * Token-based: unlimited checks (users pay per check).
      */
     public function getDailyCheckLimit(User $user): int
     {
-        if ($user->is_admin) {
+        // Admins and users with tokens get unlimited daily checks
+        if ($user->is_admin || ($user->token_balance ?? 0) > 0) {
             return -1;
         }
 
-        return $this->subscriptionService->getLimit($user, 'citation_checks_per_day') ?? 0;
+        return 0;
     }
 
     /**
@@ -178,7 +202,7 @@ class CitationService
     }
 
     /**
-     * Check if user can perform a check.
+     * Check if user can perform a check (has tokens).
      */
     public function canPerformCheck(User $user): bool
     {
@@ -186,9 +210,8 @@ class CitationService
             return true;
         }
 
-        $remaining = $this->getChecksRemainingToday($user);
-
-        return $remaining === -1 || $remaining > 0;
+        // Token-based: user needs at least some tokens
+        return ($user->token_balance ?? 0) > 0;
     }
 
     /**
@@ -200,7 +223,9 @@ class CitationService
         string $domain,
         ?string $brand = null,
         string $frequency = CitationQuery::FREQUENCY_MANUAL,
-        ?Team $team = null
+        ?Team $team = null,
+        array $scheduledPlatforms = [],
+        ?int $monthlyTokenBudget = null
     ): CitationQuery {
         $nextCheck = match ($frequency) {
             CitationQuery::FREQUENCY_DAILY => now()->addDay(),
@@ -215,6 +240,8 @@ class CitationService
             'domain' => $domain,
             'brand' => $brand,
             'frequency' => $frequency,
+            'scheduled_platforms' => ! empty($scheduledPlatforms) ? $scheduledPlatforms : null,
+            'monthly_token_budget' => $monthlyTokenBudget,
             'next_check_at' => $nextCheck,
             'is_active' => true,
         ]);
@@ -278,8 +305,15 @@ class CitationService
         $dailyLimit = $this->getDailyCheckLimit($user);
         $checksToday = $this->getChecksPerformedToday($user);
 
+        // Get platform costs for token-based users
+        $platformCosts = [];
+        foreach ($this->getAvailablePlatforms($user) as $platform) {
+            $platformCosts[$platform] = $this->getTokenCost($platform);
+        }
+
         return [
             'can_access' => $this->canAccessCitations($user),
+            'can_access_ga4' => $this->ga4Service->canAccessGA4($user),
             'queries_created' => $queriesCreated,
             'queries_limit' => $maxQueries,
             'queries_remaining' => $this->getQueriesRemaining($user, $team),
@@ -292,6 +326,8 @@ class CitationService
             'can_perform_check' => $this->canPerformCheck($user),
             'available_platforms' => $this->getAvailablePlatforms($user),
             'available_frequencies' => $this->getAvailableFrequencies($user),
+            'token_balance' => $user->token_balance ?? 0,
+            'platform_costs' => $platformCosts,
         ];
     }
 

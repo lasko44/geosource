@@ -73,9 +73,10 @@ class ScanReportMail extends Mailable
         $recommendationsLimited = false;
         $recommendationsTotal = count($recommendations);
 
-        // Apply recommendation limits based on tier
-        if ($this->user->isFreeTier()) {
-            $recommendationsLimit = $this->user->getLimit('recommendations_shown') ?? 3;
+        // Apply recommendation limits for basic scans (free tier content)
+        $scanTier = $this->scan->requested_tier ?? 'basic';
+        if ($scanTier === 'basic') {
+            $recommendationsLimit = 3;
             $recommendations = array_slice($recommendations, 0, $recommendationsLimit);
             $recommendationsLimited = true;
         }
@@ -103,8 +104,8 @@ class ScanReportMail extends Mailable
             }
         }
 
-        // Filter pillars based on user's current tier
-        $pillars = $this->filterPillarsForTier($this->scan->results['pillars'] ?? []);
+        // Filter pillars based on scan's requested tier (what user paid for)
+        $pillars = $this->filterPillarsForScanTier($this->scan->results['pillars'] ?? []);
 
         // Also filter recommendations to only include those for visible pillars
         $visiblePillarNames = array_keys($pillars);
@@ -124,23 +125,44 @@ class ScanReportMail extends Mailable
             'recommendationsLimited' => $recommendationsLimited,
             'recommendationsTotal' => $recommendationsTotal,
             'userPlan' => $this->user->getPlanKey(),
+            'scanTier' => $scanTier,
             'generatedAt' => now(),
             'whiteLabel' => $whiteLabel,
         ];
     }
 
     /**
-     * Filter pillars based on user's current subscription tier.
+     * Filter pillars based on the scan's requested tier (what user paid for).
+     * Uses the higher of: user's subscription tier OR scan's requested tier.
      */
-    private function filterPillarsForTier(array $pillars): array
+    private function filterPillarsForScanTier(array $pillars): array
     {
+        // Determine the tier to use for filtering
         $userTier = $this->getUserTierForPillars();
+        $scanTier = $this->scan->requested_tier ?? 'basic';
+
+        // Map tiers to priority for comparison
+        $tierPriority = [
+            'basic' => 0,
+            'free' => 0,
+            'pro' => 1,
+            'full' => 2,
+            'agency' => 2,
+            'agency_member' => 2,
+            'admin' => 3,
+        ];
+
+        $userPriority = $tierPriority[$userTier] ?? 0;
+        $scanPriority = $tierPriority[$scanTier] ?? 0;
+
+        // Use the higher tier (user may have subscription OR paid tokens for this scan)
+        $effectivePriority = max($userPriority, $scanPriority);
 
         $allowedTiers = ['free'];
-        if (in_array($userTier, ['pro', 'agency', 'agency_member', 'admin'])) {
+        if ($effectivePriority >= 1) {
             $allowedTiers[] = 'pro';
         }
-        if (in_array($userTier, ['agency', 'agency_member', 'admin'])) {
+        if ($effectivePriority >= 2) {
             $allowedTiers[] = 'agency';
         }
 

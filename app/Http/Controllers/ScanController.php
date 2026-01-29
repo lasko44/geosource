@@ -30,20 +30,56 @@ class ScanController extends Controller
     ) {}
 
     /**
-     * Get cooldown minutes based on user tier.
-     * Agency users get 5 minutes, others get 15 minutes.
+     * Get cooldown minutes based on scan tier.
+     * Pro/Full scans: 1 minute cooldown
+     * Basic/Free scans: 5 minute cooldown
      */
-    private function getCooldownMinutes(User $user): int
+    private function getCooldownMinutes(string $tier = 'basic'): int
     {
-        if ($this->subscriptionService->isAgencyTier($user) || $user->is_admin) {
-            return 5;
-        }
-
-        return 15;
+        return match ($tier) {
+            'pro', 'full' => 1,
+            default => 5,
+        };
     }
 
     /**
-     * Find recent successful scan for cooldown check.
+     * Check if a URL is on cooldown for a specific tier.
+     * If upgrading from basic to pro/full, uses the shorter pro/full cooldown.
+     */
+    private function checkCooldownForTier(string $url, int $userId, string $requestedTier): ?array
+    {
+        // Get the most recent scan for this URL
+        $recentScan = Scan::where('url', $url)
+            ->where('user_id', $userId)
+            ->where('status', '!=', 'failed')
+            ->where('created_at', '>=', now()->subMinutes(5)) // Max cooldown is 5 mins
+            ->orderByDesc('created_at')
+            ->first();
+
+        if (!$recentScan) {
+            return null; // No recent scan, no cooldown
+        }
+
+        // Get the cooldown based on requested tier
+        $cooldownMinutes = $this->getCooldownMinutes($requestedTier);
+        $availableAt = $recentScan->created_at->addMinutes($cooldownMinutes);
+
+        // If cooldown has passed, no restriction
+        if (now()->gte($availableAt)) {
+            return null;
+        }
+
+        $minutesRemaining = (int) ceil(now()->diffInSeconds($availableAt, false) / 60);
+
+        return [
+            'scan' => $recentScan,
+            'minutes_remaining' => $minutesRemaining,
+            'available_at' => $availableAt,
+        ];
+    }
+
+    /**
+     * Find recent successful scan for cooldown check (legacy method for bulk scans).
      * Failed scans don't count towards cooldown.
      */
     private function findRecentScanForCooldown(string $url, int $userId, int $cooldownMinutes): ?Scan
@@ -231,7 +267,8 @@ class ScanController extends Controller
             ] : null,
             'hasPersonalOption' => $hasPersonalOption,
             'citationData' => $citationData,
-            'canBulkScan' => $user->hasFeature('bulk_scanning'),
+            // Token holders or subscribers with bulk scanning can use bulk scan
+            'canBulkScan' => $user->hasFeature('bulk_scanning') || ($user->token_balance ?? 0) > 0,
         ]);
     }
 
@@ -243,6 +280,7 @@ class ScanController extends Controller
         $request->validate([
             'url' => 'required|url',
             'team_id' => 'nullable|integer',
+            'tier' => 'nullable|in:basic,pro,full',
         ]);
 
         $user = $request->user();
@@ -283,15 +321,14 @@ class ScanController extends Controller
         }
 
         $url = $request->input('url');
+        $requestedTier = $request->input('tier', 'basic');
 
-        // Check cooldown - Agency users get 5 min, others get 15 min. Failed scans don't count.
-        $cooldownMinutes = $this->getCooldownMinutes($user);
-        $recentScan = $this->findRecentScanForCooldown($url, $user->id, $cooldownMinutes);
+        // Check cooldown based on requested tier
+        // Pro/Full scans: 1 minute cooldown, Basic scans: 5 minute cooldown
+        $cooldownCheck = $this->checkCooldownForTier($url, $user->id, $requestedTier);
 
-        if ($recentScan) {
-            $availableAt = $recentScan->created_at->addMinutes($cooldownMinutes);
-            $minutesRemaining = (int) ceil(now()->diffInSeconds($availableAt, false) / 60);
-
+        if ($cooldownCheck) {
+            $minutesRemaining = $cooldownCheck['minutes_remaining'];
             $minuteWord = $minutesRemaining === 1 ? 'minute' : 'minutes';
 
             return back()->withErrors([
@@ -301,9 +338,31 @@ class ScanController extends Controller
 
         // Use transaction with pessimistic locking to prevent race conditions on quota
         try {
-            $scan = DB::transaction(function () use ($user, $team, $teamId, $url, $request) {
+            $scan = DB::transaction(function () use ($user, $team, $teamId, $url, $request, $requestedTier) {
                 // Lock the user row to prevent concurrent quota checks
                 $lockedUser = User::where('id', $user->id)->lockForUpdate()->first();
+
+                // Validate and deduct tokens for non-basic tiers if subscription doesn't cover it
+                $tokensRequired = 0;
+                $tokensCharged = false;
+                $tokenFeature = null;
+
+                if ($requestedTier !== 'basic') {
+                    $tierIncluded = $this->subscriptionService->canScanWithTokens($lockedUser, $requestedTier);
+
+                    if (!$tierIncluded) {
+                        // User needs tokens - check if they have enough
+                        $tokenFeature = $requestedTier === 'full' ? 'scan_full' : 'scan_pro';
+                        $tokensRequired = config("tokens.costs.{$tokenFeature}", 0);
+
+                        if ($tokensRequired > 0 && $lockedUser->token_balance < $tokensRequired) {
+                            throw new \App\Exceptions\QuotaExceededException(
+                                "You need {$tokensRequired} tokens for a " . ucfirst($requestedTier) . " scan. You have {$lockedUser->token_balance} tokens. Please purchase more tokens or use a Basic scan.",
+                                'tokens'
+                            );
+                        }
+                    }
+                }
 
                 // Check scan quota - use team owner's quota if scanning for a team
                 if ($team) {
@@ -363,6 +422,17 @@ class ScanController extends Controller
                     }
                 }
 
+                // Deduct tokens NOW (before scan creation) if required
+                // This prevents the TOCTOU vulnerability where tokens are validated but deducted later
+                if ($tokenFeature && $tokensRequired > 0) {
+                    $tokenService = app(\App\Services\TokenService::class);
+                    $tokenService->spend($lockedUser, $tokenFeature, [
+                        'url' => $url,
+                        'tier' => $requestedTier,
+                    ]);
+                    $tokensCharged = true;
+                }
+
                 // Create scan record with pending status (inside transaction)
                 $scan = Scan::create([
                     'user_id' => $lockedUser->id,
@@ -370,6 +440,9 @@ class ScanController extends Controller
                     'url' => $url,
                     'title' => parse_url($url, PHP_URL_HOST),
                     'status' => 'pending',
+                    'requested_tier' => $requestedTier,
+                    'tokens_charged' => $tokensCharged,
+                    'tokens_amount' => $tokensCharged ? $tokensRequired : 0,
                 ]);
 
                 // Log scan creation
@@ -425,7 +498,10 @@ class ScanController extends Controller
 
         $validated = $request->validate([
             'urls' => 'required|string',
+            'tier' => 'nullable|in:basic,pro,full',
         ]);
+
+        $requestedTier = $request->input('tier', 'basic');
 
         // Parse URLs (one per line)
         $urls = array_filter(array_map('trim', explode("\n", $validated['urls'])));
@@ -452,8 +528,12 @@ class ScanController extends Controller
             return back()->withErrors(['urls' => 'Maximum 50 URLs per batch. You provided '.count($validUrls).' URLs.']);
         }
 
-        // Check cooldown for each URL - Agency users get 5 min, others get 15 min. Failed scans don't count.
-        $cooldownMinutes = $this->getCooldownMinutes($user);
+        // Get requested tier for cooldown calculation
+        $requestedTier = $request->input('tier', 'basic');
+
+        // Check cooldown for each URL based on requested tier
+        // Pro/Full scans: 1 minute cooldown, Basic scans: 5 minute cooldown
+        $cooldownMinutes = $this->getCooldownMinutes($requestedTier);
         $cooldownThreshold = now()->subMinutes($cooldownMinutes);
 
         $recentlyScannedUrls = Scan::where('user_id', $user->id)
@@ -479,7 +559,7 @@ class ScanController extends Controller
             $count = count($urlsOnCooldown);
 
             return back()->withErrors([
-                'urls' => "All {$count} URL(s) were scanned within the last {$cooldownMinutes} minutes. Please wait before scanning them again.",
+                'urls' => "All {$count} URL(s) were scanned within the last {$cooldownMinutes} minute(s). Please wait before scanning them again.",
             ]);
         }
 
@@ -517,21 +597,81 @@ class ScanController extends Controller
             }
         }
 
-        // Create scans
-        $createdScans = [];
+        // Check tokens for non-basic tiers if subscription doesn't cover it
+        $tokensPerScan = 0;
+        $requiresTokens = false;
+        $tokenFeature = null;
 
-        foreach ($validUrls as $url) {
-            $scan = Scan::create([
-                'user_id' => $user->id,
-                'team_id' => $teamId,
-                'url' => $url,
-                'title' => parse_url($url, PHP_URL_HOST),
-                'status' => 'pending',
-            ]);
+        if ($requestedTier !== 'basic') {
+            $tierIncluded = $this->subscriptionService->canScanWithTokens($user, $requestedTier);
 
-            ScanAuditLog::logScanCreated($scan, $user, $request);
-            ScanWebsiteJob::dispatch($scan);
-            $createdScans[] = $scan;
+            if (!$tierIncluded) {
+                // User needs tokens
+                $requiresTokens = true;
+                $tokenFeature = $requestedTier === 'full' ? 'scan_full' : 'scan_pro';
+                $tokensPerScan = config("tokens.costs.{$tokenFeature}", 0);
+            }
+        }
+
+        // Use transaction with pessimistic locking to atomically reserve tokens and create scans
+        try {
+            $createdScans = DB::transaction(function () use ($user, $teamId, $validUrls, $requestedTier, $requiresTokens, $tokensPerScan, $tokenFeature, $scansNeeded, $request) {
+                // Lock the user row to prevent race conditions on token balance
+                $lockedUser = User::where('id', $user->id)->lockForUpdate()->first();
+
+                // Re-check token balance with lock held
+                if ($requiresTokens && $tokensPerScan > 0) {
+                    $totalTokensNeeded = $tokensPerScan * $scansNeeded;
+
+                    if ($lockedUser->token_balance < $totalTokensNeeded) {
+                        $tierName = ucfirst($requestedTier);
+                        throw new \App\Exceptions\QuotaExceededException(
+                            "You need {$totalTokensNeeded} tokens for {$scansNeeded} {$tierName} scans ({$tokensPerScan} each). You have {$lockedUser->token_balance} tokens.",
+                            'tokens'
+                        );
+                    }
+
+                    // Deduct all tokens upfront (atomic reservation)
+                    $tokenService = app(\App\Services\TokenService::class);
+                    foreach (range(1, $scansNeeded) as $i) {
+                        // Create transaction record for each scan
+                        $tokenService->spend($lockedUser, $tokenFeature, [
+                            'bulk_scan' => true,
+                            'scan_index' => $i,
+                            'total_scans' => $scansNeeded,
+                        ]);
+                        // Refresh user to get updated balance for next spend
+                        $lockedUser->refresh();
+                    }
+                }
+
+                // Create all scans
+                $createdScans = [];
+                foreach ($validUrls as $index => $url) {
+                    $scan = Scan::create([
+                        'user_id' => $lockedUser->id,
+                        'team_id' => $teamId,
+                        'url' => $url,
+                        'title' => parse_url($url, PHP_URL_HOST),
+                        'status' => 'pending',
+                        'requested_tier' => $requestedTier,
+                        'tokens_charged' => $requiresTokens && $tokensPerScan > 0,
+                        'tokens_amount' => $requiresTokens ? $tokensPerScan : 0,
+                    ]);
+
+                    ScanAuditLog::logScanCreated($scan, $lockedUser, $request);
+                    $createdScans[] = $scan;
+                }
+
+                return $createdScans;
+            });
+
+            // Dispatch jobs outside transaction
+            foreach ($createdScans as $scan) {
+                ScanWebsiteJob::dispatch($scan);
+            }
+        } catch (\App\Exceptions\QuotaExceededException $e) {
+            return back()->withErrors(['tokens' => $e->getMessage()]);
         }
 
         // Return JSON with scan UUIDs for polling
@@ -598,32 +738,30 @@ class ScanController extends Controller
 
     /**
      * Check cooldown status for a URL.
+     * Returns cooldown info for each tier so frontend can show appropriate message.
      */
     public function checkCooldown(Request $request)
     {
         $request->validate([
             'url' => 'required|url',
+            'tier' => 'nullable|in:basic,pro,full',
         ]);
 
         $user = $request->user();
         $url = $request->input('url');
-        $cooldownMinutes = $this->getCooldownMinutes($user);
+        $requestedTier = $request->input('tier', 'basic');
 
-        $recentScan = $this->findRecentScanForCooldown($url, $user->id, $cooldownMinutes);
+        // Check cooldown for the requested tier
+        $cooldownCheck = $this->checkCooldownForTier($url, $user->id, $requestedTier);
 
-        if ($recentScan) {
-            $availableAt = $recentScan->created_at->addMinutes($cooldownMinutes);
-            $secondsRemaining = now()->diffInSeconds($availableAt, false);
-            $minutesRemaining = (int) ceil($secondsRemaining / 60);
-
-            if ($minutesRemaining > 0) {
-                return response()->json([
-                    'on_cooldown' => true,
-                    'minutes_remaining' => $minutesRemaining,
-                    'available_at' => $availableAt->toIso8601String(),
-                    'existing_scan_uuid' => $recentScan->uuid,
-                ]);
-            }
+        if ($cooldownCheck) {
+            return response()->json([
+                'on_cooldown' => true,
+                'minutes_remaining' => $cooldownCheck['minutes_remaining'],
+                'available_at' => $cooldownCheck['available_at']->toIso8601String(),
+                'existing_scan_uuid' => $cooldownCheck['scan']->uuid,
+                'tier' => $requestedTier,
+            ]);
         }
 
         return response()->json([
@@ -644,9 +782,10 @@ class ScanController extends Controller
         $user = auth()->user();
         $scanData = $scan->toArray();
 
-        // Filter pillars based on user's current tier
+        // Filter pillars based on the scan's requested tier (what the user paid for)
+        // This ensures users see all pillars they paid for, whether via subscription or tokens
         if (isset($scanData['results']['pillars'])) {
-            $scanData['results']['pillars'] = $this->filterPillarsForTier($scanData['results']['pillars'], $user);
+            $scanData['results']['pillars'] = $this->filterPillarsForScanTier($scanData['results']['pillars'], $scan, $user);
         }
 
         // Filter recommendations based on visible pillars and tier limits
@@ -673,26 +812,26 @@ class ScanController extends Controller
             }
         }
 
-        // Check if user can email reports (Pro tier and above)
-        $plan = $user->getPlan();
-        $canEmailReport = in_array('Email reports', $plan['features'] ?? [])
-            || $user->is_admin
-            || ! $user->isFreeTier();
+        // All users can email reports - content is filtered by scan tier
+        $canEmailReport = true;
 
-        // Check cooldown status for rescan - Agency users get 5 min, others get 15 min. Failed scans don't count.
-        $cooldownMinutes = $this->getCooldownMinutes($user);
-        $recentScan = $this->findRecentScanForCooldown($scan->url, $user->id, $cooldownMinutes);
-
+        // Check cooldown status for rescan - show cooldown for each tier
+        // Basic: 5 min, Pro/Full: 1 min
         $cooldown = null;
-        if ($recentScan) {
-            $availableAt = $recentScan->created_at->addMinutes($cooldownMinutes);
-            $minutesRemaining = (int) ceil(now()->diffInSeconds($availableAt, false) / 60);
-            if ($minutesRemaining > 0) {
-                $cooldown = [
-                    'minutes_remaining' => $minutesRemaining,
-                    'available_at' => $availableAt->toIso8601String(),
-                ];
-            }
+        $basicCooldown = $this->checkCooldownForTier($scan->url, $user->id, 'basic');
+        $proCooldown = $this->checkCooldownForTier($scan->url, $user->id, 'pro');
+
+        if ($basicCooldown || $proCooldown) {
+            $cooldown = [
+                'basic' => $basicCooldown ? [
+                    'minutes_remaining' => $basicCooldown['minutes_remaining'],
+                    'available_at' => $basicCooldown['available_at']->toIso8601String(),
+                ] : null,
+                'pro' => $proCooldown ? [
+                    'minutes_remaining' => $proCooldown['minutes_remaining'],
+                    'available_at' => $proCooldown['available_at']->toIso8601String(),
+                ] : null,
+            ];
         }
 
         return Inertia::render('Scans/Show', [
@@ -809,7 +948,8 @@ class ScanController extends Controller
             ],
             'grades' => $grades,
             'usage' => $user->getUsageSummary(),
-            'canBulkScan' => $user->hasFeature('bulk_scanning'),
+            // Token holders or subscribers with bulk scanning can use bulk scan
+            'canBulkScan' => $user->hasFeature('bulk_scanning') || ($user->token_balance ?? 0) > 0,
             'currentTeamId' => $currentTeamId,
         ]);
     }
@@ -866,15 +1006,14 @@ class ScanController extends Controller
         $this->authorize('update', $scan);
 
         $user = $request->user();
+        $requestedTier = $request->input('tier', 'basic');
 
-        // Check cooldown - Agency users get 5 min, others get 15 min. Failed scans don't count.
-        $cooldownMinutes = $this->getCooldownMinutes($user);
-        $recentScan = $this->findRecentScanForCooldown($scan->url, $user->id, $cooldownMinutes);
+        // Check cooldown based on requested tier
+        // Pro/Full scans: 1 minute cooldown, Basic scans: 5 minute cooldown
+        $cooldownCheck = $this->checkCooldownForTier($scan->url, $user->id, $requestedTier);
 
-        if ($recentScan) {
-            $availableAt = $recentScan->created_at->addMinutes($cooldownMinutes);
-            $minutesRemaining = (int) ceil(now()->diffInSeconds($availableAt, false) / 60);
-
+        if ($cooldownCheck) {
+            $minutesRemaining = $cooldownCheck['minutes_remaining'];
             $minuteWord = $minutesRemaining === 1 ? 'minute' : 'minutes';
             $errorMessage = "You can rescan this URL in {$minutesRemaining} {$minuteWord}. Please wait before rescanning.";
 
@@ -895,9 +1034,31 @@ class ScanController extends Controller
 
         // Use transaction with pessimistic locking to prevent race conditions on quota
         try {
-            $newScan = DB::transaction(function () use ($user, $team, $teamId, $originalScan, $request) {
+            $newScan = DB::transaction(function () use ($user, $team, $teamId, $originalScan, $request, $requestedTier) {
                 // Lock the user row to prevent concurrent quota checks
                 $lockedUser = User::where('id', $user->id)->lockForUpdate()->first();
+
+                // Validate and deduct tokens for non-basic tiers if subscription doesn't cover it
+                $tokensRequired = 0;
+                $tokensCharged = false;
+                $tokenFeature = null;
+
+                if ($requestedTier !== 'basic') {
+                    $tierIncluded = $this->subscriptionService->canScanWithTokens($lockedUser, $requestedTier);
+
+                    if (!$tierIncluded) {
+                        // User needs tokens - check if they have enough
+                        $tokenFeature = $requestedTier === 'full' ? 'scan_full' : 'scan_pro';
+                        $tokensRequired = config("tokens.costs.{$tokenFeature}", 0);
+
+                        if ($tokensRequired > 0 && $lockedUser->token_balance < $tokensRequired) {
+                            throw new \App\Exceptions\QuotaExceededException(
+                                "You need {$tokensRequired} tokens for a " . ucfirst($requestedTier) . " scan. You have {$lockedUser->token_balance} tokens. Please purchase more tokens or use a Basic scan.",
+                                'tokens'
+                            );
+                        }
+                    }
+                }
 
                 // Check quota based on context (team or personal)
                 if ($team) {
@@ -970,6 +1131,18 @@ class ScanController extends Controller
                     }
                 }
 
+                // Deduct tokens NOW (before scan creation) if required
+                if ($tokenFeature && $tokensRequired > 0) {
+                    $tokenService = app(\App\Services\TokenService::class);
+                    $tokenService->spend($lockedUser, $tokenFeature, [
+                        'url' => $originalScan->url,
+                        'tier' => $requestedTier,
+                        'rescan' => true,
+                        'original_scan_id' => $originalScan->id,
+                    ]);
+                    $tokensCharged = true;
+                }
+
                 // Create new scan record with pending status (inside transaction)
                 $newScan = Scan::create([
                     'user_id' => $lockedUser->id,
@@ -977,6 +1150,9 @@ class ScanController extends Controller
                     'url' => $originalScan->url,
                     'title' => $originalScan->title ?? parse_url($originalScan->url, PHP_URL_HOST),
                     'status' => 'pending',
+                    'requested_tier' => $requestedTier,
+                    'tokens_charged' => $tokensCharged,
+                    'tokens_amount' => $tokensCharged ? $tokensRequired : 0,
                 ]);
 
                 // Log rescan event
@@ -1038,6 +1214,24 @@ class ScanController extends Controller
             abort(403, 'PDF export is not available on your current plan.');
         }
 
+        // Deduct tokens for PDF export (unless admin or subscription includes it)
+        if (! $user->is_admin) {
+            $tokenCost = config('tokens.costs.pdf_export', 0);
+            if ($tokenCost > 0) {
+                // Check if user has enough tokens
+                if (($user->token_balance ?? 0) < $tokenCost) {
+                    abort(403, "You need {$tokenCost} tokens to export PDF. You have " . ($user->token_balance ?? 0) . " tokens.");
+                }
+
+                // Deduct tokens atomically
+                $tokenService = app(\App\Services\TokenService::class);
+                $tokenService->spend($user, 'pdf_export', [
+                    'scan_id' => $scan->id,
+                    'scan_uuid' => $scan->uuid,
+                ]);
+            }
+        }
+
         $pdfData = $this->preparePdfData($scan, $user);
 
         $pdf = Pdf::loadView('exports.scan-pdf', $pdfData);
@@ -1084,8 +1278,8 @@ class ScanController extends Controller
             }
         }
 
-        // Filter pillars based on user's current tier
-        $pillars = $this->filterPillarsForTier($scan->results['pillars'] ?? [], $user);
+        // Filter pillars based on scan's requested tier (what user paid for)
+        $pillars = $this->filterPillarsForScanTier($scan->results['pillars'] ?? [], $scan, $user);
 
         // Also filter recommendations to only include those for visible pillars
         $visiblePillarNames = array_keys($pillars);
@@ -1108,6 +1302,49 @@ class ScanController extends Controller
             'generatedAt' => now(),
             'whiteLabel' => $whiteLabel,
         ];
+    }
+
+    /**
+     * Filter pillars based on the scan's requested tier.
+     * Users see all pillars they paid for, whether via subscription or tokens.
+     */
+    private function filterPillarsForScanTier(array $pillars, Scan $scan, User $user): array
+    {
+        // Determine the tier to use for filtering
+        // Use the higher of: user's subscription tier OR scan's requested tier
+        $userTier = $this->getUserTierForPillars($user);
+        $scanTier = $scan->requested_tier ?? 'basic';
+
+        // Map tiers to priority for comparison
+        $tierPriority = [
+            'basic' => 0,
+            'free' => 0,
+            'pro' => 1,
+            'full' => 2,
+            'agency' => 2,
+            'agency_member' => 2,
+            'admin' => 3,
+        ];
+
+        $userPriority = $tierPriority[$userTier] ?? 0;
+        $scanPriority = $tierPriority[$scanTier] ?? 0;
+
+        // Use the higher tier (user may have subscription OR paid tokens for this scan)
+        $effectivePriority = max($userPriority, $scanPriority);
+
+        $allowedTiers = ['free'];
+        if ($effectivePriority >= 1) {
+            $allowedTiers[] = 'pro';
+        }
+        if ($effectivePriority >= 2) {
+            $allowedTiers[] = 'agency';
+        }
+
+        return array_filter($pillars, function ($pillar) use ($allowedTiers) {
+            $pillarTier = $pillar['tier'] ?? 'free';
+
+            return in_array($pillarTier, $allowedTiers);
+        });
     }
 
     /**
@@ -1154,6 +1391,10 @@ class ScanController extends Controller
 
     /**
      * Email scan report to user or specified email.
+     * Available to all users - email contains only the pillars from their scan tier.
+     * Rate limited to prevent spam:
+     * - 10 emails per hour per user (global limit)
+     * - 3 emails per scan per day (per-scan limit)
      */
     public function emailReport(Scan $scan, Request $request)
     {
@@ -1161,16 +1402,29 @@ class ScanController extends Controller
 
         $user = $request->user();
 
-        // Check if user has email reports feature (Pro tier and above)
-        $plan = $user->getPlan();
-        $hasEmailReports = in_array('Email reports', $plan['features'] ?? [])
-            || $user->is_admin
-            || ! $user->isFreeTier();
+        // Rate limiting (admins exempt)
+        if (! $user->is_admin) {
+            $cache = app('cache');
 
-        if (! $hasEmailReports) {
-            return back()->withErrors([
-                'email' => 'Email reports are not available on your current plan. Please upgrade to Pro or Agency.',
-            ]);
+            // Global rate limit: 10 emails per hour per user
+            $globalKey = "email_report_hourly:{$user->id}";
+            $globalCount = (int) $cache->get($globalKey, 0);
+
+            if ($globalCount >= 10) {
+                return back()->withErrors([
+                    'email' => 'You have reached the hourly email limit (10 emails/hour). Please try again later.',
+                ]);
+            }
+
+            // Per-scan rate limit: 3 emails per scan per day
+            $scanKey = "email_report_scan:{$user->id}:{$scan->id}";
+            $scanCount = (int) $cache->get($scanKey, 0);
+
+            if ($scanCount >= 3) {
+                return back()->withErrors([
+                    'email' => 'You have already sent this report 3 times today. Please try again tomorrow.',
+                ]);
+            }
         }
 
         $request->validate([
@@ -1191,6 +1445,19 @@ class ScanController extends Controller
 
             // Send the email with the PDF attachment
             Mail::to($recipientEmail)->send(new ScanReportMail($scan, $user, $recipientEmail));
+
+            // Increment rate limit counters after successful send
+            if (! $user->is_admin) {
+                $cache = app('cache');
+
+                // Increment global counter (1 hour TTL)
+                $globalKey = "email_report_hourly:{$user->id}";
+                $cache->put($globalKey, $cache->get($globalKey, 0) + 1, now()->addHour());
+
+                // Increment per-scan counter (24 hour TTL)
+                $scanKey = "email_report_scan:{$user->id}:{$scan->id}";
+                $cache->put($scanKey, $cache->get($scanKey, 0) + 1, now()->addDay());
+            }
 
             \Illuminate\Support\Facades\Log::info('Scan report email sent successfully', [
                 'scan_id' => $scan->id,

@@ -21,6 +21,10 @@ class CitationQuery extends Model
         'brand',
         'is_active',
         'frequency',
+        'scheduled_platforms',
+        'monthly_token_budget',
+        'tokens_spent_this_month',
+        'budget_reset_at',
         'last_checked_at',
         'next_check_at',
     ];
@@ -54,6 +58,10 @@ class CitationQuery extends Model
     {
         return [
             'is_active' => 'boolean',
+            'scheduled_platforms' => 'array',
+            'monthly_token_budget' => 'integer',
+            'tokens_spent_this_month' => 'integer',
+            'budget_reset_at' => 'datetime',
             'last_checked_at' => 'datetime',
             'next_check_at' => 'datetime',
         ];
@@ -157,5 +165,92 @@ class CitationQuery extends Model
                 ? round(($checks->where('is_cited', true)->count() / $checks->count()) * 100, 1)
                 : 0,
         ];
+    }
+
+    /**
+     * Get the platforms to check on schedule.
+     * Returns the selected platforms or all available if none selected.
+     */
+    public function getScheduledPlatformsToCheck(): array
+    {
+        if (! empty($this->scheduled_platforms)) {
+            return $this->scheduled_platforms;
+        }
+
+        // Default to all AI platforms if none selected
+        return ['perplexity', 'openai', 'claude', 'gemini', 'deepseek'];
+    }
+
+    /**
+     * Calculate the token cost for one scheduled run.
+     */
+    public function getScheduledRunCost(): int
+    {
+        $platforms = $this->getScheduledPlatformsToCheck();
+        $totalCost = 0;
+
+        foreach ($platforms as $platform) {
+            $providerKey = config("tokens.citation_providers.{$platform}");
+            if ($providerKey) {
+                $totalCost += config("tokens.costs.{$providerKey}", 0);
+            }
+        }
+
+        return $totalCost;
+    }
+
+    /**
+     * Check if budget allows for another scheduled run.
+     */
+    public function canAffordScheduledRun(): bool
+    {
+        // No budget limit set
+        if ($this->monthly_token_budget === null) {
+            return true;
+        }
+
+        // Reset budget if it's a new month
+        $this->maybeResetMonthlyBudget();
+
+        $runCost = $this->getScheduledRunCost();
+        $remaining = $this->monthly_token_budget - $this->tokens_spent_this_month;
+
+        return $remaining >= $runCost;
+    }
+
+    /**
+     * Get remaining budget for this month.
+     */
+    public function getRemainingBudget(): ?int
+    {
+        if ($this->monthly_token_budget === null) {
+            return null;
+        }
+
+        $this->maybeResetMonthlyBudget();
+
+        return max(0, $this->monthly_token_budget - $this->tokens_spent_this_month);
+    }
+
+    /**
+     * Record tokens spent for a scheduled run.
+     */
+    public function recordTokensSpent(int $amount): void
+    {
+        $this->maybeResetMonthlyBudget();
+        $this->increment('tokens_spent_this_month', $amount);
+    }
+
+    /**
+     * Reset monthly budget if we're in a new month.
+     */
+    public function maybeResetMonthlyBudget(): void
+    {
+        if (! $this->budget_reset_at || ! $this->budget_reset_at->isSameMonth(now())) {
+            $this->update([
+                'tokens_spent_this_month' => 0,
+                'budget_reset_at' => now()->startOfMonth(),
+            ]);
+        }
     }
 }

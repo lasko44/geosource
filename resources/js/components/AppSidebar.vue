@@ -4,6 +4,7 @@ import {
     BookOpen,
     CalendarClock,
     CircleHelp,
+    Coins,
     FileChartColumnIncreasingIcon,
     LayoutGrid,
     Newspaper,
@@ -79,6 +80,12 @@ const mainNavItems = computed<NavItem[]>(() => {
         title: 'Billing',
         href: '/billing',
         icon: Receipt,
+    });
+
+    items.push({
+        title: 'Buy Tokens',
+        href: '/tokens',
+        icon: Coins,
     });
 
     return items;

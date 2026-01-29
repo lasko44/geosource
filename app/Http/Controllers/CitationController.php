@@ -10,6 +10,7 @@ use App\Models\Team;
 use App\Models\User;
 use App\Services\Citation\CitationService;
 use App\Services\SubscriptionService;
+use App\Services\TokenService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -19,6 +20,7 @@ class CitationController extends Controller
     public function __construct(
         private CitationService $citationService,
         private SubscriptionService $subscriptionService,
+        private TokenService $tokenService,
     ) {}
 
     /**
@@ -121,6 +123,9 @@ class CitationController extends Controller
             'domain' => ['required', 'string', 'max:255', 'regex:/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*\.[a-z]{2,}$/i'],
             'brand' => 'nullable|string|max:255',
             'frequency' => 'required|string|in:manual,daily,weekly',
+            'scheduled_platforms' => 'nullable|array',
+            'scheduled_platforms.*' => 'string|in:perplexity,openai,claude,gemini,deepseek,google,youtube,facebook',
+            'monthly_token_budget' => 'nullable|integer|min:0',
         ], [
             'domain.regex' => 'Please enter a valid domain (e.g., example.com).',
         ]);
@@ -149,14 +154,16 @@ class CitationController extends Controller
             ]);
         }
 
-        // Create the query
+        // Create the query with scheduling options
         $citationQuery = $this->citationService->createQuery(
             $user,
             $request->input('query'),
             $request->input('domain'),
             $request->input('brand'),
             $request->input('frequency'),
-            $team
+            $team,
+            $request->input('scheduled_platforms', []),
+            $request->input('monthly_token_budget')
         );
 
         return redirect()->route('citations.queries.show', $citationQuery)
@@ -216,10 +223,15 @@ class CitationController extends Controller
             }
         }
 
-        // Check quota
-        if (! $this->citationService->canPerformCheck($user)) {
+        // Rate limit: check if user has run a check on this platform in the last 10 seconds
+        $recentCheck = \App\Models\CitationCheck::where('user_id', $user->id)
+            ->where('platform', $request->platform)
+            ->where('created_at', '>=', now()->subSeconds(10))
+            ->exists();
+
+        if ($recentCheck) {
             return back()->withErrors([
-                'limit' => 'You have reached your daily check limit. Please try again tomorrow.',
+                'rate_limit' => 'Please wait a few seconds between checks on the same platform.',
             ]);
         }
 
@@ -227,25 +239,42 @@ class CitationController extends Controller
         $availablePlatforms = $this->citationService->getAvailablePlatforms($user);
         if (! in_array($request->platform, $availablePlatforms)) {
             return back()->withErrors([
-                'platform' => 'This platform is not available on your current plan.',
+                'platform' => 'This platform is not available. You need tokens to run citation checks.',
+            ]);
+        }
+
+        // Check if user can afford this check
+        $tokenCost = $this->citationService->getTokenCost($request->platform);
+        if (! $user->is_admin && $tokenCost > 0 && ($user->token_balance ?? 0) < $tokenCost) {
+            return back()->withErrors([
+                'tokens' => "You need {$tokenCost} tokens for this check. You have {$user->token_balance} tokens.",
             ]);
         }
 
         try {
-            $check = DB::transaction(function () use ($user, $query, $request) {
-                // Lock user for quota check
+            $check = DB::transaction(function () use ($user, $query, $request, $tokenCost) {
+                // Lock user for token check
                 $lockedUser = User::where('id', $user->id)->lockForUpdate()->first();
 
-                // Re-verify quota within transaction
-                if (! $this->citationService->canPerformCheck($lockedUser)) {
-                    throw new \Exception('Daily check limit reached.');
+                // Re-verify tokens within transaction
+                if (! $lockedUser->is_admin && $tokenCost > 0 && ($lockedUser->token_balance ?? 0) < $tokenCost) {
+                    throw new \Exception("Insufficient tokens. You need {$tokenCost} tokens.");
+                }
+
+                // Deduct tokens for non-admins
+                if (! $lockedUser->is_admin && $tokenCost > 0) {
+                    $providerKey = config("tokens.citation_providers.{$request->platform}");
+                    $this->tokenService->spend($lockedUser, $providerKey, [
+                        'query_id' => $query->id,
+                        'platform' => $request->platform,
+                    ]);
                 }
 
                 // Create the check
                 return $this->citationService->createCheck($query, $request->platform, $lockedUser);
             });
         } catch (\Exception $e) {
-            return back()->withErrors(['limit' => $e->getMessage()]);
+            return back()->withErrors(['tokens' => $e->getMessage()]);
         }
 
         // Dispatch the job
@@ -280,49 +309,67 @@ class CitationController extends Controller
 
         if (empty($requestedPlatforms)) {
             return back()->withErrors([
-                'platforms' => 'No valid platforms specified.',
+                'platforms' => 'No valid platforms specified. You need tokens to run citation checks.',
             ]);
         }
 
-        // Check if user has enough quota for all platforms
-        $remainingChecks = $this->citationService->getChecksRemainingToday($user);
-        if ($remainingChecks !== -1 && $remainingChecks < count($requestedPlatforms)) {
+        // Calculate total token cost
+        $totalCost = 0;
+        foreach ($requestedPlatforms as $platform) {
+            $totalCost += $this->citationService->getTokenCost($platform);
+        }
+
+        // Check if user can afford all checks
+        if (! $user->is_admin && $totalCost > 0 && ($user->token_balance ?? 0) < $totalCost) {
             return back()->withErrors([
-                'limit' => "You can only perform {$remainingChecks} more checks today.",
+                'tokens' => "You need {$totalCost} tokens for all checks. You have {$user->token_balance} tokens.",
             ]);
         }
 
         $checks = [];
 
         try {
-            $checks = DB::transaction(function () use ($user, $query, $requestedPlatforms) {
-                // Lock user for quota check
+            $checks = DB::transaction(function () use ($user, $query, $requestedPlatforms, $totalCost) {
+                // Lock user for token check
                 $lockedUser = User::where('id', $user->id)->lockForUpdate()->first();
 
-                // Re-verify quota within transaction
-                $remaining = $this->citationService->getChecksRemainingToday($lockedUser);
-                if ($remaining !== -1 && $remaining < count($requestedPlatforms)) {
-                    throw new \Exception('Not enough daily checks remaining.');
+                // Re-verify tokens within transaction
+                if (! $lockedUser->is_admin && $totalCost > 0 && ($lockedUser->token_balance ?? 0) < $totalCost) {
+                    throw new \Exception("Insufficient tokens. You need {$totalCost} tokens.");
                 }
 
                 $createdChecks = [];
                 foreach ($requestedPlatforms as $platform) {
+                    // Deduct tokens for each platform
+                    $tokenCost = $this->citationService->getTokenCost($platform);
+                    if (! $lockedUser->is_admin && $tokenCost > 0) {
+                        $providerKey = config("tokens.citation_providers.{$platform}");
+                        $this->tokenService->spend($lockedUser, $providerKey, [
+                            'query_id' => $query->id,
+                            'platform' => $platform,
+                        ]);
+                        // Refresh balance after spend
+                        $lockedUser->refresh();
+                    }
+
                     $createdChecks[] = $this->citationService->createCheck($query, $platform, $lockedUser);
                 }
 
                 return $createdChecks;
             });
         } catch (\Exception $e) {
-            return back()->withErrors(['limit' => $e->getMessage()]);
+            return back()->withErrors(['tokens' => $e->getMessage()]);
         }
 
-        // Dispatch jobs for all checks
-        foreach ($checks as $check) {
-            CheckCitationJob::dispatch($check);
+        // Dispatch jobs for all checks with staggered delays to avoid rate limits
+        foreach ($checks as $index => $check) {
+            // Delay each subsequent check by 5 seconds to avoid API rate limits
+            $delay = $index * 5;
+            CheckCitationJob::dispatch($check)->delay(now()->addSeconds($delay));
         }
 
         return redirect()->route('citations.queries.show', $query)
-            ->with('success', count($checks) . ' checks started.');
+            ->with('success', count($checks) . ' checks started (staggered to avoid rate limits).');
     }
 
     /**
@@ -368,6 +415,9 @@ class CitationController extends Controller
             'brand' => 'nullable|string|max:255',
             'frequency' => 'sometimes|string|in:manual,daily,weekly',
             'is_active' => 'sometimes|boolean',
+            'scheduled_platforms' => 'nullable|array',
+            'scheduled_platforms.*' => 'string|in:perplexity,openai,claude,gemini,deepseek,google,youtube,facebook',
+            'monthly_token_budget' => 'nullable|integer|min:0',
         ], [
             'domain.regex' => 'Please enter a valid domain (e.g., example.com).',
         ]);
@@ -382,7 +432,15 @@ class CitationController extends Controller
             }
         }
 
-        $query->update($request->only(['query', 'domain', 'brand', 'frequency', 'is_active']));
+        $updateData = $request->only(['query', 'domain', 'brand', 'frequency', 'is_active', 'monthly_token_budget']);
+
+        // Handle scheduled_platforms (can be empty array to clear)
+        if ($request->has('scheduled_platforms')) {
+            $platforms = $request->input('scheduled_platforms', []);
+            $updateData['scheduled_platforms'] = ! empty($platforms) ? $platforms : null;
+        }
+
+        $query->update($updateData);
 
         // Reschedule if frequency changed
         if ($request->has('frequency') && $request->frequency !== 'manual') {

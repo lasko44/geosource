@@ -28,6 +28,10 @@ class Scan extends Model
         'internal_error',
         'started_at',
         'completed_at',
+        'requested_tier',
+        'tokens_charged',
+        'tokens_amount',
+        'tokens_refunded',
     ];
 
     /**

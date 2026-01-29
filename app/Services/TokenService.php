@@ -1,0 +1,302 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\TokenPackage;
+use App\Models\TokenTransaction;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+
+class TokenService
+{
+    /**
+     * Get the token cost for a feature.
+     */
+    public function getCost(string $feature): int
+    {
+        return config("tokens.costs.{$feature}", 0);
+    }
+
+    /**
+     * Get the label for a feature.
+     */
+    public function getLabel(string $feature): string
+    {
+        return config("tokens.labels.{$feature}", $feature);
+    }
+
+    /**
+     * Check if user has enough tokens for a feature.
+     */
+    public function hasTokensFor(User $user, string $feature): bool
+    {
+        $cost = $this->getCost($feature);
+
+        // Free features always pass
+        if ($cost === 0) {
+            return true;
+        }
+
+        return $user->token_balance >= $cost;
+    }
+
+    /**
+     * Get the user's current token balance.
+     */
+    public function getBalance(User $user): int
+    {
+        return $user->token_balance ?? 0;
+    }
+
+    /**
+     * Spend tokens for a feature.
+     *
+     * @throws \Exception if insufficient balance
+     */
+    public function spend(User $user, string $feature, array $metadata = []): ?TokenTransaction
+    {
+        $cost = $this->getCost($feature);
+
+        // Free features don't create transactions
+        if ($cost === 0) {
+            return null;
+        }
+
+        if ($user->token_balance < $cost) {
+            throw new \Exception("Insufficient token balance. Required: {$cost}, Available: {$user->token_balance}");
+        }
+
+        return DB::transaction(function () use ($user, $feature, $cost, $metadata) {
+            // Lock the user row to prevent race conditions
+            $user = User::lockForUpdate()->find($user->id);
+
+            $newBalance = $user->token_balance - $cost;
+
+            $user->update(['token_balance' => $newBalance]);
+
+            return TokenTransaction::create([
+                'user_id' => $user->id,
+                'type' => TokenTransaction::TYPE_SPEND,
+                'amount' => -$cost,
+                'balance_after' => $newBalance,
+                'description' => $this->getLabel($feature),
+                'metadata' => array_merge($metadata, ['feature' => $feature]),
+            ]);
+        });
+    }
+
+    /**
+     * Credit tokens from a purchase.
+     */
+    public function creditPurchase(User $user, TokenPackage $package, string $stripeSessionId): TokenTransaction
+    {
+        return DB::transaction(function () use ($user, $package, $stripeSessionId) {
+            // Lock the user row to prevent race conditions
+            $user = User::lockForUpdate()->find($user->id);
+
+            $newBalance = $user->token_balance + $package->tokens;
+
+            $user->update(['token_balance' => $newBalance]);
+
+            Log::info('Tokens credited to user', [
+                'user_id' => $user->id,
+                'package_id' => $package->id,
+                'tokens' => $package->tokens,
+                'new_balance' => $newBalance,
+                'stripe_session_id' => $stripeSessionId,
+            ]);
+
+            return TokenTransaction::create([
+                'user_id' => $user->id,
+                'type' => TokenTransaction::TYPE_PURCHASE,
+                'amount' => $package->tokens,
+                'balance_after' => $newBalance,
+                'description' => "Purchased {$package->name}",
+                'metadata' => [
+                    'package_id' => $package->id,
+                    'package_name' => $package->name,
+                    'price_cents' => $package->price_cents,
+                    'stripe_session_id' => $stripeSessionId,
+                ],
+            ]);
+        });
+    }
+
+    /**
+     * Add bonus tokens to a user.
+     */
+    public function creditBonus(User $user, int $amount, string $reason): TokenTransaction
+    {
+        return DB::transaction(function () use ($user, $amount, $reason) {
+            $user = User::lockForUpdate()->find($user->id);
+
+            $newBalance = $user->token_balance + $amount;
+
+            $user->update(['token_balance' => $newBalance]);
+
+            Log::info('Bonus tokens credited to user', [
+                'user_id' => $user->id,
+                'amount' => $amount,
+                'reason' => $reason,
+                'new_balance' => $newBalance,
+            ]);
+
+            return TokenTransaction::create([
+                'user_id' => $user->id,
+                'type' => TokenTransaction::TYPE_BONUS,
+                'amount' => $amount,
+                'balance_after' => $newBalance,
+                'description' => $reason,
+                'metadata' => ['reason' => $reason],
+            ]);
+        });
+    }
+
+    /**
+     * Refund tokens to a user.
+     */
+    public function refund(User $user, int $amount, string $reason): TokenTransaction
+    {
+        return DB::transaction(function () use ($user, $amount, $reason) {
+            $user = User::lockForUpdate()->find($user->id);
+
+            $newBalance = $user->token_balance + $amount;
+
+            $user->update(['token_balance' => $newBalance]);
+
+            Log::info('Tokens refunded to user', [
+                'user_id' => $user->id,
+                'amount' => $amount,
+                'reason' => $reason,
+                'new_balance' => $newBalance,
+            ]);
+
+            return TokenTransaction::create([
+                'user_id' => $user->id,
+                'type' => TokenTransaction::TYPE_REFUND,
+                'amount' => $amount,
+                'balance_after' => $newBalance,
+                'description' => $reason,
+                'metadata' => ['reason' => $reason],
+            ]);
+        });
+    }
+
+    /**
+     * Get transaction history for a user.
+     */
+    public function getHistory(User $user, int $limit = 50): Collection
+    {
+        return TokenTransaction::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
+     * Get all active token packages.
+     */
+    public function getPackages(): Collection
+    {
+        return TokenPackage::active()->ordered()->get();
+    }
+
+    /**
+     * Get the cost for a scan tier.
+     */
+    public function getScanCost(string $tier): int
+    {
+        $feature = config("tokens.scan_tiers.{$tier}");
+
+        if (!$feature) {
+            return 0;
+        }
+
+        return $this->getCost($feature);
+    }
+
+    /**
+     * Get the cost for a citation provider.
+     */
+    public function getCitationCost(string $provider): int
+    {
+        $feature = config("tokens.citation_providers.{$provider}");
+
+        if (!$feature) {
+            return 0;
+        }
+
+        return $this->getCost($feature);
+    }
+
+    /**
+     * Check if user can perform a scan at a given tier.
+     */
+    public function canScan(User $user, string $tier): bool
+    {
+        $feature = config("tokens.scan_tiers.{$tier}");
+
+        if (!$feature) {
+            return true; // Unknown tier, allow by default
+        }
+
+        return $this->hasTokensFor($user, $feature);
+    }
+
+    /**
+     * Spend tokens for a scan.
+     */
+    public function spendForScan(User $user, string $tier, array $metadata = []): ?TokenTransaction
+    {
+        $feature = config("tokens.scan_tiers.{$tier}");
+
+        if (!$feature) {
+            return null;
+        }
+
+        return $this->spend($user, $feature, $metadata);
+    }
+
+    /**
+     * Spend tokens for a citation.
+     */
+    public function spendForCitation(User $user, string $provider, array $metadata = []): ?TokenTransaction
+    {
+        $feature = config("tokens.citation_providers.{$provider}");
+
+        if (!$feature) {
+            return null;
+        }
+
+        return $this->spend($user, $feature, $metadata);
+    }
+
+    /**
+     * Get usage statistics for the user.
+     */
+    public function getUsageStats(User $user): array
+    {
+        $thisMonth = TokenTransaction::where('user_id', $user->id)
+            ->where('type', TokenTransaction::TYPE_SPEND)
+            ->where('created_at', '>=', now()->startOfMonth())
+            ->selectRaw('SUM(ABS(amount)) as total_spent, COUNT(*) as transaction_count')
+            ->first();
+
+        $allTime = TokenTransaction::where('user_id', $user->id)
+            ->selectRaw('
+                SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) as total_credited,
+                SUM(CASE WHEN amount < 0 THEN ABS(amount) ELSE 0 END) as total_spent
+            ')
+            ->first();
+
+        return [
+            'current_balance' => $user->token_balance,
+            'spent_this_month' => (int) ($thisMonth->total_spent ?? 0),
+            'transactions_this_month' => (int) ($thisMonth->transaction_count ?? 0),
+            'total_credited' => (int) ($allTime->total_credited ?? 0),
+            'total_spent' => (int) ($allTime->total_spent ?? 0),
+        ];
+    }
+}

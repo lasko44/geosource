@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { Check, X, Sparkles, Zap, Building2 } from 'lucide-vue-next';
+import { Check, Sparkles, Coins, Building2, ArrowRight } from 'lucide-vue-next';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem, type PlanWithLimits, type UsageSummary } from '@/types';
 
@@ -26,122 +27,50 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-// Define the free tier for display
-const freeTier = {
-    name: 'Free',
-    description: 'Get started with basic GEO analysis',
-    price: 0,
-    interval: 'month' as const,
-    features: [
-        '3 scans per month',
-        'Basic GEO score',
-        'Top 3 recommendations',
-        '7-day scan history',
-    ],
-    limits: {
-        scans_per_month: 3,
-        history_days: 7,
-        team_members: 1,
-        competitor_tracking: 0,
-        recommendations_shown: 3,
-        api_access: false,
-        white_label: false,
-        scheduled_scans: false,
-        pdf_export: false,
-        bulk_scanning: false,
-    },
-};
-
-// Feature comparison data
-const featureCategories = [
-    {
-        name: 'Scanning',
-        features: [
-            { name: 'Scans per month', key: 'scans_per_month', format: 'number' },
-            { name: 'Scan history', key: 'history_days', format: 'days' },
-            { name: 'Bulk URL scanning', key: 'bulk_scanning', format: 'boolean' },
-            { name: 'Scheduled scans', key: 'scheduled_scans', format: 'boolean' },
-        ],
-    },
-    {
-        name: 'Analysis',
-        features: [
-            { name: 'GEO Score breakdown', key: 'full_breakdown', format: 'text' },
-            { name: 'Recommendations shown', key: 'recommendations_shown', format: 'number' },
-        ],
-    },
-    {
-        name: 'Export',
-        features: [
-            { name: 'PDF export', key: 'pdf_export', format: 'boolean' },
-        ],
-    },
-    {
-        name: 'Team & Branding',
-        features: [
-            { name: 'Team members', key: 'team_members', format: 'number' },
-            { name: 'White-label reports', key: 'white_label', format: 'boolean' },
-        ],
-    },
+// Token packages for reference
+const tokenPackages = [
+    { tokens: 50, price: 5, perToken: 0.10, savings: 0 },
+    { tokens: 200, price: 15, perToken: 0.075, savings: 25, popular: true },
+    { tokens: 500, price: 30, perToken: 0.06, savings: 40 },
+    { tokens: 1000, price: 50, perToken: 0.05, savings: 50, bestValue: true },
 ];
 
-const formatValue = (value: number | boolean | undefined, format: string, planKey: string) => {
-    if (format === 'boolean') {
-        return value;
-    }
-    if (format === 'number') {
-        if (value === -1) return 'Unlimited';
-        if (value === 0) return '—';
-        return value;
-    }
-    if (format === 'days') {
-        if (value === -1) return 'Unlimited';
-        return `${value} days`;
-    }
-    if (format === 'domains') {
-        if (value === -1) return 'Unlimited';
-        if (value === 0) return '—';
-        return `${value} domains`;
-    }
-    if (format === 'text') {
-        if (planKey === 'free') return 'Basic';
-        return 'Full';
-    }
-    return value;
-};
-
-const getPlanLimit = (planKey: string, limitKey: string) => {
-    if (planKey === 'free') {
-        return freeTier.limits[limitKey as keyof typeof freeTier.limits];
-    }
-    const plan = props.plans[planKey];
-    return plan?.limits?.[limitKey as keyof typeof plan.limits];
-};
+// Token costs reference
+const tokenCosts = [
+    { name: 'Basic Scan (5 pillars)', tokens: 'FREE', highlight: true },
+    { name: 'Pro Scan (8 pillars)', tokens: '5 tokens' },
+    { name: 'Full Scan (12 pillars)', tokens: '10 tokens' },
+    { name: 'AI Citations', tokens: '1-5 tokens' },
+    { name: 'PDF Export', tokens: '2 tokens' },
+    { name: 'Scheduled Scan', tokens: '5 tokens/run' },
+];
 
 const isCurrentPlan = (planKey: string) => {
     return props.usage?.plan_key === planKey;
 };
 
-const planOrder = ['free', 'pro', 'agency'];
+const hasTeamPlan = () => {
+    return props.usage?.plan_key === 'team' || props.usage?.plan_key === 'agency';
+};
 </script>
 
 <template>
-    <Head title="Subscription Plans" />
+    <Head title="Plans & Pricing" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex flex-col gap-8 p-6">
             <div class="text-center">
-                <h1 class="text-3xl font-bold tracking-tight text-foreground">Choose your plan</h1>
-                <p class="mt-2 text-muted-foreground">Select the plan that best fits your needs. Upgrade or downgrade anytime.</p>
+                <h1 class="text-3xl font-bold tracking-tight text-foreground">Plans & Pricing</h1>
+                <p class="mt-2 text-muted-foreground">Pay only for what you use. Buy tokens or subscribe to the Team plan.</p>
             </div>
 
-            <!-- Plan Cards -->
+            <!-- Pricing Options -->
             <div class="mx-auto grid max-w-5xl gap-6 pt-4 md:grid-cols-3">
-                <!-- Free Plan -->
+                <!-- Free Tier -->
                 <Card
                     class="relative flex flex-col"
                     :class="{
-                        'border-primary ring-2 ring-primary': isCurrentPlan('free'),
+                        'border-green-500 ring-2 ring-green-500': isCurrentPlan('free'),
                         'border-border': !isCurrentPlan('free'),
                     }"
                 >
@@ -155,125 +84,138 @@ const planOrder = ['free', 'pro', 'agency'];
                             <div class="rounded-lg bg-muted p-2">
                                 <Sparkles class="h-5 w-5 text-muted-foreground" />
                             </div>
-                            <CardTitle class="text-xl">{{ freeTier.name }}</CardTitle>
+                            <CardTitle class="text-xl">Free</CardTitle>
                         </div>
-                        <CardDescription>{{ freeTier.description }}</CardDescription>
+                        <CardDescription>Basic GEO analysis forever</CardDescription>
                     </CardHeader>
                     <CardContent class="flex flex-1 flex-col">
                         <div class="mb-6">
                             <div class="flex items-baseline">
                                 <span class="text-4xl font-bold tracking-tight text-foreground">$0</span>
-                                <span class="ml-1 text-lg text-muted-foreground">/month</span>
+                                <span class="ml-1 text-lg text-muted-foreground">forever</span>
                             </div>
                         </div>
                         <ul class="mb-8 flex-1 space-y-3">
-                            <li v-for="feature in freeTier.features" :key="feature" class="flex items-start gap-3">
+                            <li class="flex items-start gap-3">
                                 <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10">
                                     <Check class="h-3 w-3 text-primary" />
                                 </div>
-                                <span class="text-sm text-muted-foreground">{{ feature }}</span>
+                                <span class="text-sm text-muted-foreground">Unlimited basic scans (5 pillars)</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                                    <Check class="h-3 w-3 text-primary" />
+                                </div>
+                                <span class="text-sm text-muted-foreground">Basic GEO score (100 pts max)</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                                    <Check class="h-3 w-3 text-primary" />
+                                </div>
+                                <span class="text-sm text-muted-foreground">Top 3 recommendations</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                                    <Check class="h-3 w-3 text-primary" />
+                                </div>
+                                <span class="text-sm text-muted-foreground">7-day scan history</span>
                             </li>
                         </ul>
                         <Button
-                            v-if="isCurrentPlan('free')"
                             variant="outline"
                             class="w-full py-6 text-base"
                             disabled
                         >
-                            Current Plan
-                        </Button>
-                        <Button
-                            v-else
-                            variant="outline"
-                            class="w-full py-6 text-base"
-                            disabled
-                        >
-                            Free Forever
+                            {{ isCurrentPlan('free') ? 'Current Plan' : 'Always Available' }}
                         </Button>
                     </CardContent>
                 </Card>
 
-                <!-- Pro Plan -->
-                <Card
-                    v-if="plans.pro"
-                    class="relative flex flex-col"
-                    :class="{
-                        'border-green-500 ring-2 ring-green-500': isCurrentPlan('pro'),
-                        'border-primary ring-2 ring-primary': !isCurrentPlan('pro'),
-                    }"
-                >
-                    <div v-if="isCurrentPlan('pro')" class="absolute -top-3 left-1/2 -translate-x-1/2">
-                        <span class="rounded-full bg-green-500 px-4 py-1 text-xs font-semibold text-white">
-                            Current Plan
-                        </span>
-                    </div>
-                    <div v-else class="absolute -top-3 left-1/2 -translate-x-1/2">
+                <!-- Pay As You Go (Tokens) -->
+                <Card class="relative flex flex-col border-primary ring-2 ring-primary">
+                    <div class="absolute -top-3 left-1/2 -translate-x-1/2">
                         <span class="rounded-full bg-primary px-4 py-1 text-xs font-semibold text-primary-foreground">
-                            Most Popular
+                            Most Flexible
                         </span>
                     </div>
                     <CardHeader class="pb-4">
                         <div class="flex items-center gap-2">
                             <div class="rounded-lg bg-blue-100 p-2 dark:bg-blue-950">
-                                <Zap class="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                <Coins class="h-5 w-5 text-blue-600 dark:text-blue-400" />
                             </div>
-                            <CardTitle class="text-xl">{{ plans.pro.name }}</CardTitle>
+                            <CardTitle class="text-xl">Pay As You Go</CardTitle>
                         </div>
-                        <CardDescription>{{ plans.pro.description }}</CardDescription>
+                        <CardDescription>Buy tokens, use them anytime</CardDescription>
                     </CardHeader>
                     <CardContent class="flex flex-1 flex-col">
                         <div class="mb-6">
                             <div class="flex items-baseline">
-                                <span class="text-4xl font-bold tracking-tight text-foreground">${{ plans.pro.price }}</span>
-                                <span class="ml-1 text-lg text-muted-foreground">/{{ plans.pro.interval }}</span>
+                                <span class="text-4xl font-bold tracking-tight text-foreground">$0.05</span>
+                                <span class="ml-1 text-lg text-muted-foreground">per token</span>
                             </div>
+                            <p class="mt-1 text-sm text-muted-foreground">Starting at $5 for 50 tokens</p>
                         </div>
                         <ul class="mb-8 flex-1 space-y-3">
-                            <li v-for="feature in plans.pro.features" :key="feature" class="flex items-start gap-3">
+                            <li class="flex items-start gap-3">
                                 <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-950">
                                     <Check class="h-3 w-3 text-blue-600 dark:text-blue-400" />
                                 </div>
-                                <span class="text-sm text-muted-foreground">{{ feature }}</span>
+                                <span class="text-sm text-muted-foreground">Pro scans (8 pillars) - 5 tokens</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-950">
+                                    <Check class="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                                </div>
+                                <span class="text-sm text-muted-foreground">Full scans (12 pillars) - 10 tokens</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-950">
+                                    <Check class="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                                </div>
+                                <span class="text-sm text-muted-foreground">AI citation tracking (1-5 tokens)</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-950">
+                                    <Check class="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                                </div>
+                                <span class="text-sm text-muted-foreground">Tokens never expire</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-950">
+                                    <Check class="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                                </div>
+                                <span class="text-sm text-muted-foreground">Bulk discounts up to 50% off</span>
                             </li>
                         </ul>
                         <Button
-                            v-if="isCurrentPlan('pro')"
-                            variant="outline"
-                            class="w-full py-6 text-base"
-                            disabled
-                        >
-                            Current Plan
-                        </Button>
-                        <Button
-                            v-else
                             variant="default"
                             class="w-full py-6 text-base"
                             as-child
                         >
-                            <Link href="/billing/checkout/pro">
-                                Upgrade to Pro
+                            <Link href="/tokens">
+                                Buy Tokens
+                                <ArrowRight class="ml-2 h-4 w-4" />
                             </Link>
                         </Button>
                     </CardContent>
                 </Card>
 
-                <!-- Agency Plan -->
+                <!-- Team Plan -->
                 <Card
-                    v-if="plans.agency"
                     class="relative flex flex-col"
                     :class="{
-                        'border-green-500 ring-2 ring-green-500': isCurrentPlan('agency'),
-                        'border-purple-500 ring-2 ring-purple-500': !isCurrentPlan('agency'),
+                        'border-green-500 ring-2 ring-green-500': hasTeamPlan(),
+                        'border-purple-500 ring-2 ring-purple-500': !hasTeamPlan(),
                     }"
                 >
-                    <div v-if="isCurrentPlan('agency')" class="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <div v-if="hasTeamPlan()" class="absolute -top-3 left-1/2 -translate-x-1/2">
                         <span class="rounded-full bg-green-500 px-4 py-1 text-xs font-semibold text-white">
                             Current Plan
                         </span>
                     </div>
                     <div v-else class="absolute -top-3 left-1/2 -translate-x-1/2">
                         <span class="rounded-full bg-purple-500 px-4 py-1 text-xs font-semibold text-white">
-                            Best Value
+                            For Teams
                         </span>
                     </div>
                     <CardHeader class="pb-4">
@@ -281,27 +223,58 @@ const planOrder = ['free', 'pro', 'agency'];
                             <div class="rounded-lg bg-purple-100 p-2 dark:bg-purple-950">
                                 <Building2 class="h-5 w-5 text-purple-600 dark:text-purple-400" />
                             </div>
-                            <CardTitle class="text-xl">{{ plans.agency.name }}</CardTitle>
+                            <CardTitle class="text-xl">Team</CardTitle>
                         </div>
-                        <CardDescription>{{ plans.agency.description }}</CardDescription>
+                        <CardDescription>For agencies and growing teams</CardDescription>
                     </CardHeader>
                     <CardContent class="flex flex-1 flex-col">
                         <div class="mb-6">
                             <div class="flex items-baseline">
-                                <span class="text-4xl font-bold tracking-tight text-foreground">${{ plans.agency.price }}</span>
-                                <span class="ml-1 text-lg text-muted-foreground">/{{ plans.agency.interval }}</span>
+                                <span class="text-4xl font-bold tracking-tight text-foreground">$99</span>
+                                <span class="ml-1 text-lg text-muted-foreground">/month</span>
                             </div>
+                            <p class="mt-1 text-sm text-muted-foreground">Includes 1,000 tokens/month</p>
                         </div>
                         <ul class="mb-8 flex-1 space-y-3">
-                            <li v-for="feature in plans.agency.features" :key="feature" class="flex items-start gap-3">
+                            <li class="flex items-start gap-3">
                                 <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-950">
                                     <Check class="h-3 w-3 text-purple-600 dark:text-purple-400" />
                                 </div>
-                                <span class="text-sm text-muted-foreground">{{ feature }}</span>
+                                <span class="text-sm text-muted-foreground">Everything in Pay As You Go</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-950">
+                                    <Check class="h-3 w-3 text-purple-600 dark:text-purple-400" />
+                                </div>
+                                <span class="text-sm text-muted-foreground">1,000 tokens included monthly</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-950">
+                                    <Check class="h-3 w-3 text-purple-600 dark:text-purple-400" />
+                                </div>
+                                <span class="text-sm text-muted-foreground">3 teams with 5 members each</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-950">
+                                    <Check class="h-3 w-3 text-purple-600 dark:text-purple-400" />
+                                </div>
+                                <span class="text-sm text-muted-foreground">White-label reports</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-950">
+                                    <Check class="h-3 w-3 text-purple-600 dark:text-purple-400" />
+                                </div>
+                                <span class="text-sm text-muted-foreground">GA4 AI Traffic Analytics</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-950">
+                                    <Check class="h-3 w-3 text-purple-600 dark:text-purple-400" />
+                                </div>
+                                <span class="text-sm text-muted-foreground">Priority support</span>
                             </li>
                         </ul>
                         <Button
-                            v-if="isCurrentPlan('agency')"
+                            v-if="hasTeamPlan()"
                             variant="outline"
                             class="w-full py-6 text-base"
                             disabled
@@ -314,68 +287,82 @@ const planOrder = ['free', 'pro', 'agency'];
                             class="w-full py-6 text-base bg-purple-600 hover:bg-purple-700"
                             as-child
                         >
-                            <Link href="/billing/checkout/agency">
-                                Upgrade to Agency
+                            <Link href="/billing/checkout/team">
+                                Upgrade to Team
+                                <ArrowRight class="ml-2 h-4 w-4" />
                             </Link>
                         </Button>
                     </CardContent>
                 </Card>
             </div>
 
-            <!-- Feature Comparison Table -->
+            <!-- Token Packages Quick Reference -->
             <div class="mx-auto w-full max-w-5xl pt-8">
-                <h2 class="mb-6 text-center text-2xl font-bold">Compare Plans</h2>
-                <div class="overflow-x-auto rounded-lg border">
-                    <table class="w-full">
-                        <thead>
-                            <tr class="border-b bg-muted/50">
-                                <th class="px-6 py-4 text-left font-semibold">Feature</th>
-                                <th class="px-6 py-4 text-center font-semibold">Free</th>
-                                <th class="px-6 py-4 text-center font-semibold">Pro</th>
-                                <th class="px-6 py-4 text-center font-semibold text-primary">Agency</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <template v-for="category in featureCategories" :key="category.name">
-                                <tr class="border-b bg-muted/30">
-                                    <td colspan="4" class="px-6 py-3 text-sm font-semibold text-muted-foreground">
-                                        {{ category.name }}
-                                    </td>
-                                </tr>
-                                <tr v-for="feature in category.features" :key="feature.key" class="border-b">
-                                    <td class="px-6 py-3 text-sm">{{ feature.name }}</td>
-                                    <td class="px-6 py-3 text-center">
-                                        <template v-if="feature.format === 'boolean'">
-                                            <Check v-if="getPlanLimit('free', feature.key)" class="mx-auto h-5 w-5 text-green-600" />
-                                            <X v-else class="mx-auto h-5 w-5 text-muted-foreground/40" />
-                                        </template>
-                                        <span v-else class="text-sm text-muted-foreground">
-                                            {{ formatValue(getPlanLimit('free', feature.key), feature.format, 'free') }}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-3 text-center">
-                                        <template v-if="feature.format === 'boolean'">
-                                            <Check v-if="getPlanLimit('pro', feature.key)" class="mx-auto h-5 w-5 text-green-600" />
-                                            <X v-else class="mx-auto h-5 w-5 text-muted-foreground/40" />
-                                        </template>
-                                        <span v-else class="text-sm">
-                                            {{ formatValue(getPlanLimit('pro', feature.key), feature.format, 'pro') }}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-3 text-center">
-                                        <template v-if="feature.format === 'boolean'">
-                                            <Check v-if="getPlanLimit('agency', feature.key)" class="mx-auto h-5 w-5 text-green-600" />
-                                            <X v-else class="mx-auto h-5 w-5 text-muted-foreground/40" />
-                                        </template>
-                                        <span v-else class="text-sm font-medium text-primary">
-                                            {{ formatValue(getPlanLimit('agency', feature.key), feature.format, 'agency') }}
-                                        </span>
-                                    </td>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
+                <h2 class="mb-6 text-center text-2xl font-bold">Token Packages</h2>
+                <div class="grid gap-4 md:grid-cols-4">
+                    <Card
+                        v-for="pkg in tokenPackages"
+                        :key="pkg.tokens"
+                        class="relative text-center"
+                        :class="{
+                            'border-primary ring-2 ring-primary': pkg.popular,
+                            'border-green-500 ring-2 ring-green-500': pkg.bestValue && !pkg.popular,
+                        }"
+                    >
+                        <Badge
+                            v-if="pkg.popular"
+                            class="absolute -top-3 left-1/2 -translate-x-1/2"
+                        >
+                            Most Popular
+                        </Badge>
+                        <Badge
+                            v-else-if="pkg.bestValue"
+                            class="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500"
+                        >
+                            Best Value
+                        </Badge>
+                        <CardHeader class="pb-2">
+                            <CardTitle class="text-3xl">{{ pkg.tokens }}</CardTitle>
+                            <CardDescription>tokens</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <p class="text-2xl font-bold">${{ pkg.price }}</p>
+                            <p class="text-sm text-muted-foreground">${{ pkg.perToken.toFixed(3) }}/token</p>
+                            <p v-if="pkg.savings > 0" class="mt-1 text-sm font-medium text-green-600 dark:text-green-400">
+                                Save {{ pkg.savings }}%
+                            </p>
+                        </CardContent>
+                    </Card>
                 </div>
+                <div class="mt-6 text-center">
+                    <Button as-child>
+                        <Link href="/tokens">
+                            Buy Tokens Now
+                            <ArrowRight class="ml-2 h-4 w-4" />
+                        </Link>
+                    </Button>
+                </div>
+            </div>
+
+            <!-- Token Costs Quick Reference -->
+            <div class="mx-auto w-full max-w-3xl pt-8">
+                <h2 class="mb-6 text-center text-2xl font-bold">What Do Tokens Cost?</h2>
+                <Card>
+                    <CardContent class="pt-6">
+                        <div class="grid gap-3 md:grid-cols-2">
+                            <div
+                                v-for="item in tokenCosts"
+                                :key="item.name"
+                                class="flex items-center justify-between rounded-lg border p-3"
+                            >
+                                <span class="text-sm">{{ item.name }}</span>
+                                <Badge :variant="item.highlight ? 'default' : 'secondary'" :class="{ 'bg-green-500': item.highlight }">
+                                    {{ item.tokens }}
+                                </Badge>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
 
             <div class="mt-4 text-center">

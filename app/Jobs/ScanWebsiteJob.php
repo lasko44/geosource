@@ -9,6 +9,7 @@ use App\Services\GEO\EnhancedGeoScorer;
 use App\Services\GEO\GeoScorer;
 use App\Services\RAG\VectorStore;
 use App\Services\SubscriptionService;
+use App\Services\TokenService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -119,6 +120,9 @@ class ScanWebsiteJob implements ShouldQueue
                 'completed_at' => now(),
             ]);
 
+            // Note: Tokens are now deducted upfront in the controller
+            // No deduction needed here
+
             // Send email notification if this is a scheduled scan
             $this->sendScheduledScanNotification();
 
@@ -171,6 +175,9 @@ class ScanWebsiteJob implements ShouldQueue
             'internal_error' => $internalMessage, // Detailed error for Nova
             'completed_at' => now(),
         ]);
+
+        // Refund tokens if they were charged for this scan
+        $this->refundTokensForFailedScan();
 
         // Log detailed error
         Log::error('Scan failed', [
@@ -369,19 +376,15 @@ class ScanWebsiteJob implements ShouldQueue
 
     /**
      * Determine the user's tier for GEO scoring pillars.
+     * Uses the scan's requested_tier, which was validated at scan creation time.
      */
     private function getUserTier(): string
     {
-        $user = $this->scan->user;
+        // Use the requested tier from the scan (validated at creation)
+        $requestedTier = $this->scan->requested_tier ?? 'basic';
 
-        if (! $user) {
-            return GeoScorer::TIER_FREE;
-        }
-
-        $planKey = $user->getPlanKey();
-
-        return match ($planKey) {
-            'agency', 'agency_member', 'admin' => GeoScorer::TIER_AGENCY,
+        return match ($requestedTier) {
+            'full' => GeoScorer::TIER_AGENCY,
             'pro' => GeoScorer::TIER_PRO,
             default => GeoScorer::TIER_FREE,
         };
@@ -501,6 +504,52 @@ class ScanWebsiteJob implements ShouldQueue
     }
 
     /**
+     * Refund tokens for a failed scan.
+     * Only refunds if tokens were charged for this scan.
+     */
+    private function refundTokensForFailedScan(): void
+    {
+        // Only refund if tokens were actually charged
+        if (!$this->scan->tokens_charged || !$this->scan->tokens_amount || $this->scan->tokens_amount <= 0) {
+            return;
+        }
+
+        $user = $this->scan->user;
+        if (!$user || $user->is_admin) {
+            return;
+        }
+
+        try {
+            $tokenService = app(TokenService::class);
+            $amount = $this->scan->tokens_amount;
+
+            $tokenService->refund(
+                $user,
+                $amount,
+                "Refund for failed {$this->scan->requested_tier} scan"
+            );
+
+            // Mark scan as refunded
+            $this->scan->update([
+                'tokens_refunded' => true,
+            ]);
+
+            Log::info('Tokens refunded for failed scan', [
+                'user_id' => $user->id,
+                'scan_id' => $this->scan->id,
+                'amount' => $amount,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to refund tokens for scan', [
+                'user_id' => $user->id,
+                'scan_id' => $this->scan->id,
+                'amount' => $this->scan->tokens_amount,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
      * Handle a job failure.
      */
     public function failed(?\Throwable $exception): void
@@ -515,6 +564,9 @@ class ScanWebsiteJob implements ShouldQueue
             'internal_error' => 'Job failure: ' . $internalMessage,
             'completed_at' => now(),
         ]);
+
+        // Refund tokens if they were charged for this scan
+        $this->refundTokensForFailedScan();
 
         Log::error('Scan job failed', [
             'scan_id' => $this->scan->id,

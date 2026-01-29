@@ -59,6 +59,7 @@ interface CitationAlert {
 
 interface Usage {
     can_access: boolean;
+    can_access_ga4: boolean;
     queries_created: number;
     queries_limit: number;
     queries_remaining: number;
@@ -167,7 +168,7 @@ const markAlertRead = (alertId: number) => {
                 </div>
 
                 <div class="flex gap-2">
-                    <Link href="/analytics/ga4">
+                    <Link v-if="usage.can_access_ga4" href="/analytics/ga4">
                         <Button variant="outline">
                             <BarChart3 class="mr-2 h-4 w-4" />
                             GA4 Analytics

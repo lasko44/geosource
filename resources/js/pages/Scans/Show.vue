@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import {
     ExternalLink,
     RefreshCw,
@@ -28,6 +28,7 @@ import {
     ChevronRight,
     XCircle,
     Info,
+    Coins,
 } from 'lucide-vue-next';
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
 
@@ -51,9 +52,14 @@ import { type BreadcrumbItem, type Scan, type PillarResult, type Recommendation 
 
 const { formatDate } = useDateFormat();
 
-interface CooldownInfo {
+interface TierCooldownInfo {
     minutes_remaining: number;
     available_at: string;
+}
+
+interface CooldownInfo {
+    basic?: TierCooldownInfo | null;
+    pro?: TierCooldownInfo | null;
 }
 
 interface Props {
@@ -64,34 +70,94 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+const page = usePage();
 
-// Cooldown state management
-const cooldownMinutes = ref(Math.ceil(props.cooldown?.minutes_remaining || 0));
-const cooldownAvailableAt = ref(props.cooldown?.available_at ? new Date(props.cooldown.available_at) : null);
+// Get user's token balance
+const tokenBalance = computed(() => page.props.auth?.user?.token_balance ?? 0);
+
+// Tier options for rescan modal
+const tierOptions = [
+    { value: 'basic', label: 'Basic', pillars: 5, tokens: 0, cooldown: 5, description: 'Essential GEO metrics' },
+    { value: 'pro', label: 'Pro', pillars: 8, tokens: 5, cooldown: 1, description: 'Extended analysis' },
+    { value: 'full', label: 'Full', pillars: 12, tokens: 10, cooldown: 1, description: 'Complete GEO breakdown' },
+];
+
+// Rescan modal state
+const showRescanModal = ref(false);
+const selectedRescanTier = ref('basic');
+
+// Cooldown state management - now tier-based
+const basicCooldownMinutes = ref(Math.ceil(props.cooldown?.basic?.minutes_remaining || 0));
+const proCooldownMinutes = ref(Math.ceil(props.cooldown?.pro?.minutes_remaining || 0));
+const basicCooldownAvailableAt = ref(props.cooldown?.basic?.available_at ? new Date(props.cooldown.basic.available_at) : null);
+const proCooldownAvailableAt = ref(props.cooldown?.pro?.available_at ? new Date(props.cooldown.pro.available_at) : null);
 let cooldownInterval: ReturnType<typeof setInterval> | null = null;
 
-const isOnCooldown = computed(() => cooldownMinutes.value > 0);
+// Check if a specific tier is on cooldown
+const isTierOnCooldown = (tier: string): boolean => {
+    if (tier === 'basic') {
+        return basicCooldownMinutes.value > 0;
+    }
+    // Pro and Full have same cooldown
+    return proCooldownMinutes.value > 0;
+};
 
-const updateCooldown = () => {
-    if (cooldownAvailableAt.value) {
-        const now = new Date();
-        const diff = cooldownAvailableAt.value.getTime() - now.getTime();
+// Get cooldown minutes for a tier
+const getTierCooldownMinutes = (tier: string): number => {
+    if (tier === 'basic') {
+        return basicCooldownMinutes.value;
+    }
+    return proCooldownMinutes.value;
+};
+
+// Check if user can afford a tier
+const canAffordTier = (tier: string): boolean => {
+    const option = tierOptions.find(t => t.value === tier);
+    if (!option) return false;
+    if (option.tokens === 0) return true;
+    return tokenBalance.value >= option.tokens;
+};
+
+// Legacy computed for basic cooldown display (used by rescan button)
+const isOnCooldown = computed(() => basicCooldownMinutes.value > 0 && proCooldownMinutes.value > 0);
+
+const updateCooldowns = () => {
+    const now = new Date();
+
+    // Update basic cooldown
+    if (basicCooldownAvailableAt.value) {
+        const diff = basicCooldownAvailableAt.value.getTime() - now.getTime();
         if (diff > 0) {
-            cooldownMinutes.value = Math.ceil(diff / 60000);
+            basicCooldownMinutes.value = Math.ceil(diff / 60000);
         } else {
-            cooldownMinutes.value = 0;
-            cooldownAvailableAt.value = null;
-            if (cooldownInterval) {
-                clearInterval(cooldownInterval);
-                cooldownInterval = null;
-            }
+            basicCooldownMinutes.value = 0;
+            basicCooldownAvailableAt.value = null;
+        }
+    }
+
+    // Update pro cooldown
+    if (proCooldownAvailableAt.value) {
+        const diff = proCooldownAvailableAt.value.getTime() - now.getTime();
+        if (diff > 0) {
+            proCooldownMinutes.value = Math.ceil(diff / 60000);
+        } else {
+            proCooldownMinutes.value = 0;
+            proCooldownAvailableAt.value = null;
+        }
+    }
+
+    // Clear interval if both cooldowns are done
+    if (!basicCooldownAvailableAt.value && !proCooldownAvailableAt.value) {
+        if (cooldownInterval) {
+            clearInterval(cooldownInterval);
+            cooldownInterval = null;
         }
     }
 };
 
 // Start cooldown timer if needed
-if (props.cooldown?.available_at) {
-    cooldownInterval = setInterval(updateCooldown, 10000); // Update every 10 seconds
+if (props.cooldown?.basic?.available_at || props.cooldown?.pro?.available_at) {
+    cooldownInterval = setInterval(updateCooldowns, 10000); // Update every 10 seconds
 }
 
 const scanStatus = ref(props.scan.status || 'completed');
@@ -251,6 +317,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const rescanning = ref(false);
 const rescanProgress = ref('');
+const rescanError = ref('');
 const newScanUuid = ref<string | null>(null);
 const deleting = ref(false);
 const cancelling = ref(false);
@@ -310,9 +377,16 @@ const pollNewScan = async () => {
     }
 };
 
-const rescan = async () => {
+const openRescanModal = () => {
+    selectedRescanTier.value = 'basic';
+    rescanError.value = '';
+    showRescanModal.value = true;
+};
+
+const rescan = async (tier: string = 'basic') => {
     rescanning.value = true;
     rescanProgress.value = 'Starting rescan...';
+    rescanError.value = '';
     newScanUuid.value = null;
 
     try {
@@ -324,28 +398,31 @@ const rescan = async () => {
                 'Accept': 'application/json',
                 'X-CSRF-TOKEN': csrfToken || '',
             },
+            body: JSON.stringify({ tier }),
         });
 
         const data = await response.json();
 
         if (data.uuid) {
+            showRescanModal.value = false;
             newScanUuid.value = data.uuid;
             rescanProgress.value = 'Scanning...';
             pollNewScan();
         } else if (data.error) {
             rescanProgress.value = '';
             rescanning.value = false;
-            alert(data.error);
+            rescanError.value = data.error;
         } else {
             // Fallback: if we got a redirect response or unexpected format
             rescanProgress.value = '';
             rescanning.value = false;
+            showRescanModal.value = false;
             router.reload();
         }
     } catch {
         rescanProgress.value = '';
         rescanning.value = false;
-        router.reload();
+        rescanError.value = 'An unexpected error occurred. Please try again.';
     }
 };
 
@@ -547,17 +624,12 @@ const getPillarExplanations = (pillar: any): Array<{ label: string; achieved: bo
                         </Button>
                         <Button
                             variant="outline"
-                            @click="rescan"
-                            :disabled="rescanning || isOnCooldown"
-                            :title="isOnCooldown ? `Available in ${cooldownMinutes} ${cooldownMinutes === 1 ? 'minute' : 'minutes'}` : ''"
+                            @click="openRescanModal"
+                            :disabled="rescanning"
                         >
-                            <Clock v-if="isOnCooldown" class="mr-2 h-4 w-4" />
-                            <Loader2 v-else-if="rescanning" class="mr-2 h-4 w-4 animate-spin" />
+                            <Loader2 v-if="rescanning" class="mr-2 h-4 w-4 animate-spin" />
                             <RefreshCw v-else class="mr-2 h-4 w-4" />
-                            <template v-if="isOnCooldown">
-                                Rescan in {{ cooldownMinutes }}m
-                            </template>
-                            <template v-else-if="rescanning">
+                            <template v-if="rescanning">
                                 {{ rescanProgress || 'Rescanning...' }}
                             </template>
                             <template v-else>
@@ -653,7 +725,7 @@ const getPillarExplanations = (pillar: any): Array<{ label: string; achieved: bo
                 <AlertDescription>
                     {{ errorMessage || 'An unexpected error occurred while scanning the URL.' }}
                     <div class="mt-4">
-                        <Button variant="outline" @click="rescan" :disabled="rescanning">
+                        <Button variant="outline" @click="openRescanModal" :disabled="rescanning">
                             <Loader2 v-if="rescanning" class="mr-2 h-4 w-4 animate-spin" />
                             <RefreshCw v-else class="mr-2 h-4 w-4" />
                             {{ rescanning ? (rescanProgress || 'Retrying...') : 'Try Again' }}
@@ -669,7 +741,7 @@ const getPillarExplanations = (pillar: any): Array<{ label: string; achieved: bo
                 <AlertDescription>
                     This scan was cancelled and does not count towards your quota.
                     <div class="mt-4">
-                        <Button variant="outline" @click="rescan" :disabled="rescanning">
+                        <Button variant="outline" @click="openRescanModal" :disabled="rescanning">
                             <Loader2 v-if="rescanning" class="mr-2 h-4 w-4 animate-spin" />
                             <RefreshCw v-else class="mr-2 h-4 w-4" />
                             {{ rescanning ? (rescanProgress || 'Scanning...') : 'Scan Again' }}
@@ -931,6 +1003,120 @@ const getPillarExplanations = (pillar: any): Array<{ label: string; achieved: bo
                 <DialogFooter>
                     <Button variant="outline" @click="showPillarDialog = false">
                         Close
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+
+        <!-- Rescan Modal -->
+        <Dialog v-model:open="showRescanModal">
+            <DialogContent class="sm:max-w-lg">
+                <DialogHeader>
+                    <DialogTitle class="flex items-center gap-2">
+                        <RefreshCw class="h-5 w-5" />
+                        Rescan Page
+                    </DialogTitle>
+                    <DialogDescription>
+                        Choose the scan tier for your rescan. Higher tiers analyze more pillars but cost tokens.
+                    </DialogDescription>
+                </DialogHeader>
+
+                <div class="space-y-3 py-4">
+                    <!-- Tier Selection -->
+                    <div
+                        v-for="option in tierOptions"
+                        :key="option.value"
+                        class="relative rounded-lg border p-4 cursor-pointer transition-all"
+                        :class="{
+                            'border-primary bg-primary/5 ring-2 ring-primary': selectedRescanTier === option.value,
+                            'border-muted hover:border-primary/50': selectedRescanTier !== option.value,
+                            'opacity-50 cursor-not-allowed': isTierOnCooldown(option.value) || !canAffordTier(option.value),
+                        }"
+                        @click="!isTierOnCooldown(option.value) && canAffordTier(option.value) && (selectedRescanTier = option.value)"
+                    >
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-semibold">{{ option.label }}</span>
+                                    <span
+                                        v-if="option.value !== 'basic'"
+                                        class="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
+                                    >
+                                        <Coins class="h-3 w-3" />
+                                        {{ option.tokens }} tokens
+                                    </span>
+                                    <span
+                                        v-else
+                                        class="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900 dark:text-green-300"
+                                    >
+                                        Free
+                                    </span>
+                                </div>
+                                <p class="text-sm text-muted-foreground mt-1">
+                                    {{ option.description }} · {{ option.pillars }} pillars analyzed
+                                </p>
+                                <!-- Cooldown or affordability warning -->
+                                <p
+                                    v-if="isTierOnCooldown(option.value)"
+                                    class="text-xs text-orange-600 dark:text-orange-400 mt-2 flex items-center gap-1"
+                                >
+                                    <Clock class="h-3 w-3" />
+                                    Available in {{ getTierCooldownMinutes(option.value) }} {{ getTierCooldownMinutes(option.value) === 1 ? 'minute' : 'minutes' }}
+                                </p>
+                                <p
+                                    v-else-if="!canAffordTier(option.value)"
+                                    class="text-xs text-red-600 dark:text-red-400 mt-2 flex items-center gap-1"
+                                >
+                                    <Coins class="h-3 w-3" />
+                                    Insufficient tokens ({{ tokenBalance }} available)
+                                </p>
+                                <p
+                                    v-else
+                                    class="text-xs text-green-600 dark:text-green-400 mt-2 flex items-center gap-1"
+                                >
+                                    <CheckCircle2 class="h-3 w-3" />
+                                    Available now
+                                </p>
+                            </div>
+                            <div
+                                class="flex h-5 w-5 items-center justify-center rounded-full border-2 transition-colors"
+                                :class="selectedRescanTier === option.value ? 'border-primary bg-primary' : 'border-muted'"
+                            >
+                                <div
+                                    v-if="selectedRescanTier === option.value"
+                                    class="h-2 w-2 rounded-full bg-white"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Error message -->
+                    <Alert v-if="rescanError" variant="destructive">
+                        <AlertCircle class="h-4 w-4" />
+                        <AlertDescription>{{ rescanError }}</AlertDescription>
+                    </Alert>
+
+                    <!-- Token balance reminder -->
+                    <div v-if="tokenBalance > 0" class="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2 text-sm">
+                        <span class="text-muted-foreground">Your token balance</span>
+                        <span class="font-semibold flex items-center gap-1">
+                            <Coins class="h-4 w-4 text-primary" />
+                            {{ tokenBalance }} tokens
+                        </span>
+                    </div>
+                </div>
+
+                <DialogFooter class="gap-2 sm:gap-0">
+                    <Button variant="outline" @click="showRescanModal = false" :disabled="rescanning">
+                        Cancel
+                    </Button>
+                    <Button
+                        @click="rescan(selectedRescanTier)"
+                        :disabled="rescanning || isTierOnCooldown(selectedRescanTier) || !canAffordTier(selectedRescanTier)"
+                    >
+                        <Loader2 v-if="rescanning" class="mr-2 h-4 w-4 animate-spin" />
+                        <RefreshCw v-else class="mr-2 h-4 w-4" />
+                        {{ rescanning ? 'Rescanning...' : 'Start Rescan' }}
                     </Button>
                 </DialogFooter>
             </DialogContent>

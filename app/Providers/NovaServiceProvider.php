@@ -50,6 +50,11 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
                     MenuItem::resource(\App\Nova\PageView::class),
                 ])->icon('chart-pie')->collapsable(),
 
+                MenuSection::make('Billing', [
+                    MenuItem::resource(\App\Nova\TokenPackage::class),
+                    MenuItem::resource(\App\Nova\TokenTransaction::class),
+                ])->icon('credit-card')->collapsable(),
+
                 MenuSection::make('Marketing', [
                     MenuItem::resource(\App\Nova\EmailTemplate::class),
                     MenuItem::resource(\App\Nova\EmailCampaign::class),

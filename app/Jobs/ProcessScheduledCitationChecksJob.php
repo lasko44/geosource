@@ -3,9 +3,11 @@
 namespace App\Jobs;
 
 use App\Models\CitationCheck;
+use App\Models\CitationQuery;
 use App\Models\User;
 use App\Services\Citation\CitationService;
 use App\Services\SubscriptionService;
+use App\Services\TokenService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -39,7 +41,8 @@ class ProcessScheduledCitationChecksJob implements ShouldQueue, ShouldBeUnique
 
     public function handle(
         CitationService $citationService,
-        SubscriptionService $subscriptionService
+        SubscriptionService $subscriptionService,
+        TokenService $tokenService
     ): void {
         Log::info('Processing scheduled citation checks');
 
@@ -47,6 +50,7 @@ class ProcessScheduledCitationChecksJob implements ShouldQueue, ShouldBeUnique
 
         $dispatched = 0;
         $skipped = 0;
+        $budgetExceeded = 0;
 
         foreach ($queries as $query) {
             $user = $query->user;
@@ -58,57 +62,110 @@ class ProcessScheduledCitationChecksJob implements ShouldQueue, ShouldBeUnique
                 continue;
             }
 
-            // Get available platforms for user
-            $availablePlatforms = $citationService->getAvailablePlatforms($user);
-
-            if (empty($availablePlatforms)) {
-                Log::info('User has no available platforms', [
-                    'user_id' => $user->id,
+            // Check if query can afford a scheduled run (budget limit)
+            if (! $query->canAffordScheduledRun()) {
+                Log::info('Query exceeded monthly token budget', [
                     'query_id' => $query->id,
+                    'user_id' => $user->id,
+                    'budget' => $query->monthly_token_budget,
+                    'spent' => $query->tokens_spent_this_month,
                 ]);
-                $skipped++;
+                $budgetExceeded++;
+                // Still schedule next check - budget may reset or user may add budget
+                $query->scheduleNextCheck();
 
                 continue;
             }
 
-            // Create and dispatch checks for each available platform with transaction lock
-            foreach ($availablePlatforms as $platform) {
+            // Get platforms to check (user-selected or defaults)
+            $platformsToCheck = $query->getScheduledPlatformsToCheck();
+
+            // Filter to only platforms user has access to
+            $availablePlatforms = $citationService->getAvailablePlatforms($user);
+            $platformsToCheck = array_intersect($platformsToCheck, $availablePlatforms);
+
+            if (empty($platformsToCheck)) {
+                Log::info('No platforms available for scheduled check', [
+                    'user_id' => $user->id,
+                    'query_id' => $query->id,
+                ]);
+                $skipped++;
+                $query->scheduleNextCheck();
+
+                continue;
+            }
+
+            $tokensSpentThisRun = 0;
+            $delay = 0;
+
+            // Create and dispatch checks for each platform with transaction lock
+            foreach ($platformsToCheck as $platform) {
                 try {
-                    $check = DB::transaction(function () use ($user, $query, $platform, $citationService, &$skipped) {
+                    $result = DB::transaction(function () use ($user, $query, $platform, $citationService, $tokenService, &$skipped) {
                         // Lock user row to prevent race conditions
                         $lockedUser = User::where('id', $user->id)->lockForUpdate()->first();
 
-                        // Check quota with locked user
-                        if (! $citationService->canPerformCheck($lockedUser)) {
-                            Log::info('User reached check limit', [
+                        // Get token cost for this platform
+                        $tokenCost = $citationService->getTokenCost($platform);
+
+                        // Check if user has enough tokens
+                        if (! $lockedUser->is_admin && $tokenCost > 0 && ($lockedUser->token_balance ?? 0) < $tokenCost) {
+                            Log::info('User has insufficient tokens for scheduled check', [
                                 'user_id' => $lockedUser->id,
                                 'query_id' => $query->id,
+                                'platform' => $platform,
+                                'cost' => $tokenCost,
+                                'balance' => $lockedUser->token_balance,
                             ]);
                             $skipped++;
 
                             return null;
                         }
 
-                        return $citationService->createCheck($query, $platform, $lockedUser);
+                        // Deduct tokens for non-admins
+                        if (! $lockedUser->is_admin && $tokenCost > 0) {
+                            $providerKey = config("tokens.citation_providers.{$platform}");
+                            $tokenService->spend($lockedUser, $providerKey, [
+                                'query_id' => $query->id,
+                                'platform' => $platform,
+                                'scheduled' => true,
+                            ]);
+                        }
+
+                        $check = $citationService->createCheck($query, $platform, $lockedUser);
+
+                        return [
+                            'check' => $check,
+                            'cost' => $tokenCost,
+                        ];
                     });
 
-                    if ($check) {
-                        CheckCitationJob::dispatch($check);
+                    if ($result && $result['check']) {
+                        // Dispatch with staggered delay to avoid rate limits
+                        CheckCitationJob::dispatch($result['check'])->delay(now()->addSeconds($delay));
+                        $delay += 5; // 5 second delay between each platform
                         $dispatched++;
+                        $tokensSpentThisRun += $result['cost'];
 
-                        Log::info('Dispatched citation check', [
-                            'check_id' => $check->id,
+                        Log::info('Dispatched scheduled citation check', [
+                            'check_id' => $result['check']->id,
                             'query_id' => $query->id,
                             'platform' => $platform,
+                            'tokens_charged' => $result['cost'],
                         ]);
                     }
                 } catch (\Exception $e) {
-                    Log::error('Failed to dispatch citation check', [
+                    Log::error('Failed to dispatch scheduled citation check', [
                         'query_id' => $query->id,
                         'platform' => $platform,
                         'error' => $e->getMessage(),
                     ]);
                 }
+            }
+
+            // Record tokens spent for budget tracking
+            if ($tokensSpentThisRun > 0) {
+                $query->recordTokensSpent($tokensSpentThisRun);
             }
 
             // Schedule the next check for this query
@@ -118,6 +175,7 @@ class ProcessScheduledCitationChecksJob implements ShouldQueue, ShouldBeUnique
         Log::info('Completed processing scheduled citation checks', [
             'dispatched' => $dispatched,
             'skipped' => $skipped,
+            'budget_exceeded' => $budgetExceeded,
         ]);
     }
 }

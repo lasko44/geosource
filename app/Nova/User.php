@@ -2,11 +2,13 @@
 
 namespace App\Nova;
 
+use App\Nova\Actions\GrantBonusTokens;
 use Geosource\UserActions\UserActions;
 use Illuminate\Http\Request;
 use Laravel\Nova\Auth\PasswordValidationRules;
 use Laravel\Nova\Fields\Badge;
 use Laravel\Nova\Fields\Boolean;
+use Laravel\Nova\Fields\Currency;
 use Laravel\Nova\Fields\DateTime;
 use Laravel\Nova\Fields\Gravatar;
 use Laravel\Nova\Fields\HasMany;
@@ -97,6 +99,11 @@ class User extends Resource
                 return $this->scans()->where('created_at', '>=', now()->subWeek())->count();
             })->onlyOnIndex(),
 
+            Number::make('Token Balance', 'token_balance')
+                ->sortable()
+                ->filterable()
+                ->help('Current token balance'),
+
             DateTime::make('Joined', 'created_at')
                 ->sortable()
                 ->exceptOnForms(),
@@ -107,6 +114,8 @@ class User extends Resource
                 ->updateRules($this->optionalPasswordRules()),
 
             HasMany::make('Scans'),
+
+            HasMany::make('Token Transactions', 'tokenTransactions', TokenTransaction::class),
         ];
     }
 
@@ -147,6 +156,8 @@ class User extends Resource
      */
     public function actions(NovaRequest $request): array
     {
-        return [];
+        return [
+            GrantBonusTokens::make()->showInline(),
+        ];
     }
 }

@@ -1,0 +1,70 @@
+GEOSOURCE TOKEN PRICING ANALYSIS
+Generated: 2026-01-28
+
+=== CURRENT COST ANALYSIS PER OPERATION ===
+Operation,API Cost,Notes
+Basic Scan (5 pillars),$0.001,HTTP fetch + local text analysis
+Pro Scan (8 pillars),$0.001,Same - pillars are local analysis
+Full Scan (12 pillars),$0.001-0.01,Same + maybe RAG embedding
+Perplexity Citation,$0.005,sonar-pro API
+ChatGPT Citation,$0.04-0.06,Tavily ($0.01) + gpt-4o
+Claude Citation,$0.02,Tavily ($0.01) + claude-haiku
+Gemini Citation,$0.01,Has generous free tier
+DeepSeek Citation,$0.001,Very cheap
+Google Search Citation,$0.01,SerpAPI
+YouTube Citation,$0.01,SerpAPI
+Facebook Citation,$0.01,SerpAPI
+PDF Export,$0,Local generation
+
+=== TOKEN PACKAGES ===
+Package,Price,Per Token,Savings
+50 tokens,$5,$0.10,—
+200 tokens,$15,$0.075,25% off
+500 tokens,$30,$0.06,40% off
+1000 tokens,$50,$0.05,50% off
+
+=== SCAN TOKEN COSTS ===
+Feature,Tokens,Min Effective Cost,Max Effective Cost,Your API Cost,Min Margin,Max Margin
+Basic Scan (5 pillars),FREE,$0,$0,$0.001,N/A (lead gen),N/A (lead gen)
+Pro Scan (8 pillars),5,$0.25,$0.50,$0.001,$0.249,$0.499
+Full Scan (12 pillars),10,$0.50,$1.00,$0.01,$0.49,$0.99
+
+=== CITATION TOKEN COSTS (per platform) ===
+Platform,Tokens,Min Effective Cost,Max Effective Cost,Your API Cost,Margin %
+DeepSeek,1,$0.05,$0.10,$0.001,98%+
+Gemini,2,$0.10,$0.20,$0.01,90%+
+Perplexity,3,$0.15,$0.30,$0.005,95%+
+Claude,3,$0.15,$0.30,$0.02,87%+
+Google Search,2,$0.10,$0.20,$0.01,90%+
+YouTube,2,$0.10,$0.20,$0.01,90%+
+Facebook,2,$0.10,$0.20,$0.01,90%+
+ChatGPT,5,$0.25,$0.50,$0.05,80%+
+
+=== OTHER FEATURES TOKEN COSTS ===
+Feature,Tokens,Notes
+PDF Export,2,Pure margin
+Scheduled Scan,5 per run,Charges each execution
+Bulk Scan (per URL),Same as scan tier,Pro or Full rate
+
+=== USER COMPARISON: TOKENS VS OLD SUBSCRIPTIONS ===
+User Type,Monthly Usage,Old Pro Cost,Old Agency Cost,Token Cost (estimate)
+Light User,10 full scans + 20 citations,$39 (overpaying),$99 (way overpaying),$8-16
+Medium User,50 full scans + 100 citations,N/A (no citations),$99,$40-48
+Heavy User,200 scans + 500 citations,N/A,$99 (great deal),$175
+
+=== RECOMMENDED TIER STRUCTURE ===
+Tier,Price,Features
+Free (no login),$0,Basic scan (5 pillars) - rate limited
+Tokens (account required),Pay as you go,Pro/Full scans - citations - PDF - scheduled
+Team Plan,$49-99/month,Teams - GA4 - 500-1000 tokens included - white-label - priority support
+
+=== PROFIT ANALYSIS ===
+Scenario,Description,Your Revenue,Your Cost,Profit
+Worst Case,User buys 1000 tokens ($50) and does 50 ChatGPT citations + 50 Full scans,$50,$3,$47
+Best Case,User buys tokens but only does basic operations,$50,<$1,$49+
+
+=== FIXED MONTHLY COSTS ===
+Service,Monthly Cost
+Hosting,$40
+Google Workspace (email),$26
+TOTAL FIXED,$66

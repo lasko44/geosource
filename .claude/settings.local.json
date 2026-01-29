@@ -32,7 +32,11 @@
       "Bash(convert:*)",
       "Bash(magick:*)",
       "Bash(php create_blog_post.php:*)",
-      "Bash(npm run production:*)"
+      "Bash(npm run production:*)",
+      "Bash(git rm:*)",
+      "Bash(stripe:*)",
+      "Bash(curl:*)",
+      "Bash(pgrep:*)"
     ]
   }
 }

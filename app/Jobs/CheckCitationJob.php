@@ -14,6 +14,7 @@ use App\Services\Citation\Platforms\OpenAIBrowsingService;
 use App\Services\Citation\Platforms\PerplexityService;
 use App\Services\Citation\Platforms\YouTubeService;
 use App\Services\SubscriptionService;
+use App\Services\TokenService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -43,6 +44,7 @@ class CheckCitationJob implements ShouldQueue
     public function handle(
         CitationService $citationService,
         SubscriptionService $subscriptionService,
+        TokenService $tokenService,
         PerplexityService $perplexityService,
         OpenAIBrowsingService $openAIService,
         ClaudeService $claudeService,
@@ -55,7 +57,7 @@ class CheckCitationJob implements ShouldQueue
     ): void {
         // Re-verify subscription before completing the check
         if (! $this->verifySubscriptionStillValid($subscriptionService)) {
-            $this->markFailed('Your subscription has changed and this check cannot be completed.');
+            $this->markFailed('Your subscription has changed and this check cannot be completed.', $tokenService);
 
             return;
         }
@@ -66,7 +68,7 @@ class CheckCitationJob implements ShouldQueue
             $query = $this->check->citationQuery;
 
             if (! $query) {
-                $this->markFailed('Citation query not found.');
+                $this->markFailed('Citation query not found.', $tokenService);
 
                 return;
             }
@@ -113,7 +115,7 @@ class CheckCitationJob implements ShouldQueue
             $query->update(['last_checked_at' => now()]);
 
         } catch (\Exception $e) {
-            $this->markFailed($e->getMessage());
+            $this->markFailed($e->getMessage(), $tokenService);
         }
     }
 
@@ -129,7 +131,7 @@ class CheckCitationJob implements ShouldQueue
         ]);
     }
 
-    private function markFailed(string $message): void
+    private function markFailed(string $message, TokenService $tokenService): void
     {
         $this->check->update([
             'status' => CitationCheck::STATUS_FAILED,
@@ -138,10 +140,44 @@ class CheckCitationJob implements ShouldQueue
             'error_message' => $message,
             'completed_at' => now(),
         ]);
+
+        // Refund tokens for the failed check
+        $this->refundTokens($tokenService);
     }
 
     /**
-     * Verify the user's subscription is still valid for this check.
+     * Refund tokens for a failed citation check.
+     */
+    private function refundTokens(TokenService $tokenService): void
+    {
+        $user = $this->check->user;
+
+        if (! $user || $user->is_admin) {
+            return;
+        }
+
+        // Get the token cost for this platform
+        $providerKey = config("tokens.citation_providers.{$this->check->platform}");
+        if (! $providerKey) {
+            return;
+        }
+
+        $cost = config("tokens.costs.{$providerKey}", 0);
+        if ($cost <= 0) {
+            return;
+        }
+
+        // Refund the tokens
+        $tokenService->refund(
+            $user,
+            $cost,
+            "Refund for failed {$this->check->platform} citation check"
+        );
+    }
+
+    /**
+     * Verify the user can still run this check.
+     * Since tokens are deducted before the job runs, we just need to ensure the user exists.
      */
     private function verifySubscriptionStillValid(SubscriptionService $subscriptionService): bool
     {
@@ -151,7 +187,7 @@ class CheckCitationJob implements ShouldQueue
             return false;
         }
 
-        // Refresh the user model to get current subscription state
+        // Refresh the user model
         $user->refresh();
 
         // Admins always pass
@@ -159,9 +195,8 @@ class CheckCitationJob implements ShouldQueue
             return true;
         }
 
-        // Verify user still has citation access
-        $citationLimit = $subscriptionService->getLimit($user, 'citation_checks_per_day');
-
-        return $citationLimit !== null && $citationLimit !== 0;
+        // Token-based: tokens have already been deducted at this point,
+        // so the check is already paid for. Just verify user exists.
+        return true;
     }
 }

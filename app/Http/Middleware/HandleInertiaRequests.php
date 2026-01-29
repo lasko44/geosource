@@ -50,10 +50,10 @@ class HandleInertiaRequests extends Middleware
             $hasTeams = $user->is_admin || $subscriptionService->isAgencyTier($user);
             // User can create teams only if they own an Agency subscription (not via team membership)
             $canCreateTeams = $subscriptionService->canCreateTeams($user);
-            // Citation access is agency-only (same as teams for now)
-            $hasCitationAccess = $user->is_admin || $subscriptionService->isAgencyTier($user);
-            // Scheduled scans access is agency-only
-            $hasScheduledScansAccess = $user->hasFeature('scheduled_scans');
+            // Citation access is token-based: any user with tokens can access
+            $hasCitationAccess = $user->is_admin || ($user->token_balance ?? 0) > 0;
+            // Scheduled scans access - token-based (users pay per scheduled scan run)
+            $hasScheduledScansAccess = $user->is_admin || ($user->token_balance ?? 0) > 0;
 
             // Get team branding if user is in a team context with white-label enabled
             $teamBranding = $this->getTeamBranding($request, $user);
@@ -69,6 +69,7 @@ class HandleInertiaRequests extends Middleware
                     'email' => $user->email,
                     'is_admin' => $user->is_admin,
                     'timezone' => $user->timezone ?? 'UTC',
+                    'token_balance' => $user->token_balance ?? 0,
                 ] : null,
             ],
             'flash' => [

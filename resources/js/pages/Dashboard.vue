@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, useForm, usePage, router } from '@inertiajs/vue3';
-import { Globe, TrendingUp, Target, Calendar, ExternalLink, Zap, ArrowRight, Users, Crown, Plus, Building2, User, ChevronDown, Quote, CheckCircle2, XCircle, Clock, Layers, Repeat, Loader2 } from 'lucide-vue-next';
+import { Globe, TrendingUp, Target, Calendar, ExternalLink, Zap, ArrowRight, Users, Crown, Plus, Building2, User, ChevronDown, Quote, CheckCircle2, XCircle, Clock, Layers, Repeat, Loader2, X, Coins } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -99,13 +99,47 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+// Tier options with token costs
+const tierOptions = [
+    { value: 'basic', label: 'Basic', pillars: 5, tokens: 0, description: 'Essential GEO metrics' },
+    { value: 'pro', label: 'Pro', pillars: 8, tokens: 5, description: 'Extended analysis' },
+    { value: 'full', label: 'Full', pillars: 12, tokens: 10, description: 'Complete GEO breakdown' },
+];
+
+// Token promo banner dismissal state (persisted to localStorage)
+const PROMO_BANNER_KEY = 'geosource_promo_banner_dismissed';
+const promoBannerDismissed = ref(localStorage.getItem(PROMO_BANNER_KEY) === 'true');
+
+const dismissPromoBanner = () => {
+    promoBannerDismissed.value = true;
+    localStorage.setItem(PROMO_BANNER_KEY, 'true');
+};
+
 const form = useForm({
     url: '',
     team_id: props.currentTeamId ?? null,
+    tier: 'basic',
+});
+
+// Get user's token balance
+const tokenBalance = computed(() => page.props.auth?.user?.token_balance ?? 0);
+
+// Check if user can afford a tier
+const canAffordTier = (tier: string): boolean => {
+    const option = tierOptions.find(t => t.value === tier);
+    if (!option) return false;
+    if (option.tokens === 0) return true;
+    return tokenBalance.value >= option.tokens;
+};
+
+// Selected tier info
+const selectedTierInfo = computed(() => {
+    return tierOptions.find(t => t.value === form.tier) || tierOptions[0];
 });
 
 // Bulk scan form
 const bulkUrls = ref('');
+const bulkTier = ref('basic');
 const bulkProcessing = ref(false);
 const bulkError = ref<string | null>(null);
 
@@ -128,6 +162,20 @@ const bulkUrlCount = computed(() => {
     return bulkUrls.value.split('\n').filter(line => line.trim()).length;
 });
 
+// Calculate total tokens for bulk scan
+const bulkTierInfo = computed(() => {
+    return tierOptions.find(t => t.value === bulkTier.value) || tierOptions[0];
+});
+
+const bulkTotalTokens = computed(() => {
+    return bulkUrlCount.value * bulkTierInfo.value.tokens;
+});
+
+const canAffordBulkScan = computed(() => {
+    if (bulkTierInfo.value.tokens === 0) return true;
+    return tokenBalance.value >= bulkTotalTokens.value;
+});
+
 const bulkCompleted = computed(() => bulkScans.value.filter(s => s.status === 'completed' || s.status === 'failed').length);
 const bulkTotal = computed(() => bulkScans.value.length);
 const bulkAllDone = computed(() => bulkTotal.value > 0 && bulkCompleted.value === bulkTotal.value);
@@ -145,7 +193,7 @@ const submitBulkScan = async () => {
                 'Accept': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
             },
-            body: JSON.stringify({ urls: bulkUrls.value }),
+            body: JSON.stringify({ urls: bulkUrls.value, tier: bulkTier.value }),
         });
 
         const data = await response.json();
@@ -214,6 +262,7 @@ const resetBulkForm = () => {
     bulkSkipped.value = { cooldown: 0, invalid: 0 };
     bulkProcessing.value = false;
     bulkError.value = null;
+    bulkTier.value = 'basic';
 };
 
 const getGradeColorBulk = (grade: string | null) => {
@@ -285,7 +334,7 @@ const checkCooldown = async (url: string) => {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
                 'X-Requested-With': 'XMLHttpRequest',
             },
-            body: JSON.stringify({ url: normalizedUrl }),
+            body: JSON.stringify({ url: normalizedUrl, tier: form.tier }),
         });
         if (response.ok) {
             cooldown.value = await response.json();
@@ -299,7 +348,7 @@ const checkCooldown = async (url: string) => {
     }
 };
 
-// Debounced URL watcher
+// Debounced URL watcher - check cooldown when URL changes
 watch(() => form.url, (newUrl) => {
     if (cooldownCheckTimeout) {
         clearTimeout(cooldownCheckTimeout);
@@ -314,8 +363,16 @@ watch(() => form.url, (newUrl) => {
     }
 });
 
+// Re-check cooldown when tier changes (Pro/Full have shorter cooldown)
+watch(() => form.tier, () => {
+    if (form.url && form.url.length > 3) {
+        checkCooldown(form.url);
+    }
+});
+
 const submit = () => {
     if (isOnCooldown.value) return;
+    if (!canAffordTier(form.tier)) return;
     // Ensure team_id is synced with current context before submitting
     form.team_id = props.currentTeamId ?? null;
     form.post('/scan', {
@@ -409,19 +466,24 @@ const getProgressColor = () => {
                 </div>
             </div>
 
-            <!-- Upgrade Banner -->
-            <Alert v-if="showUpgradePrompt && usage.plan_key === 'free'" class="border-primary/50 bg-gradient-to-r from-primary/5 to-primary/10">
-                <Zap class="h-4 w-4 text-primary" />
-                <AlertDescription class="flex items-center justify-between">
+            <!-- Token Promo Banner -->
+            <Alert v-if="!promoBannerDismissed && tokenBalance === 0" class="border-primary/50 bg-gradient-to-r from-primary/5 to-primary/10">
+                <Coins class="h-4 w-4 text-primary" />
+                <AlertDescription class="flex items-center justify-between gap-4">
                     <span>
-                        <strong>Unlock more scans!</strong> Upgrade to Pro for 50 scans/month, full GEO breakdown, and PDF export.
+                        <strong>Get more from your scans!</strong> Purchase tokens for Pro scans (8 pillars), Full scans (12 pillars), AI citations, and more.
                     </span>
-                    <Link href="/billing/plans">
-                        <Button size="sm" class="ml-4">
-                            View Plans
-                            <ArrowRight class="ml-1 h-4 w-4" />
+                    <div class="flex items-center gap-2">
+                        <Link href="/tokens">
+                            <Button size="sm">
+                                Buy Tokens
+                                <ArrowRight class="ml-1 h-4 w-4" />
+                            </Button>
+                        </Link>
+                        <Button variant="ghost" size="icon" class="h-8 w-8 shrink-0" @click="dismissPromoBanner">
+                            <X class="h-4 w-4" />
                         </Button>
-                    </Link>
+                    </div>
                 </AlertDescription>
             </Alert>
 
@@ -514,41 +576,87 @@ const getProgressColor = () => {
 
                         <!-- Single URL Scan -->
                         <TabsContent value="single" class="mt-0">
-                            <form @submit.prevent="submit" class="flex gap-3">
-                                <div class="flex-1">
-                                    <Input
-                                        v-model="form.url"
-                                        type="url"
-                                        placeholder="https://example.com/page"
-                                        class="h-12 text-base"
-                                        :disabled="form.processing || !usage.can_scan"
-                                    />
+                            <form @submit.prevent="submit" class="space-y-4">
+                                <!-- URL Input Row -->
+                                <div class="flex gap-3">
+                                    <div class="flex-1">
+                                        <Input
+                                            v-model="form.url"
+                                            type="url"
+                                            placeholder="https://example.com/page"
+                                            class="h-12 text-base"
+                                            :disabled="form.processing || !usage.can_scan"
+                                        />
+                                    </div>
+                                    <Button
+                                        type="submit"
+                                        size="lg"
+                                        :disabled="form.processing || !form.url || !usage.can_scan || isOnCooldown || checkingCooldown || !canAffordTier(form.tier)"
+                                        class="h-12 px-8"
+                                    >
+                                        <Clock v-if="isOnCooldown" class="mr-2 h-4 w-4" />
+                                        <svg v-else-if="form.processing || checkingCooldown" class="mr-2 h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                        </svg>
+                                        <template v-if="isOnCooldown">
+                                            {{ cooldownMinutes }}m cooldown
+                                        </template>
+                                        <template v-else-if="checkingCooldown">
+                                            Checking...
+                                        </template>
+                                        <template v-else>
+                                            {{ form.processing ? 'Scanning...' : 'Scan URL' }}
+                                        </template>
+                                    </Button>
                                 </div>
-                                <Button
-                                    type="submit"
-                                    size="lg"
-                                    :disabled="form.processing || !form.url || !usage.can_scan || isOnCooldown || checkingCooldown"
-                                    class="h-12 px-8"
-                                >
-                                    <Clock v-if="isOnCooldown" class="mr-2 h-4 w-4" />
-                                    <svg v-else-if="form.processing || checkingCooldown" class="mr-2 h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                                    </svg>
-                                    <template v-if="isOnCooldown">
-                                        {{ cooldownMinutes }}m cooldown
-                                    </template>
-                                    <template v-else-if="checkingCooldown">
-                                        Checking...
-                                    </template>
-                                    <template v-else>
-                                        {{ form.processing ? 'Scanning...' : 'Scan URL' }}
-                                    </template>
-                                </Button>
+
+                                <!-- Tier Selection -->
+                                <div class="space-y-2">
+                                    <Label class="text-sm font-medium">Scan Tier</Label>
+                                    <div class="grid grid-cols-3 gap-3">
+                                        <button
+                                            v-for="tier in tierOptions"
+                                            :key="tier.value"
+                                            type="button"
+                                            @click="form.tier = tier.value"
+                                            :disabled="!canAffordTier(tier.value) && tier.tokens > 0"
+                                            class="relative flex flex-col items-center rounded-lg border-2 p-3 transition-all"
+                                            :class="[
+                                                form.tier === tier.value
+                                                    ? 'border-primary bg-primary/5'
+                                                    : 'border-border hover:border-muted-foreground/50',
+                                                !canAffordTier(tier.value) && tier.tokens > 0 ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                                            ]"
+                                        >
+                                            <span class="font-semibold">{{ tier.label }}</span>
+                                            <span class="text-xs text-muted-foreground">{{ tier.pillars }} pillars</span>
+                                            <span class="mt-1 text-xs font-medium" :class="tier.tokens === 0 ? 'text-green-600' : 'text-primary'">
+                                                {{ tier.tokens === 0 ? 'FREE' : `${tier.tokens} tokens` }}
+                                            </span>
+                                        </button>
+                                    </div>
+                                    <div class="flex items-center justify-between text-xs text-muted-foreground">
+                                        <span>{{ selectedTierInfo.description }}</span>
+                                        <span>Your balance: <strong class="text-foreground">{{ tokenBalance }} tokens</strong></span>
+                                    </div>
+                                </div>
                             </form>
 
                             <Alert v-if="form.errors.url" variant="destructive" class="mt-3">
                                 <AlertDescription>{{ form.errors.url }}</AlertDescription>
+                            </Alert>
+                            <Alert v-if="form.errors.tokens" variant="destructive" class="mt-3">
+                                <AlertDescription>
+                                    {{ form.errors.tokens }}
+                                    <Link href="/tokens" class="ml-1 underline">Buy more tokens</Link>
+                                </AlertDescription>
+                            </Alert>
+                            <Alert v-if="!canAffordTier(form.tier) && form.tier !== 'basic'" class="mt-3 border-amber-500/50 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-950/50 dark:text-amber-200">
+                                <AlertDescription>
+                                    You need {{ selectedTierInfo.tokens }} tokens for a {{ selectedTierInfo.label }} scan but only have {{ tokenBalance }}.
+                                    <Link href="/tokens" class="ml-1 underline">Buy more tokens</Link>
+                                </AlertDescription>
                             </Alert>
                             <Alert v-if="form.errors.cooldown" class="mt-3 border-yellow-500/50 bg-yellow-50 text-yellow-800 dark:border-yellow-500/30 dark:bg-yellow-950/50 dark:text-yellow-200">
                                 <Clock class="h-4 w-4" />
@@ -683,7 +791,7 @@ const getProgressColor = () => {
                                         placeholder="https://example.com/page1
 https://example.com/page2
 https://example.com/page3"
-                                        class="min-h-[150px] font-mono text-sm"
+                                        class="min-h-[120px] font-mono text-sm"
                                         :disabled="bulkProcessing"
                                     />
                                     <div class="flex items-center justify-between text-sm">
@@ -696,14 +804,54 @@ https://example.com/page3"
                                     </div>
                                 </div>
 
+                                <!-- Tier Selection for Bulk -->
+                                <div class="space-y-2">
+                                    <Label class="text-sm font-medium">Scan Tier (applied to all URLs)</Label>
+                                    <div class="grid grid-cols-3 gap-3">
+                                        <button
+                                            v-for="tier in tierOptions"
+                                            :key="tier.value"
+                                            type="button"
+                                            @click="bulkTier = tier.value"
+                                            class="relative flex flex-col items-center rounded-lg border-2 p-3 transition-all"
+                                            :class="[
+                                                bulkTier === tier.value
+                                                    ? 'border-primary bg-primary/5'
+                                                    : 'border-border hover:border-muted-foreground/50',
+                                                'cursor-pointer'
+                                            ]"
+                                        >
+                                            <span class="font-semibold">{{ tier.label }}</span>
+                                            <span class="text-xs text-muted-foreground">{{ tier.pillars }} pillars</span>
+                                            <span class="mt-1 text-xs font-medium" :class="tier.tokens === 0 ? 'text-green-600' : 'text-primary'">
+                                                {{ tier.tokens === 0 ? 'FREE' : `${tier.tokens} tokens` }}
+                                            </span>
+                                        </button>
+                                    </div>
+                                    <div class="flex items-center justify-between text-xs">
+                                        <span class="text-muted-foreground">{{ bulkTierInfo.description }}</span>
+                                        <span v-if="bulkTierInfo.tokens > 0" class="font-medium" :class="canAffordBulkScan ? 'text-foreground' : 'text-destructive'">
+                                            Total: {{ bulkTotalTokens }} tokens (balance: {{ tokenBalance }})
+                                        </span>
+                                        <span v-else class="text-green-600 font-medium">Free scan</span>
+                                    </div>
+                                </div>
+
                                 <Alert v-if="bulkError" variant="destructive">
                                     <AlertDescription>{{ bulkError }}</AlertDescription>
+                                </Alert>
+
+                                <Alert v-if="!canAffordBulkScan && bulkUrlCount > 0" variant="destructive">
+                                    <AlertDescription>
+                                        You need {{ bulkTotalTokens }} tokens but only have {{ tokenBalance }}.
+                                        <Link href="/tokens" class="ml-1 underline">Buy more tokens</Link>
+                                    </AlertDescription>
                                 </Alert>
 
                                 <Button
                                     type="submit"
                                     size="lg"
-                                    :disabled="bulkProcessing || bulkUrlCount === 0 || bulkUrlCount > 50"
+                                    :disabled="bulkProcessing || bulkUrlCount === 0 || bulkUrlCount > 50 || !canAffordBulkScan"
                                     class="h-12"
                                 >
                                     <svg v-if="bulkProcessing" class="mr-2 h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -711,21 +859,24 @@ https://example.com/page3"
                                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                                     </svg>
                                     {{ bulkProcessing ? 'Starting...' : `Scan ${bulkUrlCount} URL${bulkUrlCount !== 1 ? 's' : ''}` }}
+                                    <template v-if="bulkTierInfo.tokens > 0 && bulkUrlCount > 0">
+                                        ({{ bulkTotalTokens }} tokens)
+                                    </template>
                                 </Button>
                             </form>
                         </TabsContent>
                     </Tabs>
 
-                    <!-- Upgrade prompt for non-Agency users -->
+                    <!-- Bulk scan prompt for users without tokens -->
                     <div v-if="!canBulkScan" class="mt-4 rounded-lg border border-dashed p-4">
                         <div class="flex items-center gap-3">
                             <Layers class="h-8 w-8 text-muted-foreground" />
                             <div class="flex-1">
                                 <p class="font-medium">Need to scan multiple URLs?</p>
-                                <p class="text-sm text-muted-foreground">Upgrade to Agency for bulk URL scanning (up to 50 at once)</p>
+                                <p class="text-sm text-muted-foreground">Get tokens to unlock bulk scanning with Pro or Full tier analysis</p>
                             </div>
-                            <Link href="/billing/plans">
-                                <Button variant="outline" size="sm">Upgrade</Button>
+                            <Link href="/tokens">
+                                <Button variant="outline" size="sm">Buy Tokens</Button>
                             </Link>
                         </div>
                     </div>
@@ -734,36 +885,31 @@ https://example.com/page3"
 
             <!-- Stats Cards -->
             <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-                <!-- Usage Card -->
+                <!-- Token Balance Card -->
                 <Card class="md:col-span-2 lg:col-span-1">
                     <CardContent class="pt-6">
                         <div class="flex flex-col gap-3">
                             <div class="flex items-center justify-between">
-                                <p class="text-sm font-medium text-muted-foreground">Scans This Month</p>
-                                <span class="rounded-full bg-muted px-2 py-0.5 text-xs font-medium">
-                                    {{ usage.plan_name }}
-                                </span>
+                                <p class="text-sm font-medium text-muted-foreground">Token Balance</p>
+                                <Coins class="h-4 w-4 text-primary" />
                             </div>
                             <div class="flex items-baseline gap-1">
-                                <span class="text-3xl font-bold" :class="getUsageColor()">
-                                    {{ usage.scans_used }}
+                                <span class="text-3xl font-bold" :class="tokenBalance > 0 ? 'text-primary' : 'text-muted-foreground'">
+                                    {{ tokenBalance }}
                                 </span>
                                 <span class="text-muted-foreground">
-                                    / {{ usage.is_unlimited ? '∞' : usage.scans_limit }}
+                                    tokens
                                 </span>
                             </div>
-                            <Progress
-                                v-if="!usage.is_unlimited"
-                                :model-value="usagePercentage()"
-                                class="h-2"
-                                :class="getProgressColor()"
-                            />
-                            <p v-if="!usage.is_unlimited" class="text-xs text-muted-foreground">
-                                {{ usage.scans_remaining }} scans remaining
+                            <p class="text-xs text-muted-foreground">
+                                Pro scans: 5 tokens · Full scans: 10 tokens
                             </p>
-                            <p v-else class="text-xs text-muted-foreground">
-                                Unlimited scans
-                            </p>
+                            <Link href="/tokens">
+                                <Button variant="outline" size="sm" class="w-full mt-1">
+                                    <Plus class="mr-1 h-3 w-3" />
+                                    Buy More Tokens
+                                </Button>
+                            </Link>
                         </div>
                     </CardContent>
                 </Card>

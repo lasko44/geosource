@@ -7,6 +7,20 @@ use Illuminate\Support\Carbon;
 
 class SubscriptionService
 {
+    protected ?TokenService $tokenService = null;
+
+    /**
+     * Get the TokenService instance.
+     */
+    protected function getTokenService(): TokenService
+    {
+        if ($this->tokenService === null) {
+            $this->tokenService = app(TokenService::class);
+        }
+
+        return $this->tokenService;
+    }
+
     /**
      * Get the user's own plan key (not considering team membership).
      */
@@ -577,5 +591,110 @@ class SubscriptionService
             'pro' => 'agency',
             default => null,
         };
+    }
+
+    // ==========================================
+    // Token-Based Features
+    // ==========================================
+
+    /**
+     * Check if user has enough tokens for a feature.
+     */
+    public function hasTokensFor(User $user, string $feature): bool
+    {
+        return $this->getTokenService()->hasTokensFor($user, $feature);
+    }
+
+    /**
+     * Spend tokens for a feature.
+     *
+     * @throws \Exception if insufficient balance
+     */
+    public function spendTokens(User $user, string $feature, array $metadata = []): ?\App\Models\TokenTransaction
+    {
+        return $this->getTokenService()->spend($user, $feature, $metadata);
+    }
+
+    /**
+     * Check if user can perform a scan at a specific tier based on tokens.
+     * Returns true if:
+     * - The tier is free (basic scan)
+     * - User has subscription that includes the tier
+     * - User has enough tokens for the tier
+     */
+    public function canScanWithTokens(User $user, string $tier = 'basic'): bool
+    {
+        $tokenService = $this->getTokenService();
+
+        // Basic scans are always free
+        if ($tier === 'basic' || $tier === 'FREE') {
+            return true;
+        }
+
+        // Check if user has subscription that grants access
+        $planKey = $this->getPlanKey($user);
+        if ($this->tierIncludedInPlan($tier, $planKey)) {
+            return $this->canScan($user);
+        }
+
+        // Otherwise check tokens
+        return $tokenService->canScan($user, $tier);
+    }
+
+    /**
+     * Check if a scan tier is included in a subscription plan.
+     */
+    protected function tierIncludedInPlan(string $tier, string $planKey): bool
+    {
+        $tier = strtoupper($tier);
+        $planKey = strtolower($planKey);
+
+        // Admin gets everything
+        if ($planKey === 'admin') {
+            return true;
+        }
+
+        // Agency users get full scans included
+        if (in_array($planKey, ['agency', 'agency_member'])) {
+            return true;
+        }
+
+        // Pro users get pro scans included
+        if ($planKey === 'pro' && in_array($tier, ['PRO', 'pro'])) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Get the scan tier for a user based on their plan.
+     * If they don't have a subscription, defaults to 'basic'.
+     */
+    public function getScanTierForUser(User $user): string
+    {
+        $planKey = $this->getPlanKey($user);
+
+        return match ($planKey) {
+            'admin', 'agency', 'agency_member' => 'AGENCY',
+            'pro' => 'PRO',
+            default => 'FREE',
+        };
+    }
+
+    /**
+     * Get the user's token balance.
+     */
+    public function getTokenBalance(User $user): int
+    {
+        return $this->getTokenService()->getBalance($user);
+    }
+
+    /**
+     * Get token cost for a feature.
+     */
+    public function getTokenCost(string $feature): int
+    {
+        return $this->getTokenService()->getCost($feature);
     }
 }

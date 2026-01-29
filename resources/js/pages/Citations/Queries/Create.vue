@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ArrowLeft, Info } from 'lucide-vue-next';
+import { ArrowLeft, Info, Coins } from 'lucide-vue-next';
+import { computed, watch } from 'vue';
 
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Checkbox } from '@/components/ui/checkbox';
 import { type BreadcrumbItem } from '@/types';
 
 interface Usage {
@@ -16,6 +18,8 @@ interface Usage {
     queries_is_unlimited: boolean;
     can_create_query: boolean;
     available_frequencies: string[];
+    token_balance: number;
+    platform_costs: Record<string, number>;
 }
 
 interface Props {
@@ -32,12 +36,50 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Create Query', href: '/citations/queries/create' },
 ];
 
+// AI platforms that can be scheduled
+const schedulablePlatforms = ['perplexity', 'openai', 'claude', 'gemini', 'deepseek'];
+
 const form = useForm({
     query: '',
     domain: '',
     brand: '',
     frequency: 'manual',
+    scheduled_platforms: [] as string[],
+    monthly_token_budget: null as number | null,
 });
+
+// Calculate cost per scheduled run
+const costPerRun = computed(() => {
+    if (form.scheduled_platforms.length === 0) {
+        // If no platforms selected, default to all AI platforms
+        return schedulablePlatforms.reduce((sum, p) => sum + (props.usage.platform_costs?.[p] ?? 0), 0);
+    }
+    return form.scheduled_platforms.reduce((sum, p) => sum + (props.usage.platform_costs?.[p] ?? 0), 0);
+});
+
+// Estimate monthly cost based on frequency
+const estimatedMonthlyCost = computed(() => {
+    if (form.frequency === 'manual') return 0;
+    const runsPerMonth = form.frequency === 'daily' ? 30 : 4; // daily or weekly
+    return costPerRun.value * runsPerMonth;
+});
+
+// When frequency changes to manual, clear scheduling options
+watch(() => form.frequency, (newFreq) => {
+    if (newFreq === 'manual') {
+        form.scheduled_platforms = [];
+        form.monthly_token_budget = null;
+    }
+});
+
+const togglePlatform = (platform: string) => {
+    const index = form.scheduled_platforms.indexOf(platform);
+    if (index === -1) {
+        form.scheduled_platforms.push(platform);
+    } else {
+        form.scheduled_platforms.splice(index, 1);
+    }
+};
 
 const submit = () => {
     form.post('/citations/queries', {
@@ -47,6 +89,10 @@ const submit = () => {
 
 const isFrequencyAvailable = (freq: string) => {
     return props.usage.available_frequencies.includes(freq);
+};
+
+const getPlatformCost = (platform: string) => {
+    return props.usage.platform_costs?.[platform] ?? 0;
 };
 </script>
 
@@ -160,6 +206,77 @@ const isFrequencyAvailable = (freq: string) => {
                                 How often to automatically check this query.
                             </p>
                         </div>
+
+                        <!-- Scheduling Options (only show for non-manual) -->
+                        <template v-if="form.frequency !== 'manual'">
+                            <!-- Platform Selection -->
+                            <div class="space-y-3">
+                                <Label>Platforms to Check</Label>
+                                <p class="text-xs text-muted-foreground">
+                                    Select which AI platforms to check on schedule. Leave empty to check all.
+                                </p>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div
+                                        v-for="platform in schedulablePlatforms"
+                                        :key="platform"
+                                        class="flex items-center space-x-2 p-3 rounded-lg border cursor-pointer hover:bg-muted/50"
+                                        :class="{ 'border-primary bg-primary/5': form.scheduled_platforms.includes(platform) }"
+                                        @click="togglePlatform(platform)"
+                                    >
+                                        <Checkbox
+                                            :checked="form.scheduled_platforms.includes(platform)"
+                                            @update:checked="togglePlatform(platform)"
+                                        />
+                                        <div class="flex-1">
+                                            <span class="font-medium">{{ platforms[platform]?.name || platform }}</span>
+                                        </div>
+                                        <span class="text-xs text-muted-foreground">
+                                            {{ getPlatformCost(platform) }} tokens
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Cost Summary -->
+                            <div class="rounded-lg bg-muted/50 p-4 space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-muted-foreground">Cost per scheduled run</span>
+                                    <span class="font-semibold flex items-center gap-1">
+                                        <Coins class="h-4 w-4 text-primary" />
+                                        {{ costPerRun }} tokens
+                                    </span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-muted-foreground">
+                                        Estimated monthly cost ({{ form.frequency === 'daily' ? '~30 runs' : '~4 runs' }})
+                                    </span>
+                                    <span class="font-semibold flex items-center gap-1">
+                                        <Coins class="h-4 w-4 text-primary" />
+                                        ~{{ estimatedMonthlyCost }} tokens
+                                    </span>
+                                </div>
+                                <div class="flex items-center justify-between pt-2 border-t">
+                                    <span class="text-sm text-muted-foreground">Your current balance</span>
+                                    <span class="font-semibold">{{ usage.token_balance }} tokens</span>
+                                </div>
+                            </div>
+
+                            <!-- Monthly Budget -->
+                            <div class="space-y-2">
+                                <Label for="budget">Monthly Token Budget (optional)</Label>
+                                <Input
+                                    id="budget"
+                                    type="number"
+                                    v-model.number="form.monthly_token_budget"
+                                    placeholder="e.g., 100"
+                                    min="0"
+                                    :disabled="!usage.can_create_query"
+                                />
+                                <p class="text-xs text-muted-foreground">
+                                    Set a maximum number of tokens to spend per month on this query. Leave empty for no limit.
+                                </p>
+                            </div>
+                        </template>
 
                         <!-- Error -->
                         <Alert v-if="form.errors.limit" variant="destructive">

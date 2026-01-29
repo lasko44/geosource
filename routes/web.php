@@ -16,7 +16,6 @@ Route::get('/', function () {
 
 Route::get('/pricing', function () {
     return Inertia::render('Pricing', [
-        'plans' => config('billing.plans.user'),
         'canRegister' => Features::enabled(Features::registration()),
     ]);
 })->name('pricing');
@@ -46,6 +45,7 @@ Route::get('/help', function () {
 
 require __DIR__.'/settings.php';
 require __DIR__.'/billing.php';
+require __DIR__.'/tokens.php';
 require __DIR__.'/teams.php';
 require __DIR__.'/scans.php';
 require __DIR__.'/scheduled-scans.php';

@@ -28,6 +28,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'timezone',
+        'token_balance',
         'google_id',
         'avatar',
     ];
@@ -66,6 +67,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'two_factor_confirmed_at' => 'datetime',
             'trial_ends_at' => 'datetime',
             'is_admin' => 'boolean',
+            'token_balance' => 'integer',
         ];
     }
 
@@ -221,5 +223,29 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isUnsubscribedFromMarketing(): bool
     {
         return $this->marketingUnsubscribe()->exists();
+    }
+
+    /**
+     * Get the user's token transactions.
+     */
+    public function tokenTransactions(): HasMany
+    {
+        return $this->hasMany(TokenTransaction::class);
+    }
+
+    /**
+     * Check if user has enough tokens for a feature.
+     */
+    public function hasTokensFor(string $feature): bool
+    {
+        return $this->subscriptionService()->hasTokensFor($this, $feature);
+    }
+
+    /**
+     * Get the user's token balance.
+     */
+    public function getTokenBalance(): int
+    {
+        return $this->token_balance ?? 0;
     }
 }

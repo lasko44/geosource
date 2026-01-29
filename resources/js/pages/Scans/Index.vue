@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, router, useForm } from '@inertiajs/vue3';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { ref, watch, computed } from 'vue';
 import { ExternalLink, Trash2, Globe, ArrowLeft, Search, X, ChevronUp, ChevronDown, Filter, Layers, Clock, CheckCircle2, XCircle, Repeat, Loader2 } from 'lucide-vue-next';
 import { useDebounceFn } from '@vueuse/core';
@@ -49,10 +49,36 @@ interface Props {
 
 const props = defineProps<Props>();
 
+const page = usePage();
+
+// Tier options with token costs
+const tierOptions = [
+    { value: 'basic', label: 'Basic', pillars: 5, tokens: 0, description: 'Essential GEO metrics' },
+    { value: 'pro', label: 'Pro', pillars: 8, tokens: 5, description: 'Extended analysis' },
+    { value: 'full', label: 'Full', pillars: 12, tokens: 10, description: 'Complete GEO breakdown' },
+];
+
+// Get user's token balance
+const tokenBalance = computed(() => page.props.auth?.user?.token_balance ?? 0);
+
+// Check if user can afford a tier
+const canAffordTier = (tier: string): boolean => {
+    const option = tierOptions.find(t => t.value === tier);
+    if (!option) return false;
+    if (option.tokens === 0) return true;
+    return tokenBalance.value >= option.tokens;
+};
+
 // Single URL scan form
 const scanForm = useForm({
     url: '',
     team_id: props.currentTeamId ?? null,
+    tier: 'basic',
+});
+
+// Selected tier info
+const selectedTierInfo = computed(() => {
+    return tierOptions.find(t => t.value === scanForm.tier) || tierOptions[0];
 });
 
 // Cooldown state for single URL scan
@@ -111,7 +137,7 @@ const checkCooldown = async (url: string) => {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
                 'X-Requested-With': 'XMLHttpRequest',
             },
-            body: JSON.stringify({ url: normalizedUrl }),
+            body: JSON.stringify({ url: normalizedUrl, tier: scanForm.tier }),
         });
         if (response.ok) {
             cooldown.value = await response.json();
@@ -138,8 +164,16 @@ watch(() => scanForm.url, (newUrl) => {
     }
 });
 
+// Re-check cooldown when tier changes (Pro/Full have shorter cooldown)
+watch(() => scanForm.tier, () => {
+    if (scanForm.url && scanForm.url.length > 3) {
+        checkCooldown(scanForm.url);
+    }
+});
+
 const submitScan = () => {
     if (isOnCooldown.value) return;
+    if (!canAffordTier(scanForm.tier)) return;
     scanForm.team_id = props.currentTeamId ?? null;
     scanForm.post('/scan', {
         preserveScroll: true,
@@ -154,6 +188,7 @@ const viewExistingScan = () => {
 
 // Bulk scan
 const bulkUrls = ref('');
+const bulkTier = ref('basic');
 const bulkProcessing = ref(false);
 const bulkError = ref<string | null>(null);
 
@@ -176,6 +211,20 @@ const bulkUrlCount = computed(() => {
     return bulkUrls.value.split('\n').filter(line => line.trim()).length;
 });
 
+// Calculate total tokens for bulk scan
+const bulkTierInfo = computed(() => {
+    return tierOptions.find(t => t.value === bulkTier.value) || tierOptions[0];
+});
+
+const bulkTotalTokens = computed(() => {
+    return bulkUrlCount.value * bulkTierInfo.value.tokens;
+});
+
+const canAffordBulkScan = computed(() => {
+    if (bulkTierInfo.value.tokens === 0) return true;
+    return tokenBalance.value >= bulkTotalTokens.value;
+});
+
 const bulkCompleted = computed(() => bulkScans.value.filter(s => s.status === 'completed' || s.status === 'failed').length);
 const bulkTotal = computed(() => bulkScans.value.length);
 const bulkAllDone = computed(() => bulkTotal.value > 0 && bulkCompleted.value === bulkTotal.value);
@@ -193,7 +242,7 @@ const submitBulkScan = async () => {
                 'Accept': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
             },
-            body: JSON.stringify({ urls: bulkUrls.value }),
+            body: JSON.stringify({ urls: bulkUrls.value, tier: bulkTier.value }),
         });
 
         const data = await response.json();
@@ -264,6 +313,7 @@ const resetBulkForm = () => {
     bulkSkipped.value = { cooldown: 0, invalid: 0 };
     bulkProcessing.value = false;
     bulkError.value = null;
+    bulkTier.value = 'basic';
 };
 
 const getGradeColorBulk = (grade: string | null) => {
@@ -446,7 +496,7 @@ const truncateUrl = (url: string, maxLength = 60) => {
                                     </div>
                                     <Button
                                         type="submit"
-                                        :disabled="scanForm.processing || !scanForm.url || !usage.can_scan || isOnCooldown || checkingCooldown"
+                                        :disabled="scanForm.processing || !scanForm.url || !usage.can_scan || isOnCooldown || checkingCooldown || !canAffordTier(scanForm.tier)"
                                         class="h-11 px-6"
                                     >
                                         <Clock v-if="isOnCooldown" class="mr-2 h-4 w-4" />
@@ -466,8 +516,51 @@ const truncateUrl = (url: string, maxLength = 60) => {
                                     </Button>
                                 </div>
 
+                                <!-- Tier Selection -->
+                                <div class="space-y-2">
+                                    <Label class="text-sm font-medium">Scan Tier</Label>
+                                    <div class="grid grid-cols-3 gap-3">
+                                        <button
+                                            v-for="tier in tierOptions"
+                                            :key="tier.value"
+                                            type="button"
+                                            @click="scanForm.tier = tier.value"
+                                            :disabled="!canAffordTier(tier.value) && tier.tokens > 0"
+                                            class="relative flex flex-col items-center rounded-lg border-2 p-3 transition-all"
+                                            :class="[
+                                                scanForm.tier === tier.value
+                                                    ? 'border-primary bg-primary/5'
+                                                    : 'border-border hover:border-muted-foreground/50',
+                                                !canAffordTier(tier.value) && tier.tokens > 0 ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                                            ]"
+                                        >
+                                            <span class="font-semibold">{{ tier.label }}</span>
+                                            <span class="text-xs text-muted-foreground">{{ tier.pillars }} pillars</span>
+                                            <span class="mt-1 text-xs font-medium" :class="tier.tokens === 0 ? 'text-green-600' : 'text-primary'">
+                                                {{ tier.tokens === 0 ? 'FREE' : `${tier.tokens} tokens` }}
+                                            </span>
+                                        </button>
+                                    </div>
+                                    <div class="flex items-center justify-between text-xs text-muted-foreground">
+                                        <span>{{ selectedTierInfo.description }}</span>
+                                        <span>Your balance: <strong class="text-foreground">{{ tokenBalance }} tokens</strong></span>
+                                    </div>
+                                </div>
+
                                 <Alert v-if="scanForm.errors.url" variant="destructive">
                                     <AlertDescription>{{ scanForm.errors.url }}</AlertDescription>
+                                </Alert>
+                                <Alert v-if="scanForm.errors.tokens" variant="destructive">
+                                    <AlertDescription>
+                                        {{ scanForm.errors.tokens }}
+                                        <Link href="/tokens" class="ml-1 underline">Buy more tokens</Link>
+                                    </AlertDescription>
+                                </Alert>
+                                <Alert v-if="!canAffordTier(scanForm.tier) && scanForm.tier !== 'basic'" class="border-amber-500/50 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-950/50 dark:text-amber-200">
+                                    <AlertDescription>
+                                        You need {{ selectedTierInfo.tokens }} tokens for a {{ selectedTierInfo.label }} scan but only have {{ tokenBalance }}.
+                                        <Link href="/tokens" class="ml-1 underline">Buy more tokens</Link>
+                                    </AlertDescription>
                                 </Alert>
                                 <Alert v-if="scanForm.errors.cooldown" class="border-amber-500/50 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-950/50 dark:text-amber-200">
                                     <Clock class="h-4 w-4 text-amber-600 dark:text-amber-400" />
@@ -603,7 +696,7 @@ const truncateUrl = (url: string, maxLength = 60) => {
                                         placeholder="https://example.com/page1
 https://example.com/page2
 https://example.com/page3"
-                                        class="min-h-[150px] font-mono text-sm"
+                                        class="min-h-[120px] font-mono text-sm"
                                         :disabled="bulkProcessing"
                                     />
                                     <div class="flex items-center justify-between text-sm">
@@ -616,34 +709,77 @@ https://example.com/page3"
                                     </div>
                                 </div>
 
+                                <!-- Tier Selection for Bulk -->
+                                <div class="space-y-2">
+                                    <Label class="text-sm font-medium">Scan Tier (applied to all URLs)</Label>
+                                    <div class="grid grid-cols-3 gap-3">
+                                        <button
+                                            v-for="tier in tierOptions"
+                                            :key="tier.value"
+                                            type="button"
+                                            @click="bulkTier = tier.value"
+                                            class="relative flex flex-col items-center rounded-lg border-2 p-3 transition-all"
+                                            :class="[
+                                                bulkTier === tier.value
+                                                    ? 'border-primary bg-primary/5'
+                                                    : 'border-border hover:border-muted-foreground/50',
+                                                'cursor-pointer'
+                                            ]"
+                                        >
+                                            <span class="font-semibold">{{ tier.label }}</span>
+                                            <span class="text-xs text-muted-foreground">{{ tier.pillars }} pillars</span>
+                                            <span class="mt-1 text-xs font-medium" :class="tier.tokens === 0 ? 'text-green-600' : 'text-primary'">
+                                                {{ tier.tokens === 0 ? 'FREE' : `${tier.tokens} tokens` }}
+                                            </span>
+                                        </button>
+                                    </div>
+                                    <div class="flex items-center justify-between text-xs">
+                                        <span class="text-muted-foreground">{{ bulkTierInfo.description }}</span>
+                                        <span v-if="bulkTierInfo.tokens > 0" class="font-medium" :class="canAffordBulkScan ? 'text-foreground' : 'text-destructive'">
+                                            Total: {{ bulkTotalTokens }} tokens (balance: {{ tokenBalance }})
+                                        </span>
+                                        <span v-else class="text-green-600 font-medium">Free scan</span>
+                                    </div>
+                                </div>
+
                                 <Alert v-if="bulkError" variant="destructive">
                                     <AlertDescription>{{ bulkError }}</AlertDescription>
                                 </Alert>
 
+                                <Alert v-if="!canAffordBulkScan && bulkUrlCount > 0" variant="destructive">
+                                    <AlertDescription>
+                                        You need {{ bulkTotalTokens }} tokens but only have {{ tokenBalance }}.
+                                        <Link href="/tokens" class="ml-1 underline">Buy more tokens</Link>
+                                    </AlertDescription>
+                                </Alert>
+
                                 <Button
                                     type="submit"
-                                    :disabled="bulkProcessing || bulkUrlCount === 0 || bulkUrlCount > 50"
+                                    :disabled="bulkProcessing || bulkUrlCount === 0 || bulkUrlCount > 50 || !canAffordBulkScan"
                                 >
                                     <svg v-if="bulkProcessing" class="mr-2 h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
                                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                                     </svg>
                                     {{ bulkProcessing ? 'Starting...' : `Scan ${bulkUrlCount} URL${bulkUrlCount !== 1 ? 's' : ''}` }}
+                                    <template v-if="bulkTierInfo.tokens > 0 && bulkUrlCount > 0">
+                                        ({{ bulkTotalTokens }} tokens)
+                                    </template>
                                 </Button>
                             </form>
                         </TabsContent>
                     </Tabs>
 
-                    <!-- Upgrade prompt for non-Agency users -->
+                    <!-- Bulk scan prompt for users without tokens -->
                     <div v-if="!canBulkScan" class="mt-4 rounded-lg border border-dashed p-4">
                         <div class="flex items-center gap-3">
                             <Layers class="h-8 w-8 text-muted-foreground" />
                             <div class="flex-1">
                                 <p class="font-medium">Need to scan multiple URLs?</p>
-                                <p class="text-sm text-muted-foreground">Upgrade to Agency for bulk URL scanning (up to 50 at once)</p>
+                                <p class="text-sm text-muted-foreground">Get tokens to unlock bulk scanning with Pro or Full tier analysis</p>
                             </div>
-                            <Link href="/billing/plans">
-                                <Button variant="outline" size="sm">Upgrade</Button>
+                            <Link href="/tokens">
+                                <Button variant="outline" size="sm">Buy Tokens</Button>
                             </Link>
                         </div>
                     </div>

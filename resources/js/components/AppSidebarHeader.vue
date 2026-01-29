@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
+import TokenBalance from '@/components/TokenBalance.vue';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import type { BreadcrumbItemType } from '@/types';
 
@@ -12,6 +15,9 @@ withDefaults(
         breadcrumbs: () => [],
     },
 );
+
+const page = usePage();
+const tokenBalance = computed(() => page.props.auth?.user?.token_balance ?? null);
 </script>
 
 <template>
@@ -25,6 +31,7 @@ withDefaults(
             </template>
         </div>
         <div class="flex items-center gap-2">
+            <TokenBalance v-if="tokenBalance !== null" :balance="tokenBalance" />
             <ThemeSwitcher />
         </div>
     </header>
