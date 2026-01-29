@@ -4,6 +4,7 @@ namespace App\Nova\Metrics;
 
 use App\Models\User;
 use DateTimeInterface;
+use Illuminate\Support\Facades\DB;
 use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\Metrics\Trend;
 use Laravel\Nova\Metrics\TrendResult;
@@ -23,13 +24,31 @@ class PayingCustomers extends Trend
      */
     public function calculate(NovaRequest $request): TrendResult
     {
+        $range = $request->range ?? 30;
+
         // Count users who have an active Stripe subscription
-        return $this->countByDays(
-            $request,
-            User::whereHas('subscriptions', function ($query) {
+        $results = User::query()
+            ->select(
+                DB::raw("DATE(CONVERT_TZ(users.created_at, '+00:00', '-06:00')) as date"),
+                DB::raw('COUNT(*) as aggregate')
+            )
+            ->whereHas('subscriptions', function ($query) {
                 $query->where('stripe_status', 'active');
             })
-        );
+            ->where('users.created_at', '>=', now()->subDays($range)->startOfDay()->utc())
+            ->groupBy(DB::raw("DATE(CONVERT_TZ(users.created_at, '+00:00', '-06:00'))"))
+            ->orderBy('date')
+            ->get()
+            ->pluck('aggregate', 'date')
+            ->toArray();
+
+        $trend = [];
+        for ($i = $range - 1; $i >= 0; $i--) {
+            $date = now()->subDays($i)->format('Y-m-d');
+            $trend[$date] = $results[$date] ?? 0;
+        }
+
+        return (new TrendResult)->trend($trend)->showLatestValue();
     }
 
     /**

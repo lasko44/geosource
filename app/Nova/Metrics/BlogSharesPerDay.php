@@ -3,6 +3,7 @@
 namespace App\Nova\Metrics;
 
 use App\Models\BlogShare;
+use Illuminate\Support\Facades\DB;
 use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\Metrics\Trend;
 use Laravel\Nova\Metrics\TrendResult;
@@ -22,7 +23,27 @@ class BlogSharesPerDay extends Trend
      */
     public function calculate(NovaRequest $request): TrendResult
     {
-        return $this->countByDays($request, BlogShare::class);
+        $range = $request->range ?? 7;
+
+        $results = BlogShare::query()
+            ->select(
+                DB::raw("DATE(CONVERT_TZ(created_at, '+00:00', '-06:00')) as date"),
+                DB::raw('COUNT(*) as aggregate')
+            )
+            ->where('created_at', '>=', now()->subDays($range)->startOfDay()->utc())
+            ->groupBy(DB::raw("DATE(CONVERT_TZ(created_at, '+00:00', '-06:00'))"))
+            ->orderBy('date')
+            ->get()
+            ->pluck('aggregate', 'date')
+            ->toArray();
+
+        $trend = [];
+        for ($i = $range - 1; $i >= 0; $i--) {
+            $date = now()->subDays($i)->format('Y-m-d');
+            $trend[$date] = $results[$date] ?? 0;
+        }
+
+        return (new TrendResult)->trend($trend)->showLatestValue();
     }
 
     /**

@@ -3,8 +3,10 @@
 namespace App\Nova\Metrics;
 
 use App\Models\PageView;
+use Illuminate\Support\Facades\DB;
 use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\Metrics\Trend;
+use Laravel\Nova\Metrics\TrendResult;
 
 class PageViewsPerDay extends Trend
 {
@@ -19,10 +21,33 @@ class PageViewsPerDay extends Trend
     /**
      * Calculate the value of the metric.
      */
-    public function calculate(NovaRequest $request)
+    public function calculate(NovaRequest $request): TrendResult
     {
-        // Only count engaged page views (visitor stayed on page for a few seconds)
-        return $this->countByDays($request, PageView::where('is_bot', false)->whereNotNull('engaged_at'));
+        $range = $request->range ?? 7;
+
+        // Count page views per day in app timezone
+        $results = PageView::query()
+            ->select(
+                DB::raw("DATE(CONVERT_TZ(created_at, '+00:00', '-06:00')) as date"),
+                DB::raw('COUNT(*) as aggregate')
+            )
+            ->where('is_bot', false)
+            ->whereNotNull('engaged_at')
+            ->where('created_at', '>=', now()->subDays($range)->startOfDay()->utc())
+            ->groupBy(DB::raw("DATE(CONVERT_TZ(created_at, '+00:00', '-06:00'))"))
+            ->orderBy('date')
+            ->get()
+            ->pluck('aggregate', 'date')
+            ->toArray();
+
+        // Fill in missing dates with 0
+        $trend = [];
+        for ($i = $range - 1; $i >= 0; $i--) {
+            $date = now()->subDays($i)->format('Y-m-d');
+            $trend[$date] = $results[$date] ?? 0;
+        }
+
+        return (new TrendResult)->trend($trend)->showLatestValue();
     }
 
     /**

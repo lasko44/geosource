@@ -25,13 +25,16 @@ class UniqueVisitorsPerDay extends Trend
     {
         $range = $request->range ?? 7;
 
-        // Get unique visitors per day using proper DISTINCT counting
+        // Get unique visitors per day using proper DISTINCT counting (in app timezone)
         $results = PageView::query()
-            ->select(DB::raw('DATE(created_at) as date'), DB::raw('COUNT(DISTINCT visitor_hash) as aggregate'))
+            ->select(
+                DB::raw("DATE(CONVERT_TZ(created_at, '+00:00', '-06:00')) as date"),
+                DB::raw('COUNT(DISTINCT visitor_hash) as aggregate')
+            )
             ->where('is_bot', false)
-            ->whereNotNull('engaged_at') // Only count engaged visitors
-            ->where('created_at', '>=', now()->subDays($range))
-            ->groupBy(DB::raw('DATE(created_at)'))
+            ->whereNotNull('engaged_at')
+            ->where('created_at', '>=', now()->subDays($range)->startOfDay()->utc())
+            ->groupBy(DB::raw("DATE(CONVERT_TZ(created_at, '+00:00', '-06:00'))"))
             ->orderBy('date')
             ->get()
             ->pluck('aggregate', 'date')
