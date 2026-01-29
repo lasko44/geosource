@@ -3,6 +3,7 @@
 namespace App\Nova\Metrics;
 
 use App\Models\PageView;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\Metrics\Trend;
@@ -24,26 +25,26 @@ class UniqueVisitorsPerDay extends Trend
     public function calculate(NovaRequest $request): TrendResult
     {
         $range = $request->range ?? 7;
+        $timezone = 'America/Chicago';
 
-        // Get unique visitors per day using proper DISTINCT counting (in app timezone)
+        // Get unique visitors per day using proper DISTINCT counting
         $results = PageView::query()
             ->select(
-                DB::raw("DATE(CONVERT_TZ(created_at, '+00:00', '-06:00')) as date"),
+                DB::raw("DATE(created_at AT TIME ZONE 'UTC' AT TIME ZONE '{$timezone}') as date"),
                 DB::raw('COUNT(DISTINCT visitor_hash) as aggregate')
             )
             ->where('is_bot', false)
             ->whereNotNull('engaged_at')
-            ->where('created_at', '>=', now()->subDays($range)->startOfDay()->utc())
-            ->groupBy(DB::raw("DATE(CONVERT_TZ(created_at, '+00:00', '-06:00'))"))
+            ->where('created_at', '>=', CarbonImmutable::now($timezone)->subDays($range)->startOfDay())
+            ->groupBy(DB::raw("DATE(created_at AT TIME ZONE 'UTC' AT TIME ZONE '{$timezone}')"))
             ->orderBy('date')
-            ->get()
             ->pluck('aggregate', 'date')
             ->toArray();
 
         // Fill in missing dates with 0
         $trend = [];
         for ($i = $range - 1; $i >= 0; $i--) {
-            $date = now()->subDays($i)->format('Y-m-d');
+            $date = CarbonImmutable::now($timezone)->subDays($i)->format('Y-m-d');
             $trend[$date] = $results[$date] ?? 0;
         }
 
