@@ -37,11 +37,13 @@ class PageView extends Model
         'ip_address',
         'user_agent',
         'is_bot',
+        'engaged_at',
         'created_at',
     ];
 
     protected $casts = [
         'is_bot' => 'boolean',
+        'engaged_at' => 'datetime',
         'created_at' => 'datetime',
     ];
 
@@ -102,11 +104,20 @@ class PageView extends Model
     }
 
     /**
+     * Scope for filtering to engaged views only.
+     */
+    public function scopeEngaged($query)
+    {
+        return $query->whereNotNull('engaged_at');
+    }
+
+    /**
      * Get unique visitors count.
      */
     public static function uniqueVisitors($query = null)
     {
         $query = $query ?? static::query();
+
         return $query->distinct('visitor_hash')->count('visitor_hash');
     }
 }

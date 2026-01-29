@@ -6,6 +6,7 @@ import type { DefineComponent } from 'vue';
 import { createApp, h, Fragment } from 'vue';
 
 import { initializeTheme } from './composables/useAppearance';
+import { initEngagementTracking } from './composables/useEngagementTracking';
 import CookieConsent from './components/CookieConsent.vue';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
@@ -34,3 +35,6 @@ createInertiaApp({
 
 // This will set light / dark mode on page load...
 initializeTheme();
+
+// Initialize page engagement tracking (tracks views after 3 seconds)
+initEngagementTracking();

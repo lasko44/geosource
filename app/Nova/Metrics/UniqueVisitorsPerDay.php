@@ -3,6 +3,7 @@
 namespace App\Nova\Metrics;
 
 use App\Models\PageView;
+use Illuminate\Support\Facades\DB;
 use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\Metrics\Trend;
 use Laravel\Nova\Metrics\TrendResult;
@@ -22,12 +23,28 @@ class UniqueVisitorsPerDay extends Trend
      */
     public function calculate(NovaRequest $request): TrendResult
     {
-        return $this->countByDays(
-            $request,
-            PageView::where('is_bot', false),
-            'created_at',
-            'visitor_hash'
-        )->showLatestValue();
+        $range = $request->range ?? 7;
+
+        // Get unique visitors per day using proper DISTINCT counting
+        $results = PageView::query()
+            ->select(DB::raw('DATE(created_at) as date'), DB::raw('COUNT(DISTINCT visitor_hash) as aggregate'))
+            ->where('is_bot', false)
+            ->whereNotNull('engaged_at') // Only count engaged visitors
+            ->where('created_at', '>=', now()->subDays($range))
+            ->groupBy(DB::raw('DATE(created_at)'))
+            ->orderBy('date')
+            ->get()
+            ->pluck('aggregate', 'date')
+            ->toArray();
+
+        // Fill in missing dates with 0
+        $trend = [];
+        for ($i = $range - 1; $i >= 0; $i--) {
+            $date = now()->subDays($i)->format('Y-m-d');
+            $trend[$date] = $results[$date] ?? 0;
+        }
+
+        return (new TrendResult)->trend($trend)->showLatestValue();
     }
 
     /**

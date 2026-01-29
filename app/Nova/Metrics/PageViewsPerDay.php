@@ -21,7 +21,8 @@ class PageViewsPerDay extends Trend
      */
     public function calculate(NovaRequest $request)
     {
-        return $this->countByDays($request, PageView::where('is_bot', false));
+        // Only count engaged page views (visitor stayed on page for a few seconds)
+        return $this->countByDays($request, PageView::where('is_bot', false)->whereNotNull('engaged_at'));
     }
 
     /**
