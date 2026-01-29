@@ -22,7 +22,7 @@ class BlogSharesPerDay extends Trend
      */
     public function calculate(NovaRequest $request): TrendResult
     {
-        return $this->countByDays($request, BlogShare::class);
+        return $this->countByDays($request, BlogShare::class)->showLatestValue();
     }
 
     /**
@@ -39,6 +39,14 @@ class BlogSharesPerDay extends Trend
             60 => '60 Days',
             90 => '90 Days',
         ];
+    }
+
+    /**
+     * Get the timezone for the metric.
+     */
+    public function timezone(NovaRequest $request): string
+    {
+        return 'America/Chicago';
     }
 
     /**

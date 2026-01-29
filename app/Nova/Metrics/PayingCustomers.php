@@ -23,13 +23,12 @@ class PayingCustomers extends Trend
      */
     public function calculate(NovaRequest $request): TrendResult
     {
-        // Count users who have an active Stripe subscription
         return $this->countByDays(
             $request,
             User::whereHas('subscriptions', function ($query) {
                 $query->where('stripe_status', 'active');
             })
-        );
+        )->showLatestValue();
     }
 
     /**
@@ -46,6 +45,14 @@ class PayingCustomers extends Trend
             180 => Nova::__('180 Days'),
             365 => Nova::__('365 Days'),
         ];
+    }
+
+    /**
+     * Get the timezone for the metric.
+     */
+    public function timezone(NovaRequest $request): string
+    {
+        return 'America/Chicago';
     }
 
     /**

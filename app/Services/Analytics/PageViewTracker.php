@@ -22,7 +22,7 @@ class PageViewTracker
     /**
      * Track a page view.
      */
-    public function track(Request $request, Response $response): void
+    public function track(Request $request, Response $response): ?PageView
     {
         try {
             $userAgent = $request->userAgent() ?? '';
@@ -47,7 +47,7 @@ class PageViewTracker
             // Create visitor hash (fingerprint based on IP + User Agent)
             $visitorHash = $this->createVisitorHash($request);
 
-            PageView::create([
+            return PageView::create([
                 'session_id' => $sessionId,
                 'visitor_hash' => $visitorHash,
                 'user_id' => $request->user()?->id,
@@ -78,7 +78,33 @@ class PageViewTracker
             ]);
         } catch (\Exception $e) {
             Log::warning('Failed to track page view: ' . $e->getMessage());
+
+            return null;
         }
+    }
+
+    /**
+     * Mark a page view as engaged (visitor stayed on page).
+     */
+    public function markEngaged(string $sessionId, string $path): bool
+    {
+        $path = '/' . ltrim($path, '/');
+
+        // Find the most recent unengaged page view for this session and path
+        $pageView = PageView::where('session_id', $sessionId)
+            ->where('path', $path)
+            ->whereNull('engaged_at')
+            ->where('created_at', '>=', now()->subMinutes(10)) // Only recent views
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        if ($pageView) {
+            $pageView->update(['engaged_at' => now()]);
+
+            return true;
+        }
+
+        return false;
     }
 
     /**

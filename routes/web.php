@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AnalyticsController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\MarketingUnsubscribeController;
 use App\Http\Controllers\ScanController;
@@ -59,3 +60,6 @@ Route::post('/unsubscribe', [MarketingUnsubscribeController::class, 'processUnsu
 Route::get('/unsubscribe/success', [MarketingUnsubscribeController::class, 'success'])->name('marketing.unsubscribe.success');
 Route::get('/email/track/open', [MarketingUnsubscribeController::class, 'trackOpen'])->name('marketing.track-open');
 Route::get('/email/track/click', [MarketingUnsubscribeController::class, 'trackClick'])->name('marketing.track-click');
+
+// Analytics tracking (for marking page views as engaged)
+Route::post('/analytics/engaged', [AnalyticsController::class, 'markEngaged'])->name('analytics.engaged');

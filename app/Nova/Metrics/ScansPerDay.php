@@ -16,7 +16,7 @@ class ScansPerDay extends Trend
      */
     public function calculate(NovaRequest $request): TrendResult
     {
-        return $this->countByDays($request, Scan::class);
+        return $this->countByDays($request, Scan::class)->showLatestValue();
     }
 
     /**
@@ -32,6 +32,14 @@ class ScansPerDay extends Trend
             30 => Nova::__('30 Days'),
             60 => Nova::__('60 Days'),
         ];
+    }
+
+    /**
+     * Get the timezone for the metric.
+     */
+    public function timezone(NovaRequest $request): string
+    {
+        return 'America/Chicago';
     }
 
     /**
