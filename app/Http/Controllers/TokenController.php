@@ -153,4 +153,24 @@ class TokenController extends Controller
             'labels' => config('tokens.labels'),
         ]);
     }
+
+    /**
+     * Redeem a token code.
+     */
+    public function redeemCode(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'code' => 'required|string|max:50',
+        ]);
+
+        $user = $request->user();
+
+        try {
+            $result = $this->tokenService->redeemCode($user, $request->code);
+
+            return back()->with('success', $result['message']);
+        } catch (\Exception $e) {
+            return back()->withErrors(['code' => $e->getMessage()]);
+        }
+    }
 }

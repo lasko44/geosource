@@ -14,6 +14,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Transaction history
     Route::get('/tokens/history', [TokenController::class, 'history'])->name('tokens.history');
 
+    // Redeem token code
+    Route::post('/tokens/redeem', [TokenController::class, 'redeemCode'])->name('tokens.redeem');
+
     // API endpoints
     Route::get('/api/tokens/balance', [TokenController::class, 'balance'])->name('api.tokens.balance');
     Route::get('/api/tokens/costs', [TokenController::class, 'costs'])->name('api.tokens.costs');

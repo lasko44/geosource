@@ -2,10 +2,13 @@
 
 namespace App\Services;
 
+use App\Models\TokenCode;
+use App\Models\TokenCodeRedemption;
 use App\Models\TokenPackage;
 use App\Models\TokenTransaction;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -298,5 +301,164 @@ class TokenService
             'total_credited' => (int) ($allTime->total_credited ?? 0),
             'total_spent' => (int) ($allTime->total_spent ?? 0),
         ];
+    }
+
+    /**
+     * Redeem a token code.
+     * Uses pessimistic locking to prevent race conditions.
+     *
+     * @throws \Exception if redemption fails
+     */
+    public function redeemCode(User $user, string $code): array
+    {
+        $code = strtoupper(trim($code));
+
+        // Rate limit: 5 attempts per minute per user
+        $rateLimitKey = "token_code_attempts:{$user->id}";
+        $attempts = (int) Cache::get($rateLimitKey, 0);
+
+        if ($attempts >= 5) {
+            throw new \Exception('Too many redemption attempts. Please wait a minute and try again.');
+        }
+
+        // Increment attempt counter
+        Cache::put($rateLimitKey, $attempts + 1, now()->addMinute());
+
+        return DB::transaction(function () use ($user, $code) {
+            // Lock the token code row to prevent race conditions
+            $tokenCode = TokenCode::where('code', $code)->lockForUpdate()->first();
+
+            if (! $tokenCode) {
+                throw new \Exception('Invalid code. Please check and try again.');
+            }
+
+            // Check if code is valid
+            if (! $tokenCode->is_active) {
+                throw new \Exception('This code is no longer active.');
+            }
+
+            if ($tokenCode->expires_at && $tokenCode->expires_at->isPast()) {
+                throw new \Exception('This code has expired.');
+            }
+
+            if ($tokenCode->max_uses !== null && $tokenCode->uses_count >= $tokenCode->max_uses) {
+                throw new \Exception('This code has reached its maximum number of uses.');
+            }
+
+            // Check if user already redeemed this code (using database constraint as backup)
+            $existingRedemption = TokenCodeRedemption::where('token_code_id', $tokenCode->id)
+                ->where('user_id', $user->id)
+                ->exists();
+
+            if ($existingRedemption) {
+                throw new \Exception('You have already redeemed this code.');
+            }
+
+            // Lock the user row to update balance
+            $lockedUser = User::where('id', $user->id)->lockForUpdate()->first();
+
+            $newBalance = $lockedUser->token_balance + $tokenCode->tokens;
+            $lockedUser->update(['token_balance' => $newBalance]);
+
+            // Create redemption record
+            TokenCodeRedemption::create([
+                'token_code_id' => $tokenCode->id,
+                'user_id' => $lockedUser->id,
+                'tokens_received' => $tokenCode->tokens,
+            ]);
+
+            // Increment uses count
+            $tokenCode->increment('uses_count');
+
+            // For single-use codes, deactivate after use
+            if ($tokenCode->type === TokenCode::TYPE_SINGLE && $tokenCode->uses_count >= ($tokenCode->max_uses ?? 1)) {
+                $tokenCode->update(['is_active' => false]);
+            }
+
+            // Create transaction record
+            $transaction = TokenTransaction::create([
+                'user_id' => $lockedUser->id,
+                'type' => TokenTransaction::TYPE_BONUS,
+                'amount' => $tokenCode->tokens,
+                'balance_after' => $newBalance,
+                'description' => "Redeemed code: {$tokenCode->code}",
+                'metadata' => [
+                    'code_id' => $tokenCode->id,
+                    'code' => $tokenCode->code,
+                    'code_type' => $tokenCode->type,
+                ],
+            ]);
+
+            Log::info('Token code redeemed', [
+                'user_id' => $lockedUser->id,
+                'code' => $tokenCode->code,
+                'tokens' => $tokenCode->tokens,
+                'new_balance' => $newBalance,
+            ]);
+
+            return [
+                'success' => true,
+                'tokens' => $tokenCode->tokens,
+                'new_balance' => $newBalance,
+                'message' => "Successfully redeemed {$tokenCode->tokens} tokens!",
+            ];
+        });
+    }
+
+    /**
+     * Create a new token code.
+     */
+    public function createCode(
+        int $tokens,
+        string $type = TokenCode::TYPE_PROMO,
+        ?string $description = null,
+        ?int $maxUses = null,
+        ?\DateTime $expiresAt = null,
+        ?User $createdBy = null,
+        ?string $customCode = null
+    ): TokenCode {
+        $code = $customCode ? strtoupper($customCode) : TokenCode::generateCode();
+
+        // For single-use codes, default max_uses to 1
+        if ($type === TokenCode::TYPE_SINGLE && $maxUses === null) {
+            $maxUses = 1;
+        }
+
+        return TokenCode::create([
+            'code' => $code,
+            'type' => $type,
+            'description' => $description,
+            'tokens' => $tokens,
+            'max_uses' => $maxUses,
+            'expires_at' => $expiresAt,
+            'is_active' => true,
+            'created_by' => $createdBy?->id,
+        ]);
+    }
+
+    /**
+     * Generate multiple single-use codes.
+     */
+    public function generateSingleUseCodes(
+        int $count,
+        int $tokens,
+        ?string $description = null,
+        ?\DateTime $expiresAt = null,
+        ?User $createdBy = null
+    ): array {
+        $codes = [];
+
+        for ($i = 0; $i < $count; $i++) {
+            $codes[] = $this->createCode(
+                $tokens,
+                TokenCode::TYPE_SINGLE,
+                $description,
+                1,
+                $expiresAt,
+                $createdBy
+            );
+        }
+
+        return $codes;
     }
 }

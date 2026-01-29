@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { Head, useForm, usePage } from '@inertiajs/vue3';
+import { ref, computed } from 'vue';
 import axios from 'axios';
-import { Coins, Sparkles, TrendingUp, Zap, Check } from 'lucide-vue-next';
+import { Coins, Sparkles, TrendingUp, Zap, Check, Gift, Ticket } from 'lucide-vue-next';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 
@@ -93,6 +96,23 @@ const tokenUseCases = [
     { feature: 'pdf_export', description: 'PDF Export' },
     { feature: 'scheduled_scan', description: 'Scheduled Scan (per run)' },
 ];
+
+// Code redemption
+const redeemForm = useForm({
+    code: '',
+});
+
+const page = usePage();
+const successMessage = computed(() => page.props.flash?.success as string | undefined);
+
+const redeemCode = () => {
+    redeemForm.post('/tokens/redeem', {
+        preserveScroll: true,
+        onSuccess: () => {
+            redeemForm.reset();
+        },
+    });
+};
 </script>
 
 <template>
@@ -219,6 +239,54 @@ const tokenUseCases = [
                                 <strong>Basic Scans (5 pillars)</strong> are always <strong class="text-green-600">FREE</strong> - no tokens required!
                             </p>
                         </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            <!-- Redeem Code Section -->
+            <div class="mx-auto w-full max-w-md pt-8">
+                <Card>
+                    <CardHeader class="text-center">
+                        <div class="mx-auto mb-2 rounded-full bg-primary/10 p-3">
+                            <Ticket class="h-6 w-6 text-primary" />
+                        </div>
+                        <CardTitle>Have a Code?</CardTitle>
+                        <CardDescription>
+                            Enter a promo code or gift code to redeem free tokens
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <!-- Success Message -->
+                        <Alert v-if="successMessage" class="mb-4 border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950">
+                            <Gift class="h-4 w-4 text-green-600" />
+                            <AlertDescription class="text-green-700 dark:text-green-300">
+                                {{ successMessage }}
+                            </AlertDescription>
+                        </Alert>
+
+                        <form @submit.prevent="redeemCode" class="space-y-4">
+                            <div class="space-y-2">
+                                <Label for="code">Token Code</Label>
+                                <Input
+                                    id="code"
+                                    v-model="redeemForm.code"
+                                    placeholder="Enter your code"
+                                    class="uppercase"
+                                    :disabled="redeemForm.processing"
+                                />
+                                <p v-if="redeemForm.errors.code" class="text-sm text-red-600 dark:text-red-400">
+                                    {{ redeemForm.errors.code }}
+                                </p>
+                            </div>
+                            <Button
+                                type="submit"
+                                class="w-full"
+                                :disabled="redeemForm.processing || !redeemForm.code.trim()"
+                            >
+                                <Gift v-if="!redeemForm.processing" class="mr-2 h-4 w-4" />
+                                {{ redeemForm.processing ? 'Redeeming...' : 'Redeem Code' }}
+                            </Button>
+                        </form>
                     </CardContent>
                 </Card>
             </div>
