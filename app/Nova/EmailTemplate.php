@@ -2,6 +2,7 @@
 
 namespace App\Nova;
 
+use App\Nova\Actions\QuickSendEmail;
 use Laravel\Nova\Fields\Badge;
 use Laravel\Nova\Fields\Boolean;
 use Laravel\Nova\Fields\HasMany;
@@ -42,7 +43,7 @@ class EmailTemplate extends Resource
      */
     public static function label(): string
     {
-        return 'Email Templates';
+        return 'Send Email';
     }
 
     /**
@@ -142,6 +143,12 @@ class EmailTemplate extends Resource
      */
     public function actions(NovaRequest $request): array
     {
-        return [];
+        return [
+            QuickSendEmail::make()
+                ->showInline()
+                ->confirmText('This will send the email to all users in the selected audience. This action cannot be undone.')
+                ->confirmButtonText('Send Email')
+                ->cancelButtonText('Cancel'),
+        ];
     }
 }

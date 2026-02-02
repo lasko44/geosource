@@ -3,14 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\ScheduledScan;
+use App\Models\User;
 use App\Services\SubscriptionService;
+use App\Services\TokenService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class ScheduledScanController extends Controller
 {
     public function __construct(
         private SubscriptionService $subscriptionService,
+        private TokenService $tokenService,
     ) {}
 
     /**
@@ -282,15 +286,51 @@ class ScheduledScanController extends Controller
             }
         }
 
-        // Create and dispatch scan
-        $scan = \App\Models\Scan::create([
-            'user_id' => $scheduledScan->user_id,
-            'team_id' => $scheduledScan->team_id,
-            'scheduled_scan_id' => $scheduledScan->id,
-            'url' => $scheduledScan->url,
-            'title' => $scheduledScan->name ?? parse_url($scheduledScan->url, PHP_URL_HOST),
-            'status' => 'pending',
-        ]);
+        // Get token cost for scheduled scan
+        $tokenCost = config('tokens.costs.scheduled_scan', 5);
+
+        // Check if user has enough tokens (admins skip)
+        if (! $user->is_admin && $tokenCost > 0 && ($user->token_balance ?? 0) < $tokenCost) {
+            return back()->withErrors([
+                'tokens' => "You need {$tokenCost} tokens to run a scheduled scan. Please purchase more tokens.",
+            ]);
+        }
+
+        // Use transaction with pessimistic locking to prevent race conditions
+        $scan = DB::transaction(function () use ($scheduledScan, $user, $tokenCost) {
+            $tokensCharged = false;
+            $tokensAmount = 0;
+
+            // Deduct tokens if not admin
+            if (! $user->is_admin && $tokenCost > 0) {
+                // Re-lock user to verify balance
+                $lockedUser = User::where('id', $user->id)->lockForUpdate()->first();
+
+                if (($lockedUser->token_balance ?? 0) < $tokenCost) {
+                    throw new \Exception('Insufficient tokens after lock verification.');
+                }
+
+                $this->tokenService->spend($lockedUser, 'scheduled_scan', [
+                    'scheduled_scan_id' => $scheduledScan->id,
+                    'url' => $scheduledScan->url,
+                ]);
+
+                $tokensCharged = true;
+                $tokensAmount = $tokenCost;
+            }
+
+            // Create scan record with token tracking
+            return \App\Models\Scan::create([
+                'user_id' => $scheduledScan->user_id,
+                'team_id' => $scheduledScan->team_id,
+                'scheduled_scan_id' => $scheduledScan->id,
+                'url' => $scheduledScan->url,
+                'title' => $scheduledScan->name ?? parse_url($scheduledScan->url, PHP_URL_HOST),
+                'status' => 'pending',
+                'tokens_charged' => $tokensCharged,
+                'tokens_amount' => $tokensAmount,
+            ]);
+        });
 
         \App\Jobs\ScanWebsiteJob::dispatch($scan);
 

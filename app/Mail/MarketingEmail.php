@@ -24,8 +24,8 @@ class MarketingEmail extends Mailable
     public function __construct(
         public EmailTemplate $template,
         public User $user,
-        public EmailCampaign $campaign,
-        public EmailCampaignSend $send,
+        public ?EmailCampaign $campaign = null,
+        public ?EmailCampaignSend $send = null,
     ) {
         $this->prepareContent();
     }
@@ -34,6 +34,14 @@ class MarketingEmail extends Mailable
     {
         // Render subject with variables
         $subject = $this->renderVariables($this->template->subject);
+
+        // Test mode - no campaign/send tracking
+        if (! $this->campaign || ! $this->send) {
+            return new Envelope(
+                subject: '[TEST] ' . $subject,
+                tags: ['marketing', 'test'],
+            );
+        }
 
         return new Envelope(
             subject: $subject,
@@ -56,6 +64,7 @@ class MarketingEmail extends Mailable
                 'trackingPixelUrl' => $this->trackingPixelUrl,
                 'user' => $this->user,
                 'campaign' => $this->campaign,
+                'isTest' => ! $this->campaign || ! $this->send,
             ],
         );
     }
@@ -70,16 +79,22 @@ class MarketingEmail extends Mailable
 
     private function prepareContent(): void
     {
-        // Generate signed unsubscribe URL
-        $this->unsubscribeUrl = URL::signedRoute('marketing.unsubscribe', [
-            'email' => $this->user->email,
-            'campaign' => $this->campaign->id,
-        ]);
+        // Test mode - use placeholder URLs
+        if (! $this->campaign || ! $this->send) {
+            $this->unsubscribeUrl = '#unsubscribe-test';
+            $this->trackingPixelUrl = '';
+        } else {
+            // Generate signed unsubscribe URL
+            $this->unsubscribeUrl = URL::signedRoute('marketing.unsubscribe', [
+                'email' => $this->user->email,
+                'campaign' => $this->campaign->id,
+            ]);
 
-        // Generate tracking pixel URL for open tracking
-        $this->trackingPixelUrl = URL::signedRoute('marketing.track-open', [
-            'send' => $this->send->id,
-        ]);
+            // Generate tracking pixel URL for open tracking
+            $this->trackingPixelUrl = URL::signedRoute('marketing.track-open', [
+                'send' => $this->send->id,
+            ]);
+        }
 
         // Prepare variables for template rendering
         $variables = [

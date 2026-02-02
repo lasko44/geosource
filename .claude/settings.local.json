@@ -36,7 +36,10 @@
       "Bash(git rm:*)",
       "Bash(stripe:*)",
       "Bash(curl:*)",
-      "Bash(pgrep:*)"
+      "Bash(pgrep:*)",
+      "Bash(/Applications/DBngin.app/Contents/Resources/psql:*)",
+      "Bash(php -r:*)",
+      "Bash(php:*)"
     ]
   }
 }

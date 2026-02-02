@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Artisan;
 
 class DatabaseSeeder extends Seeder
 {
@@ -13,14 +12,21 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        // Create admin user first
+        $this->call(AdminUserSeeder::class);
 
         // Seed token packages
         $this->call(TokenPackageSeeder::class);
+
+        // Seed email templates
+        $this->call(TokenAnnouncementEmailSeeder::class);
+
+        // Seed comprehensive test data (users, scans, citations, teams, etc.)
+        $this->call(TestDataSeeder::class);
+
+        // Import blog posts
+        $this->command->info('Importing blog posts...');
+        Artisan::call('blog:import');
+        $this->command->info(Artisan::output());
     }
 }

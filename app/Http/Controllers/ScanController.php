@@ -348,9 +348,11 @@ class ScanController extends Controller
                 $tokenFeature = null;
 
                 if ($requestedTier !== 'basic') {
-                    $tierIncluded = $this->subscriptionService->canScanWithTokens($lockedUser, $requestedTier);
+                    // Check if user's subscription covers this tier (not just if they have tokens)
+                    $subscriptionIncludesTier = $lockedUser->is_admin ||
+                        $this->subscriptionService->hasFeature($lockedUser, 'scan_' . $requestedTier);
 
-                    if (!$tierIncluded) {
+                    if (!$subscriptionIncludesTier) {
                         // User needs tokens - check if they have enough
                         $tokenFeature = $requestedTier === 'full' ? 'scan_full' : 'scan_pro';
                         $tokensRequired = config("tokens.costs.{$tokenFeature}", 0);
@@ -603,9 +605,11 @@ class ScanController extends Controller
         $tokenFeature = null;
 
         if ($requestedTier !== 'basic') {
-            $tierIncluded = $this->subscriptionService->canScanWithTokens($user, $requestedTier);
+            // Check if user's subscription covers this tier (not just if they have tokens)
+            $subscriptionIncludesTier = $user->is_admin ||
+                $this->subscriptionService->hasFeature($user, 'scan_' . $requestedTier);
 
-            if (!$tierIncluded) {
+            if (!$subscriptionIncludesTier) {
                 // User needs tokens
                 $requiresTokens = true;
                 $tokenFeature = $requestedTier === 'full' ? 'scan_full' : 'scan_pro';
@@ -1044,9 +1048,11 @@ class ScanController extends Controller
                 $tokenFeature = null;
 
                 if ($requestedTier !== 'basic') {
-                    $tierIncluded = $this->subscriptionService->canScanWithTokens($lockedUser, $requestedTier);
+                    // Check if user's subscription covers this tier (not just if they have tokens)
+                    $subscriptionIncludesTier = $lockedUser->is_admin ||
+                        $this->subscriptionService->hasFeature($lockedUser, 'scan_' . $requestedTier);
 
-                    if (!$tierIncluded) {
+                    if (!$subscriptionIncludesTier) {
                         // User needs tokens - check if they have enough
                         $tokenFeature = $requestedTier === 'full' ? 'scan_full' : 'scan_pro';
                         $tokensRequired = config("tokens.costs.{$tokenFeature}", 0);

@@ -55,10 +55,10 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
                     MenuItem::resource(\App\Nova\TokenTransaction::class),
                 ])->icon('credit-card')->collapsable(),
 
-                MenuSection::make('Marketing', [
-                    MenuItem::resource(\App\Nova\EmailTemplate::class),
-                    MenuItem::resource(\App\Nova\EmailCampaign::class),
-                    MenuItem::resource(\App\Nova\MarketingUnsubscribe::class),
+                MenuSection::make('Email', [
+                    MenuItem::resource(\App\Nova\EmailTemplate::class)->name('Send Email'),
+                    MenuItem::resource(\App\Nova\EmailCampaign::class)->name('Sent History'),
+                    MenuItem::resource(\App\Nova\MarketingUnsubscribe::class)->name('Unsubscribes'),
                 ])->icon('mail')->collapsable(),
 
                 MenuSection::make('Queue', [

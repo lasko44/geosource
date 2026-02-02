@@ -30,14 +30,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/citations/queries/{query}', [CitationController::class, 'destroy'])
         ->name('citations.queries.destroy');
 
-    // Manual Citation Checks - limit to 5/minute to prevent API cost abuse
+    // Manual Citation Checks - tokens already control abuse, allow reasonable rate
     Route::post('/citations/queries/{query}/check', [CitationController::class, 'check'])
-        ->middleware('throttle:5,1')
+        ->middleware('throttle:20,1')
         ->name('citations.queries.check');
 
     // Bulk Citation Checks - run all platforms at once
     Route::post('/citations/queries/{query}/check-all', [CitationController::class, 'checkAll'])
-        ->middleware('throttle:2,1')
+        ->middleware('throttle:10,1')
         ->name('citations.queries.check-all');
 
     // Check Status (for polling)

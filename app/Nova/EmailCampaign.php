@@ -45,7 +45,7 @@ class EmailCampaign extends Resource
      */
     public static function label(): string
     {
-        return 'Email Campaigns';
+        return 'Sent History';
     }
 
     /**
@@ -53,7 +53,7 @@ class EmailCampaign extends Resource
      */
     public static function singularLabel(): string
     {
-        return 'Email Campaign';
+        return 'Sent Email';
     }
 
     /**

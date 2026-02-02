@@ -162,9 +162,22 @@ onUnmounted(() => {
 // Run check
 const runningCheck = ref<string | null>(null);
 const runningAllChecks = ref(false);
+const recentlyClicked = ref<Set<string>>(new Set());
+const rateLimitError = ref<string | null>(null);
 
 const runCheck = (platform: string) => {
+    // Prevent rapid clicks on same platform
+    if (recentlyClicked.value.has(platform)) return;
+
     runningCheck.value = platform;
+    recentlyClicked.value.add(platform);
+    rateLimitError.value = null;
+
+    // Clear cooldown after 2 seconds
+    setTimeout(() => {
+        recentlyClicked.value.delete(platform);
+    }, 2000);
+
     router.post(`/citations/queries/${props.query.uuid}/check`, {
         platform,
     }, {
@@ -173,6 +186,12 @@ const runCheck = (platform: string) => {
             updatePendingChecks();
             if (!pollInterval) {
                 pollInterval = setInterval(pollCheckStatus, 2000);
+            }
+        },
+        onError: (errors) => {
+            // Handle 429 rate limit error
+            if (errors && (errors as Record<string, string>).rate_limit) {
+                rateLimitError.value = (errors as Record<string, string>).rate_limit;
             }
         },
         onFinish: () => {
@@ -193,6 +212,7 @@ const runAllChecks = () => {
     if (platformsToCheck.length === 0) return;
 
     runningAllChecks.value = true;
+    rateLimitError.value = null;
 
     router.post(`/citations/queries/${props.query.uuid}/check-all`, {
         platforms: platformsToCheck,
@@ -202,6 +222,11 @@ const runAllChecks = () => {
             updatePendingChecks();
             if (!pollInterval) {
                 pollInterval = setInterval(pollCheckStatus, 2000);
+            }
+        },
+        onError: (errors) => {
+            if (errors && (errors as Record<string, string>).rate_limit) {
+                rateLimitError.value = (errors as Record<string, string>).rate_limit;
             }
         },
         onFinish: () => {
@@ -415,7 +440,7 @@ const isCheckInProgress = (platform: string) => {
                             variant="outline"
                             size="sm"
                             class="w-full"
-                            :disabled="!usage.can_perform_check || isCheckInProgress(platform) || runningCheck === platform || !canAffordPlatform(platform)"
+                            :disabled="!usage.can_perform_check || isCheckInProgress(platform) || runningCheck === platform || !canAffordPlatform(platform) || recentlyClicked.has(platform)"
                             @click="runCheck(platform)"
                         >
                             <Play v-if="runningCheck !== platform && !isCheckInProgress(platform)" class="mr-2 h-4 w-4" />
@@ -435,6 +460,15 @@ const isCheckInProgress = (platform: string) => {
                     </CardContent>
                 </Card>
             </div>
+
+            <!-- Rate limit warning -->
+            <Alert v-if="rateLimitError" variant="destructive">
+                <AlertCircle class="h-4 w-4" />
+                <AlertTitle>Rate Limited</AlertTitle>
+                <AlertDescription>
+                    {{ rateLimitError }}
+                </AlertDescription>
+            </Alert>
 
             <!-- Token warning -->
             <Alert v-if="usage.token_balance === 0">

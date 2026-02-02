@@ -10,6 +10,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Inertia\Inertia;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -43,5 +44,18 @@ return Application::configure(basePath: dirname(__DIR__))
             return Inertia::render('Error/NotFound')
                 ->toResponse($request)
                 ->setStatusCode(404);
+        });
+
+        $exceptions->render(function (ThrottleRequestsException $e, $request) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'message' => 'Too many requests. Please wait a moment before trying again.',
+                ], 429);
+            }
+
+            // For Inertia requests, redirect back with an error
+            return redirect()->back()->withErrors([
+                'rate_limit' => 'Too many requests. Please wait a moment before trying again.',
+            ]);
         });
     })->create();

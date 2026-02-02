@@ -26,3 +26,7 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# Sensitive business data
+token-pricing-analysis.csv
+SECURITY_AUDIT_*.md
