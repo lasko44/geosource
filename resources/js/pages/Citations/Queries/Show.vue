@@ -33,10 +33,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import CitationTrendChart from '@/components/citations/CitationTrendChart.vue';
+import { useAppearance } from '@/composables/useAppearance';
 import { useDateFormat } from '@/composables/useDateFormat';
 import { type BreadcrumbItem } from '@/types';
 
 const { formatDate, formatRelative } = useDateFormat();
+const { resolvedAppearance } = useAppearance();
 
 interface Citation {
     type: string;
@@ -99,11 +102,28 @@ interface Usage {
     platform_costs: Record<string, number>;
 }
 
+interface PlatformTrend {
+    name: string;
+    color: string;
+    citations: number[];
+    checks: number[];
+}
+
+interface TrendData {
+    dates: string[];
+    platforms: Record<string, PlatformTrend>;
+    totals: {
+        cited: number[];
+        checks: number[];
+    };
+}
+
 interface Props {
     query: CitationQuery;
     usage: Usage;
     platforms: Record<string, { name: string; color: string }>;
     availablePlatforms: string[];
+    trendData: TrendData;
 }
 
 const props = defineProps<Props>();
@@ -460,6 +480,20 @@ const isCheckInProgress = (platform: string) => {
                     </CardContent>
                 </Card>
             </div>
+
+            <!-- Citation Trends -->
+            <Card>
+                <CardHeader>
+                    <CardTitle>Citation Trends</CardTitle>
+                    <CardDescription>Track how citations change over time across platforms</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <CitationTrendChart
+                        :trend-data="trendData"
+                        :dark-mode="resolvedAppearance === 'dark'"
+                    />
+                </CardContent>
+            </Card>
 
             <!-- Rate limit warning -->
             <Alert v-if="rateLimitError" variant="destructive">

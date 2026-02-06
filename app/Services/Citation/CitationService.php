@@ -7,15 +7,19 @@ use App\Models\CitationCheck;
 use App\Models\CitationQuery;
 use App\Models\Team;
 use App\Models\User;
+use App\Jobs\CheckCitationJob;
 use App\Services\Analytics\GA4Service;
 use App\Services\SubscriptionService;
+use App\Services\TokenService;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class CitationService
 {
     public function __construct(
         protected SubscriptionService $subscriptionService,
         protected GA4Service $ga4Service,
+        protected TokenService $tokenService,
     ) {}
 
     /**
@@ -262,6 +266,206 @@ class CitationService
             'platform' => $platform,
             'status' => CitationCheck::STATUS_PENDING,
         ]);
+    }
+
+    /**
+     * Execute a single citation check with token deduction.
+     */
+    public function executeCheck(CitationQuery $query, string $platform, User $user): CitationCheck
+    {
+        $tokenCost = $this->getTokenCost($platform);
+
+        $check = DB::transaction(function () use ($user, $query, $platform, $tokenCost) {
+            $lockedUser = User::where('id', $user->id)->lockForUpdate()->first();
+
+            if (! $lockedUser->is_admin && $tokenCost > 0 && ($lockedUser->token_balance ?? 0) < $tokenCost) {
+                throw new \RuntimeException("Insufficient tokens. You need {$tokenCost} tokens.");
+            }
+
+            if (! $lockedUser->is_admin && $tokenCost > 0) {
+                $providerKey = config("tokens.citation_providers.{$platform}");
+                $this->tokenService->spend($lockedUser, $providerKey, [
+                    'query_id' => $query->id,
+                    'platform' => $platform,
+                ]);
+            }
+
+            return $this->createCheck($query, $platform, $lockedUser);
+        });
+
+        CheckCitationJob::dispatch($check);
+
+        return $check;
+    }
+
+    /**
+     * Execute bulk citation checks with token deduction.
+     *
+     * @return CitationCheck[]
+     */
+    public function executeBulkChecks(CitationQuery $query, array $platforms, User $user): array
+    {
+        $totalCost = 0;
+        foreach ($platforms as $platform) {
+            $totalCost += $this->getTokenCost($platform);
+        }
+
+        $checks = DB::transaction(function () use ($user, $query, $platforms, $totalCost) {
+            $lockedUser = User::where('id', $user->id)->lockForUpdate()->first();
+
+            if (! $lockedUser->is_admin && $totalCost > 0 && ($lockedUser->token_balance ?? 0) < $totalCost) {
+                throw new \RuntimeException("Insufficient tokens. You need {$totalCost} tokens.");
+            }
+
+            $createdChecks = [];
+            foreach ($platforms as $platform) {
+                $tokenCost = $this->getTokenCost($platform);
+
+                if (! $lockedUser->is_admin && $tokenCost > 0) {
+                    $providerKey = config("tokens.citation_providers.{$platform}");
+                    $this->tokenService->spend($lockedUser, $providerKey, [
+                        'query_id' => $query->id,
+                        'platform' => $platform,
+                    ]);
+                    $lockedUser->refresh();
+                }
+
+                $createdChecks[] = $this->createCheck($query, $platform, $lockedUser);
+            }
+
+            return $createdChecks;
+        });
+
+        foreach ($checks as $index => $check) {
+            $delay = $index * 5;
+            CheckCitationJob::dispatch($check)->delay(now()->addSeconds($delay));
+        }
+
+        return $checks;
+    }
+
+    /**
+     * Build trend data for a query's checks, grouped by date and platform.
+     */
+    public function buildQueryTrendData(CitationQuery $query): array
+    {
+        $checks = CitationCheck::where('citation_query_id', $query->id)
+            ->where('status', CitationCheck::STATUS_COMPLETED)
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        if ($checks->isEmpty()) {
+            return ['dates' => [], 'platforms' => [], 'totals' => ['cited' => [], 'checks' => []]];
+        }
+
+        $platformConfig = config('citations.platforms');
+        $byDate = $checks->groupBy(fn ($check) => $check->created_at->format('Y-m-d'));
+        $dates = $byDate->keys()->sort()->values()->all();
+        $activePlatforms = $checks->pluck('platform')->unique()->values()->all();
+
+        $platforms = [];
+        foreach ($activePlatforms as $platform) {
+            $citations = [];
+            $checkCounts = [];
+            foreach ($dates as $date) {
+                $dayChecks = $byDate[$date]->where('platform', $platform);
+                $citations[] = $dayChecks->where('is_cited', true)->count();
+                $checkCounts[] = $dayChecks->count();
+            }
+            $platforms[$platform] = [
+                'name' => $platformConfig[$platform]['name'] ?? $platform,
+                'color' => $platformConfig[$platform]['color'] ?? '#6B7280',
+                'citations' => $citations,
+                'checks' => $checkCounts,
+            ];
+        }
+
+        $totalCited = [];
+        $totalChecks = [];
+        foreach ($dates as $date) {
+            $dayChecks = $byDate[$date];
+            $totalCited[] = $dayChecks->where('is_cited', true)->count();
+            $totalChecks[] = $dayChecks->count();
+        }
+
+        return [
+            'dates' => $dates,
+            'platforms' => $platforms,
+            'totals' => [
+                'cited' => $totalCited,
+                'checks' => $totalChecks,
+            ],
+        ];
+    }
+
+    /**
+     * Get the current team from session.
+     */
+    public function getCurrentTeam(User $user): ?Team
+    {
+        $currentTeamId = session('current_team_id');
+
+        if ($currentTeamId && $currentTeamId !== 'personal') {
+            return $user->allTeams()->firstWhere('id', $currentTeamId);
+        }
+
+        return null;
+    }
+
+    /**
+     * Get queries for user filtered by team context.
+     */
+    public function getQueriesForUser(User $user, ?Team $team = null): \Illuminate\Database\Eloquent\Collection
+    {
+        $query = CitationQuery::where('user_id', $user->id);
+
+        if ($team) {
+            $query->where('team_id', $team->id);
+        } else {
+            $query->whereNull('team_id');
+        }
+
+        return $query
+            ->with(['checks' => function ($q) {
+                $q->where('status', CitationCheck::STATUS_COMPLETED)
+                    ->orderBy('created_at', 'desc')
+                    ->limit(5);
+            }])
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
+    /**
+     * Get recent checks for user filtered by team context.
+     */
+    public function getRecentChecks(User $user, ?Team $team = null, int $limit = 10): \Illuminate\Database\Eloquent\Collection
+    {
+        return CitationCheck::where('user_id', $user->id)
+            ->when($team, fn ($q) => $q->where('team_id', $team->id))
+            ->when(! $team, fn ($q) => $q->whereNull('team_id'))
+            ->with('citationQuery')
+            ->orderBy('created_at', 'desc')
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
+     * Get paginated alerts for user filtered by team context.
+     */
+    public function getPaginatedAlerts(User $user, ?Team $team = null, int $perPage = 20)
+    {
+        $query = CitationAlert::where('user_id', $user->id);
+
+        if ($team) {
+            $query->where('team_id', $team->id);
+        } else {
+            $query->whereNull('team_id');
+        }
+
+        return $query
+            ->with(['citationQuery', 'citationCheck'])
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage);
     }
 
     /**

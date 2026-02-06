@@ -1,58 +1,68 @@
 <?php
 
-use App\Http\Controllers\CitationController;
+use App\Http\Controllers\Citations\CitationAlertController;
+use App\Http\Controllers\Citations\CitationCheckController;
+use App\Http\Controllers\Citations\CitationQueryController;
+use App\Http\Controllers\Citations\CitationTrendController;
 use App\Http\Controllers\GA4Controller;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     /*
     |--------------------------------------------------------------------------
-    | Citation Tracking Routes
+    | Citation Query Routes (Resource)
     |--------------------------------------------------------------------------
     */
 
-    // Dashboard
-    Route::get('/citations', [CitationController::class, 'index'])->name('citations.index');
+    Route::resource('citations/queries', CitationQueryController::class)
+        ->names('citations.queries')
+        ->parameters(['queries' => 'query'])
+        ->except(['edit'])
+        ->middleware([
+            'store' => 'throttle:10,1',
+            'update' => 'throttle:30,1',
+        ]);
 
-    // Citation Queries
-    Route::get('/citations/queries/create', [CitationController::class, 'create'])->name('citations.queries.create');
+    // Dashboard alias
+    Route::get('citations', [CitationQueryController::class, 'index'])
+        ->name('citations.index');
 
-    Route::post('/citations/queries', [CitationController::class, 'store'])
-        ->middleware('throttle:10,1')
-        ->name('citations.queries.store');
+    /*
+    |--------------------------------------------------------------------------
+    | Citation Check Routes
+    |--------------------------------------------------------------------------
+    */
 
-    Route::get('/citations/queries/{query}', [CitationController::class, 'show'])->name('citations.queries.show');
-
-    Route::put('/citations/queries/{query}', [CitationController::class, 'update'])
-        ->middleware('throttle:30,1')
-        ->name('citations.queries.update');
-
-    Route::delete('/citations/queries/{query}', [CitationController::class, 'destroy'])
-        ->name('citations.queries.destroy');
-
-    // Manual Citation Checks - tokens already control abuse, allow reasonable rate
-    Route::post('/citations/queries/{query}/check', [CitationController::class, 'check'])
+    Route::post('citations/queries/{query}/check', [CitationCheckController::class, 'store'])
         ->middleware('throttle:20,1')
-        ->name('citations.queries.check');
+        ->name('citations.checks.store');
 
-    // Bulk Citation Checks - run all platforms at once
-    Route::post('/citations/queries/{query}/check-all', [CitationController::class, 'checkAll'])
+    Route::post('citations/queries/{query}/check-all', [CitationCheckController::class, 'storeBulk'])
         ->middleware('throttle:10,1')
-        ->name('citations.queries.check-all');
+        ->name('citations.checks.store-bulk');
 
-    // Check Status (for polling)
-    Route::get('/citations/checks/{check}/status', [CitationController::class, 'checkStatus'])
-        ->name('citations.checks.status');
+    Route::get('citations/checks/{check}/status', [CitationCheckController::class, 'show'])
+        ->name('citations.checks.show');
 
-    // Trends API
-    Route::get('/citations/trends', [CitationController::class, 'trends'])
-        ->name('citations.trends');
+    /*
+    |--------------------------------------------------------------------------
+    | Citation Trend Routes
+    |--------------------------------------------------------------------------
+    */
 
-    // Alerts
-    Route::get('/citations/alerts', [CitationController::class, 'alerts'])
-        ->name('citations.alerts');
+    Route::get('citations/trends', [CitationTrendController::class, 'index'])
+        ->name('citations.trends.index');
 
-    Route::post('/citations/alerts/mark-read', [CitationController::class, 'markAlertsRead'])
+    /*
+    |--------------------------------------------------------------------------
+    | Citation Alert Routes
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('citations/alerts', [CitationAlertController::class, 'index'])
+        ->name('citations.alerts.index');
+
+    Route::post('citations/alerts/mark-read', [CitationAlertController::class, 'markRead'])
         ->middleware('throttle:30,1')
         ->name('citations.alerts.mark-read');
 
@@ -62,35 +72,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    // Dashboard
-    Route::get('/analytics/ga4', [GA4Controller::class, 'index'])->name('citations.analytics');
+    Route::prefix('analytics/ga4')->name('citations.ga4.')->group(function () {
+        Route::get('/', [GA4Controller::class, 'index'])->name('index');
+        Route::get('connect', [GA4Controller::class, 'connect'])
+            ->middleware('throttle:5,1')
+            ->name('connect');
+        Route::get('callback', [GA4Controller::class, 'callback'])->name('callback');
+        Route::post('select-property', [GA4Controller::class, 'selectProperty'])
+            ->middleware('throttle:10,1')
+            ->name('select-property');
 
-    // OAuth Flow
-    Route::get('/analytics/ga4/connect', [GA4Controller::class, 'connect'])
-        ->middleware('throttle:5,1')
-        ->name('citations.ga4.connect');
-
-    Route::get('/analytics/ga4/callback', [GA4Controller::class, 'callback'])
-        ->name('citations.ga4.callback');
-
-    Route::post('/analytics/ga4/select-property', [GA4Controller::class, 'selectProperty'])
-        ->middleware('throttle:10,1')
-        ->name('citations.ga4.select-property');
-
-    // Connection Management
-    Route::get('/analytics/ga4/{connection}/referrals', [GA4Controller::class, 'referrals'])
-        ->name('citations.ga4.referrals');
-
-    Route::get('/analytics/ga4/{connection}/ai-traffic', [GA4Controller::class, 'aiTraffic'])
-        ->name('citations.ga4.ai-traffic');
-
-    Route::post('/analytics/ga4/{connection}/sync', [GA4Controller::class, 'sync'])
-        ->middleware('throttle:5,1')
-        ->name('citations.ga4.sync');
-
-    Route::get('/analytics/ga4/{connection}/sync-status', [GA4Controller::class, 'syncStatus'])
-        ->name('citations.ga4.sync-status');
-
-    Route::delete('/analytics/ga4/{connection}', [GA4Controller::class, 'disconnect'])
-        ->name('citations.ga4.disconnect');
+        Route::prefix('{connection}')->group(function () {
+            Route::get('referrals', [GA4Controller::class, 'referrals'])->name('referrals');
+            Route::get('ai-traffic', [GA4Controller::class, 'aiTraffic'])->name('ai-traffic');
+            Route::post('sync', [GA4Controller::class, 'sync'])
+                ->middleware('throttle:5,1')
+                ->name('sync');
+            Route::get('sync-status', [GA4Controller::class, 'syncStatus'])->name('sync-status');
+            Route::delete('/', [GA4Controller::class, 'disconnect'])->name('disconnect');
+        });
+    });
 });
