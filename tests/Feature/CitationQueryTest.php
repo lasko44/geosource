@@ -23,6 +23,9 @@ class CitationQueryTest extends TestCase
             'frequency' => 'manual',
         ]);
 
+        $response->assertRedirect();
+        $response->assertSessionHasNoErrors();
+
         $this->assertDatabaseHas('citation_queries', [
             'user_id' => $user->id,
             'query' => 'What is the best SEO tool?',

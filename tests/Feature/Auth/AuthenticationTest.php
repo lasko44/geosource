@@ -94,6 +94,8 @@ class AuthenticationTest extends TestCase
             'password' => 'wrong-password',
         ]);
 
-        $response->assertTooManyRequests();
+        // Fortify redirects with error message when rate limited
+        $response->assertRedirect();
+        $response->assertSessionHasErrors();
     }
 }

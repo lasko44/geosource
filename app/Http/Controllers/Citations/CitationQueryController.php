@@ -75,13 +75,13 @@ class CitationQueryController extends Controller
     {
         $citationQuery = $citationService->createQuery(
             $request->user(),
-            $request->query,
-            $request->domain,
-            $request->brand,
-            $request->frequency,
+            $request->input('query'),
+            $request->input('domain'),
+            $request->input('brand'),
+            $request->input('frequency'),
             $request->getTeam(),
-            $request->scheduled_platforms ?? [],
-            $request->monthly_token_budget
+            $request->input('scheduled_platforms', []),
+            $request->input('monthly_token_budget')
         );
 
         return redirect()->route('citations.queries.show', $citationQuery)

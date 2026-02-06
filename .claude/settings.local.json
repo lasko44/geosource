@@ -48,7 +48,13 @@
       "Bash(if ! grep -q \"^\\\\s*/\\\\*\\\\*\" \"$file\")",
       "Bash(basename:*)",
       "Bash(fi)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(psql:*)",
+      "Bash(brew list:*)",
+      "Bash(pecl list:*)",
+      "Bash(pecl install:*)",
+      "Bash(brew install:*)",
+      "Bash(__NEW_LINE_2b2627e7c06020f0__ echo \"\")"
     ]
   }
 }

@@ -32,6 +32,11 @@ class StoreScanRequest extends FormRequest
     {
         return [
             function (Validator $validator) {
+                // Skip additional validation if basic rules failed
+                if ($validator->errors()->isNotEmpty()) {
+                    return;
+                }
+
                 $scanService = app(ScanService::class);
                 $user = $this->user();
 
