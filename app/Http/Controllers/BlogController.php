@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Blog\ShareBlogPostRequest;
 use App\Models\BlogPost;
 use App\Models\BlogShare;
 use App\Services\BlogService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -58,18 +58,14 @@ class BlogController extends Controller
     /**
      * Track a share action for a blog post.
      */
-    public function store(Request $request, BlogPost $post, BlogService $blogService): JsonResponse
+    public function store(ShareBlogPostRequest $request, BlogPost $post, BlogService $blogService): JsonResponse
     {
-        $request->validate([
-            'platform' => 'required|string|in:twitter,linkedin,facebook,copy_link',
-        ]);
-
         $geoData = $blogService->getGeoData($request->ip());
 
         BlogShare::create([
             'blog_post_id' => $post->id,
             'user_id' => $request->user()?->id,
-            'platform' => $request->input('platform'),
+            'platform' => $request->getPlatform(),
             'visitor_hash' => $blogService->createVisitorHash($request),
             'ip_address' => $request->ip(),
             'user_agent' => substr($request->userAgent() ?? '', 0, 500),

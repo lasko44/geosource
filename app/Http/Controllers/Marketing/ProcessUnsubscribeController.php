@@ -3,25 +3,19 @@
 namespace App\Http\Controllers\Marketing;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Marketing\UnsubscribeRequest;
 use App\Models\MarketingUnsubscribe;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 
 /**
  * Processes the marketing email unsubscribe request.
  */
 class ProcessUnsubscribeController extends Controller
 {
-    public function __invoke(Request $request): RedirectResponse
+    public function __invoke(UnsubscribeRequest $request): RedirectResponse
     {
-        $request->validate([
-            'email' => 'required|email',
-            'reason' => 'nullable|string|max:500',
-        ]);
-
-        $email = $request->input('email');
-        $reason = $request->input('reason');
+        $email = $request->getEmail();
 
         if (MarketingUnsubscribe::isUnsubscribed($email)) {
             return redirect()->route('marketing.unsubscribe.success');
@@ -32,7 +26,7 @@ class ProcessUnsubscribeController extends Controller
         MarketingUnsubscribe::create([
             'email' => $email,
             'user_id' => $user?->id,
-            'reason' => $reason,
+            'reason' => $request->getReason(),
         ]);
 
         return redirect()->route('marketing.unsubscribe.success');

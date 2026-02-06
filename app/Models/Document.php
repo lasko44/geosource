@@ -41,35 +41,40 @@ class Document extends Model
     /**
      * Set the embedding vector for this document.
      *
+     * Note: Uses raw expression for pgvector type casting - Eloquent doesn't
+     * natively support PostgreSQL vector types.
+     *
      * @param  array<int, float>  $vector
      */
     public function setEmbedding(array $vector): void
     {
         $vectorString = '['.implode(',', $vector).']';
 
-        DB::statement(
-            'UPDATE documents SET embedding = ? WHERE id = ?',
-            [$vectorString, $this->id]
-        );
+        // Raw expression required for pgvector type casting (::vector)
+        self::where('id', $this->id)
+            ->update(['embedding' => DB::raw("'$vectorString'::vector")]);
     }
 
     /**
      * Get the embedding vector for this document.
      *
+     * Note: Uses selectRaw for pgvector type casting - Eloquent doesn't
+     * natively support PostgreSQL vector types.
+     *
      * @return array<int, float>|null
      */
     public function getEmbedding(): ?array
     {
-        $result = DB::selectOne(
-            'SELECT embedding::text FROM documents WHERE id = ?',
-            [$this->id]
-        );
+        // Raw expression required for pgvector type casting (::text)
+        $result = self::where('id', $this->id)
+            ->selectRaw('embedding::text as embedding_text')
+            ->first();
 
-        if (! $result || ! $result->embedding) {
+        if (! $result || ! $result->embedding_text) {
             return null;
         }
 
-        $vector = trim($result->embedding, '[]');
+        $vector = trim($result->embedding_text, '[]');
 
         return array_map('floatval', explode(',', $vector));
     }
@@ -77,12 +82,16 @@ class Document extends Model
     /**
      * Search for similar documents using cosine similarity.
      *
+     * Note: Uses raw expressions for pgvector cosine similarity operator (<=>)
+     * which is not supported by Eloquent natively.
+     *
      * @param  array<int, float>  $vector
      */
     public function scopeSimilarTo(Builder $query, array $vector, int $limit = 10): Builder
     {
         $vectorString = '['.implode(',', $vector).']';
 
+        // Raw expressions required for pgvector cosine distance operator (<=>)
         return $query
             ->selectRaw('*, 1 - (embedding <=> ?) as similarity', [$vectorString])
             ->whereNotNull('embedding')
@@ -93,25 +102,23 @@ class Document extends Model
     /**
      * Search for similar documents within a team.
      *
+     * Note: Uses raw expressions for pgvector cosine similarity operator (<=>)
+     * which is not supported by Eloquent natively.
+     *
      * @param  array<int, float>  $vector
      */
     public static function search(array $vector, int $teamId, int $limit = 10, float $threshold = 0.7): \Illuminate\Support\Collection
     {
         $vectorString = '['.implode(',', $vector).']';
 
-        return collect(DB::select('
-            SELECT
-                id,
-                title,
-                content,
-                metadata,
-                1 - (embedding <=> ?) as similarity
-            FROM documents
-            WHERE team_id = ?
-              AND embedding IS NOT NULL
-              AND 1 - (embedding <=> ?) >= ?
-            ORDER BY embedding <=> ?
-            LIMIT ?
-        ', [$vectorString, $teamId, $vectorString, $threshold, $vectorString, $limit]));
+        // Raw expressions required for pgvector cosine distance operator (<=>)
+        return self::query()
+            ->where('team_id', $teamId)
+            ->whereNotNull('embedding')
+            ->selectRaw('id, title, content, metadata, 1 - (embedding <=> ?) as similarity', [$vectorString])
+            ->whereRaw('1 - (embedding <=> ?) >= ?', [$vectorString, $threshold])
+            ->orderByRaw('embedding <=> ?', [$vectorString])
+            ->limit($limit)
+            ->get();
     }
 }

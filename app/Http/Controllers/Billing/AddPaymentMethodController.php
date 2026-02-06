@@ -3,27 +3,23 @@
 namespace App\Http\Controllers\Billing;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Billing\PaymentMethodRequest;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 
 /**
  * Adds a new payment method to the user's account.
  */
 class AddPaymentMethodController extends Controller
 {
-    public function __invoke(Request $request): RedirectResponse
+    public function __invoke(PaymentMethodRequest $request): RedirectResponse
     {
-        $request->validate([
-            'payment_method' => 'required|string',
-        ]);
-
         $user = $request->user();
 
         try {
-            $user->addPaymentMethod($request->input('payment_method'));
+            $user->addPaymentMethod($request->getPaymentMethodId());
 
             if (! $user->hasDefaultPaymentMethod()) {
-                $user->updateDefaultPaymentMethod($request->input('payment_method'));
+                $user->updateDefaultPaymentMethod($request->getPaymentMethodId());
             }
 
             return redirect()->route('billing.payment-methods')

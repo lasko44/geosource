@@ -3,12 +3,13 @@
 namespace App\Http\Controllers\Teams;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Teams\StoreMemberRequest;
+use App\Http\Requests\Teams\UpdateMemberRoleRequest;
 use App\Models\Team;
 use App\Models\User;
 use App\Services\TeamService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -72,7 +73,7 @@ class TeamMemberController extends Controller
     /**
      * Add a new member to the team.
      */
-    public function store(Request $request, Team $team): RedirectResponse
+    public function store(StoreMemberRequest $request, Team $team): RedirectResponse
     {
         $this->authorize('inviteMembers', $team);
 
@@ -83,19 +84,14 @@ class TeamMemberController extends Controller
             ]);
         }
 
-        $request->validate([
-            'email' => ['required', 'email', 'exists:users,email'],
-            'role' => ['required', Rule::in(['admin', 'member'])],
-        ]);
-
         // Only owners can add admins
-        if ($request->input('role') === 'admin' && ! $team->isOwner(auth()->user())) {
+        if ($request->getRole() === 'admin' && ! $team->isOwner(auth()->user())) {
             return back()->withErrors([
                 'role' => 'Only team owners can add administrators.',
             ]);
         }
 
-        $user = User::where('email', $request->input('email'))->first();
+        $user = User::where('email', $request->getEmail())->first();
 
         if ($team->hasMember($user)) {
             return back()->withErrors(['email' => 'This user is already a member of the team.']);
@@ -110,7 +106,7 @@ class TeamMemberController extends Controller
             ]);
         }
 
-        $team->members()->attach($user->id, ['role' => $request->input('role')]);
+        $team->members()->attach($user->id, ['role' => $request->getRole()]);
 
         return redirect()->route('teams.members', $team)
             ->with('success', 'Member added successfully!');
@@ -119,7 +115,7 @@ class TeamMemberController extends Controller
     /**
      * Update a member's role.
      */
-    public function update(Request $request, Team $team, User $user): RedirectResponse
+    public function update(UpdateMemberRoleRequest $request, Team $team, User $user): RedirectResponse
     {
         $this->authorize('manageMembers', $team);
 
@@ -127,14 +123,10 @@ class TeamMemberController extends Controller
             return back()->withErrors(['error' => 'Cannot change the role of the team owner.']);
         }
 
-        $request->validate([
-            'role' => ['required', Rule::in(['admin', 'member'])],
-        ]);
-
         $currentUser = auth()->user();
         $isCurrentUserOwner = $team->isOwner($currentUser);
         $targetUserCurrentRole = $team->getUserRole($user);
-        $newRole = $request->input('role');
+        $newRole = $request->getRole();
 
         // Only owners can promote members to admin
         if ($newRole === 'admin' && ! $isCurrentUserOwner) {

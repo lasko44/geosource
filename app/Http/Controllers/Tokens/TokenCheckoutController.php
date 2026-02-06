@@ -3,9 +3,8 @@
 namespace App\Http\Controllers\Tokens;
 
 use App\Http\Controllers\Controller;
-use App\Models\TokenPackage;
+use App\Http\Requests\Tokens\TokenCheckoutRequest;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Stripe\Checkout\Session;
 use Stripe\Stripe;
 
@@ -14,13 +13,9 @@ use Stripe\Stripe;
  */
 class TokenCheckoutController extends Controller
 {
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(TokenCheckoutRequest $request): JsonResponse
     {
-        $request->validate([
-            'package_id' => 'required|exists:token_packages,id',
-        ]);
-
-        $package = TokenPackage::findOrFail($request->package_id);
+        $package = $request->getPackage();
 
         if (! $package->is_active) {
             return response()->json(['error' => 'This package is no longer available.'], 400);

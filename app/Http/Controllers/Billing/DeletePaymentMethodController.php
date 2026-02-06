@@ -3,24 +3,20 @@
 namespace App\Http\Controllers\Billing;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Billing\PaymentMethodRequest;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 
 /**
  * Removes a payment method from the user's account.
  */
 class DeletePaymentMethodController extends Controller
 {
-    public function __invoke(Request $request): RedirectResponse
+    public function __invoke(PaymentMethodRequest $request): RedirectResponse
     {
-        $request->validate([
-            'payment_method' => 'required|string',
-        ]);
-
         $user = $request->user();
 
         try {
-            $paymentMethod = $user->findPaymentMethod($request->input('payment_method'));
+            $paymentMethod = $user->findPaymentMethod($request->getPaymentMethodId());
 
             if ($paymentMethod) {
                 $paymentMethod->delete();

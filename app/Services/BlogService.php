@@ -5,6 +5,9 @@ namespace App\Services;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
+/**
+ * Handles blog-related operations including visitor tracking and content fetching.
+ */
 class BlogService
 {
     /**

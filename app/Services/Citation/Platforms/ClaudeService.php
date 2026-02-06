@@ -23,6 +23,7 @@ class ClaudeService
     /**
      * Check if a domain is cited by Claude for a given query.
      * Uses Tavily Search for web results, then Claude analyzes and cites sources.
+     *
      * @throws ConnectionException
      */
     public function check(CitationQuery $query, CitationCheck $check): array

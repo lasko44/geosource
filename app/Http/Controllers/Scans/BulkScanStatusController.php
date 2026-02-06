@@ -3,23 +3,18 @@
 namespace App\Http\Controllers\Scans;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Scans\BulkScanStatusRequest;
 use App\Services\ScanService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 /**
  * Returns the status of multiple scans for bulk polling.
  */
 class BulkScanStatusController extends Controller
 {
-    public function __invoke(Request $request, ScanService $scanService): JsonResponse
+    public function __invoke(BulkScanStatusRequest $request, ScanService $scanService): JsonResponse
     {
-        $validated = $request->validate([
-            'uuids' => 'required|array',
-            'uuids.*' => 'required|string|uuid',
-        ]);
-
-        $scans = $scanService->getBulkScanStatus($validated['uuids'], $request->user()->id);
+        $scans = $scanService->getBulkScanStatus($request->getUuids(), $request->user()->id);
 
         return response()->json(['scans' => $scans]);
     }

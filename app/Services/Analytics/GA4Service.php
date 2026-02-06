@@ -9,6 +9,9 @@ use App\Services\SubscriptionService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Handles Google Analytics 4 OAuth and data retrieval.
+ */
 class GA4Service
 {
     protected const OAUTH_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';

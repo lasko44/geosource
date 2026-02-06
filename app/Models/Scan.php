@@ -122,7 +122,7 @@ class Scan extends Model
             str_starts_with($this->grade, 'B') => 'text-blue-600',
             str_starts_with($this->grade, 'C') => 'text-yellow-600',
             str_starts_with($this->grade, 'D') => 'text-orange-600',
-            default => 'text-red-600',
+            default => 'text-grey-600',
         };
     }
 

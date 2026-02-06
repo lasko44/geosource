@@ -2,8 +2,8 @@
 
 namespace App\Services\GEO;
 
+use App\Models\Document;
 use App\Services\GEO\Contracts\ScorerInterface;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Scores content based on topic authority.
@@ -234,20 +234,26 @@ class AuthorityScorer implements ScorerInterface
         ];
     }
 
+    /**
+     * Calculate semantic similarity using pgvector.
+     *
+     * Note: Uses raw expressions for pgvector cosine similarity operator (<=>)
+     * which is not supported by Eloquent natively.
+     */
     private function calculateSemanticSimilarity(array $embedding, int $teamId, ?int $excludeId = null): array
     {
         try {
             $embeddingStr = '['.implode(',', $embedding).']';
 
-            $query = DB::table('documents')
+            // Raw expressions required for pgvector cosine distance operator (<=>)
+            $similar = Document::query()
                 ->select('id', 'title')
                 ->selectRaw('1 - (embedding <=> ?::vector) as similarity', [$embeddingStr])
                 ->where('team_id', $teamId)
                 ->when($excludeId, fn ($q) => $q->where('id', '!=', $excludeId))
                 ->orderByDesc('similarity')
-                ->limit(5);
-
-            $similar = $query->get();
+                ->limit(5)
+                ->get();
 
             $avgSimilarity = $similar->avg('similarity') ?? 0;
 

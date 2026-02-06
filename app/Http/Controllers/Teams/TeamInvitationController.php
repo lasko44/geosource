@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Teams;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Teams\StoreInvitationRequest;
 use App\Models\Team;
 use App\Models\TeamInvitation;
 use App\Models\User;
@@ -11,7 +12,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -23,7 +23,7 @@ class TeamInvitationController extends Controller
     /**
      * Send a new team invitation.
      */
-    public function store(Request $request, Team $team): RedirectResponse
+    public function store(StoreInvitationRequest $request, Team $team): RedirectResponse
     {
         $this->authorize('inviteMembers', $team);
 
@@ -34,19 +34,14 @@ class TeamInvitationController extends Controller
             ]);
         }
 
-        $request->validate([
-            'email' => ['required', 'email', 'max:255'],
-            'role' => ['required', Rule::in(['admin', 'member'])],
-        ]);
-
         // Only owners can invite admins
-        if ($request->input('role') === 'admin' && ! $team->isOwner(auth()->user())) {
+        if ($request->getRole() === 'admin' && ! $team->isOwner(auth()->user())) {
             return back()->withErrors([
                 'role' => 'Only team owners can invite administrators.',
             ]);
         }
 
-        $email = strtolower($request->input('email'));
+        $email = $request->getEmail();
 
         // Check if user is already a member
         $existingUser = User::where('email', $email)->first();
@@ -80,7 +75,7 @@ class TeamInvitationController extends Controller
             // Create the invitation while lock is held
             $invitation = $lockedTeam->invitations()->create([
                 'email' => $email,
-                'role' => $request->input('role'),
+                'role' => $request->getRole(),
                 'invited_by' => auth()->id(),
             ]);
 

@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Teams;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Teams\UpdateWhiteLabelRequest;
+use App\Http\Requests\Teams\UploadLogoRequest;
 use App\Models\Team;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -52,7 +53,7 @@ class WhiteLabelController extends Controller
     /**
      * Update white label settings.
      */
-    public function update(Request $request, Team $team): RedirectResponse
+    public function update(UpdateWhiteLabelRequest $request, Team $team): RedirectResponse
     {
         $user = auth()->user();
 
@@ -66,16 +67,7 @@ class WhiteLabelController extends Controller
             abort(403, 'White label reports are not available on your current plan.');
         }
 
-        $validated = $request->validate([
-            'company_name' => ['nullable', 'string', 'max:255'],
-            'primary_color' => ['nullable', 'string', 'regex:/^#[a-fA-F0-9]{6}$/'],
-            'secondary_color' => ['nullable', 'string', 'regex:/^#[a-fA-F0-9]{6}$/'],
-            'report_footer' => ['nullable', 'string', 'max:500'],
-            'contact_email' => ['nullable', 'email', 'max:255'],
-            'website_url' => ['nullable', 'url', 'max:255'],
-        ]);
-
-        $team->update($validated);
+        $team->update($request->getValidatedSettings());
 
         return back()->with('success', 'White label settings updated successfully.');
     }
@@ -83,7 +75,7 @@ class WhiteLabelController extends Controller
     /**
      * Upload logo for white label reports.
      */
-    public function uploadLogo(Request $request, Team $team): RedirectResponse
+    public function uploadLogo(UploadLogoRequest $request, Team $team): RedirectResponse
     {
         $user = auth()->user();
 
@@ -97,17 +89,13 @@ class WhiteLabelController extends Controller
             abort(403, 'White label reports are not available on your current plan.');
         }
 
-        $request->validate([
-            'logo' => ['required', 'image', 'mimes:png,jpg,jpeg,svg', 'max:2048'],
-        ]);
-
         // Delete old logo if exists
         if ($team->logo_path) {
             Storage::disk('public')->delete($team->logo_path);
         }
 
         // Store new logo
-        $path = $request->file('logo')->store('team-logos', 'public');
+        $path = $request->getLogo()->store('team-logos', 'public');
 
         $team->update(['logo_path' => $path]);
 

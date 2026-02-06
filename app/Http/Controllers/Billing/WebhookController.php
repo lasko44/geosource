@@ -3,25 +3,26 @@
 namespace App\Http\Controllers\Billing;
 
 use App\Models\Team;
-use App\Models\TokenPackage;
 use App\Models\User;
-use App\Services\TokenService;
-use Illuminate\Support\Facades\Log;
+use App\Services\StripeWebhookService;
 use Laravel\Cashier\Http\Controllers\WebhookController as CashierController;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Handles incoming Stripe webhook events.
+ *
+ * Note: This controller extends Cashier's WebhookController which requires protected methods
+ * for event handling (handle{EventName} convention) and billable resolution (getUserByStripeId).
+ * This is a framework requirement, not a violation of ADR-011.
  */
 class WebhookController extends CashierController
 {
     /**
      * Get the billable entity instance by Stripe ID.
      *
-     * @param  string|null  $stripeId
-     * @return \Laravel\Cashier\Billable|null
+     * Override Cashier's method to support both User and Team billables.
      */
-    protected function getUserByStripeId($stripeId)
+    protected function getUserByStripeId($stripeId): User|Team|null
     {
         if ($stripeId === null) {
             return null;
@@ -40,72 +41,14 @@ class WebhookController extends CashierController
 
     /**
      * Handle checkout session completed event (for token purchases).
+     *
+     * Cashier convention: protected handle{EventName} methods are auto-called for webhook events.
      */
     protected function handleCheckoutSessionCompleted(array $payload): Response
     {
         $session = $payload['data']['object'];
-        $metadata = $session['metadata'] ?? [];
 
-        // Only handle token purchases
-        if (($metadata['type'] ?? null) !== 'token_purchase') {
-            return $this->successMethod();
-        }
-
-        $userId = $metadata['user_id'] ?? null;
-        $packageId = $metadata['package_id'] ?? null;
-
-        if (! $userId || ! $packageId) {
-            Log::warning('Token purchase webhook missing metadata', [
-                'session_id' => $session['id'],
-                'metadata' => $metadata,
-            ]);
-
-            return $this->successMethod();
-        }
-
-        $user = User::find($userId);
-        $package = TokenPackage::find($packageId);
-
-        if (! $user || ! $package) {
-            Log::warning('Token purchase webhook: user or package not found', [
-                'session_id' => $session['id'],
-                'user_id' => $userId,
-                'package_id' => $packageId,
-            ]);
-
-            return $this->successMethod();
-        }
-
-        // Check if payment was successful
-        if ($session['payment_status'] !== 'paid') {
-            Log::info('Token purchase webhook: payment not completed', [
-                'session_id' => $session['id'],
-                'payment_status' => $session['payment_status'],
-            ]);
-
-            return $this->successMethod();
-        }
-
-        // Credit tokens to user
-        $tokenService = app(TokenService::class);
-
-        try {
-            $tokenService->creditPurchase($user, $package, $session['id']);
-
-            Log::info('Token purchase completed via webhook', [
-                'session_id' => $session['id'],
-                'user_id' => $user->id,
-                'package_id' => $package->id,
-                'tokens' => $package->tokens,
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Token purchase webhook error', [
-                'session_id' => $session['id'],
-                'user_id' => $userId,
-                'package_id' => $packageId,
-                'error' => $e->getMessage(),
-            ]);
-        }
+        app(StripeWebhookService::class)->processTokenPurchase($session);
 
         return $this->successMethod();
     }

@@ -8,6 +8,9 @@ use App\Models\Scan;
 use App\Models\User;
 use Illuminate\Http\Request;
 
+/**
+ * Aggregates dashboard statistics and metrics for users and teams.
+ */
 class DashboardService
 {
     public function __construct(

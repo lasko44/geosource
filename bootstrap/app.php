@@ -5,11 +5,13 @@ use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\HandleTeamContext;
 use App\Http\Middleware\StoreIntendedUrl;
 use App\Http\Middleware\TrackPageViews;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -36,6 +38,20 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        // Return 404 instead of 403 to prevent resource enumeration attacks.
+        // Log the actual 403 for security monitoring. See ADR-014.
+        $exceptions->render(function (AuthorizationException $e, $request) {
+            Log::warning('Authorization denied (returned as 404)', [
+                'user_id' => $request->user()?->id,
+                'ip' => $request->ip(),
+                'url' => $request->fullUrl(),
+                'method' => $request->method(),
+                'message' => $e->getMessage(),
+            ]);
+
+            throw new NotFoundHttpException('Not Found');
+        });
+
         $exceptions->render(function (NotFoundHttpException $e, $request) {
             if ($request->wantsJson()) {
                 return response()->json(['message' => 'Not Found'], 404);

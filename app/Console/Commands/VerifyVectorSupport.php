@@ -7,6 +7,13 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Verifies pgvector extension functionality in the database.
+ *
+ * Note: This diagnostic command uses raw DB statements intentionally because:
+ * - It accesses PostgreSQL system tables (pg_extension) with no Eloquent model
+ * - It uses a test-only table (vector_test) that isn't part of the application
+ * - Its purpose is to verify raw pgvector SQL operations work correctly
+ *
+ * This is an approved exception to the Eloquent-only rule (see ADR-012).
  */
 class VerifyVectorSupport extends Command
 {

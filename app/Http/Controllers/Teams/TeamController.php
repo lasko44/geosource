@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Teams;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Teams\StoreTeamRequest;
+use App\Http\Requests\Teams\TransferOwnershipRequest;
+use App\Http\Requests\Teams\UpdateTeamRequest;
 use App\Models\Team;
 use App\Services\SubscriptionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -60,7 +62,7 @@ class TeamController extends Controller
     /**
      * Store a new team.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(StoreTeamRequest $request): RedirectResponse
     {
         $user = $request->user();
         $subscriptionService = app(SubscriptionService::class);
@@ -80,24 +82,7 @@ class TeamController extends Controller
             ]);
         }
 
-        $request->validate([
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('teams', 'name')->where('owner_id', $user->id),
-            ],
-            'slug' => [
-                'nullable',
-                'string',
-                'max:255',
-                'regex:/^[a-z0-9-]+$/',
-                'unique:teams,slug', // Globally unique slug for route resolution
-            ],
-            'description' => ['nullable', 'string', 'max:1000'],
-        ]);
-
-        $slug = $request->input('slug') ?: Str::slug($request->input('name'));
+        $slug = $request->getSlug() ?: Str::slug($request->getName());
 
         // Ensure slug is globally unique for route resolution
         $originalSlug = $slug;
@@ -108,14 +93,14 @@ class TeamController extends Controller
         }
 
         $team = Team::create([
-            'owner_id' => $request->user()->id,
-            'name' => $request->input('name'),
+            'owner_id' => $user->id,
+            'name' => $request->getName(),
             'slug' => $slug,
-            'description' => $request->input('description'),
+            'description' => $request->getDescription(),
         ]);
 
         // Add owner as a member with owner role
-        $team->members()->attach($request->user()->id, ['role' => 'owner']);
+        $team->members()->attach($user->id, ['role' => 'owner']);
 
         return redirect()->route('teams.show', $team)
             ->with('success', 'Team created successfully!');
@@ -171,28 +156,11 @@ class TeamController extends Controller
     /**
      * Update the team.
      */
-    public function update(Request $request, Team $team): RedirectResponse
+    public function update(UpdateTeamRequest $request, Team $team): RedirectResponse
     {
         $this->authorize('update', $team);
 
-        $request->validate([
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('teams', 'name')->where('owner_id', $team->owner_id)->ignore($team->id),
-            ],
-            'slug' => [
-                'nullable',
-                'string',
-                'max:255',
-                'regex:/^[a-z0-9-]+$/',
-                Rule::unique('teams', 'slug')->ignore($team->id), // Globally unique slug
-            ],
-            'description' => ['nullable', 'string', 'max:1000'],
-        ]);
-
-        $slug = $request->input('slug') ?: Str::slug($request->input('name'));
+        $slug = $request->getSlug() ?: Str::slug($request->getName());
 
         // Ensure slug is globally unique for route resolution
         $originalSlug = $slug;
@@ -203,9 +171,9 @@ class TeamController extends Controller
         }
 
         $team->update([
-            'name' => $request->input('name'),
+            'name' => $request->getName(),
             'slug' => $slug,
-            'description' => $request->input('description'),
+            'description' => $request->getDescription(),
         ]);
 
         return redirect()->route('teams.show', $team)
@@ -236,15 +204,11 @@ class TeamController extends Controller
     /**
      * Transfer team ownership to another member.
      */
-    public function transferOwnership(Request $request, Team $team): RedirectResponse
+    public function transferOwnership(TransferOwnershipRequest $request, Team $team): RedirectResponse
     {
         $this->authorize('delete', $team); // Only owner can transfer
 
-        $request->validate([
-            'user_id' => ['required', 'exists:users,id'],
-        ]);
-
-        $newOwnerId = $request->input('user_id');
+        $newOwnerId = $request->getNewOwnerId();
 
         // Ensure new owner is a member of the team
         if (! $team->members()->where('user_id', $newOwnerId)->exists()) {

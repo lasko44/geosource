@@ -2,10 +2,13 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Scan;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
+/**
+ * Backfills UUIDs for scans that were created before UUID support was added.
+ */
 class BackfillScanUuids extends Command
 {
     /**
@@ -27,7 +30,7 @@ class BackfillScanUuids extends Command
      */
     public function handle(): int
     {
-        $count = DB::table('scans')->whereNull('uuid')->count();
+        $count = Scan::whereNull('uuid')->count();
 
         if ($count === 0) {
             $this->info('All scans already have UUIDs.');
@@ -40,11 +43,9 @@ class BackfillScanUuids extends Command
         $bar = $this->output->createProgressBar($count);
         $bar->start();
 
-        DB::table('scans')->whereNull('uuid')->orderBy('id')->chunk(100, function ($scans) use ($bar) {
+        Scan::whereNull('uuid')->orderBy('id')->chunk(100, function ($scans) use ($bar) {
             foreach ($scans as $scan) {
-                DB::table('scans')->where('id', $scan->id)->update([
-                    'uuid' => Str::uuid()->toString(),
-                ]);
+                $scan->update(['uuid' => Str::uuid()->toString()]);
                 $bar->advance();
             }
         });

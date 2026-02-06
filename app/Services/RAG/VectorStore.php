@@ -5,7 +5,6 @@ namespace App\Services\RAG;
 use App\Models\Document;
 use App\Models\User;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Vector store for managing document embeddings with pgvector.
@@ -163,6 +162,9 @@ class VectorStore
     /**
      * Search by vector directly.
      *
+     * Note: Uses raw expressions for pgvector cosine similarity operator (<=>)
+     * which is not supported by Eloquent natively.
+     *
      * @param  User|null  $user  Optional user for authorization check. If provided, access to teamId is verified.
      */
     public function searchByVector(
@@ -181,7 +183,8 @@ class VectorStore
 
         $vectorString = '['.implode(',', $vector).']';
 
-        $query = DB::table('documents')
+        // Raw expressions required for pgvector cosine distance operator (<=>)
+        $query = Document::query()
             ->select([
                 'id',
                 'title',
@@ -200,16 +203,14 @@ class VectorStore
         return $query
             ->orderByRaw('embedding <=> ?::vector', [$vectorString])
             ->limit($limit)
-            ->get()
-            ->map(function ($doc) {
-                $doc->metadata = json_decode($doc->metadata, true);
-
-                return $doc;
-            });
+            ->get();
     }
 
     /**
      * Hybrid search combining semantic and keyword search.
+     *
+     * Note: Uses raw expressions for pgvector cosine similarity operator (<=>)
+     * and PostgreSQL full-text search functions which are not supported by Eloquent natively.
      *
      * @param  User|null  $user  Optional user for authorization check. If provided, access to teamId is verified.
      */
@@ -234,7 +235,8 @@ class VectorStore
         // Normalize the query for text search
         $searchTerms = $this->prepareSearchTerms($query);
 
-        $results = DB::table('documents')
+        // Raw expressions required for pgvector (<=>), ts_rank, and to_tsvector
+        $results = Document::query()
             ->select([
                 'id',
                 'title',
@@ -261,16 +263,16 @@ class VectorStore
             ->orderByDesc('combined_score')
             ->limit($limit)
             ->get()
-            ->map(function ($doc) {
-                $doc->metadata = json_decode($doc->metadata, true);
+            ->each(function ($doc) {
                 $doc->similarity = $doc->combined_score;
-
-                return $doc;
             });
     }
 
     /**
      * Find documents similar to an existing document.
+     *
+     * Note: Uses raw expressions for pgvector cosine similarity operator (<=>)
+     * which is not supported by Eloquent natively.
      *
      * @param  User|null  $user  Optional user for authorization check. If provided, access to document's team is verified.
      */
@@ -296,7 +298,8 @@ class VectorStore
 
         $vectorString = '['.implode(',', $embedding).']';
 
-        return DB::table('documents')
+        // Raw expressions required for pgvector cosine distance operator (<=>)
+        return Document::query()
             ->select(['id', 'title', 'content', 'metadata'])
             ->selectRaw('1 - (embedding <=> ?::vector) as similarity', [$vectorString])
             ->where('team_id', $document->team_id)
@@ -305,12 +308,7 @@ class VectorStore
             ->whereRaw('1 - (embedding <=> ?::vector) >= ?', [$vectorString, $threshold])
             ->orderByRaw('embedding <=> ?::vector', [$vectorString])
             ->limit($limit)
-            ->get()
-            ->map(function ($doc) {
-                $doc->metadata = json_decode($doc->metadata, true);
-
-                return $doc;
-            });
+            ->get();
     }
 
     /**

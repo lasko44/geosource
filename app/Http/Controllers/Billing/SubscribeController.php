@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Billing;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Billing\SubscribeRequest;
 use App\Mail\AdminNewSubscriptionNotification;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
 /**
@@ -13,16 +13,10 @@ use Illuminate\Support\Facades\Mail;
  */
 class SubscribeController extends Controller
 {
-    public function __invoke(Request $request): RedirectResponse
+    public function __invoke(SubscribeRequest $request): RedirectResponse
     {
-        $request->validate([
-            'plan' => 'required|string',
-            'payment_method' => 'required|string',
-        ]);
-
         $user = $request->user();
-        $plan = $request->input('plan');
-        $planConfig = config("billing.plans.user.{$plan}");
+        $planConfig = $request->getPlanConfig();
 
         if (! $planConfig) {
             return back()->withErrors(['plan' => 'Invalid plan selected.']);
@@ -30,10 +24,10 @@ class SubscribeController extends Controller
 
         try {
             $user->newSubscription('default', $planConfig['price_id'])
-                ->create($request->input('payment_method'));
+                ->create($request->getPaymentMethodId());
 
             session(['subscribed_plan' => [
-                'key' => $plan,
+                'key' => $request->getPlan(),
                 'name' => $planConfig['name'],
                 'price' => $planConfig['price'],
             ]]);

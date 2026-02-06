@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+/**
+ * Provides team-related utility functions and operations.
+ */
 class TeamService
 {
     /**

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ScheduledScans\StoreScheduledScanRequest;
+use App\Http\Requests\ScheduledScans\UpdateScheduledScanRequest;
 use App\Models\ScheduledScan;
 use App\Models\User;
 use App\Services\SubscriptionService;
@@ -112,22 +114,13 @@ class ScheduledScanController extends Controller
     /**
      * Store a new scheduled scan.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(StoreScheduledScanRequest $request): RedirectResponse
     {
         $user = $request->user();
 
         if (! $user->hasFeature('scheduled_scans')) {
             return back()->withErrors(['feature' => 'Scheduled scans are not available on your current plan.']);
         }
-
-        $validated = $request->validate([
-            'url' => 'required|url',
-            'name' => 'nullable|string|max:255',
-            'frequency' => 'required|in:daily,weekly,monthly',
-            'scheduled_time' => 'required|date_format:H:i',
-            'day_of_week' => 'nullable|integer|min:0|max:6',
-            'day_of_month' => 'nullable|integer|min:1|max:28',
-        ]);
 
         // Get team context
         $currentTeamId = session('current_team_id');
@@ -141,15 +134,18 @@ class ScheduledScanController extends Controller
             }
         }
 
+        $url = $request->getUrl();
+        $frequency = $request->getFrequency();
+
         $scheduledScan = ScheduledScan::create([
             'user_id' => $user->id,
             'team_id' => $teamId,
-            'url' => $validated['url'],
-            'name' => $validated['name'] ?? parse_url($validated['url'], PHP_URL_HOST),
-            'frequency' => $validated['frequency'],
-            'scheduled_time' => $validated['scheduled_time'],
-            'day_of_week' => $validated['frequency'] === 'weekly' ? ($validated['day_of_week'] ?? 1) : null,
-            'day_of_month' => $validated['frequency'] === 'monthly' ? ($validated['day_of_month'] ?? 1) : null,
+            'url' => $url,
+            'name' => $request->getName() ?? parse_url($url, PHP_URL_HOST),
+            'frequency' => $frequency,
+            'scheduled_time' => $request->getScheduledTime(),
+            'day_of_week' => $frequency === 'weekly' ? ($request->getDayOfWeek() ?? 1) : null,
+            'day_of_month' => $frequency === 'monthly' ? ($request->getDayOfMonth() ?? 1) : null,
             'is_active' => true,
         ]);
 
@@ -191,7 +187,7 @@ class ScheduledScanController extends Controller
      *
      * @throws AuthorizationException
      */
-    public function update(Request $request, ScheduledScan $scheduledScan): RedirectResponse
+    public function update(UpdateScheduledScanRequest $request, ScheduledScan $scheduledScan): RedirectResponse
     {
         $this->authorize('update', $scheduledScan);
 
@@ -201,24 +197,17 @@ class ScheduledScanController extends Controller
             return back()->withErrors(['feature' => 'Scheduled scans are not available on your current plan.']);
         }
 
-        $validated = $request->validate([
-            'url' => 'required|url',
-            'name' => 'nullable|string|max:255',
-            'frequency' => 'required|in:daily,weekly,monthly',
-            'scheduled_time' => 'required|date_format:H:i',
-            'day_of_week' => 'nullable|integer|min:0|max:6',
-            'day_of_month' => 'nullable|integer|min:1|max:28',
-            'is_active' => 'boolean',
-        ]);
+        $url = $request->getUrl();
+        $frequency = $request->getFrequency();
 
         $scheduledScan->update([
-            'url' => $validated['url'],
-            'name' => $validated['name'] ?? parse_url($validated['url'], PHP_URL_HOST),
-            'frequency' => $validated['frequency'],
-            'scheduled_time' => $validated['scheduled_time'],
-            'day_of_week' => $validated['frequency'] === 'weekly' ? ($validated['day_of_week'] ?? 1) : null,
-            'day_of_month' => $validated['frequency'] === 'monthly' ? ($validated['day_of_month'] ?? 1) : null,
-            'is_active' => $validated['is_active'] ?? true,
+            'url' => $url,
+            'name' => $request->getName() ?? parse_url($url, PHP_URL_HOST),
+            'frequency' => $frequency,
+            'scheduled_time' => $request->getScheduledTime(),
+            'day_of_week' => $frequency === 'weekly' ? ($request->getDayOfWeek() ?? 1) : null,
+            'day_of_month' => $frequency === 'monthly' ? ($request->getDayOfMonth() ?? 1) : null,
+            'is_active' => $request->getIsActive(),
         ]);
 
         // Recalculate next run time
