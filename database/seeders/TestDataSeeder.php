@@ -263,7 +263,7 @@ class TestDataSeeder extends Seeder
                         'brand' => $queryData['brand'],
                         'frequency' => ['manual', 'daily', 'weekly'][rand(0, 2)],
                         'is_active' => true,
-                        'team_id' => $userIndex < 2 && !empty($teams) ? $teams[0]->id : null,
+                        'team_id' => $userIndex < 2 && ! empty($teams) ? $teams[0]->id : null,
                     ]
                 );
 

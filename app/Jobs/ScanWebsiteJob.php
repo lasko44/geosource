@@ -20,6 +20,9 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Spatie\Browsershot\Browsershot;
 
+/**
+ * Performs a GEO scan on a website and calculates optimization scores.
+ */
 class ScanWebsiteJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -146,7 +149,7 @@ class ScanWebsiteJob implements ShouldQueue
                 }
             }
         } catch (\Exception $e) {
-            $this->markFailed('Exception during scan: ' . $e->getMessage());
+            $this->markFailed('Exception during scan: '.$e->getMessage());
         }
     }
 
@@ -196,20 +199,20 @@ class ScanWebsiteJob implements ShouldQueue
     {
         try {
             \Illuminate\Support\Facades\Mail::raw(
-                "Scan Failed\n\n" .
-                "URL: {$this->scan->url}\n" .
-                "Scan ID: {$this->scan->id}\n" .
-                "UUID: {$this->scan->uuid}\n" .
-                "User ID: {$this->scan->user_id}\n" .
-                "Error: {$error}\n" .
-                "Time: " . now()->toDateTimeString(),
+                "Scan Failed\n\n".
+                "URL: {$this->scan->url}\n".
+                "Scan ID: {$this->scan->id}\n".
+                "UUID: {$this->scan->uuid}\n".
+                "User ID: {$this->scan->user_id}\n".
+                "Error: {$error}\n".
+                'Time: '.now()->toDateTimeString(),
                 function ($message) {
                     $message->to('matt@geosource.ai')
-                        ->subject('GeoSource Scan Failed: ' . parse_url($this->scan->url, PHP_URL_HOST));
+                        ->subject('GeoSource Scan Failed: '.parse_url($this->scan->url, PHP_URL_HOST));
                 }
             );
         } catch (\Exception $e) {
-            Log::warning('Failed to send scan failure notification email: ' . $e->getMessage());
+            Log::warning('Failed to send scan failure notification email: '.$e->getMessage());
         }
     }
 
@@ -332,7 +335,7 @@ class ScanWebsiteJob implements ShouldQueue
             $html = $browsershot->bodyHtml();
 
             if (empty($html)) {
-                $this->markFailed('Browsershot returned empty response for ' . $url);
+                $this->markFailed('Browsershot returned empty response for '.$url);
 
                 return null;
             }
@@ -346,7 +349,7 @@ class ScanWebsiteJob implements ShouldQueue
 
                 // If still blocked, fail with helpful message
                 if (str_contains($html, 'challenge-platform') || str_contains($html, 'Access denied') || str_contains($html, 'Just a moment')) {
-                    $this->markFailed('Bot protection (Cloudflare/etc) blocked scan after retry for ' . $url);
+                    $this->markFailed('Bot protection (Cloudflare/etc) blocked scan after retry for '.$url);
 
                     return null;
                 }
@@ -355,7 +358,7 @@ class ScanWebsiteJob implements ShouldQueue
             return $html;
         } catch (\Exception $e) {
             Log::error("Browsershot failed for {$url}: ".$e->getMessage());
-            $this->markFailed('Browsershot exception: ' . $e->getMessage());
+            $this->markFailed('Browsershot exception: '.$e->getMessage());
 
             return null;
         }
@@ -510,12 +513,12 @@ class ScanWebsiteJob implements ShouldQueue
     private function refundTokensForFailedScan(): void
     {
         // Only refund if tokens were actually charged
-        if (!$this->scan->tokens_charged || !$this->scan->tokens_amount || $this->scan->tokens_amount <= 0) {
+        if (! $this->scan->tokens_charged || ! $this->scan->tokens_amount || $this->scan->tokens_amount <= 0) {
             return;
         }
 
         $user = $this->scan->user;
-        if (!$user || $user->is_admin) {
+        if (! $user || $user->is_admin) {
             return;
         }
 
@@ -561,7 +564,7 @@ class ScanWebsiteJob implements ShouldQueue
             'progress_step' => 'Failed',
             'progress_percent' => 0,
             'error_message' => 'We were unable to scan this URL. Please try again or contact support.',
-            'internal_error' => 'Job failure: ' . $internalMessage,
+            'internal_error' => 'Job failure: '.$internalMessage,
             'completed_at' => now(),
         ]);
 
@@ -575,6 +578,6 @@ class ScanWebsiteJob implements ShouldQueue
         ]);
 
         // Email notification to admin
-        $this->notifyAdminOfFailure('Job failure: ' . $internalMessage);
+        $this->notifyAdminOfFailure('Job failure: '.$internalMessage);
     }
 }

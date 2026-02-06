@@ -13,12 +13,17 @@ use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\URL;
 
+/**
+ * Sends templated marketing emails with tracking.
+ */
 class MarketingEmail extends Mailable
 {
     use Queueable, SerializesModels;
 
     public string $renderedContent;
+
     public string $unsubscribeUrl;
+
     public string $trackingPixelUrl;
 
     public function __construct(
@@ -38,7 +43,7 @@ class MarketingEmail extends Mailable
         // Test mode - no campaign/send tracking
         if (! $this->campaign || ! $this->send) {
             return new Envelope(
-                subject: '[TEST] ' . $subject,
+                subject: '[TEST] '.$subject,
                 tags: ['marketing', 'test'],
             );
         }
@@ -116,8 +121,8 @@ class MarketingEmail extends Mailable
         ];
 
         foreach ($variables as $key => $value) {
-            $text = str_replace('{{' . $key . '}}', $value, $text);
-            $text = str_replace('{{ ' . $key . ' }}', $value, $text);
+            $text = str_replace('{{'.$key.'}}', $value, $text);
+            $text = str_replace('{{ '.$key.' }}', $value, $text);
         }
 
         return $text;

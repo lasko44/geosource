@@ -7,12 +7,16 @@ use App\Http\Requests\Scans\EmailScanReportRequest;
 use App\Mail\ScanReportMail;
 use App\Models\Scan;
 use App\Services\ScanService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
+/**
+ * Emails a scan report to a specified recipient.
+ */
 class EmailReportController extends Controller
 {
-    public function __invoke(EmailScanReportRequest $request, Scan $scan, ScanService $scanService)
+    public function __invoke(EmailScanReportRequest $request, Scan $scan, ScanService $scanService): RedirectResponse
     {
         $user = $request->user();
         $recipientEmail = $request->getRecipientEmail();

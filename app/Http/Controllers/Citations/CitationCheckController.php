@@ -8,14 +8,18 @@ use App\Http\Requests\Citations\RunCitationCheckRequest;
 use App\Models\CitationCheck;
 use App\Models\CitationQuery;
 use App\Services\Citation\CitationService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 
+/**
+ * Handles citation check operations for platforms.
+ */
 class CitationCheckController extends Controller
 {
     /**
      * Run a single citation check.
      */
-    public function store(RunCitationCheckRequest $request, CitationQuery $query, CitationService $citationService)
+    public function store(RunCitationCheckRequest $request, CitationQuery $query, CitationService $citationService): \Illuminate\Http\RedirectResponse
     {
         try {
             $check = $citationService->executeCheck(
@@ -34,7 +38,7 @@ class CitationCheckController extends Controller
     /**
      * Run bulk citation checks.
      */
-    public function storeBulk(RunBulkCitationCheckRequest $request, CitationQuery $query, CitationService $citationService)
+    public function storeBulk(RunBulkCitationCheckRequest $request, CitationQuery $query, CitationService $citationService): \Illuminate\Http\RedirectResponse
     {
         try {
             $checks = $citationService->executeBulkChecks(
@@ -52,6 +56,8 @@ class CitationCheckController extends Controller
 
     /**
      * Get check status for polling.
+     *
+     * @throws AuthorizationException
      */
     public function show(CitationCheck $check): JsonResponse
     {

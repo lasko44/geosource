@@ -10,6 +10,9 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
+/**
+ * Notifies admins when a new user registers.
+ */
 class AdminNewUserNotification extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;

@@ -18,7 +18,7 @@ class ScanPolicyTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->policy = new ScanPolicy();
+        $this->policy = new ScanPolicy;
     }
 
     // ==========================================

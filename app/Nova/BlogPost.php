@@ -104,12 +104,18 @@ class BlogPost extends Resource
                 ->withMeta(['type' => 'datetime-local'])
                 ->resolveUsing(function ($value) {
                     // Convert UTC to CST for display/editing
-                    if (!$value) return null;
+                    if (! $value) {
+                        return null;
+                    }
+
                     return \Carbon\Carbon::parse($value)->setTimezone('America/Chicago')->format('Y-m-d\TH:i');
                 })
                 ->displayUsing(function ($value) {
-                    if (!$value) return null;
-                    return \Carbon\Carbon::parse($value)->setTimezone('America/Chicago')->format('M d, Y g:i A') . ' CST';
+                    if (! $value) {
+                        return null;
+                    }
+
+                    return \Carbon\Carbon::parse($value)->setTimezone('America/Chicago')->format('M d, Y g:i A').' CST';
                 })
                 ->fillUsing(function ($request, $model, $attribute, $requestAttribute) {
                     $value = $request->input($requestAttribute);

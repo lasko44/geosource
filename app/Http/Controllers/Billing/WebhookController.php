@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Log;
 use Laravel\Cashier\Http\Controllers\WebhookController as CashierController;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Handles incoming Stripe webhook events.
+ */
 class WebhookController extends CashierController
 {
     /**
@@ -51,23 +54,25 @@ class WebhookController extends CashierController
         $userId = $metadata['user_id'] ?? null;
         $packageId = $metadata['package_id'] ?? null;
 
-        if (!$userId || !$packageId) {
+        if (! $userId || ! $packageId) {
             Log::warning('Token purchase webhook missing metadata', [
                 'session_id' => $session['id'],
                 'metadata' => $metadata,
             ]);
+
             return $this->successMethod();
         }
 
         $user = User::find($userId);
         $package = TokenPackage::find($packageId);
 
-        if (!$user || !$package) {
+        if (! $user || ! $package) {
             Log::warning('Token purchase webhook: user or package not found', [
                 'session_id' => $session['id'],
                 'user_id' => $userId,
                 'package_id' => $packageId,
             ]);
+
             return $this->successMethod();
         }
 
@@ -77,6 +82,7 @@ class WebhookController extends CashierController
                 'session_id' => $session['id'],
                 'payment_status' => $session['payment_status'],
             ]);
+
             return $this->successMethod();
         }
 

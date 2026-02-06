@@ -7,10 +7,15 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Scans\RescanRequest;
 use App\Models\Scan;
 use App\Services\ScanService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 
+/**
+ * Creates a new scan based on a previous scan's URL.
+ */
 class ScanRescanController extends Controller
 {
-    public function __invoke(RescanRequest $request, Scan $scan, ScanService $scanService)
+    public function __invoke(RescanRequest $request, Scan $scan, ScanService $scanService): JsonResponse|RedirectResponse
     {
         try {
             $newScan = $scanService->executeRescan(

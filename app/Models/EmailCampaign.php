@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * Represents an email marketing campaign.
+ */
 class EmailCampaign extends Model
 {
     use HasFactory;
@@ -51,7 +54,7 @@ class EmailCampaign extends Model
     /**
      * Get the audience query builder based on audience type.
      */
-    public function getAudienceQuery()
+    public function getAudienceQuery(): \Illuminate\Database\Eloquent\Builder
     {
         $query = User::query()
             ->whereNotNull('email_verified_at')
@@ -73,7 +76,7 @@ class EmailCampaign extends Model
                 break;
             case 'custom':
                 // Apply custom filters from audience_filters
-                if (!empty($this->audience_filters)) {
+                if (! empty($this->audience_filters)) {
                     foreach ($this->audience_filters as $filter) {
                         // Implement custom filter logic here
                     }

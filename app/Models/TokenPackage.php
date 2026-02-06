@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Represents a purchasable token package with pricing.
+ */
 class TokenPackage extends Model
 {
     use HasFactory;
@@ -32,7 +35,7 @@ class TokenPackage extends Model
     /**
      * Scope to get only active packages.
      */
-    public function scopeActive($query)
+    public function scopeActive($query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('is_active', true);
     }
@@ -40,7 +43,7 @@ class TokenPackage extends Model
     /**
      * Scope to order by sort order.
      */
-    public function scopeOrdered($query)
+    public function scopeOrdered($query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->orderBy('sort_order');
     }
@@ -66,6 +69,6 @@ class TokenPackage extends Model
      */
     public function getFormattedPriceAttribute(): string
     {
-        return '$' . number_format($this->price, 2);
+        return '$'.number_format($this->price, 2);
     }
 }

@@ -5,9 +5,15 @@ namespace App\Services\Citation\Platforms;
 use App\Models\CitationCheck;
 use App\Models\CitationQuery;
 use App\Services\Citation\CitationAnalyzerService;
+use Exception;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use RuntimeException;
 
+/**
+ * Performs citation checks using Claude AI with Tavily web search.
+ */
 class ClaudeService
 {
     public function __construct(
@@ -17,6 +23,7 @@ class ClaudeService
     /**
      * Check if a domain is cited by Claude for a given query.
      * Uses Tavily Search for web results, then Claude analyzes and cites sources.
+     * @throws ConnectionException
      */
     public function check(CitationQuery $query, CitationCheck $check): array
     {
@@ -24,11 +31,11 @@ class ClaudeService
         $tavilyApiKey = config('citations.tavily.api_key');
 
         if (empty($claudeApiKey)) {
-            throw new \RuntimeException('Claude API key is not configured. Add ANTHROPIC_API_KEY to your .env file.');
+            throw new RuntimeException('Claude API key is not configured. Add ANTHROPIC_API_KEY to your .env file.');
         }
 
         if (empty($tavilyApiKey)) {
-            throw new \RuntimeException('Tavily API key is not configured. Add TAVILY_API_KEY to your .env file.');
+            throw new RuntimeException('Tavily API key is not configured. Add TAVILY_API_KEY to your .env file.');
         }
 
         try {
@@ -36,7 +43,7 @@ class ClaudeService
             $searchResults = $this->searchTavily($query->query, $tavilyApiKey);
 
             if (empty($searchResults)) {
-                throw new \RuntimeException('No search results found.');
+                throw new RuntimeException('No search results found.');
             }
 
             // Step 2: Build prompt with search results as context
@@ -62,20 +69,20 @@ class ClaudeService
 
             if (! $response->successful()) {
                 $errorData = $response->json();
-                $sanitizedError = $errorData['error']['message'] ?? 'Unknown error (status: ' . $response->status() . ')';
+                $sanitizedError = $errorData['error']['message'] ?? 'Unknown error (status: '.$response->status().')';
                 Log::error('Claude API error', [
                     'status' => $response->status(),
                     'error' => $sanitizedError,
                     'query_id' => $query->id,
                 ]);
-                throw new \RuntimeException('Claude API error: ' . $sanitizedError);
+                throw new RuntimeException('Claude API error: '.$sanitizedError);
             }
 
             $data = $response->json();
             $aiResponse = $data['content'][0]['text'] ?? '';
 
             // Extract URLs from search results for citation analysis
-            $sourceUrls = array_map(fn($r) => $r['url'], $searchResults);
+            $sourceUrls = array_map(fn ($r) => $r['url'], $searchResults);
 
             // Analyze the response for citations
             $analysis = $this->analyzerService->analyze(
@@ -98,7 +105,7 @@ class ClaudeService
                 ],
             ];
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Claude citation check failed', [
                 'query_id' => $query->id,
                 'error' => $e->getMessage(),
@@ -114,7 +121,7 @@ class ClaudeService
     private function searchTavily(string $query, string $apiKey): array
     {
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $apiKey,
+            'Authorization' => 'Bearer '.$apiKey,
             'Content-Type' => 'application/json',
         ])
             ->timeout(30)
@@ -128,12 +135,12 @@ class ClaudeService
 
         if (! $response->successful()) {
             $errorData = $response->json();
-            $sanitizedError = $errorData['detail']['error'] ?? $errorData['detail'] ?? 'Unknown error (status: ' . $response->status() . ')';
+            $sanitizedError = $errorData['detail']['error'] ?? $errorData['detail'] ?? 'Unknown error (status: '.$response->status().')';
             Log::error('Tavily Search API error', [
                 'status' => $response->status(),
                 'error' => $sanitizedError,
             ]);
-            throw new \RuntimeException('Tavily Search API error: ' . $sanitizedError);
+            throw new RuntimeException('Tavily Search API error: '.$sanitizedError);
         }
 
         $data = $response->json();
@@ -155,7 +162,7 @@ class ClaudeService
      */
     private function buildPrompt(CitationQuery $query, array $searchResults): string
     {
-        $sourcesText = "";
+        $sourcesText = '';
         foreach ($searchResults as $i => $result) {
             $num = $i + 1;
             $sourcesText .= "[{$num}] {$result['title']}\n";
@@ -165,7 +172,7 @@ class ClaudeService
 
         $brandContext = $query->brand
             ? " Pay special attention to mentions of \"{$query->brand}\" or \"{$query->domain}\"."
-            : "";
+            : '';
 
         return <<<PROMPT
 You are a helpful AI assistant. Answer the following question using ONLY the search results provided below. You MUST cite your sources using the format [1], [2], etc. and include the full URLs of sources you reference.

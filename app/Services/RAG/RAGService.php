@@ -339,7 +339,7 @@ PROMPT;
     private function buildGEOAnalysisPrompt(string $content, Collection $similarContent): string
     {
         $truncatedContent = $this->sanitizeForPrompt($this->truncateContent($content, 3000));
-        $comparisons = $similarContent->take(3)->map(fn ($doc) => "Title: ".$this->sanitizeForPrompt($doc->title)."\nSimilarity: ".round($doc->similarity, 2)."\nExcerpt: ".$this->sanitizeForPrompt($this->truncateContent($doc->content, 500)))->join("\n\n---\n\n");
+        $comparisons = $similarContent->take(3)->map(fn ($doc) => 'Title: '.$this->sanitizeForPrompt($doc->title)."\nSimilarity: ".round($doc->similarity, 2)."\nExcerpt: ".$this->sanitizeForPrompt($this->truncateContent($doc->content, 500)))->join("\n\n---\n\n");
 
         return <<<PROMPT
 Analyze the following content for Generative Engine Optimization (GEO). Evaluate how well it would be understood and cited by AI systems like ChatGPT, Claude, and Perplexity.
@@ -377,7 +377,7 @@ PROMPT;
         $truncatedContent = $this->sanitizeForPrompt($this->truncateContent($content, 2500));
         $scoreBreakdown = json_encode($geoScore['pillars'] ?? [], JSON_PRETTY_PRINT);
 
-        $references = $referenceContent->take(2)->map(fn ($doc) => "### ".$this->sanitizeForPrompt($doc->title)."\n".$this->sanitizeForPrompt($this->truncateContent($doc->content, 600)))->join("\n\n");
+        $references = $referenceContent->take(2)->map(fn ($doc) => '### '.$this->sanitizeForPrompt($doc->title)."\n".$this->sanitizeForPrompt($this->truncateContent($doc->content, 600)))->join("\n\n");
 
         return <<<PROMPT
 Based on the GEO score analysis, suggest specific improvements for this content.

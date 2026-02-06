@@ -7,6 +7,9 @@ use App\Services\Citation\CitationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * Returns citation trend data for visualization.
+ */
 class CitationTrendController extends Controller
 {
     /**

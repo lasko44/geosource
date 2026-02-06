@@ -436,4 +436,196 @@ class GA4Service
             'can_create_connection' => $this->canCreateConnection($user, $team),
         ];
     }
+
+    /**
+     * Get current team from session context.
+     */
+    public function getCurrentTeam(User $user): ?Team
+    {
+        $currentTeamId = session('current_team_id');
+
+        if ($currentTeamId && $currentTeamId !== 'personal') {
+            return $user->allTeams()->firstWhere('id', $currentTeamId);
+        }
+
+        return null;
+    }
+
+    /**
+     * Get connections for user in current context.
+     */
+    public function getConnectionsForContext(User $user, ?Team $team): \Illuminate\Database\Eloquent\Collection
+    {
+        $query = GA4Connection::where('user_id', $user->id);
+
+        if ($team) {
+            $query->where('team_id', $team->id);
+        } else {
+            $query->whereNull('team_id');
+        }
+
+        return $query->get();
+    }
+
+    /**
+     * Build traffic data for active connections.
+     */
+    public function buildTrafficData(
+        \Illuminate\Database\Eloquent\Collection $connections,
+        GA4DataSyncService $syncService,
+        int $days = 30
+    ): array {
+        $trafficData = [];
+
+        foreach ($connections->where('is_active', true) as $connection) {
+            $trafficData[$connection->id] = [
+                'summary' => $connection->getAITrafficSummary($days),
+                'trend' => $syncService->getDailyAITrafficTrend($connection, $days),
+            ];
+        }
+
+        return $trafficData;
+    }
+
+    /**
+     * Check if a property is already connected.
+     */
+    public function isPropertyConnected(string $propertyId, User $user, ?Team $team): bool
+    {
+        $query = GA4Connection::where('property_id', $propertyId);
+
+        if ($team) {
+            $query->where('team_id', $team->id);
+        } else {
+            $query->where('user_id', $user->id)->whereNull('team_id');
+        }
+
+        return $query->exists();
+    }
+
+    /**
+     * Validate and clamp days parameter.
+     */
+    public function validateDaysParam(int $days): int
+    {
+        return min(max($days, 7), 90);
+    }
+
+    /**
+     * Format team data for response.
+     */
+    public function formatTeamData(?Team $team): ?array
+    {
+        if (! $team) {
+            return null;
+        }
+
+        return [
+            'id' => $team->id,
+            'name' => $team->name,
+        ];
+    }
+
+    /**
+     * Validate OAuth state from session.
+     *
+     * @return string|null Error message if invalid, null if valid
+     */
+    public function validateOAuthState(?string $requestState): ?string
+    {
+        $sessionState = session('ga4_oauth_state');
+
+        if (! $sessionState || $requestState !== $sessionState) {
+            Log::warning('GA4 OAuth state mismatch');
+
+            return 'Invalid OAuth state. Please try again.';
+        }
+
+        session()->forget('ga4_oauth_state');
+
+        return null;
+    }
+
+    /**
+     * Check for OAuth errors from Google.
+     *
+     * @return string|null Error message if error present, null otherwise
+     */
+    public function checkGoogleOAuthError(?string $error): ?string
+    {
+        if (! $error) {
+            return null;
+        }
+
+        Log::warning('GA4 OAuth error from Google', ['error' => $error]);
+
+        return $error === 'access_denied'
+            ? 'You denied access to Google Analytics. Please try again and allow access.'
+            : 'Authorization was denied or an error occurred.';
+    }
+
+    /**
+     * Store tokens in session for property selection.
+     */
+    public function storeTokensInSession(array $tokens): void
+    {
+        session([
+            'ga4_tokens' => [
+                'access_token' => $tokens['access_token'] ?? null,
+                'refresh_token' => $tokens['refresh_token'] ?? null,
+                'expires_in' => $tokens['expires_in'] ?? 3600,
+            ],
+        ]);
+    }
+
+    /**
+     * Get and clear tokens from session.
+     */
+    public function getAndClearSessionTokens(): ?array
+    {
+        $tokens = session('ga4_tokens');
+        session()->forget('ga4_tokens');
+
+        return $tokens;
+    }
+
+    /**
+     * Create connection from session tokens and property data.
+     *
+     * @return array{success: bool, connection?: GA4Connection, error?: string}
+     */
+    public function createConnectionFromSession(User $user, array $property): array
+    {
+        $tokens = $this->getAndClearSessionTokens();
+
+        if (! $tokens) {
+            return ['success' => false, 'error' => 'Session expired. Please try connecting again.'];
+        }
+
+        $team = $this->getCurrentTeam($user);
+        $propertyId = $property['property_id'] ?? null;
+
+        if ($this->isPropertyConnected($propertyId, $user, $team)) {
+            return ['success' => false, 'error' => 'This GA4 property is already connected.'];
+        }
+
+        try {
+            $connection = $this->createConnection(
+                $user,
+                $team,
+                $property['account_id'] ?? '',
+                $propertyId ?? '',
+                $property['property_name'] ?? '',
+                $tokens['access_token'] ?? '',
+                $tokens['refresh_token'] ?? '',
+                $tokens['expires_in'] ?? 3600
+            );
+
+            return ['success' => true, 'connection' => $connection];
+        } catch (\Exception $e) {
+            Log::error('Failed to create GA4 connection', ['error' => $e->getMessage()]);
+
+            return ['success' => false, 'error' => 'Failed to save connection. Please try again.'];
+        }
+    }
 }

@@ -12,6 +12,9 @@ use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * Manages user profile settings and account deletion.
+ */
 class ProfileController extends Controller
 {
     /**

@@ -5,6 +5,9 @@ namespace App\Services;
 use App\Models\BlogPost;
 use Illuminate\Support\Facades\File;
 
+/**
+ * Generates SEO-optimized content and schema for blog posts.
+ */
 class BlogPostGeoService
 {
     /**
@@ -141,6 +144,7 @@ class BlogPostGeoService
     {
         // Match the blog posts section and remove it
         $pattern = '/## Blog Posts\n.*?(?=\n## (?!Blog Posts)|$)/s';
+
         return preg_replace($pattern, '', $content);
     }
 
@@ -162,15 +166,15 @@ class BlogPostGeoService
 
         foreach ($posts as $post) {
             $section .= "### {$post->title}\n";
-            $section .= "- URL: ".config('app.url')."/blog/{$post->slug}\n";
+            $section .= '- URL: '.config('app.url')."/blog/{$post->slug}\n";
             $section .= "- Description: {$post->excerpt}\n";
 
             if ($post->published_at) {
-                $section .= "- Published: ".$post->published_at->format('Y-m-d')."\n";
+                $section .= '- Published: '.$post->published_at->format('Y-m-d')."\n";
             }
 
             if (! empty($post->tags)) {
-                $section .= "- Topics: ".implode(', ', $post->tags)."\n";
+                $section .= '- Topics: '.implode(', ', $post->tags)."\n";
             }
 
             $section .= "\n";

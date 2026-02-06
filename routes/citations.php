@@ -4,7 +4,14 @@ use App\Http\Controllers\Citations\CitationAlertController;
 use App\Http\Controllers\Citations\CitationCheckController;
 use App\Http\Controllers\Citations\CitationQueryController;
 use App\Http\Controllers\Citations\CitationTrendController;
-use App\Http\Controllers\GA4Controller;
+use App\Http\Controllers\GA4\GA4CallbackController;
+use App\Http\Controllers\GA4\GA4ConnectController;
+use App\Http\Controllers\GA4\GA4ConnectionController;
+use App\Http\Controllers\GA4\GA4ReferralsController;
+use App\Http\Controllers\GA4\GA4SelectPropertyController;
+use App\Http\Controllers\GA4\GA4SyncController;
+use App\Http\Controllers\GA4\GA4SyncStatusController;
+use App\Http\Controllers\GA4\GA4TrafficController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -73,23 +80,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
     */
 
     Route::prefix('analytics/ga4')->name('citations.ga4.')->group(function () {
-        Route::get('/', [GA4Controller::class, 'index'])->name('index');
-        Route::get('connect', [GA4Controller::class, 'connect'])
+        // Resource actions
+        Route::get('/', [GA4ConnectionController::class, 'index'])->name('index');
+
+        // OAuth flow
+        Route::get('connect', GA4ConnectController::class)
             ->middleware('throttle:5,1')
             ->name('connect');
-        Route::get('callback', [GA4Controller::class, 'callback'])->name('callback');
-        Route::post('select-property', [GA4Controller::class, 'selectProperty'])
+        Route::get('callback', GA4CallbackController::class)->name('callback');
+        Route::post('select-property', GA4SelectPropertyController::class)
             ->middleware('throttle:10,1')
             ->name('select-property');
 
+        // Connection-specific routes
         Route::prefix('{connection}')->group(function () {
-            Route::get('referrals', [GA4Controller::class, 'referrals'])->name('referrals');
-            Route::get('ai-traffic', [GA4Controller::class, 'aiTraffic'])->name('ai-traffic');
-            Route::post('sync', [GA4Controller::class, 'sync'])
+            Route::get('referrals', GA4ReferralsController::class)->name('referrals');
+            Route::get('ai-traffic', GA4TrafficController::class)->name('ai-traffic');
+            Route::post('sync', GA4SyncController::class)
                 ->middleware('throttle:5,1')
                 ->name('sync');
-            Route::get('sync-status', [GA4Controller::class, 'syncStatus'])->name('sync-status');
-            Route::delete('/', [GA4Controller::class, 'disconnect'])->name('disconnect');
+            Route::get('sync-status', GA4SyncStatusController::class)->name('sync-status');
+            Route::delete('/', [GA4ConnectionController::class, 'destroy'])->name('disconnect');
         });
     });
 });

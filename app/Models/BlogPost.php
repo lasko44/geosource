@@ -10,6 +10,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
+/**
+ * Represents a blog post with SEO metadata and content.
+ */
 class BlogPost extends Model
 {
     use HasFactory, SoftDeletes;
@@ -74,14 +77,14 @@ class BlogPost extends Model
         return $this->hasMany(BlogShare::class);
     }
 
-    public function scopePublished($query)
+    public function scopePublished($query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('status', 'published')
             ->whereNotNull('published_at')
             ->where('published_at', '<=', now());
     }
 
-    public function scopeDraft($query)
+    public function scopeDraft($query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('status', 'draft');
     }
@@ -101,6 +104,7 @@ class BlogPost extends Model
     public function getReadingTimeAttribute(): int
     {
         $words = str_word_count(strip_tags($this->content));
+
         return max(1, (int) ceil($words / 200));
     }
 
@@ -122,7 +126,7 @@ class BlogPost extends Model
 
         // If it starts with /images/, it's in public folder
         if (str_starts_with($this->featured_image, '/images/')) {
-            return config('app.url') . $this->featured_image;
+            return config('app.url').$this->featured_image;
         }
 
         // Otherwise, generate URL from storage
@@ -136,7 +140,7 @@ class BlogPost extends Model
     public function getSocialImageUrlAttribute(): ?string
     {
         if (empty($this->featured_image)) {
-            return config('app.url') . '/og-image.png';
+            return config('app.url').'/og-image.png';
         }
 
         // Convert SVG to PNG path for social sharing
@@ -155,10 +159,10 @@ class BlogPost extends Model
             $fullPath = public_path($imagePath);
             // Verify PNG exists, otherwise fall back to default
             if (file_exists($fullPath)) {
-                return config('app.url') . $imagePath;
+                return config('app.url').$imagePath;
             }
 
-            return config('app.url') . '/og-image.png';
+            return config('app.url').'/og-image.png';
         }
 
         // For storage disk images, verify the PNG exists
@@ -167,6 +171,6 @@ class BlogPost extends Model
         }
 
         // Fall back to default OG image
-        return config('app.url') . '/og-image.png';
+        return config('app.url').'/og-image.png';
     }
 }

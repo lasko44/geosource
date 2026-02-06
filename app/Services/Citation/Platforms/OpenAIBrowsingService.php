@@ -8,6 +8,9 @@ use App\Services\Citation\CitationAnalyzerService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Performs citation checks using OpenAI GPT with Tavily web search.
+ */
 class OpenAIBrowsingService
 {
     public function __construct(
@@ -45,7 +48,7 @@ class OpenAIBrowsingService
 
             // Step 3: Ask GPT to answer using the search results
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $openaiApiKey,
+                'Authorization' => 'Bearer '.$openaiApiKey,
                 'Content-Type' => 'application/json',
             ])
                 ->timeout($timeout)
@@ -63,20 +66,20 @@ class OpenAIBrowsingService
 
             if (! $response->successful()) {
                 $errorData = $response->json();
-                $sanitizedError = $errorData['error']['message'] ?? 'Unknown error (status: ' . $response->status() . ')';
+                $sanitizedError = $errorData['error']['message'] ?? 'Unknown error (status: '.$response->status().')';
                 Log::error('OpenAI API error', [
                     'status' => $response->status(),
                     'error' => $sanitizedError,
                     'query_id' => $query->id,
                 ]);
-                throw new \RuntimeException('OpenAI API error: ' . $sanitizedError);
+                throw new \RuntimeException('OpenAI API error: '.$sanitizedError);
             }
 
             $data = $response->json();
             $aiResponse = $data['choices'][0]['message']['content'] ?? '';
 
             // Extract URLs from search results for citation analysis
-            $sourceUrls = array_map(fn($r) => $r['url'], $searchResults);
+            $sourceUrls = array_map(fn ($r) => $r['url'], $searchResults);
 
             // Analyze the response for citations
             $analysis = $this->analyzer->analyze(
@@ -115,7 +118,7 @@ class OpenAIBrowsingService
     private function searchTavily(string $query, string $apiKey): array
     {
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $apiKey,
+            'Authorization' => 'Bearer '.$apiKey,
             'Content-Type' => 'application/json',
         ])
             ->timeout(30)
@@ -129,12 +132,12 @@ class OpenAIBrowsingService
 
         if (! $response->successful()) {
             $errorData = $response->json();
-            $sanitizedError = $errorData['detail']['error'] ?? $errorData['detail'] ?? 'Unknown error (status: ' . $response->status() . ')';
+            $sanitizedError = $errorData['detail']['error'] ?? $errorData['detail'] ?? 'Unknown error (status: '.$response->status().')';
             Log::error('Tavily Search API error', [
                 'status' => $response->status(),
                 'error' => $sanitizedError,
             ]);
-            throw new \RuntimeException('Tavily Search API error: ' . $sanitizedError);
+            throw new \RuntimeException('Tavily Search API error: '.$sanitizedError);
         }
 
         $data = $response->json();
@@ -156,7 +159,7 @@ class OpenAIBrowsingService
      */
     private function buildPrompt(CitationQuery $query, array $searchResults): string
     {
-        $sourcesText = "";
+        $sourcesText = '';
         foreach ($searchResults as $i => $result) {
             $num = $i + 1;
             $sourcesText .= "[{$num}] {$result['title']}\n";
@@ -166,7 +169,7 @@ class OpenAIBrowsingService
 
         $brandContext = $query->brand
             ? " Pay special attention to mentions of \"{$query->brand}\" or \"{$query->domain}\"."
-            : "";
+            : '';
 
         return <<<PROMPT
 You are a helpful AI assistant. Answer the following question using ONLY the search results provided below. You MUST cite your sources using the format [1], [2], etc. and include the full URLs of sources you reference.

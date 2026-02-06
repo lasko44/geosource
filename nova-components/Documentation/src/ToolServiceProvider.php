@@ -2,11 +2,11 @@
 
 namespace Geosource\Documentation;
 
+use Geosource\Documentation\Http\Middleware\Authorize;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Nova\Events\ServingNova;
 use Laravel\Nova\Nova;
-use Geosource\Documentation\Http\Middleware\Authorize;
 
 class ToolServiceProvider extends ServiceProvider
 {

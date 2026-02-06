@@ -5,13 +5,16 @@ namespace App\Console\Commands;
 use App\Models\LearningResource;
 use Illuminate\Console\Command;
 
+/**
+ * Converts learning resources HTML content to styled JSON blocks.
+ */
 class ConvertResourcesToBlocks extends Command
 {
     protected $signature = 'resources:convert-to-blocks {--slug= : Convert a specific resource by slug}';
 
     protected $description = 'Convert learning resources HTML content to styled JSON blocks';
 
-    public function handle()
+    public function handle(): int
     {
         $slug = $this->option('slug');
 
@@ -46,7 +49,7 @@ class ConvertResourcesToBlocks extends Command
                 'content_type' => 'blocks',
                 'content_blocks' => $blocks,
             ]);
-            $this->info("  ✓ Converted to ".count($blocks).' blocks');
+            $this->info('  ✓ Converted to '.count($blocks).' blocks');
         } else {
             $this->warn("No converter found for: {$resource->slug}");
         }

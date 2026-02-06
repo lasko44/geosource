@@ -5,6 +5,9 @@ namespace App\Console\Commands;
 use App\Models\BlogPost;
 use Illuminate\Console\Command;
 
+/**
+ * Imports blog posts from code definitions into the database.
+ */
 class ImportBlogPost extends Command
 {
     protected $signature = 'blog:import {--slug= : Import a specific blog post by slug}';
@@ -386,7 +389,7 @@ MARKDOWN;
 
     protected function importAiSearchIsStealingYourTraffic(): void
     {
-        //comment
+        // comment
         $slug = 'ai-search-is-stealing-your-traffic';
 
         // Check if already exists

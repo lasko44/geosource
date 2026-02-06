@@ -3,10 +3,10 @@
 namespace Geosource\Documentation\Http\Middleware;
 
 use Closure;
+use Geosource\Documentation\Documentation;
 use Illuminate\Http\Request;
 use Laravel\Nova\Nova;
 use Laravel\Nova\Tool;
-use Geosource\Documentation\Documentation;
 use Symfony\Component\HttpFoundation\Response;
 
 class Authorize

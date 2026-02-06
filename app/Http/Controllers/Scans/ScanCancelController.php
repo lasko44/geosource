@@ -5,11 +5,16 @@ namespace App\Http\Controllers\Scans;
 use App\Http\Controllers\Controller;
 use App\Models\Scan;
 use App\Services\ScanService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
+/**
+ * Cancels a pending or processing scan.
+ */
 class ScanCancelController extends Controller
 {
-    public function __invoke(Scan $scan, Request $request, ScanService $scanService)
+    public function __invoke(Scan $scan, Request $request, ScanService $scanService): JsonResponse|RedirectResponse
     {
         $this->authorize('update', $scan);
 

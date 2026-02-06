@@ -39,7 +39,7 @@ class AuthenticationTest extends DuskTestCase
             'password' => bcrypt('password'),
         ]);
 
-        $this->browse(function (Browser $browser) use ($user) {
+        $this->browse(function (Browser $browser) {
             $browser->visit('/login')
                 ->type('email', 'test@example.com')
                 ->type('password', 'password')

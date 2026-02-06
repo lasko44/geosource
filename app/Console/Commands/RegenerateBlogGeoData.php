@@ -5,6 +5,9 @@ namespace App\Console\Commands;
 use App\Services\BlogPostGeoService;
 use Illuminate\Console\Command;
 
+/**
+ * Regenerates SEO metadata and schema for blog posts.
+ */
 class RegenerateBlogGeoData extends Command
 {
     /**

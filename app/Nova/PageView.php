@@ -34,7 +34,6 @@ class PageView extends Resource
         'path', 'url', 'referrer_host', 'utm_source', 'country', 'city',
     ];
 
-
     /**
      * Get the displayable label of the resource.
      */
@@ -71,10 +70,10 @@ class PageView extends Resource
 
             Text::make('Path')
                 ->sortable()
-                ->displayUsing(fn ($value) => strlen($value) > 40 ? substr($value, 0, 40) . '...' : $value),
+                ->displayUsing(fn ($value) => strlen($value) > 40 ? substr($value, 0, 40).'...' : $value),
 
             URL::make('Full URL', 'url')
-                ->displayUsing(fn ($value) => strlen($value) > 50 ? substr($value, 0, 50) . '...' : $value)
+                ->displayUsing(fn ($value) => strlen($value) > 50 ? substr($value, 0, 50).'...' : $value)
                 ->onlyOnDetail(),
 
             Text::make('Page Title')

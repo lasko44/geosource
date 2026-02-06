@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * Manages white label branding settings for teams.
+ */
 class WhiteLabelController extends Controller
 {
     /**

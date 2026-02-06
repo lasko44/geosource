@@ -5,24 +5,28 @@ namespace App\Http\Controllers\Teams;
 use App\Http\Controllers\Controller;
 use App\Models\Team;
 use App\Models\User;
+use App\Services\TeamService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * Manages team membership including adding, updating roles, and removing members.
+ */
 class TeamMemberController extends Controller
 {
     /**
      * Show the team members.
      */
-    public function index(Team $team): Response
+    public function index(Team $team, TeamService $teamService): Response
     {
         $this->authorize('view', $team);
 
         $user = auth()->user();
         $isAdmin = $team->isAdmin($user);
 
-        // Only admins can see full emails and manage invitations
         return Inertia::render('teams/Members', [
             'team' => [
                 'id' => $team->id,
@@ -36,11 +40,10 @@ class TeamMemberController extends Controller
             'members' => $team->members()->where('user_id', '!=', $team->owner_id)->get()->map(fn ($member) => [
                 'id' => $member->id,
                 'name' => $member->name,
-                'email' => $isAdmin ? $member->email : $this->maskEmail($member->email),
+                'email' => $isAdmin ? $member->email : $teamService->maskEmail($member->email),
                 'role' => $member->pivot->role,
                 'joined_at' => $member->pivot->created_at->toISOString(),
             ]),
-            // Only show pending invitations to admins who can manage them
             'pendingInvitations' => $isAdmin
                 ? $team->pendingInvitations()->with('inviter')->get()->map(fn ($invitation) => [
                     'id' => $invitation->id,
@@ -67,35 +70,9 @@ class TeamMemberController extends Controller
     }
 
     /**
-     * Mask an email address for privacy.
-     */
-    private function maskEmail(string $email): string
-    {
-        $parts = explode('@', $email);
-        if (count($parts) !== 2) {
-            return '***@***.***';
-        }
-
-        $local = $parts[0];
-        $domain = $parts[1];
-
-        // Show first 2 chars of local part, mask the rest
-        $maskedLocal = strlen($local) > 2
-            ? substr($local, 0, 2).str_repeat('*', min(strlen($local) - 2, 5))
-            : $local;
-
-        // Mask domain but show TLD
-        $domainParts = explode('.', $domain);
-        $tld = array_pop($domainParts);
-        $maskedDomain = '***.'.$tld;
-
-        return $maskedLocal.'@'.$maskedDomain;
-    }
-
-    /**
      * Add a new member to the team.
      */
-    public function store(Request $request, Team $team)
+    public function store(Request $request, Team $team): RedirectResponse
     {
         $this->authorize('inviteMembers', $team);
 
@@ -142,7 +119,7 @@ class TeamMemberController extends Controller
     /**
      * Update a member's role.
      */
-    public function update(Request $request, Team $team, User $user)
+    public function update(Request $request, Team $team, User $user): RedirectResponse
     {
         $this->authorize('manageMembers', $team);
 
@@ -184,7 +161,7 @@ class TeamMemberController extends Controller
     /**
      * Remove a member from the team.
      */
-    public function destroy(Team $team, User $user)
+    public function destroy(Team $team, User $user): RedirectResponse
     {
         $this->authorize('manageMembers', $team);
 
@@ -201,7 +178,7 @@ class TeamMemberController extends Controller
     /**
      * Leave the team.
      */
-    public function leave(Request $request, Team $team)
+    public function leave(Request $request, Team $team): RedirectResponse
     {
         $user = $request->user();
 

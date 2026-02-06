@@ -8,6 +8,9 @@ use App\Services\Citation\CitationAnalyzerService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Performs citation checks using Google Gemini with Search Grounding.
+ */
 class GeminiService
 {
     public function __construct(
@@ -42,7 +45,7 @@ class GeminiService
                         ],
                     ],
                     'tools' => [
-                        ['google_search' => new \stdClass()],
+                        ['google_search' => new \stdClass],
                     ],
                     'generationConfig' => [
                         'temperature' => 0.7,
@@ -55,7 +58,7 @@ class GeminiService
                     'status' => $response->status(),
                     'body' => $response->body(),
                 ]);
-                throw new \RuntimeException('Gemini API error: ' . $response->body());
+                throw new \RuntimeException('Gemini API error: '.$response->body());
             }
 
             $data = $response->json();
@@ -120,7 +123,7 @@ class GeminiService
             if (isset($groundingMetadata['searchEntryPoint']['renderedContent'])) {
                 // Parse URLs from rendered content if needed
                 preg_match_all('/href=["\']([^"\']+)["\']/', $groundingMetadata['searchEntryPoint']['renderedContent'], $matches);
-                if (!empty($matches[1])) {
+                if (! empty($matches[1])) {
                     $sources = array_merge($sources, $matches[1]);
                 }
             }

@@ -108,6 +108,7 @@ class TokenCode extends Resource
                 if ($this->max_uses === null) {
                     return '∞';
                 }
+
                 return max(0, $this->max_uses - $this->uses_count);
             })->onlyOnIndex(),
 
@@ -131,6 +132,7 @@ class TokenCode extends Resource
                 if ($this->max_uses !== null && $this->uses_count >= $this->max_uses) {
                     return 'Exhausted';
                 }
+
                 return 'Active';
             })->map([
                 'Active' => 'success',

@@ -2,9 +2,9 @@
 
 use App\Jobs\ProcessScheduledCitationChecksJob;
 use App\Jobs\SyncGA4DataJob;
+use App\Models\CitationCheck;
 use App\Models\GA4Connection;
 use App\Models\GA4ReferralData;
-use App\Models\CitationCheck;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;

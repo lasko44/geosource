@@ -8,6 +8,9 @@ use App\Services\Citation\CitationAnalyzerService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Checks domain visibility in Google Search results via SerpAPI.
+ */
 class GoogleSearchService
 {
     public function __construct(
@@ -44,7 +47,7 @@ class GoogleSearchService
                     'query_id' => $query->id,
                 ]);
 
-                throw new \RuntimeException('SerpAPI request failed: ' . $response->body());
+                throw new \RuntimeException('SerpAPI request failed: '.$response->body());
             }
 
             $data = $response->json();
@@ -154,7 +157,7 @@ class GoogleSearchService
         $resultDomain = strtolower(preg_replace('/^www\./', '', $resultDomain));
         $targetDomain = strtolower(preg_replace('/^www\./', '', $targetDomain));
 
-        return $resultDomain === $targetDomain || str_ends_with($resultDomain, '.' . $targetDomain);
+        return $resultDomain === $targetDomain || str_ends_with($resultDomain, '.'.$targetDomain);
     }
 
     /**
@@ -169,7 +172,7 @@ class GoogleSearchService
         } elseif (isset($aiOverview['text_blocks'])) {
             foreach ($aiOverview['text_blocks'] as $block) {
                 if (isset($block['snippet'])) {
-                    $text .= $block['snippet'] . ' ';
+                    $text .= $block['snippet'].' ';
                 }
             }
         }
@@ -213,11 +216,11 @@ class GoogleSearchService
         if ($position) {
             $summary .= "✓ {$query->domain} found at position #{$position} in organic results.\n\n";
         } else {
-            $summary .= "✗ {$query->domain} not found in top " . count($organicResults) . " organic results.\n\n";
+            $summary .= "✗ {$query->domain} not found in top ".count($organicResults)." organic results.\n\n";
         }
 
         if ($aiOverview) {
-            $summary .= "AI Overview present: " . ($this->extractAiOverviewText($aiOverview) ? 'Yes' : 'No') . "\n\n";
+            $summary .= 'AI Overview present: '.($this->extractAiOverviewText($aiOverview) ? 'Yes' : 'No')."\n\n";
         }
 
         $summary .= "Top 5 Results:\n";

@@ -7,18 +7,23 @@ use App\Models\Team;
 use App\Models\TeamInvitation;
 use App\Models\User;
 use App\Notifications\TeamInvitationNotification;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use Inertia\Response;
 
+/**
+ * Handles team invitation sending, acceptance, and management.
+ */
 class TeamInvitationController extends Controller
 {
     /**
      * Send a new team invitation.
      */
-    public function store(Request $request, Team $team)
+    public function store(Request $request, Team $team): RedirectResponse
     {
         $this->authorize('inviteMembers', $team);
 
@@ -102,7 +107,7 @@ class TeamInvitationController extends Controller
     /**
      * Cancel a pending invitation.
      */
-    public function destroy(Team $team, TeamInvitation $invitation)
+    public function destroy(Team $team, TeamInvitation $invitation): RedirectResponse
     {
         $this->authorize('manageMembers', $team);
 
@@ -119,7 +124,7 @@ class TeamInvitationController extends Controller
     /**
      * Resend an invitation.
      */
-    public function resend(Team $team, TeamInvitation $invitation)
+    public function resend(Team $team, TeamInvitation $invitation): RedirectResponse
     {
         $this->authorize('manageMembers', $team);
 
@@ -148,7 +153,7 @@ class TeamInvitationController extends Controller
     /**
      * Show the invitation acceptance page.
      */
-    public function show(string $token)
+    public function show(string $token): Response
     {
         $invitation = TeamInvitation::findByToken($token);
 
@@ -184,7 +189,7 @@ class TeamInvitationController extends Controller
     /**
      * Accept an invitation.
      */
-    public function accept(Request $request, string $token)
+    public function accept(Request $request, string $token): RedirectResponse
     {
         $invitation = TeamInvitation::findByToken($token);
 

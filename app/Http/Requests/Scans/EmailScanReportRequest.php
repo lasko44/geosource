@@ -6,6 +6,9 @@ use App\Models\Scan;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
+/**
+ * Validates requests to email a scan report.
+ */
 class EmailScanReportRequest extends FormRequest
 {
     public function authorize(): bool

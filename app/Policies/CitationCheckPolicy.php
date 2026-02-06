@@ -5,6 +5,9 @@ namespace App\Policies;
 use App\Models\CitationCheck;
 use App\Models\User;
 
+/**
+ * Authorizes actions on citation check resources.
+ */
 class CitationCheckPolicy
 {
     public function view(User $user, CitationCheck $check): bool

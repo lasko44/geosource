@@ -5,6 +5,9 @@ namespace App\Console\Commands;
 use App\Models\BlogPost;
 use Illuminate\Console\Command;
 
+/**
+ * Exports a blog post for deployment to production.
+ */
 class ExportBlogPost extends Command
 {
     protected $signature = 'blog:export {slug} {--format=sql : Output format (sql or json)}';
@@ -70,7 +73,7 @@ class ExportBlogPost extends Command
                 return 'NULL';
             }
 
-            return "'" . addslashes($value) . "'";
+            return "'".addslashes($value)."'";
         }, array_values($data)));
 
         $sql = "INSERT INTO blog_posts ({$columns}) VALUES ({$values});";

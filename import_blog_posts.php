@@ -20,14 +20,14 @@ use Illuminate\Support\Str;
 
 $jsonFile = __DIR__.'/blog_posts_export.json';
 
-if (!file_exists($jsonFile)) {
+if (! file_exists($jsonFile)) {
     echo "Error: blog_posts_export.json not found\n";
     exit(1);
 }
 
 $posts = json_decode(file_get_contents($jsonFile), true);
 
-echo "Importing " . count($posts) . " blog posts...\n\n";
+echo 'Importing '.count($posts)." blog posts...\n\n";
 
 foreach ($posts as $postData) {
     // Check if post already exists by slug
@@ -35,10 +35,11 @@ foreach ($posts as $postData) {
 
     if ($existing) {
         echo "Skipping (exists): {$postData['slug']}\n";
+
         continue;
     }
 
-    $post = new BlogPost();
+    $post = new BlogPost;
     $post->uuid = $postData['uuid'] ?? Str::uuid();
     $post->slug = $postData['slug'];
     $post->title = $postData['title'];

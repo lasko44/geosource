@@ -39,7 +39,16 @@
       "Bash(pgrep:*)",
       "Bash(/Applications/DBngin.app/Contents/Resources/psql:*)",
       "Bash(php -r:*)",
-      "Bash(php:*)"
+      "Bash(php:*)",
+      "Bash(./vendor/bin/pint:*)",
+      "Bash(for file in /Users/matthewlaszkiewicz/Projects/Merik/geosource/app/Http/Controllers/Billing/*.php /Users/matthewlaszkiewicz/Projects/Merik/geosource/app/Http/Controllers/Marketing/*.php /Users/matthewlaszkiewicz/Projects/Merik/geosource/app/Http/Controllers/Tokens/*.php)",
+      "Bash(do)",
+      "Bash(if ! grep -q \"^/\\\\*\\\\*\" \"$file\")",
+      "Bash(then)",
+      "Bash(if ! grep -q \"^\\\\s*/\\\\*\\\\*\" \"$file\")",
+      "Bash(basename:*)",
+      "Bash(fi)",
+      "Bash(done)"
     ]
   }
 }

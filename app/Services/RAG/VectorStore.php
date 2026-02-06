@@ -331,7 +331,7 @@ class VectorStore
         // Apply metadata filters with validation
         foreach ($filters as $key => $value) {
             $safeKey = $this->validateFilterKey($key);
-            $query->whereRaw("metadata->>? = ?", [$safeKey, $value]);
+            $query->whereRaw('metadata->>? = ?', [$safeKey, $value]);
         }
 
         return $query->limit($limit)->get();
@@ -367,7 +367,7 @@ class VectorStore
         // Apply metadata filters with validation
         foreach ($filters as $key => $value) {
             $safeKey = $this->validateFilterKey($key);
-            $query->whereRaw("metadata->>? = ?", [$safeKey, $value]);
+            $query->whereRaw('metadata->>? = ?', [$safeKey, $value]);
         }
 
         return $query->delete();
@@ -505,9 +505,9 @@ class VectorStore
             if (is_array($value)) {
                 // Escape values for PostgreSQL array literal
                 $escapedValues = array_map(fn ($v) => str_replace(['\\', '"'], ['\\\\', '\\"'], (string) $v), $value);
-                $query->whereRaw("metadata->>? = ANY(?)", [$safeKey, '{'.implode(',', $escapedValues).'}']);
+                $query->whereRaw('metadata->>? = ANY(?)', [$safeKey, '{'.implode(',', $escapedValues).'}']);
             } else {
-                $query->whereRaw("metadata->>? = ?", [$safeKey, $value]);
+                $query->whereRaw('metadata->>? = ?', [$safeKey, $value]);
             }
         }
     }

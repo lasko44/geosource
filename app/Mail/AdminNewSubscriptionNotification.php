@@ -10,6 +10,9 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
+/**
+ * Notifies admins when a user subscribes to a plan.
+ */
 class AdminNewSubscriptionNotification extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;

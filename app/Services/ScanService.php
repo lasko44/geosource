@@ -11,6 +11,9 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Handles scan creation, execution, and management with quota validation.
+ */
 class ScanService
 {
     public function __construct(
@@ -520,7 +523,7 @@ class ScanService
     /**
      * Build scan list query based on team context.
      */
-    public function buildScanListQuery(User $user, ?int $currentTeamId)
+    public function buildScanListQuery(User $user, ?int $currentTeamId): \Illuminate\Database\Eloquent\Builder
     {
         if ($currentTeamId && ($this->subscriptionService->isAgencyTier($user) || $user->is_admin)) {
             $hasAccess = $user->allTeams()->contains('id', $currentTeamId);
@@ -535,7 +538,7 @@ class ScanService
     /**
      * Apply search and filter criteria to scan query.
      */
-    public function applyScanFilters($query, array $filters)
+    public function applyScanFilters(\Illuminate\Database\Eloquent\Builder $query, array $filters): \Illuminate\Database\Eloquent\Builder
     {
         if (! empty($filters['search'])) {
             $search = $filters['search'];
@@ -567,7 +570,7 @@ class ScanService
     /**
      * Apply sorting to scan query.
      */
-    public function applyScanSorting($query, string $sortField = 'created_at', string $sortDirection = 'desc')
+    public function applyScanSorting(\Illuminate\Database\Eloquent\Builder $query, string $sortField = 'created_at', string $sortDirection = 'desc'): \Illuminate\Database\Eloquent\Builder
     {
         $allowedSortFields = ['created_at', 'score', 'grade', 'title', 'url'];
         if (! in_array($sortField, $allowedSortFields)) {
@@ -592,7 +595,7 @@ class ScanService
     /**
      * Get available grades for filter dropdown.
      */
-    public function getAvailableGrades(User $user, ?int $currentTeamId)
+    public function getAvailableGrades(User $user, ?int $currentTeamId): \Illuminate\Support\Collection
     {
         $query = $currentTeamId
             ? Scan::where('team_id', $currentTeamId)

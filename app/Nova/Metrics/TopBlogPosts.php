@@ -32,7 +32,7 @@ class TopBlogPosts extends Partition
                 $title = preg_replace('/[\x00-\x1F\x7F]/u', '', $title); // Remove control characters
 
                 if (mb_strlen($title) > 40) {
-                    $title = mb_substr($title, 0, 37) . '...';
+                    $title = mb_substr($title, 0, 37).'...';
                 }
 
                 return [$title => $post->view_count ?? 0];

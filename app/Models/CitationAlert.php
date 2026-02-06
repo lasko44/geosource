@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * Represents an alert when citation status changes for a query.
+ */
 class CitationAlert extends Model
 {
     use HasFactory;
@@ -24,6 +27,7 @@ class CitationAlert extends Model
 
     // Alert type constants
     public const TYPE_NEW_CITATION = 'new_citation';
+
     public const TYPE_LOST_CITATION = 'lost_citation';
 
     protected function casts(): array

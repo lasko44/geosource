@@ -21,7 +21,7 @@ class TokenServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->tokenService = new TokenService();
+        $this->tokenService = new TokenService;
     }
 
     // ==========================================
@@ -455,7 +455,7 @@ class TokenServiceTest extends TestCase
         // Simulate 5 failed attempts
         for ($i = 0; $i < 5; $i++) {
             try {
-                $this->tokenService->redeemCode($user, 'INVALID' . $i);
+                $this->tokenService->redeemCode($user, 'INVALID'.$i);
             } catch (\Exception $e) {
                 // Expected
             }

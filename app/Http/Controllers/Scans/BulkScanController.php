@@ -11,6 +11,9 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * Handles bulk scan creation for multiple URLs at once.
+ */
 class BulkScanController extends Controller
 {
     /**

@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
+/**
+ * Represents a website GEO scan with scoring and recommendations.
+ */
 class Scan extends Model
 {
     use HasFactory, SoftDeletes;

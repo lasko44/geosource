@@ -8,6 +8,9 @@ use App\Services\Citation\CitationAnalyzerService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Checks domain and brand mentions in YouTube video search results.
+ */
 class YouTubeService
 {
     public function __construct(
@@ -30,7 +33,7 @@ class YouTubeService
             // Search YouTube for the query + domain/brand
             $searchQuery = $query->query;
             if ($query->brand) {
-                $searchQuery .= ' ' . $query->brand;
+                $searchQuery .= ' '.$query->brand;
             }
 
             $response = Http::timeout(60)
@@ -47,7 +50,7 @@ class YouTubeService
                     'query_id' => $query->id,
                 ]);
 
-                throw new \RuntimeException('SerpAPI YouTube request failed: ' . $response->body());
+                throw new \RuntimeException('SerpAPI YouTube request failed: '.$response->body());
             }
 
             $data = $response->json();
@@ -141,7 +144,7 @@ class YouTubeService
         $summary = "YouTube Search Results for: \"{$query->query}\"\n\n";
 
         if (count($citations) > 0) {
-            $summary .= "✓ Found " . count($citations) . " video(s) mentioning {$query->domain}" . ($query->brand ? " or {$query->brand}" : "") . ".\n\n";
+            $summary .= '✓ Found '.count($citations)." video(s) mentioning {$query->domain}".($query->brand ? " or {$query->brand}" : '').".\n\n";
 
             $summary .= "Videos with mentions:\n";
             foreach ($citations as $index => $citation) {
@@ -151,7 +154,7 @@ class YouTubeService
                 $summary .= "   {$citation['url']}\n\n";
             }
         } else {
-            $summary .= "✗ No videos found mentioning {$query->domain}" . ($query->brand ? " or {$query->brand}" : "") . " in top " . count($videoResults) . " results.\n\n";
+            $summary .= "✗ No videos found mentioning {$query->domain}".($query->brand ? " or {$query->brand}" : '').' in top '.count($videoResults)." results.\n\n";
         }
 
         $summary .= "Top 5 Video Results:\n";

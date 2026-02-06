@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * Records social media shares of blog posts.
+ */
 class BlogShare extends Model
 {
     public $timestamps = false;
@@ -44,7 +47,7 @@ class BlogShare extends Model
     /**
      * Scope by platform.
      */
-    public function scopeOnPlatform($query, string $platform)
+    public function scopeOnPlatform($query, string $platform): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('platform', $platform);
     }

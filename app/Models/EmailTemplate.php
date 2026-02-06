@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
+/**
+ * Represents a reusable email template for campaigns.
+ */
 class EmailTemplate extends Model
 {
     use HasFactory;
@@ -58,8 +61,8 @@ class EmailTemplate extends Model
         $variables = array_merge($defaults, $variables);
 
         foreach ($variables as $key => $value) {
-            $content = str_replace('{{' . $key . '}}', $value, $content);
-            $content = str_replace('{{ ' . $key . ' }}', $value, $content);
+            $content = str_replace('{{'.$key.'}}', $value, $content);
+            $content = str_replace('{{ '.$key.' }}', $value, $content);
         }
 
         return $content;

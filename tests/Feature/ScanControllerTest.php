@@ -9,7 +9,6 @@ use App\Models\User;
 use App\Services\SubscriptionService;
 use App\Services\TokenService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
@@ -18,6 +17,7 @@ class ScanControllerTest extends TestCase
     use RefreshDatabase;
 
     private SubscriptionService $subscriptionService;
+
     private TokenService $tokenService;
 
     protected function setUp(): void

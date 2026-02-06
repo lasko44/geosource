@@ -5,13 +5,16 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Spatie\Browsershot\Browsershot;
 
+/**
+ * Tests Browsershot configuration and functionality.
+ */
 class TestBrowsershot extends Command
 {
     protected $signature = 'test:browsershot {url?}';
 
     protected $description = 'Test Browsershot configuration';
 
-    public function handle()
+    public function handle(): int
     {
         $url = $this->argument('url') ?? 'https://www.texasroadhouse.com/';
 
@@ -25,22 +28,24 @@ class TestBrowsershot extends Command
         $this->info("Node binary: {$nodePath}");
         $this->info("NPM binary: {$npmPath}");
 
-        if (!file_exists($nodePath)) {
+        if (! file_exists($nodePath)) {
             $this->error("Node binary not found at {$nodePath}");
             $this->info("Run 'which node' to find the correct path");
+
             return 1;
         }
 
-        if (!file_exists($npmPath)) {
+        if (! file_exists($npmPath)) {
             $this->error("NPM binary not found at {$npmPath}");
             $this->info("Run 'which npm' to find the correct path");
+
             return 1;
         }
 
-        $this->info("Node/NPM paths OK");
+        $this->info('Node/NPM paths OK');
         $this->newLine();
 
-        $this->info("Attempting to fetch page with Browsershot...");
+        $this->info('Attempting to fetch page with Browsershot...');
 
         try {
             $browsershot = Browsershot::url($url)
@@ -75,20 +80,21 @@ class TestBrowsershot extends Command
             $html = $browsershot->bodyHtml();
 
             if (empty($html)) {
-                $this->error("Empty response received");
+                $this->error('Empty response received');
+
                 return 1;
             }
 
-            $this->info("Success! Received " . strlen($html) . " bytes");
+            $this->info('Success! Received '.strlen($html).' bytes');
 
             // Check for Cloudflare challenge
             if (str_contains($html, 'challenge-platform') || str_contains($html, 'cf-browser-verification')) {
-                $this->warn("Cloudflare challenge page detected - may need longer delay");
+                $this->warn('Cloudflare challenge page detected - may need longer delay');
             }
 
             // Check for title
             if (preg_match('/<title[^>]*>(.*?)<\/title>/is', $html, $match)) {
-                $this->info("Page title: " . trim(html_entity_decode($match[1])));
+                $this->info('Page title: '.trim(html_entity_decode($match[1])));
             }
 
             // Save HTML for inspection
@@ -99,10 +105,11 @@ class TestBrowsershot extends Command
             return 0;
 
         } catch (\Exception $e) {
-            $this->error("Browsershot failed: " . $e->getMessage());
+            $this->error('Browsershot failed: '.$e->getMessage());
             $this->newLine();
-            $this->error("Full error:");
+            $this->error('Full error:');
             $this->line($e->getTraceAsString());
+
             return 1;
         }
     }

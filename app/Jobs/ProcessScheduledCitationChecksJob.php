@@ -2,8 +2,6 @@
 
 namespace App\Jobs;
 
-use App\Models\CitationCheck;
-use App\Models\CitationQuery;
 use App\Models\User;
 use App\Services\Citation\CitationService;
 use App\Services\SubscriptionService;
@@ -17,7 +15,10 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-class ProcessScheduledCitationChecksJob implements ShouldQueue, ShouldBeUnique
+/**
+ * Processes all scheduled citation checks that are due to run.
+ */
+class ProcessScheduledCitationChecksJob implements ShouldBeUnique, ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 

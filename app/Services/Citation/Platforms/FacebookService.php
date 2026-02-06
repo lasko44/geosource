@@ -8,6 +8,9 @@ use App\Services\Citation\CitationAnalyzerService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Checks domain and brand mentions on Facebook via Google site search.
+ */
 class FacebookService
 {
     public function __construct(
@@ -30,11 +33,11 @@ class FacebookService
             // Search Facebook via Google site search
             $searchTerms = $query->query;
             if ($query->brand) {
-                $searchTerms .= ' ' . $query->brand;
+                $searchTerms .= ' '.$query->brand;
             }
 
             // Add domain to search for mentions
-            $searchTerms .= ' ' . $query->domain;
+            $searchTerms .= ' '.$query->domain;
 
             $response = Http::timeout(60)
                 ->get('https://serpapi.com/search.json', [
@@ -53,7 +56,7 @@ class FacebookService
                     'query_id' => $query->id,
                 ]);
 
-                throw new \RuntimeException('SerpAPI Facebook request failed: ' . $response->body());
+                throw new \RuntimeException('SerpAPI Facebook request failed: '.$response->body());
             }
 
             $data = $response->json();
@@ -160,10 +163,10 @@ class FacebookService
     protected function buildResponseSummary(array $organicResults, array $citations, CitationQuery $query): string
     {
         $summary = "Facebook Search Results for: \"{$query->query}\"\n";
-        $summary .= "Looking for mentions of: {$query->domain}" . ($query->brand ? " / {$query->brand}" : "") . "\n\n";
+        $summary .= "Looking for mentions of: {$query->domain}".($query->brand ? " / {$query->brand}" : '')."\n\n";
 
         if (count($citations) > 0) {
-            $summary .= "✓ Found " . count($citations) . " Facebook mention(s).\n\n";
+            $summary .= '✓ Found '.count($citations)." Facebook mention(s).\n\n";
 
             $summary .= "Mentions found:\n";
             foreach ($citations as $index => $citation) {
@@ -172,12 +175,12 @@ class FacebookService
                 $summary .= "{$pos}. [{$type}] {$citation['title']}\n";
                 $summary .= "   {$citation['url']}\n";
                 if ($citation['snippet']) {
-                    $summary .= "   " . substr($citation['snippet'], 0, 100) . "...\n";
+                    $summary .= '   '.substr($citation['snippet'], 0, 100)."...\n";
                 }
                 $summary .= "\n";
             }
         } else {
-            $summary .= "✗ No Facebook mentions found for {$query->domain}" . ($query->brand ? " or {$query->brand}" : "") . ".\n\n";
+            $summary .= "✗ No Facebook mentions found for {$query->domain}".($query->brand ? " or {$query->brand}" : '').".\n\n";
         }
 
         if (count($organicResults) > 0) {

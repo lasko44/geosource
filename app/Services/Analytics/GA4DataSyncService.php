@@ -6,6 +6,9 @@ use App\Models\GA4Connection;
 use App\Models\GA4ReferralData;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Synchronizes referral and traffic data from Google Analytics 4.
+ */
 class GA4DataSyncService
 {
     public function __construct(

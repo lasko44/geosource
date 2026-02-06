@@ -76,7 +76,7 @@ class WebhookHandlerTest extends TestCase
             'balance_after' => 100,
         ]);
 
-        $this->assertEquals("Purchased 100 Token Pack", $transaction->description);
+        $this->assertEquals('Purchased 100 Token Pack', $transaction->description);
         $this->assertEquals($package->id, $transaction->metadata['package_id']);
         $this->assertEquals('cs_test_789', $transaction->metadata['stripe_session_id']);
     }

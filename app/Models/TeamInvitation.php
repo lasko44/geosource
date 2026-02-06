@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
+/**
+ * Represents a pending invitation to join a team.
+ */
 class TeamInvitation extends Model
 {
     protected $fillable = [
@@ -120,7 +123,7 @@ class TeamInvitation extends Model
     /**
      * Scope to get only pending invitations.
      */
-    public function scopePending($query)
+    public function scopePending($query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->whereNull('accepted_at')
             ->where('expires_at', '>', now());

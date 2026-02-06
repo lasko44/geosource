@@ -7,6 +7,9 @@ use App\Services\ScanService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
+/**
+ * Validates requests to rescan an existing URL.
+ */
 class RescanRequest extends FormRequest
 {
     public function authorize(): bool

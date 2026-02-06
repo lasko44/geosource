@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Represents a document for RAG-based vector search.
+ */
 class Document extends Model
 {
     use HasFactory;

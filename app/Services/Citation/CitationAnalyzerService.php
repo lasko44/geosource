@@ -2,6 +2,9 @@
 
 namespace App\Services\Citation;
 
+/**
+ * Analyzes AI responses for domain and brand citations.
+ */
 class CitationAnalyzerService
 {
     /**

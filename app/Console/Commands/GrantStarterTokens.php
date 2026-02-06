@@ -41,6 +41,7 @@ class GrantStarterTokens extends Command
 
         if ($users->isEmpty()) {
             $this->info('No eligible users found (non-admin users with zero tokens).');
+
             return Command::SUCCESS;
         }
 
@@ -52,11 +53,13 @@ class GrantStarterTokens extends Command
                 ['ID', 'Name', 'Email', 'Current Balance', 'Would Receive'],
                 $users->map(fn ($u) => [$u->id, $u->name, $u->email, $u->token_balance, $amount])
             );
+
             return Command::SUCCESS;
         }
 
-        if (!$this->confirm("Grant {$amount} tokens to {$users->count()} users?")) {
+        if (! $this->confirm("Grant {$amount} tokens to {$users->count()} users?")) {
             $this->info('Cancelled.');
+
             return Command::SUCCESS;
         }
 

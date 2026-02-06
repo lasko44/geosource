@@ -5,6 +5,9 @@ namespace App\Http\Requests\Citations;
 use App\Services\Citation\CitationService;
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * Validates requests to mark citation alerts as read.
+ */
 class MarkCitationAlertsReadRequest extends FormRequest
 {
     public function authorize(): bool

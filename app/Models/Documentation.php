@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
+/**
+ * Stores admin documentation pages and guides.
+ */
 class Documentation extends Model
 {
     protected $fillable = [
@@ -65,13 +68,13 @@ class Documentation extends Model
      */
     public function scopeSearch(Builder $query, string $term): Builder
     {
-        $term = '%' . $term . '%';
+        $term = '%'.$term.'%';
 
         return $query->where(function ($q) use ($term) {
             $q->where('title', 'ilike', $term)
-              ->orWhere('content', 'ilike', $term)
-              ->orWhere('category', 'ilike', $term)
-              ->orWhere('excerpt', 'ilike', $term);
+                ->orWhere('content', 'ilike', $term)
+                ->orWhere('category', 'ilike', $term)
+                ->orWhere('excerpt', 'ilike', $term);
         });
     }
 

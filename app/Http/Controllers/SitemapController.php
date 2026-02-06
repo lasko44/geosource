@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\BlogPost;
 use Illuminate\Http\Response;
 
+/**
+ * Generates the XML sitemap for search engine crawlers.
+ */
 class SitemapController extends Controller
 {
     /**

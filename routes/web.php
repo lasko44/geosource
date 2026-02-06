@@ -2,8 +2,12 @@
 
 use App\Http\Controllers\Api\AnalyticsController;
 use App\Http\Controllers\Auth\GoogleController;
-use App\Http\Controllers\MarketingUnsubscribeController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Marketing\ProcessUnsubscribeController;
+use App\Http\Controllers\Marketing\ShowUnsubscribeController;
+use App\Http\Controllers\Marketing\TrackClickController;
+use App\Http\Controllers\Marketing\TrackOpenController;
+use App\Http\Controllers\Marketing\UnsubscribeSuccessController;
 use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -55,11 +59,11 @@ require __DIR__.'/citations.php';
 require __DIR__.'/blog.php';
 
 // Marketing email unsubscribe
-Route::get('/unsubscribe', [MarketingUnsubscribeController::class, 'unsubscribe'])->name('marketing.unsubscribe');
-Route::post('/unsubscribe', [MarketingUnsubscribeController::class, 'processUnsubscribe'])->name('marketing.unsubscribe.process');
-Route::get('/unsubscribe/success', [MarketingUnsubscribeController::class, 'success'])->name('marketing.unsubscribe.success');
-Route::get('/email/track/open', [MarketingUnsubscribeController::class, 'trackOpen'])->name('marketing.track-open');
-Route::get('/email/track/click', [MarketingUnsubscribeController::class, 'trackClick'])->name('marketing.track-click');
+Route::get('/unsubscribe', ShowUnsubscribeController::class)->name('marketing.unsubscribe');
+Route::post('/unsubscribe', ProcessUnsubscribeController::class)->name('marketing.unsubscribe.process');
+Route::get('/unsubscribe/success', UnsubscribeSuccessController::class)->name('marketing.unsubscribe.success');
+Route::get('/email/track/open', TrackOpenController::class)->name('marketing.track-open');
+Route::get('/email/track/click', TrackClickController::class)->name('marketing.track-click');
 
 // Analytics tracking (for marking page views as engaged)
-Route::post('/analytics/engaged', [AnalyticsController::class, 'markEngaged'])->name('analytics.engaged');
+Route::post('/analytics/engaged', AnalyticsController::class)->name('analytics.engaged');

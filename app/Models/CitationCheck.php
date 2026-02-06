@@ -9,6 +9,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
+/**
+ * Records a single citation check against an AI platform.
+ */
 class CitationCheck extends Model
 {
     use HasFactory, SoftDeletes;
@@ -32,20 +35,29 @@ class CitationCheck extends Model
 
     // AI Platform constants
     public const PLATFORM_PERPLEXITY = 'perplexity';
+
     public const PLATFORM_OPENAI = 'openai';
+
     public const PLATFORM_CLAUDE = 'claude';
+
     public const PLATFORM_GEMINI = 'gemini';
+
     public const PLATFORM_DEEPSEEK = 'deepseek';
 
     // Search/Social Platform constants
     public const PLATFORM_GOOGLE = 'google';
+
     public const PLATFORM_YOUTUBE = 'youtube';
+
     public const PLATFORM_FACEBOOK = 'facebook';
 
     // Status constants
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_PROCESSING = 'processing';
+
     public const STATUS_COMPLETED = 'completed';
+
     public const STATUS_FAILED = 'failed';
 
     /**

@@ -2,18 +2,21 @@
 
 namespace App\Services\Citation;
 
+use App\Jobs\CheckCitationJob;
 use App\Models\CitationAlert;
 use App\Models\CitationCheck;
 use App\Models\CitationQuery;
 use App\Models\Team;
 use App\Models\User;
-use App\Jobs\CheckCitationJob;
 use App\Services\Analytics\GA4Service;
 use App\Services\SubscriptionService;
 use App\Services\TokenService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Manages citation tracking, checks, and alerts across AI platforms.
+ */
 class CitationService
 {
     public function __construct(
@@ -62,7 +65,7 @@ class CitationService
     public function getTokenCost(string $platform): int
     {
         $providerKey = config("tokens.citation_providers.{$platform}");
-        if (!$providerKey) {
+        if (! $providerKey) {
             return 0;
         }
 
@@ -79,6 +82,7 @@ class CitationService
         }
 
         $cost = $this->getTokenCost($platform);
+
         return ($user->token_balance ?? 0) >= $cost;
     }
 
@@ -452,7 +456,7 @@ class CitationService
     /**
      * Get paginated alerts for user filtered by team context.
      */
-    public function getPaginatedAlerts(User $user, ?Team $team = null, int $perPage = 20)
+    public function getPaginatedAlerts(User $user, ?Team $team = null, int $perPage = 20): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
         $query = CitationAlert::where('user_id', $user->id);
 

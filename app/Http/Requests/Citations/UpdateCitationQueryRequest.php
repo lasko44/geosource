@@ -7,6 +7,9 @@ use App\Services\Citation\CitationService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
+/**
+ * Validates requests to update a citation query.
+ */
 class UpdateCitationQueryRequest extends FormRequest
 {
     public function authorize(): bool

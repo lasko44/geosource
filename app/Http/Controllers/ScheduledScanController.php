@@ -6,21 +6,22 @@ use App\Models\ScheduledScan;
 use App\Models\User;
 use App\Services\SubscriptionService;
 use App\Services\TokenService;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use Inertia\Response;
 
+/**
+ * Manages scheduled scans for automated recurring website analysis.
+ */
 class ScheduledScanController extends Controller
 {
-    public function __construct(
-        private SubscriptionService $subscriptionService,
-        private TokenService $tokenService,
-    ) {}
-
     /**
      * Display listing of scheduled scans.
      */
-    public function index(Request $request)
+    public function index(Request $request): Response
     {
         $user = $request->user();
 
@@ -92,7 +93,7 @@ class ScheduledScanController extends Controller
     /**
      * Show create form.
      */
-    public function create(Request $request)
+    public function create(Request $request): Response|RedirectResponse
     {
         $user = $request->user();
 
@@ -111,7 +112,7 @@ class ScheduledScanController extends Controller
     /**
      * Store a new scheduled scan.
      */
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         $user = $request->user();
 
@@ -158,8 +159,10 @@ class ScheduledScanController extends Controller
 
     /**
      * Show edit form.
+     *
+     * @throws AuthorizationException
      */
-    public function edit(ScheduledScan $scheduledScan)
+    public function edit(ScheduledScan $scheduledScan): Response|RedirectResponse
     {
         $this->authorize('update', $scheduledScan);
 
@@ -185,8 +188,10 @@ class ScheduledScanController extends Controller
 
     /**
      * Update scheduled scan.
+     *
+     * @throws AuthorizationException
      */
-    public function update(Request $request, ScheduledScan $scheduledScan)
+    public function update(Request $request, ScheduledScan $scheduledScan): RedirectResponse
     {
         $this->authorize('update', $scheduledScan);
 
@@ -227,7 +232,7 @@ class ScheduledScanController extends Controller
     /**
      * Toggle active status.
      */
-    public function toggle(ScheduledScan $scheduledScan)
+    public function toggle(ScheduledScan $scheduledScan): RedirectResponse
     {
         $this->authorize('update', $scheduledScan);
 
@@ -251,7 +256,7 @@ class ScheduledScanController extends Controller
     /**
      * Delete scheduled scan.
      */
-    public function destroy(ScheduledScan $scheduledScan)
+    public function destroy(ScheduledScan $scheduledScan): RedirectResponse
     {
         $this->authorize('delete', $scheduledScan);
 
@@ -264,7 +269,7 @@ class ScheduledScanController extends Controller
     /**
      * Run a scheduled scan manually.
      */
-    public function runNow(ScheduledScan $scheduledScan)
+    public function runNow(ScheduledScan $scheduledScan, SubscriptionService $subscriptionService, TokenService $tokenService): RedirectResponse
     {
         $this->authorize('update', $scheduledScan);
 
@@ -277,11 +282,11 @@ class ScheduledScanController extends Controller
         // Check quota
         if ($scheduledScan->team_id) {
             $team = $scheduledScan->team;
-            if (! $this->subscriptionService->canScanForTeam($team)) {
+            if (! $subscriptionService->canScanForTeam($team)) {
                 return back()->withErrors(['quota' => 'Team scan quota exceeded.']);
             }
         } else {
-            if (! $this->subscriptionService->canScan($user)) {
+            if (! $subscriptionService->canScan($user)) {
                 return back()->withErrors(['quota' => 'Personal scan quota exceeded.']);
             }
         }
@@ -310,7 +315,7 @@ class ScheduledScanController extends Controller
                     throw new \Exception('Insufficient tokens after lock verification.');
                 }
 
-                $this->tokenService->spend($lockedUser, 'scheduled_scan', [
+                $tokenService->spend($lockedUser, 'scheduled_scan', [
                     'scheduled_scan_id' => $scheduledScan->id,
                     'url' => $scheduledScan->url,
                 ]);

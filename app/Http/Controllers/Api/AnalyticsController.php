@@ -7,25 +7,24 @@ use App\Services\Analytics\PageViewTracker;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * Marks page views as engaged when visitors stay on the page.
+ */
 class AnalyticsController extends Controller
 {
-    public function __construct(
-        private PageViewTracker $tracker
-    ) {}
-
     /**
      * Mark a page view as engaged (visitor stayed on page for a few seconds).
      */
-    public function markEngaged(Request $request): JsonResponse
+    public function __invoke(Request $request, PageViewTracker $tracker): JsonResponse
     {
         $sessionId = $request->session()->getId();
         $path = $request->input('path', '/');
 
-        if (!$sessionId) {
+        if (! $sessionId) {
             return response()->json(['success' => false], 400);
         }
 
-        $success = $this->tracker->markEngaged($sessionId, $path);
+        $success = $tracker->markEngaged($sessionId, $path);
 
         return response()->json(['success' => $success]);
     }

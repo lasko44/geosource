@@ -9,6 +9,9 @@ use Illuminate\Support\Arr;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * Displays the main user dashboard with scans, stats, and team context.
+ */
 class DashboardController extends Controller
 {
     /**

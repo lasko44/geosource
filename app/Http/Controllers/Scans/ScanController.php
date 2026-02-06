@@ -5,10 +5,14 @@ namespace App\Http\Controllers\Scans;
 use App\Http\Controllers\Controller;
 use App\Models\Scan;
 use App\Services\ScanService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * Handles website scan CRUD operations and display.
+ */
 class ScanController extends Controller
 {
     /**
@@ -93,7 +97,7 @@ class ScanController extends Controller
     /**
      * Store a newly created scan.
      */
-    public function store(\App\Http\Requests\Scans\StoreScanRequest $request, ScanService $scanService)
+    public function store(\App\Http\Requests\Scans\StoreScanRequest $request, ScanService $scanService): RedirectResponse
     {
         try {
             $scan = $scanService->executeScan(
@@ -115,7 +119,7 @@ class ScanController extends Controller
     /**
      * Remove the specified scan.
      */
-    public function destroy(Scan $scan)
+    public function destroy(Scan $scan): RedirectResponse
     {
         $this->authorize('delete', $scan);
 

@@ -7,6 +7,9 @@ use App\Services\ScanService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
+/**
+ * Validates requests to create multiple website scans.
+ */
 class StoreBulkScanRequest extends FormRequest
 {
     protected array $validUrls = [];

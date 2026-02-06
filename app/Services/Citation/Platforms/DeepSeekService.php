@@ -8,6 +8,9 @@ use App\Services\Citation\CitationAnalyzerService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Performs citation checks using the DeepSeek AI API.
+ */
 class DeepSeekService
 {
     public function __construct(
@@ -33,10 +36,10 @@ class DeepSeekService
         try {
             $response = Http::timeout($timeout)
                 ->withHeaders([
-                    'Authorization' => 'Bearer ' . $apiKey,
+                    'Authorization' => 'Bearer '.$apiKey,
                     'Content-Type' => 'application/json',
                 ])
-                ->post($baseUrl . '/chat/completions', [
+                ->post($baseUrl.'/chat/completions', [
                     'model' => $model,
                     'messages' => [
                         [
@@ -55,7 +58,7 @@ class DeepSeekService
 
             if (! $response->successful()) {
                 $errorData = $response->json();
-                $errorMessage = $errorData['error']['message'] ?? $errorData['detail'] ?? 'Unknown error (status: ' . $response->status() . ')';
+                $errorMessage = $errorData['error']['message'] ?? $errorData['detail'] ?? 'Unknown error (status: '.$response->status().')';
 
                 Log::error('DeepSeek API error', [
                     'status' => $response->status(),
@@ -63,7 +66,7 @@ class DeepSeekService
                     'query_id' => $query->id,
                 ]);
 
-                throw new \RuntimeException('DeepSeek API request failed: ' . $errorMessage);
+                throw new \RuntimeException('DeepSeek API request failed: '.$errorMessage);
             }
 
             $data = $response->json();
@@ -128,9 +131,9 @@ class DeepSeekService
             : '';
 
         return sprintf(
-            "Please search for and provide comprehensive information about: %s\n\n" .
-            "Important: If you mention or reference the website \"%s\" or any pages from this domain, please include the full URL.%s\n\n" .
-            "Provide a detailed, informative response with sources where applicable.",
+            "Please search for and provide comprehensive information about: %s\n\n".
+            "Important: If you mention or reference the website \"%s\" or any pages from this domain, please include the full URL.%s\n\n".
+            'Provide a detailed, informative response with sources where applicable.',
             $query->query,
             $query->domain,
             $brandContext

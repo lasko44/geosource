@@ -9,6 +9,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
+/**
+ * Represents a Google Analytics 4 OAuth connection for a team.
+ */
 class GA4Connection extends Model
 {
     use HasFactory, SoftDeletes;
@@ -31,8 +34,11 @@ class GA4Connection extends Model
     ];
 
     public const SYNC_STATUS_IDLE = 'idle';
+
     public const SYNC_STATUS_SYNCING = 'syncing';
+
     public const SYNC_STATUS_COMPLETED = 'completed';
+
     public const SYNC_STATUS_FAILED = 'failed';
 
     /**

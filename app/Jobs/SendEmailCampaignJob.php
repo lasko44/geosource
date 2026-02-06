@@ -14,7 +14,10 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
-class SendEmailCampaignJob implements ShouldQueue, ShouldBeUnique
+/**
+ * Sends marketing emails to all recipients in a campaign.
+ */
+class SendEmailCampaignJob implements ShouldBeUnique, ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -33,7 +36,7 @@ class SendEmailCampaignJob implements ShouldQueue, ShouldBeUnique
      */
     public function uniqueId(): string
     {
-        return 'email-campaign-' . $this->campaign->id;
+        return 'email-campaign-'.$this->campaign->id;
     }
 
     /**
@@ -58,11 +61,13 @@ class SendEmailCampaignJob implements ShouldQueue, ShouldBeUnique
         // Double-check campaign is in sending status (not already completed)
         if ($campaign->status === 'sent') {
             Log::info("Campaign {$campaign->id} already sent, skipping");
+
             return;
         }
 
         if ($campaign->status !== 'sending') {
             Log::warning("Campaign {$campaign->id} has unexpected status: {$campaign->status}");
+
             return;
         }
 
@@ -71,6 +76,7 @@ class SendEmailCampaignJob implements ShouldQueue, ShouldBeUnique
         if (! $template) {
             Log::error("Campaign {$campaign->id} has no template");
             $campaign->update(['status' => 'cancelled']);
+
             return;
         }
 
@@ -111,7 +117,7 @@ class SendEmailCampaignJob implements ShouldQueue, ShouldBeUnique
                 $campaign->increment('sent_count');
 
             } catch (\Exception $e) {
-                Log::error("Failed to send campaign email to {$user->email}: " . $e->getMessage());
+                Log::error("Failed to send campaign email to {$user->email}: ".$e->getMessage());
 
                 // Update send record with error
                 $send->update([
@@ -138,7 +144,7 @@ class SendEmailCampaignJob implements ShouldQueue, ShouldBeUnique
      */
     public function failed(\Throwable $exception): void
     {
-        Log::error("Campaign job {$this->campaign->id} failed: " . $exception->getMessage());
+        Log::error("Campaign job {$this->campaign->id} failed: ".$exception->getMessage());
 
         // Mark as failed so admin can investigate
         $this->campaign->update(['status' => 'cancelled']);

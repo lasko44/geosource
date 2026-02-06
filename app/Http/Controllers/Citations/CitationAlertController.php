@@ -8,6 +8,9 @@ use App\Services\Citation\CitationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * Manages citation alerts for monitoring brand mentions.
+ */
 class CitationAlertController extends Controller
 {
     /**
@@ -30,7 +33,7 @@ class CitationAlertController extends Controller
     /**
      * Mark alerts as read.
      */
-    public function markRead(MarkCitationAlertsReadRequest $request, CitationService $citationService)
+    public function markRead(MarkCitationAlertsReadRequest $request, CitationService $citationService): \Illuminate\Http\RedirectResponse
     {
         $citationService->markAlertsAsRead(
             $request->alert_ids,

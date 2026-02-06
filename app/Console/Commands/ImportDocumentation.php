@@ -6,6 +6,9 @@ use App\Models\Documentation;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 
+/**
+ * Imports documentation from HTML files into the database.
+ */
 class ImportDocumentation extends Command
 {
     protected $signature = 'docs:import {--fresh : Clear existing documentation before importing}';
@@ -31,7 +34,7 @@ class ImportDocumentation extends Command
 
         $sections = $this->parseSections($originalHtml);
 
-        $this->info('Found ' . count($sections) . ' sections to import.');
+        $this->info('Found '.count($sections).' sections to import.');
 
         $bar = $this->output->createProgressBar(count($sections));
         $bar->start();
@@ -95,7 +98,7 @@ class ImportDocumentation extends Command
             $nextId = $ids[$i + 1] ?? null;
 
             // Find content between sections
-            $startPattern = 'id="' . $currentId . '"';
+            $startPattern = 'id="'.$currentId.'"';
             $startPos = strpos($html, $startPattern);
 
             if ($startPos === false) {
@@ -110,7 +113,7 @@ class ImportDocumentation extends Command
 
             // Find the end of this section (start of next h2 or end of content)
             if ($nextId) {
-                $nextPattern = 'id="' . $nextId . '"';
+                $nextPattern = 'id="'.$nextId.'"';
                 $nextPos = strpos($html, $nextPattern, $startPos);
                 if ($nextPos !== false) {
                     // Find the h2 tag that contains this id

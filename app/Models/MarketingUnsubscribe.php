@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
+/**
+ * Tracks users who have unsubscribed from marketing emails.
+ */
 class MarketingUnsubscribe extends Model
 {
     use HasFactory;

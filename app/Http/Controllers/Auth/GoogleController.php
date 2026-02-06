@@ -4,18 +4,22 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
+use Symfony\Component\HttpFoundation\RedirectResponse as SymfonyRedirectResponse;
 
+/**
+ * Handles Google OAuth authentication flow.
+ */
 class GoogleController extends Controller
 {
     /**
      * Redirect to Google OAuth.
      */
-    public function redirect()
+    public function redirect(): SymfonyRedirectResponse
     {
         return Socialite::driver('google')->redirect();
     }
@@ -23,7 +27,7 @@ class GoogleController extends Controller
     /**
      * Handle Google OAuth callback.
      */
-    public function callback()
+    public function callback(): RedirectResponse
     {
         try {
             $googleUser = Socialite::driver('google')->user();

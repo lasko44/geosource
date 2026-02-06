@@ -3,7 +3,6 @@
 namespace App\Nova\Tools;
 
 use Illuminate\Http\Request;
-use Laravel\Nova\Menu\MenuItem;
 use Laravel\Nova\Menu\MenuSection;
 use Laravel\Nova\Tool;
 

@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Http\Request;
 
+/**
+ * Records audit events for scan operations and quota tracking.
+ */
 class ScanAuditLog extends Model
 {
     protected $fillable = [
@@ -24,11 +27,17 @@ class ScanAuditLog extends Model
 
     // Event constants
     public const EVENT_SCAN_CREATED = 'scan_created';
+
     public const EVENT_SCAN_RESCAN = 'scan_rescan';
+
     public const EVENT_QUOTA_EXCEEDED = 'quota_exceeded';
+
     public const EVENT_MEMBER_LIMIT_EXCEEDED = 'member_limit_exceeded';
+
     public const EVENT_TEAM_QUOTA_EXCEEDED = 'team_quota_exceeded';
+
     public const EVENT_SCAN_DELETED = 'scan_deleted';
+
     public const EVENT_UNAUTHORIZED_ACCESS = 'unauthorized_access';
 
     public function user(): BelongsTo

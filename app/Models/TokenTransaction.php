@@ -7,13 +7,19 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
+/**
+ * Records individual token balance changes for a user.
+ */
 class TokenTransaction extends Model
 {
     use HasFactory;
 
     const TYPE_PURCHASE = 'purchase';
+
     const TYPE_SPEND = 'spend';
+
     const TYPE_REFUND = 'refund';
+
     const TYPE_BONUS = 'bonus';
 
     public $timestamps = false;
@@ -38,7 +44,7 @@ class TokenTransaction extends Model
     /**
      * Boot the model.
      */
-    protected static function boot()
+    protected static function boot(): void
     {
         parent::boot();
 
@@ -68,7 +74,7 @@ class TokenTransaction extends Model
     /**
      * Scope to get purchases.
      */
-    public function scopePurchases($query)
+    public function scopePurchases($query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('type', self::TYPE_PURCHASE);
     }
@@ -76,7 +82,7 @@ class TokenTransaction extends Model
     /**
      * Scope to get spending transactions.
      */
-    public function scopeSpending($query)
+    public function scopeSpending($query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('type', self::TYPE_SPEND);
     }
@@ -110,6 +116,6 @@ class TokenTransaction extends Model
      */
     public function getFormattedAmountAttribute(): string
     {
-        return ($this->amount >= 0 ? '+' : '') . $this->amount;
+        return ($this->amount >= 0 ? '+' : '').$this->amount;
     }
 }

@@ -7,6 +7,9 @@ use App\Services\Citation\CitationService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
+/**
+ * Validates requests to run citation checks on multiple platforms.
+ */
 class RunBulkCitationCheckRequest extends FormRequest
 {
     protected ?array $validatedPlatforms = null;

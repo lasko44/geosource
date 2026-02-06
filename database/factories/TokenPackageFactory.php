@@ -23,10 +23,10 @@ class TokenPackageFactory extends Factory
         $pricePerToken = $this->faker->randomFloat(2, 0.05, 0.15);
 
         return [
-            'name' => $tokens . ' Tokens',
+            'name' => $tokens.' Tokens',
             'tokens' => $tokens,
             'price_cents' => (int) ($tokens * $pricePerToken * 100),
-            'stripe_price_id' => 'price_' . $this->faker->uuid(),
+            'stripe_price_id' => 'price_'.$this->faker->uuid(),
             'savings_percent' => $tokens > 100 ? $this->faker->numberBetween(5, 25) : 0,
             'is_popular' => false,
             'is_active' => true,

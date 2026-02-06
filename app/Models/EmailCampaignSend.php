@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * Records individual email sends for a marketing campaign.
+ */
 class EmailCampaignSend extends Model
 {
     use HasFactory;

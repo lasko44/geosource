@@ -11,6 +11,9 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * Manages citation query CRUD operations.
+ */
 class CitationQueryController extends Controller
 {
     /**
@@ -68,7 +71,7 @@ class CitationQueryController extends Controller
     /**
      * Store a new citation query.
      */
-    public function store(StoreCitationQueryRequest $request, CitationService $citationService)
+    public function store(StoreCitationQueryRequest $request, CitationService $citationService): \Illuminate\Http\RedirectResponse
     {
         $citationQuery = $citationService->createQuery(
             $request->user(),
@@ -109,7 +112,7 @@ class CitationQueryController extends Controller
     /**
      * Update a citation query.
      */
-    public function update(UpdateCitationQueryRequest $request, CitationQuery $query)
+    public function update(UpdateCitationQueryRequest $request, CitationQuery $query): \Illuminate\Http\RedirectResponse
     {
         $query->update($request->validated());
 

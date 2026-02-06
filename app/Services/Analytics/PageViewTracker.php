@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Tracks page views and filters out bot traffic.
+ */
 class PageViewTracker
 {
     // Known bot patterns
@@ -52,7 +55,7 @@ class PageViewTracker
                 'visitor_hash' => $visitorHash,
                 'user_id' => $request->user()?->id,
                 'url' => $request->fullUrl(),
-                'path' => '/' . ltrim($request->path(), '/'),
+                'path' => '/'.ltrim($request->path(), '/'),
                 'page_type' => $pageType,
                 'page_id' => $pageId,
                 'page_title' => $pageTitle,
@@ -77,7 +80,7 @@ class PageViewTracker
                 'is_bot' => $isBot,
             ]);
         } catch (\Exception $e) {
-            Log::warning('Failed to track page view: ' . $e->getMessage());
+            Log::warning('Failed to track page view: '.$e->getMessage());
 
             return null;
         }
@@ -88,7 +91,7 @@ class PageViewTracker
      */
     public function markEngaged(string $sessionId, string $path): bool
     {
-        $path = '/' . ltrim($path, '/');
+        $path = '/'.ltrim($path, '/');
 
         // Find the most recent unengaged page view for this session and path
         $pageView = PageView::where('session_id', $sessionId)
@@ -160,7 +163,7 @@ class PageViewTracker
         } elseif (preg_match('/Chrome\/(\d+(\.\d+)?)/i', $userAgent, $matches)) {
             $result['browser'] = 'Chrome';
             $result['browser_version'] = $matches[1];
-        } elseif (preg_match('/Safari\/(\d+(\.\d+)?)/i', $userAgent, $matches) && !str_contains($userAgent, 'Chrome')) {
+        } elseif (preg_match('/Safari\/(\d+(\.\d+)?)/i', $userAgent, $matches) && ! str_contains($userAgent, 'Chrome')) {
             $result['browser'] = 'Safari';
             if (preg_match('/Version\/(\d+(\.\d+)?)/i', $userAgent, $versionMatches)) {
                 $result['browser_version'] = $versionMatches[1];
@@ -247,12 +250,14 @@ class PageViewTracker
         if (preg_match('/^blog\/([^\/]+)$/', $path, $matches)) {
             $slug = $matches[1];
             $post = \App\Models\BlogPost::where('slug', $slug)->first();
+
             return ['blog', $post?->id, $post?->title];
         }
 
         // Scan results
         if ($route && $route->getName() === 'scans.show') {
             $scan = $route->parameter('scan');
+
             return ['scan', $scan?->id, $scan?->title ?? 'Scan Result'];
         }
 
@@ -274,7 +279,7 @@ class PageViewTracker
         ];
 
         foreach ($pageTypeMap as $pathPattern => $type) {
-            if ($path === $pathPattern || str_starts_with($path, $pathPattern . '/')) {
+            if ($path === $pathPattern || str_starts_with($path, $pathPattern.'/')) {
                 return [$type, null, null];
             }
         }
@@ -301,6 +306,6 @@ class PageViewTracker
      */
     private function generateSessionId(Request $request): string
     {
-        return hash('sha256', $request->ip() . $request->userAgent() . now()->timestamp);
+        return hash('sha256', $request->ip().$request->userAgent().now()->timestamp);
     }
 }

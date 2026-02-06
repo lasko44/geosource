@@ -277,5 +277,4 @@ class LearningResource extends Resource
     {
         return [];
     }
-
 }

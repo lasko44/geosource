@@ -2,7 +2,6 @@
 
 namespace App\Nova;
 
-use Illuminate\Support\Str;
 use Laravel\Nova\Fields\Badge;
 use Laravel\Nova\Fields\Code;
 use Laravel\Nova\Fields\DateTime;

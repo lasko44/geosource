@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
+/**
+ * Represents an educational resource or article in the learning center.
+ */
 class LearningResource extends Model
 {
     use HasFactory;
@@ -75,7 +78,7 @@ class LearningResource extends Model
         ];
     }
 
-    protected static function boot()
+    protected static function boot(): void
     {
         parent::boot();
 
@@ -89,7 +92,7 @@ class LearningResource extends Model
     /**
      * Scope for published resources.
      */
-    public function scopePublished($query)
+    public function scopePublished($query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('is_published', true)
             ->where(function ($q) {
@@ -101,7 +104,7 @@ class LearningResource extends Model
     /**
      * Scope for featured resources.
      */
-    public function scopeFeatured($query)
+    public function scopeFeatured($query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('is_featured', true);
     }
@@ -125,7 +128,7 @@ class LearningResource extends Model
     /**
      * Get related resources.
      */
-    public function getRelatedResourcesAttribute()
+    public function getRelatedResourcesAttribute(): \Illuminate\Support\Collection
     {
         if (empty($this->related_articles)) {
             return collect();
@@ -139,7 +142,7 @@ class LearningResource extends Model
     /**
      * Get the previous resource.
      */
-    public function getPreviousResourceAttribute()
+    public function getPreviousResourceAttribute(): ?self
     {
         if (! $this->prev_slug) {
             return null;
@@ -153,7 +156,7 @@ class LearningResource extends Model
     /**
      * Get the next resource.
      */
-    public function getNextResourceAttribute()
+    public function getNextResourceAttribute(): ?self
     {
         if (! $this->next_slug) {
             return null;

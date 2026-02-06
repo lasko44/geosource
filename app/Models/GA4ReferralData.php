@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * Stores referral traffic data synced from Google Analytics 4.
+ */
 class GA4ReferralData extends Model
 {
     use HasFactory;

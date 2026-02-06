@@ -9,6 +9,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
+/**
+ * Represents a recurring scheduled scan for a URL.
+ */
 class ScheduledScan extends Model
 {
     use HasFactory, SoftDeletes;
@@ -174,7 +177,7 @@ class ScheduledScan extends Model
         return match ($this->frequency) {
             'daily' => "Daily at {$time} {$tzAbbrev}",
             'weekly' => 'Every '.['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][$this->day_of_week ?? 1]." at {$time} {$tzAbbrev}",
-            'monthly' => "Monthly on day ".($this->day_of_month ?? 1)." at {$time} {$tzAbbrev}",
+            'monthly' => 'Monthly on day '.($this->day_of_month ?? 1)." at {$time} {$tzAbbrev}",
             default => 'Unknown schedule',
         };
     }
@@ -182,7 +185,7 @@ class ScheduledScan extends Model
     /**
      * Scope for active scheduled scans.
      */
-    public function scopeActive($query)
+    public function scopeActive($query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('is_active', true);
     }
@@ -190,7 +193,7 @@ class ScheduledScan extends Model
     /**
      * Scope for scheduled scans due to run.
      */
-    public function scopeDue($query)
+    public function scopeDue($query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->active()->where('next_run_at', '<=', now());
     }

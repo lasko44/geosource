@@ -18,7 +18,7 @@ class SubscriptionServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->subscriptionService = new SubscriptionService();
+        $this->subscriptionService = new SubscriptionService;
     }
 
     // ==========================================

@@ -8,7 +8,6 @@ use Laravel\Nova\Fields\BelongsTo;
 use Laravel\Nova\Fields\DateTime;
 use Laravel\Nova\Fields\HasMany;
 use Laravel\Nova\Fields\ID;
-use Laravel\Nova\Fields\KeyValue;
 use Laravel\Nova\Fields\Number;
 use Laravel\Nova\Fields\Select;
 use Laravel\Nova\Fields\Text;
@@ -100,8 +99,9 @@ class EmailCampaign extends Resource
 
             Text::make('Recipients', function () {
                 if ($this->status === 'draft') {
-                    return $this->getRecipientCount() . ' (estimated)';
+                    return $this->getRecipientCount().' (estimated)';
                 }
+
                 return $this->total_recipients;
             })->exceptOnForms(),
 
@@ -146,15 +146,15 @@ class EmailCampaign extends Resource
                 ->hideFromIndex(),
 
             Text::make('Progress', function () {
-                return $this->getProgressPercentage() . '%';
+                return $this->getProgressPercentage().'%';
             })->exceptOnForms()->hideFromIndex(),
 
             Text::make('Open Rate', function () {
-                return $this->getOpenRate() . '%';
+                return $this->getOpenRate().'%';
             })->exceptOnForms()->hideFromIndex(),
 
             Text::make('Click Rate', function () {
-                return $this->getClickRate() . '%';
+                return $this->getClickRate().'%';
             })->exceptOnForms()->hideFromIndex(),
 
             DateTime::make('Sent At')

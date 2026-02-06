@@ -12,6 +12,9 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Manages token balance, purchases, and spending.
+ */
 class TokenService
 {
     /**
@@ -213,7 +216,7 @@ class TokenService
     {
         $feature = config("tokens.scan_tiers.{$tier}");
 
-        if (!$feature) {
+        if (! $feature) {
             return 0;
         }
 
@@ -227,7 +230,7 @@ class TokenService
     {
         $feature = config("tokens.citation_providers.{$provider}");
 
-        if (!$feature) {
+        if (! $feature) {
             return 0;
         }
 
@@ -241,7 +244,7 @@ class TokenService
     {
         $feature = config("tokens.scan_tiers.{$tier}");
 
-        if (!$feature) {
+        if (! $feature) {
             return true; // Unknown tier, allow by default
         }
 
@@ -255,7 +258,7 @@ class TokenService
     {
         $feature = config("tokens.scan_tiers.{$tier}");
 
-        if (!$feature) {
+        if (! $feature) {
             return null;
         }
 
@@ -269,7 +272,7 @@ class TokenService
     {
         $feature = config("tokens.citation_providers.{$provider}");
 
-        if (!$feature) {
+        if (! $feature) {
             return null;
         }
 

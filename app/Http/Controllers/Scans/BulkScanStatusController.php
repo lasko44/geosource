@@ -7,6 +7,9 @@ use App\Services\ScanService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * Returns the status of multiple scans for bulk polling.
+ */
 class BulkScanStatusController extends Controller
 {
     public function __invoke(Request $request, ScanService $scanService): JsonResponse

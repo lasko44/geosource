@@ -104,8 +104,9 @@ class TokenPackage extends Resource
 
             Text::make('Price Per Token', function () {
                 if ($this->tokens > 0) {
-                    return '$' . number_format($this->price_cents / $this->tokens / 100, 3);
+                    return '$'.number_format($this->price_cents / $this->tokens / 100, 3);
                 }
+
                 return '-';
             })->onlyOnIndex(),
         ];

@@ -88,7 +88,8 @@ class TokenTransaction extends Resource
 
             Number::make('Amount', function () {
                 $prefix = $this->amount >= 0 ? '+' : '';
-                return $prefix . $this->amount;
+
+                return $prefix.$this->amount;
             })->sortable(),
 
             Badge::make('Direction', function () {

@@ -10,9 +10,11 @@ use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 
+/**
+ * Sends scan reports via email with PDF attachment.
+ */
 class ScanReportMail extends Mailable
 {
-
     public array $pdfData;
 
     public function __construct(
@@ -29,7 +31,7 @@ class ScanReportMail extends Mailable
         $companyName = 'GeoSource.ai';
         if ($this->scan->team_id && $this->scan->team) {
             $whiteLabel = $this->scan->team->getWhiteLabelSettings();
-            if ($whiteLabel['enabled'] && !empty($whiteLabel['company_name'])) {
+            if ($whiteLabel['enabled'] && ! empty($whiteLabel['company_name'])) {
                 $companyName = $whiteLabel['company_name'];
             }
         }

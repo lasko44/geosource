@@ -8,6 +8,9 @@ use App\Services\Citation\CitationAnalyzerService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Performs citation checks using the Perplexity AI API.
+ */
 class PerplexityService
 {
     public function __construct(
@@ -70,10 +73,10 @@ class PerplexityService
                     'query_id' => $query->id,
                     'base_url' => $baseUrl,
                 ]);
-                throw new \RuntimeException('Perplexity API redirected (status: ' . $status . '). Check API endpoint configuration. Location: ' . ($location ?? 'unknown'));
+                throw new \RuntimeException('Perplexity API redirected (status: '.$status.'). Check API endpoint configuration. Location: '.($location ?? 'unknown'));
             }
 
-            $sanitizedError = $errorData['error']['message'] ?? $errorData['detail'] ?? 'Unknown error (status: ' . $status . ')';
+            $sanitizedError = $errorData['error']['message'] ?? $errorData['detail'] ?? 'Unknown error (status: '.$status.')';
             Log::error('Perplexity API error', [
                 'status' => $status,
                 'error' => $sanitizedError,
@@ -81,7 +84,7 @@ class PerplexityService
                 'response_body' => $response->body(),
             ]);
 
-            throw new \RuntimeException('Perplexity API request failed: ' . $sanitizedError);
+            throw new \RuntimeException('Perplexity API request failed: '.$sanitizedError);
         }
 
         $data = $response->json();

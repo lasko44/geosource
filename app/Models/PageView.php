@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * Records individual page views for analytics tracking.
+ */
 class PageView extends Model
 {
     public $timestamps = false;
@@ -58,7 +61,7 @@ class PageView extends Model
     /**
      * Scope for filtering by page type.
      */
-    public function scopeOfType($query, string $type)
+    public function scopeOfType($query, string $type): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('page_type', $type);
     }
@@ -66,7 +69,7 @@ class PageView extends Model
     /**
      * Scope for filtering by date range.
      */
-    public function scopeBetween($query, $start, $end)
+    public function scopeBetween($query, $start, $end): \Illuminate\Database\Eloquent\Builder
     {
         return $query->whereBetween('created_at', [$start, $end]);
     }
@@ -74,7 +77,7 @@ class PageView extends Model
     /**
      * Scope for filtering out bots.
      */
-    public function scopeHumansOnly($query)
+    public function scopeHumansOnly($query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('is_bot', false);
     }
@@ -82,7 +85,7 @@ class PageView extends Model
     /**
      * Scope for filtering by referrer.
      */
-    public function scopeFromReferrer($query, string $host)
+    public function scopeFromReferrer($query, string $host): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('referrer_host', $host);
     }
@@ -90,7 +93,7 @@ class PageView extends Model
     /**
      * Scope for filtering by UTM source.
      */
-    public function scopeFromUtmSource($query, string $source)
+    public function scopeFromUtmSource($query, string $source): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('utm_source', $source);
     }
@@ -98,7 +101,7 @@ class PageView extends Model
     /**
      * Scope for filtering by country.
      */
-    public function scopeFromCountry($query, string $country)
+    public function scopeFromCountry($query, string $country): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('country', $country);
     }
@@ -106,7 +109,7 @@ class PageView extends Model
     /**
      * Scope for filtering to engaged views only.
      */
-    public function scopeEngaged($query)
+    public function scopeEngaged($query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->whereNotNull('engaged_at');
     }
@@ -114,7 +117,7 @@ class PageView extends Model
     /**
      * Get unique visitors count.
      */
-    public static function uniqueVisitors($query = null)
+    public static function uniqueVisitors($query = null): int
     {
         $query = $query ?? static::query();
 

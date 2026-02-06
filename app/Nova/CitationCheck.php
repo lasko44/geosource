@@ -9,7 +9,6 @@ use Laravel\Nova\Fields\Code;
 use Laravel\Nova\Fields\DateTime;
 use Laravel\Nova\Fields\HasMany;
 use Laravel\Nova\Fields\ID;
-use Laravel\Nova\Fields\Number;
 use Laravel\Nova\Fields\Text;
 use Laravel\Nova\Fields\Textarea;
 use Laravel\Nova\Http\Requests\NovaRequest;
@@ -112,7 +111,8 @@ class CitationCheck extends Resource
                 if ($this->status === 'completed' || $this->status === 'failed') {
                     return '100%';
                 }
-                return ($this->progress_percent ?? 0) . '%';
+
+                return ($this->progress_percent ?? 0).'%';
             })->exceptOnForms()->hideFromIndex(),
 
             Text::make('Progress Step')
@@ -140,7 +140,8 @@ class CitationCheck extends Resource
 
             Text::make('Duration', function () {
                 $duration = $this->duration;
-                return $duration ? $duration . 's' : '-';
+
+                return $duration ? $duration.'s' : '-';
             })->exceptOnForms()->hideFromIndex(),
 
             DateTime::make('Started At')

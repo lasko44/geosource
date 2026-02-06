@@ -5,7 +5,6 @@ namespace App\Nova\Actions;
 use App\Jobs\SendEmailCampaignJob;
 use App\Models\EmailCampaign;
 use App\Models\EmailTemplate;
-use App\Models\MarketingUnsubscribe;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -59,7 +58,7 @@ class QuickSendEmail extends Action
                 $campaign = DB::transaction(function () use ($template, $fields, $recipientCount) {
                     // Create a campaign for tracking (auto-named)
                     $campaign = EmailCampaign::create([
-                        'name' => "Quick Send: {$template->name} - " . now()->format('M j, Y g:ia'),
+                        'name' => "Quick Send: {$template->name} - ".now()->format('M j, Y g:ia'),
                         'email_template_id' => $template->id,
                         'status' => 'sending',
                         'audience' => $fields->audience,
@@ -77,7 +76,7 @@ class QuickSendEmail extends Action
                 return Action::message("Sending to {$recipientCount} recipients...");
 
             } catch (\Exception $e) {
-                return Action::danger("Failed to send: " . $e->getMessage());
+                return Action::danger('Failed to send: '.$e->getMessage());
             }
         }
     }
@@ -102,7 +101,7 @@ class QuickSendEmail extends Action
             return Action::message("Test email sent to {$email}");
 
         } catch (\Exception $e) {
-            return Action::danger("Failed to send test: " . $e->getMessage());
+            return Action::danger('Failed to send test: '.$e->getMessage());
         }
     }
 
@@ -115,10 +114,10 @@ class QuickSendEmail extends Action
             Select::make('Audience')
                 ->options([
                     'test' => 'Test - Send to specific email',
-                    'all' => 'All Users (' . $this->getRecipientCount('all') . ')',
-                    'free' => 'Free Users (' . $this->getRecipientCount('free') . ')',
-                    'pro' => 'Pro Users (' . $this->getRecipientCount('pro') . ')',
-                    'agency' => 'Agency Users (' . $this->getRecipientCount('agency') . ')',
+                    'all' => 'All Users ('.$this->getRecipientCount('all').')',
+                    'free' => 'Free Users ('.$this->getRecipientCount('free').')',
+                    'pro' => 'Pro Users ('.$this->getRecipientCount('pro').')',
+                    'agency' => 'Agency Users ('.$this->getRecipientCount('agency').')',
                 ])
                 ->rules('required')
                 ->help('Select audience or send a test email first.'),

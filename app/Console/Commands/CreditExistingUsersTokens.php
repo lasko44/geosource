@@ -35,6 +35,7 @@ class CreditExistingUsersTokens extends Command
 
         if ($amount <= 0) {
             $this->error('Amount must be a positive number.');
+
             return 1;
         }
 
@@ -54,6 +55,7 @@ class CreditExistingUsersTokens extends Command
 
         if ($count === 0) {
             $this->info('No users need to be credited. All existing users have already received the bonus.');
+
             return 0;
         }
 
@@ -72,13 +74,15 @@ class CreditExistingUsersTokens extends Command
                 ])
             );
             if ($count > 20) {
-                $this->info("... and " . ($count - 20) . " more users.");
+                $this->info('... and '.($count - 20).' more users.');
             }
+
             return 0;
         }
 
-        if (!$this->confirm("This will credit {$amount} tokens to {$count} users. Continue?")) {
+        if (! $this->confirm("This will credit {$amount} tokens to {$count} users. Continue?")) {
             $this->info('Operation cancelled.');
+
             return 0;
         }
 

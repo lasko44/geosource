@@ -9,6 +9,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
+/**
+ * Represents a saved citation tracking query for a domain/brand.
+ */
 class CitationQuery extends Model
 {
     use HasFactory, SoftDeletes;
@@ -31,7 +34,9 @@ class CitationQuery extends Model
 
     // Frequency constants
     public const FREQUENCY_MANUAL = 'manual';
+
     public const FREQUENCY_DAILY = 'daily';
+
     public const FREQUENCY_WEEKLY = 'weekly';
 
     /**

@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * Serves static educational resource pages about GEO optimization.
+ */
 class ResourceController extends Controller
 {
     public function index(): Response

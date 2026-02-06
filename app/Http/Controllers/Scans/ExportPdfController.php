@@ -7,10 +7,14 @@ use App\Models\Scan;
 use App\Services\ScanService;
 use App\Services\TokenService;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Response;
 
+/**
+ * Exports a scan report as a PDF document.
+ */
 class ExportPdfController extends Controller
 {
-    public function __invoke(Scan $scan, ScanService $scanService, TokenService $tokenService)
+    public function __invoke(Scan $scan, ScanService $scanService, TokenService $tokenService): Response
     {
         $this->authorize('view', $scan);
 

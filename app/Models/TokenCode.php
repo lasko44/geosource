@@ -8,11 +8,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
+/**
+ * Represents a redeemable token code for promotional or single use.
+ */
 class TokenCode extends Model
 {
     use HasFactory;
 
     public const TYPE_PROMO = 'promo';   // Multi-use promotional code
+
     public const TYPE_SINGLE = 'single'; // Single-use code for individual users
 
     protected $fillable = [
@@ -129,7 +133,7 @@ class TokenCode extends Model
     /**
      * Scope to get only active codes.
      */
-    public function scopeActive($query)
+    public function scopeActive($query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('is_active', true);
     }
@@ -137,29 +141,29 @@ class TokenCode extends Model
     /**
      * Scope to get only non-expired codes.
      */
-    public function scopeNotExpired($query)
+    public function scopeNotExpired($query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where(function ($q) {
             $q->whereNull('expires_at')
-              ->orWhere('expires_at', '>', now());
+                ->orWhere('expires_at', '>', now());
         });
     }
 
     /**
      * Scope to get codes with remaining uses.
      */
-    public function scopeHasRemainingUses($query)
+    public function scopeHasRemainingUses($query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where(function ($q) {
             $q->whereNull('max_uses')
-              ->orWhereColumn('uses_count', '<', 'max_uses');
+                ->orWhereColumn('uses_count', '<', 'max_uses');
         });
     }
 
     /**
      * Scope for valid codes.
      */
-    public function scopeValid($query)
+    public function scopeValid($query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->active()->notExpired()->hasRemainingUses();
     }

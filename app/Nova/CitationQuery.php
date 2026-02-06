@@ -2,7 +2,6 @@
 
 namespace App\Nova;
 
-use Laravel\Nova\Fields\Badge;
 use Laravel\Nova\Fields\BelongsTo;
 use Laravel\Nova\Fields\Boolean;
 use Laravel\Nova\Fields\DateTime;
@@ -105,12 +104,14 @@ class CitationQuery extends Resource
 
             Text::make('Citation Rate', function () {
                 $summary = $this->citation_summary;
-                return $summary['citation_rate'] . '%';
+
+                return $summary['citation_rate'].'%';
             })->exceptOnForms(),
 
             Text::make('Cited On', function () {
                 $summary = $this->citation_summary;
                 $cited = $summary['cited_on'] ?? [];
+
                 return count($cited) > 0 ? implode(', ', array_map('ucfirst', $cited)) : 'None';
             })->exceptOnForms()->hideFromIndex(),
 

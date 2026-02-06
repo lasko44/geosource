@@ -5,12 +5,16 @@ namespace App\Http\Controllers\Teams;
 use App\Http\Controllers\Controller;
 use App\Models\Team;
 use App\Services\SubscriptionService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * Manages team creation, settings, and ownership.
+ */
 class TeamController extends Controller
 {
     /**
@@ -56,7 +60,7 @@ class TeamController extends Controller
     /**
      * Store a new team.
      */
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         $user = $request->user();
         $subscriptionService = app(SubscriptionService::class);
@@ -167,7 +171,7 @@ class TeamController extends Controller
     /**
      * Update the team.
      */
-    public function update(Request $request, Team $team)
+    public function update(Request $request, Team $team): RedirectResponse
     {
         $this->authorize('update', $team);
 
@@ -211,7 +215,7 @@ class TeamController extends Controller
     /**
      * Delete the team.
      */
-    public function destroy(Team $team)
+    public function destroy(Team $team): RedirectResponse
     {
         $this->authorize('delete', $team);
 
@@ -232,7 +236,7 @@ class TeamController extends Controller
     /**
      * Transfer team ownership to another member.
      */
-    public function transferOwnership(Request $request, Team $team)
+    public function transferOwnership(Request $request, Team $team): RedirectResponse
     {
         $this->authorize('delete', $team); // Only owner can transfer
 

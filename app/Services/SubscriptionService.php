@@ -5,6 +5,9 @@ namespace App\Services;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 
+/**
+ * Manages subscription plans, quotas, and feature access.
+ */
 class SubscriptionService
 {
     protected ?TokenService $tokenService = null;

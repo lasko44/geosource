@@ -7,6 +7,9 @@ use App\Services\ScanService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * Checks if a URL is on cooldown before allowing a rescan.
+ */
 class CheckCooldownController extends Controller
 {
     public function __invoke(Request $request, ScanService $scanService): JsonResponse

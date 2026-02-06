@@ -2,16 +2,15 @@
 
 namespace App\Nova\Actions;
 
-use App\Models\TokenCode;
 use App\Services\TokenService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Collection;
 use Laravel\Nova\Actions\Action;
 use Laravel\Nova\Fields\ActionFields;
+use Laravel\Nova\Fields\DateTime;
 use Laravel\Nova\Fields\Number;
 use Laravel\Nova\Fields\Text;
-use Laravel\Nova\Fields\DateTime;
 use Laravel\Nova\Http\Requests\NovaRequest;
 
 class GenerateSingleUseCodes extends Action
@@ -28,8 +27,6 @@ class GenerateSingleUseCodes extends Action
     /**
      * Perform the action on the given models.
      *
-     * @param  \Laravel\Nova\Fields\ActionFields  $fields
-     * @param  \Illuminate\Support\Collection  $models
      * @return mixed
      */
     public function handle(ActionFields $fields, Collection $models)
@@ -49,7 +46,7 @@ class GenerateSingleUseCodes extends Action
 
         return Action::download(
             $this->generateCsv($codes),
-            'token-codes-' . now()->format('Y-m-d-His') . '.csv'
+            'token-codes-'.now()->format('Y-m-d-His').'.csv'
         );
     }
 
@@ -77,7 +74,6 @@ class GenerateSingleUseCodes extends Action
     /**
      * Get the fields available on the action.
      *
-     * @param  \Laravel\Nova\Http\Requests\NovaRequest  $request
      * @return array
      */
     public function fields(NovaRequest $request)

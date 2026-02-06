@@ -6,6 +6,9 @@ use App\Models\BlogPost;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * Converts SVG images in blog posts to PNG format.
+ */
 class ConvertBlogSvgsToPng extends Command
 {
     /**
@@ -232,7 +235,7 @@ class ConvertBlogSvgsToPng extends Command
     /**
      * Convert SVG content to PNG using the best available method.
      */
-    private function convertSvgToPng(string $svgContent, string $svgPath = null): ?string
+    private function convertSvgToPng(string $svgContent, ?string $svgPath = null): ?string
     {
         $method = $this->detectConversionMethod();
 
@@ -250,7 +253,7 @@ class ConvertBlogSvgsToPng extends Command
     private function convertWithImagick(string $svgContent): ?string
     {
         try {
-            $imagick = new \Imagick();
+            $imagick = new \Imagick;
             $imagick->setBackgroundColor(new \ImagickPixel('transparent'));
             $imagick->readImageBlob($svgContent);
             $imagick->setImageFormat('png');
@@ -288,7 +291,7 @@ class ConvertBlogSvgsToPng extends Command
             unlink($tempSvg);
 
             if ($returnCode !== 0) {
-                $this->error('   rsvg-convert error: ' . implode("\n", $output));
+                $this->error('   rsvg-convert error: '.implode("\n", $output));
                 @unlink($tempPng);
 
                 return null;
@@ -311,8 +314,8 @@ class ConvertBlogSvgsToPng extends Command
     private function convertWithImageMagickCli(string $svgContent, ?string $svgPath, string $command): ?string
     {
         try {
-            $tempSvg = tempnam(sys_get_temp_dir(), 'svg_') . '.svg';
-            $tempPng = tempnam(sys_get_temp_dir(), 'png_') . '.png';
+            $tempSvg = tempnam(sys_get_temp_dir(), 'svg_').'.svg';
+            $tempPng = tempnam(sys_get_temp_dir(), 'png_').'.png';
 
             file_put_contents($tempSvg, $svgContent);
 
@@ -328,7 +331,7 @@ class ConvertBlogSvgsToPng extends Command
             @unlink($tempSvg);
 
             if ($returnCode !== 0 || ! file_exists($tempPng)) {
-                $this->error('   ImageMagick error: ' . implode("\n", $output));
+                $this->error('   ImageMagick error: '.implode("\n", $output));
                 @unlink($tempPng);
 
                 return null;

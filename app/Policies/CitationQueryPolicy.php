@@ -6,6 +6,9 @@ use App\Models\CitationQuery;
 use App\Models\User;
 use App\Services\Citation\CitationService;
 
+/**
+ * Authorizes actions on citation query resources.
+ */
 class CitationQueryPolicy
 {
     public function __construct(

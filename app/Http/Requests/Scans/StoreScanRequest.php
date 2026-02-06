@@ -7,6 +7,9 @@ use App\Services\ScanService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
+/**
+ * Validates requests to create a new website scan.
+ */
 class StoreScanRequest extends FormRequest
 {
     protected ?Team $validatedTeam = null;

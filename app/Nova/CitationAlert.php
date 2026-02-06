@@ -88,7 +88,7 @@ class CitationAlert extends Resource
                 ->filterable(),
 
             Text::make('Message')
-                ->displayUsing(fn ($value) => strlen($value) > 60 ? substr($value, 0, 60) . '...' : $value)
+                ->displayUsing(fn ($value) => strlen($value) > 60 ? substr($value, 0, 60).'...' : $value)
                 ->onlyOnIndex(),
 
             Text::make('Message')

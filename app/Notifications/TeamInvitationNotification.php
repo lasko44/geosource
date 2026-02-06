@@ -8,7 +8,6 @@ use Illuminate\Notifications\Notification;
 
 class TeamInvitationNotification extends Notification
 {
-
     /**
      * Create a new notification instance.
      */

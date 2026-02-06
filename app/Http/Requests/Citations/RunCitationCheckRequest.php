@@ -8,6 +8,9 @@ use App\Services\Citation\CitationService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
+/**
+ * Validates requests to run a single citation check.
+ */
 class RunCitationCheckRequest extends FormRequest
 {
     public function authorize(): bool
