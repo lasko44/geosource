@@ -157,9 +157,10 @@ class GeoScorer
      *
      * @param  string  $content  The HTML content to analyze
      * @param  array  $context  Additional context (url, team_id, embedding, etc.)
+     * @param  callable|null  $onPillarComplete  Callback after each pillar: fn(string $pillarKey) => void
      * @return array Complete score breakdown with recommendations
      */
-    public function score(string $content, array $context = []): array
+    public function score(string $content, array $context = [], ?callable $onPillarComplete = null): array
     {
         $pillarResults = [];
         $totalScore = 0;
@@ -178,6 +179,11 @@ class GeoScorer
 
             $totalScore += $result['score'];
             $maxPossible += $result['max_score'];
+
+            // Report progress after each pillar
+            if ($onPillarComplete) {
+                $onPillarComplete($key);
+            }
         }
 
         $overallScore = round($totalScore, 1);

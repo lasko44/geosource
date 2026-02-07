@@ -99,9 +99,8 @@ Use **Policy classes** for all model-based authorization, not inline checks.
 ### Rationale
 1. **DRY**: Authorization logic written once, used everywhere.
 2. **Testability**: Policies are easily unit tested.
-3. **Blade integration**: `@can('view', $scan)` works automatically.
-4. **Consistency**: All authorization follows the same pattern.
-5. **Discoverability**: All rules for a model are in one file.
+3.**Consistency**: All authorization follows the same pattern.
+4.**Discoverability**: All rules for a model are in one file.
 
 ### Rules
 ```php

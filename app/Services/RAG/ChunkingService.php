@@ -19,27 +19,79 @@ class ChunkingService
 
     private string $strategy;
 
+    private bool $contextualChunking;
+
     public function __construct()
     {
         $this->chunkSize = config('rag.chunking.size', 1000);
         $this->chunkOverlap = config('rag.chunking.overlap', 200);
         $this->strategy = config('rag.chunking.strategy', 'semantic');
+        $this->contextualChunking = config('rag.chunking.contextual', true);
     }
 
     /**
      * Chunk content using configured strategy.
      *
+     * When contextual chunking is enabled, each chunk is prefixed with
+     * document context (title, section heading) to improve embedding quality.
+     *
      * @return array<array{content: string, metadata: array}>
      */
     public function chunk(string $content, array $metadata = []): array
     {
-        return match ($this->strategy) {
+        $chunks = match ($this->strategy) {
             'semantic' => $this->semanticChunk($content, $metadata),
             'fixed' => $this->fixedChunk($content, $metadata),
             'sentence' => $this->sentenceChunk($content, $metadata),
             'paragraph' => $this->paragraphChunk($content, $metadata),
             default => $this->semanticChunk($content, $metadata),
         };
+
+        // Apply contextual prefixes if enabled
+        if ($this->contextualChunking) {
+            $chunks = $this->applyContextualPrefixes($chunks, $metadata);
+        }
+
+        return $chunks;
+    }
+
+    /**
+     * Apply contextual prefixes to chunks for better embedding quality.
+     *
+     * Prepends document title and section context to each chunk so the
+     * embedding captures the broader context, not just the chunk in isolation.
+     *
+     * @param  array<array{content: string, metadata: array}>  $chunks
+     * @param  array  $metadata
+     * @return array<array{content: string, metadata: array}>
+     */
+    private function applyContextualPrefixes(array $chunks, array $metadata): array
+    {
+        $sourceTitle = $metadata['source_title'] ?? null;
+
+        return array_map(function ($chunk) use ($sourceTitle) {
+            $prefix = '';
+
+            // Add document title context
+            if ($sourceTitle) {
+                $prefix .= "From: {$sourceTitle}\n";
+            }
+
+            // Add section heading context if available
+            $sectionHeading = $chunk['metadata']['section_heading'] ?? null;
+            if ($sectionHeading && $sectionHeading !== $sourceTitle) {
+                $prefix .= "Section: {$sectionHeading}\n";
+            }
+
+            // Only add prefix if we have context and chunk isn't already a summary
+            $isSummary = $chunk['metadata']['is_summary'] ?? false;
+            if (! empty($prefix) && ! $isSummary) {
+                $chunk['content'] = $prefix."\n".$chunk['content'];
+                $chunk['metadata']['has_context_prefix'] = true;
+            }
+
+            return $chunk;
+        }, $chunks);
     }
 
     /**
@@ -398,6 +450,16 @@ class ChunkingService
     public function setStrategy(string $strategy): self
     {
         $this->strategy = $strategy;
+
+        return $this;
+    }
+
+    /**
+     * Enable or disable contextual chunking.
+     */
+    public function setContextualChunking(bool $enabled): self
+    {
+        $this->contextualChunking = $enabled;
 
         return $this;
     }

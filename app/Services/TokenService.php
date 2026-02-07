@@ -94,6 +94,37 @@ class TokenService
     }
 
     /**
+     * Spend a specific amount of tokens (not based on feature config).
+     */
+    public function spendAmount(User $user, int $amount, string $description, array $metadata = []): ?TokenTransaction
+    {
+        if ($amount <= 0) {
+            return null;
+        }
+
+        if ($user->token_balance < $amount) {
+            throw new \Exception("Insufficient token balance. Required: {$amount}, Available: {$user->token_balance}");
+        }
+
+        return DB::transaction(function () use ($user, $amount, $description, $metadata) {
+            $user = User::lockForUpdate()->find($user->id);
+
+            $newBalance = $user->token_balance - $amount;
+
+            $user->update(['token_balance' => $newBalance]);
+
+            return TokenTransaction::create([
+                'user_id' => $user->id,
+                'type' => TokenTransaction::TYPE_SPEND,
+                'amount' => -$amount,
+                'balance_after' => $newBalance,
+                'description' => $description,
+                'metadata' => $metadata,
+            ]);
+        });
+    }
+
+    /**
      * Credit tokens from a purchase.
      */
     public function creditPurchase(User $user, TokenPackage $package, string $stripeSessionId): TokenTransaction
@@ -309,6 +340,7 @@ class TokenService
     /**
      * Redeem a token code.
      * Uses pessimistic locking to prevent race conditions.
+     * Implements exponential backoff and IP-based rate limiting for security.
      *
      * @throws \Exception if redemption fails
      */
@@ -316,16 +348,40 @@ class TokenService
     {
         $code = strtoupper(trim($code));
 
-        // Rate limit: 5 attempts per minute per user
-        $rateLimitKey = "token_code_attempts:{$user->id}";
-        $attempts = (int) Cache::get($rateLimitKey, 0);
+        // User-based rate limiting with exponential backoff
+        $userRateLimitKey = "token_code_attempts:{$user->id}";
+        $userAttempts = (int) Cache::get($userRateLimitKey, 0);
 
-        if ($attempts >= 5) {
-            throw new \Exception('Too many redemption attempts. Please wait a minute and try again.');
+        // After 5 attempts, implement exponential backoff (2, 4, 8, 16... minutes, max 60)
+        $maxAttempts = 5;
+        if ($userAttempts >= $maxAttempts) {
+            $backoffMinutes = min((int) pow(2, $userAttempts - $maxAttempts), 60);
+
+            throw new \Exception("Too many redemption attempts. Please wait {$backoffMinutes} minute(s) and try again.");
         }
 
-        // Increment attempt counter
-        Cache::put($rateLimitKey, $attempts + 1, now()->addMinute());
+        // IP-based rate limiting (additional layer of protection)
+        $ip = request()?->ip() ?? 'unknown';
+        $ipRateLimitKey = "token_code_attempts_ip:{$ip}";
+        $ipAttempts = (int) Cache::get($ipRateLimitKey, 0);
+
+        if ($ipAttempts >= 10) {
+            Log::warning('Possible token code brute force from IP', [
+                'ip' => $ip,
+                'user_id' => $user->id,
+                'attempts' => $ipAttempts,
+            ]);
+
+            throw new \Exception('Too many attempts from this location. Please try again later.');
+        }
+
+        // Increment attempt counters with longer expiry for repeated failures
+        $userExpiry = $userAttempts >= $maxAttempts
+            ? now()->addMinutes(min((int) pow(2, $userAttempts - $maxAttempts + 1), 60))
+            : now()->addMinutes(5);
+
+        Cache::put($userRateLimitKey, $userAttempts + 1, $userExpiry);
+        Cache::put($ipRateLimitKey, $ipAttempts + 1, now()->addMinutes(15));
 
         return DB::transaction(function () use ($user, $code) {
             // Lock the token code row to prevent race conditions

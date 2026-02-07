@@ -54,7 +54,8 @@
       "Bash(pecl list:*)",
       "Bash(pecl install:*)",
       "Bash(brew install:*)",
-      "Bash(__NEW_LINE_2b2627e7c06020f0__ echo \"\")"
+      "Bash(__NEW_LINE_2b2627e7c06020f0__ echo \"\")",
+      "Bash(yarn build)"
     ]
   }
 }

@@ -135,12 +135,34 @@ export interface Scan {
     progress_step?: string | null;
     progress_percent?: number;
     error_message?: string | null;
+    is_competitor?: boolean;
+    auto_find_competitors?: boolean;
+    competitor_discovery_status?: 'pending' | 'discovering' | 'scanning' | 'completed' | 'failed' | null;
+    competitors_found?: number;
+    parent_scan_id?: number | null;
     created_at: string;
     updated_at: string;
     user?: {
         id: number;
         name: string;
     };
+}
+
+export interface CitationReadinessFactor {
+    score: number;
+    reason: string;
+}
+
+export interface CitationReadiness {
+    score: number;
+    factors: {
+        quotability: CitationReadinessFactor;
+        authority: CitationReadinessFactor;
+        uniqueness: CitationReadinessFactor;
+        structure: CitationReadinessFactor;
+        factual_density: CitationReadinessFactor;
+    };
+    summary: string;
 }
 
 export interface ScanResults {
@@ -151,7 +173,57 @@ export interface ScanResults {
     pillars: Record<string, PillarResult>;
     recommendations: Record<string, Recommendation>;
     summary: ScanSummary;
+    benchmark?: BenchmarkResult;
+    competitor_benchmark?: CompetitorBenchmarkResult;
+    similar_content?: SimilarContent[];
+    competitor_content?: SimilarContent[];
+    scan_counts?: ScanCounts;
+    has_sufficient_data?: boolean;
+    ai_suggestions?: AISuggestion[];
+    citation_readiness?: CitationReadiness;
+    rag_analysis?: Record<string, unknown>;
     scored_at: string;
+}
+
+export interface BenchmarkResult {
+    position: string;
+    percentile: number | null;
+    avg_similar_score: number | null;
+    score_difference?: number | null;
+    comparison: string;
+    scans_until_benchmark?: number;
+}
+
+export interface CompetitorBenchmarkResult {
+    position: string;
+    percentile: number | null;
+    avg_competitor_score: number | null;
+    score_difference: number | null;
+    competitors_analyzed?: number;
+    comparison: string;
+}
+
+export interface SimilarContent {
+    id: number;
+    title: string;
+    similarity: number;
+    is_competitor?: boolean;
+}
+
+export interface ScanCounts {
+    total: number;
+    own_content: number;
+    competitors: number;
+    min_required: number;
+}
+
+export interface AISuggestion {
+    category?: string;
+    priority?: 'critical' | 'high' | 'medium' | 'low';
+    impact?: 'high' | 'medium' | 'low';
+    suggestion: string;
+    reasoning?: string;
+    example?: string;
 }
 
 export interface PillarResult {

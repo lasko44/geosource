@@ -26,9 +26,16 @@ import {
     Ban,
     XOctagon,
     ChevronRight,
+    ChevronDown,
     XCircle,
     Info,
     Coins,
+    Users,
+    TrendingUp,
+    BarChart3,
+    Lightbulb,
+    Target,
+    Sparkles,
 } from 'lucide-vue-next';
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
 
@@ -46,9 +53,11 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useDateFormat } from '@/composables/useDateFormat';
 import { getPillarExplanations as getPillarExplanationsFromModule } from '@/utils/pillar-explanations';
-import { type BreadcrumbItem, type Scan, type PillarResult, type Recommendation } from '@/types';
+import { type BreadcrumbItem, type Scan, type PillarResult, type Recommendation, type AISuggestion, type BenchmarkResult, type CompetitorBenchmarkResult } from '@/types';
 
 const { formatDate } = useDateFormat();
 
@@ -62,11 +71,28 @@ interface CooldownInfo {
     pro?: TierCooldownInfo | null;
 }
 
+interface DiscoveredCompetitor {
+    uuid: string;
+    url: string;
+    title: string | null;
+    status: string;
+    score: number | null;
+    grade: string | null;
+}
+
+interface ParentScan {
+    uuid: string;
+    url: string;
+    title: string | null;
+}
+
 interface Props {
     scan: Scan;
     canExportPdf: boolean;
     canEmailReport: boolean;
     cooldown?: CooldownInfo | null;
+    discoveredCompetitors?: DiscoveredCompetitor[];
+    parentScan?: ParentScan | null;
 }
 
 const props = defineProps<Props>();
@@ -168,6 +194,16 @@ const errorMessage = ref(props.scan.error_message);
 const reloading = ref(false);
 let pollInterval: ReturnType<typeof setInterval> | null = null;
 
+// Competitor discovery reactive state
+const competitorDiscoveryStatus = ref(props.scan.competitor_discovery_status);
+const competitorsFound = ref(props.scan.competitors_found ?? 0);
+
+// Collapsible section states (start collapsed)
+const isCompetitorsExpanded = ref(false);
+const isSuggestionsExpanded = ref(false);
+const discoveredCompetitorsList = ref<DiscoveredCompetitor[]>(props.discoveredCompetitors || []);
+let competitorPollInterval: ReturnType<typeof setInterval> | null = null;
+
 // Watch for prop changes after router.reload() to sync local state
 watch(() => props.scan.status, (newStatus) => {
     if (newStatus && newStatus !== scanStatus.value) {
@@ -189,22 +225,91 @@ const isCancelled = computed(() => scanStatus.value === 'cancelled');
 const isCompleted = computed(() => scanStatus.value === 'completed' && props.scan.results !== null);
 const isReloading = computed(() => reloading.value);
 
-// Progress steps for visual display
+// Competitor discovery computed states
+const isCompetitorDiscoveryInProgress = computed(() => {
+    const status = competitorDiscoveryStatus.value;
+    return status === 'pending' || status === 'discovering' || status === 'scanning';
+});
+
+const isCompetitorDiscoveryComplete = computed(() => competitorDiscoveryStatus.value === 'completed');
+const isCompetitorDiscoveryFailed = computed(() => competitorDiscoveryStatus.value === 'failed');
+
+// Progress steps for visual display with descriptions
 const progressSteps = [
-    { key: 'fetching', label: 'Fetching webpage', percent: 10 },
-    { key: 'analyzing', label: 'Analyzing page structure', percent: 30 },
-    { key: 'llms', label: 'Checking llms.txt', percent: 50 },
-    { key: 'scoring', label: 'Scoring content', percent: 70 },
-    { key: 'recommendations', label: 'Generating recommendations', percent: 90 },
+    {
+        key: 'fetching',
+        label: 'Fetching webpage',
+        description: 'Downloading and rendering your page content',
+        percent: 10
+    },
+    {
+        key: 'analyzing',
+        label: 'Analyzing page structure',
+        description: 'Extracting headings, content blocks, schema markup, and metadata',
+        percent: 20
+    },
+    {
+        key: 'llms',
+        label: 'Checking llms.txt',
+        description: 'Looking for AI-specific instructions that help LLMs understand your content',
+        percent: 30
+    },
+    {
+        key: 'scoring_pillars',
+        label: 'Scoring GEO pillars',
+        description: 'Evaluating definitions, structure, and answerability',
+        percent: 40
+    },
+    {
+        key: 'scoring_authority',
+        label: 'Evaluating authority & trust',
+        description: 'Analyzing E-E-A-T signals, citations, and expertise indicators',
+        percent: 50
+    },
+    {
+        key: 'scoring_advanced',
+        label: 'Analyzing advanced metrics',
+        description: 'Checking freshness, readability, and multimedia content',
+        percent: 60
+    },
+    {
+        key: 'scoring_final',
+        label: 'Finalizing pillar scores',
+        description: 'Completing score calculations for all pillars',
+        percent: 70
+    },
+    {
+        key: 'finding_similar',
+        label: 'Finding similar content',
+        description: 'Comparing with other scanned pages for benchmarking',
+        percent: 75
+    },
+    {
+        key: 'recommendations',
+        label: 'Generating AI recommendations',
+        description: 'Creating personalized improvement suggestions',
+        percent: 85
+    },
+    {
+        key: 'benchmarks',
+        label: 'Calculating benchmarks',
+        description: 'Computing your position relative to other content',
+        percent: 95
+    },
 ];
 
 const currentStepIndex = computed(() => {
     const percent = progressPercent.value;
-    if (percent >= 90) return 4;
-    if (percent >= 70) return 3;
-    if (percent >= 50) return 2;
-    if (percent >= 30) return 1;
-    return 0;
+    if (percent >= 95) return 9; // benchmarks
+    if (percent >= 85) return 8; // recommendations
+    if (percent >= 75) return 7; // finding_similar
+    if (percent >= 70) return 6; // scoring_final
+    if (percent >= 60) return 5; // scoring_advanced
+    if (percent >= 50) return 4; // scoring_authority
+    if (percent >= 40) return 3; // scoring_pillars
+    if (percent >= 30) return 2; // llms
+    if (percent >= 20) return 1; // analyzing
+    return 0; // fetching
 });
 
 const pollStatus = async () => {
@@ -223,6 +328,15 @@ const pollStatus = async () => {
             }
         }
 
+        // Also update competitor discovery status during scan polling
+        if (data.competitor_discovery_status) {
+            competitorDiscoveryStatus.value = data.competitor_discovery_status;
+            competitorsFound.value = data.competitors_found ?? 0;
+            if (data.discovered_competitors) {
+                discoveredCompetitorsList.value = data.discovered_competitors;
+            }
+        }
+
         errorMessage.value = data.error_message;
 
         if (data.status === 'completed' || data.status === 'failed' || data.status === 'cancelled') {
@@ -231,11 +345,26 @@ const pollStatus = async () => {
                 pollInterval = null;
             }
             if (data.status === 'completed') {
-                // Show loading state while reloading to prevent showing stale data
-                reloading.value = true;
-                progressStep.value = 'Loading results...';
-                progressPercent.value = 100;
-                router.reload();
+                // Check if competitor discovery is in progress - if so, start competitor polling instead of reloading
+                const discoveryInProgress = data.competitor_discovery_status &&
+                    ['pending', 'discovering', 'scanning'].includes(data.competitor_discovery_status);
+
+                if (discoveryInProgress && !competitorPollInterval) {
+                    // Start competitor discovery polling
+                    scanStatus.value = 'completed';
+                    progressStep.value = 'Completed';
+                    progressPercent.value = 100;
+                    reloading.value = false;
+                    competitorPollInterval = setInterval(pollCompetitorStatus, 2000);
+                    // Do an initial reload to show results while competitors are being discovered
+                    router.reload();
+                } else if (!discoveryInProgress) {
+                    // No competitor discovery, just reload as usual
+                    reloading.value = true;
+                    progressStep.value = 'Loading results...';
+                    progressPercent.value = 100;
+                    router.reload();
+                }
             } else if (data.status === 'cancelled') {
                 // For cancelled status, update immediately
                 scanStatus.value = data.status;
@@ -249,9 +378,46 @@ const pollStatus = async () => {
     }
 };
 
+// Competitor discovery polling
+const pollCompetitorStatus = async () => {
+    try {
+        const response = await fetch(`/scans/${props.scan.uuid}/status`);
+        const data = await response.json();
+
+        // Update competitor discovery state
+        if (data.competitor_discovery_status) {
+            competitorDiscoveryStatus.value = data.competitor_discovery_status;
+            competitorsFound.value = data.competitors_found ?? 0;
+
+            // Update discovered competitors list if available
+            if (data.discovered_competitors) {
+                discoveredCompetitorsList.value = data.discovered_competitors;
+            }
+        }
+
+        // Stop polling when discovery is complete or failed
+        if (data.competitor_discovery_status === 'completed' || data.competitor_discovery_status === 'failed') {
+            if (competitorPollInterval) {
+                clearInterval(competitorPollInterval);
+                competitorPollInterval = null;
+            }
+            // Reload page to get final results with benchmarks
+            if (data.competitor_discovery_status === 'completed') {
+                router.reload();
+            }
+        }
+    } catch {
+        // Silent fail, will retry on next interval
+    }
+};
+
 onMounted(() => {
     if (isPending.value) {
         pollInterval = setInterval(pollStatus, 1000);
+    }
+    // Start competitor polling if discovery is in progress
+    if (isCompetitorDiscoveryInProgress.value) {
+        competitorPollInterval = setInterval(pollCompetitorStatus, 2000);
     }
 });
 
@@ -261,6 +427,9 @@ onUnmounted(() => {
     }
     if (cooldownInterval) {
         clearInterval(cooldownInterval);
+    }
+    if (competitorPollInterval) {
+        clearInterval(competitorPollInterval);
     }
 });
 
@@ -554,6 +723,68 @@ const recommendations = computed(() => {
 
 const summary = computed(() => props.scan.results?.summary);
 
+// AI suggestions from RAG analysis
+const aiSuggestions = computed((): AISuggestion[] => {
+    const suggestions = props.scan.results?.ai_suggestions;
+    if (!suggestions || !Array.isArray(suggestions)) return [];
+    return suggestions;
+});
+
+// Benchmark against own content
+const benchmark = computed((): BenchmarkResult | null => {
+    return props.scan.results?.benchmark ?? null;
+});
+
+// Benchmark against competitors
+const competitorBenchmark = computed((): CompetitorBenchmarkResult | null => {
+    return props.scan.results?.competitor_benchmark ?? null;
+});
+
+// Whether we have sufficient data for benchmarking
+const hasSufficientData = computed(() => props.scan.results?.has_sufficient_data ?? false);
+
+// AI Citation Readiness (separate metric from main score)
+const citationReadiness = computed(() => props.scan.results?.citation_readiness ?? null);
+
+// Priority color mapping for AI suggestions
+const getPriorityBadgeClass = (priority: string) => {
+    switch (priority) {
+        case 'critical':
+            return 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300';
+        case 'high':
+            return 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300';
+        case 'medium':
+            return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300';
+        case 'low':
+            return 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300';
+        default:
+            return 'bg-gray-100 text-gray-700 dark:bg-gray-900 dark:text-gray-300';
+    }
+};
+
+// Position color mapping for benchmarks
+const getPositionClass = (position: string) => {
+    switch (position) {
+        case 'dominant':
+        case 'leader':
+            return 'text-green-600 dark:text-green-400';
+        case 'ahead':
+        case 'above_average':
+            return 'text-blue-600 dark:text-blue-400';
+        case 'competitive':
+        case 'average':
+            return 'text-yellow-600 dark:text-yellow-400';
+        case 'behind':
+        case 'below_average':
+            return 'text-orange-600 dark:text-orange-400';
+        case 'far_behind':
+        case 'needs_improvement':
+            return 'text-red-600 dark:text-red-400';
+        default:
+            return 'text-muted-foreground';
+    }
+};
+
 // Pillar explanation dialog
 const showPillarDialog = ref(false);
 const selectedPillar = ref<any>(null);
@@ -590,6 +821,13 @@ const getPillarExplanations = (pillar: any): Array<{ label: string; achieved: bo
                     </div>
                     <div class="mt-2 flex items-center gap-2">
                         <h1 class="text-2xl font-bold">{{ scan.title || 'Scan Results' }}</h1>
+                        <span
+                            v-if="scan.is_competitor"
+                            class="inline-flex items-center gap-1 rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700 dark:bg-purple-900 dark:text-purple-300"
+                        >
+                            <Users class="h-3 w-3" />
+                            Competitor
+                        </span>
                         <span
                             v-if="scan.scheduled_scan_id"
                             class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900 dark:text-blue-300"
@@ -669,15 +907,15 @@ const getPillarExplanations = (pillar: any): Array<{ label: string; achieved: bo
                         </div>
 
                         <!-- Step Indicators -->
-                        <div class="space-y-3">
+                        <div class="space-y-4">
                             <div
                                 v-for="(step, index) in progressSteps"
                                 :key="step.key"
-                                class="flex items-center gap-3"
+                                class="flex items-start gap-3"
                             >
                                 <!-- Step Icon -->
                                 <div
-                                    class="flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all"
+                                    class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border-2 transition-all"
                                     :class="{
                                         'border-primary bg-primary text-primary-foreground': index < currentStepIndex,
                                         'border-primary bg-primary/10 text-primary': index === currentStepIndex,
@@ -689,16 +927,24 @@ const getPillarExplanations = (pillar: any): Array<{ label: string; achieved: bo
                                     <span v-else class="text-xs font-medium">{{ index + 1 }}</span>
                                 </div>
 
-                                <!-- Step Label -->
-                                <span
-                                    class="text-sm transition-colors"
-                                    :class="{
-                                        'font-medium text-foreground': index <= currentStepIndex,
-                                        'text-muted-foreground': index > currentStepIndex,
-                                    }"
-                                >
-                                    {{ step.label }}
-                                </span>
+                                <!-- Step Label and Description -->
+                                <div class="flex-1 pt-1">
+                                    <span
+                                        class="text-sm transition-colors block"
+                                        :class="{
+                                            'font-medium text-foreground': index <= currentStepIndex,
+                                            'text-muted-foreground': index > currentStepIndex,
+                                        }"
+                                    >
+                                        {{ step.label }}
+                                    </span>
+                                    <span
+                                        v-if="index === currentStepIndex"
+                                        class="text-xs text-muted-foreground mt-0.5 block"
+                                    >
+                                        {{ step.description }}
+                                    </span>
+                                </div>
                             </div>
                         </div>
 
@@ -797,6 +1043,547 @@ const getPillarExplanations = (pillar: any): Array<{ label: string; achieved: bo
                     </div>
                 </div>
             </Card>
+
+            <!-- AI Citation Readiness (separate metric for LLM citation potential) -->
+            <Card v-if="isCompleted && citationReadiness" class="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
+                <CardHeader class="pb-3">
+                    <CardTitle class="flex items-center gap-2">
+                        <Sparkles class="h-5 w-5 text-primary" />
+                        AI Citation Readiness
+                        <TooltipProvider :delay-duration="0">
+                            <Tooltip>
+                                <TooltipTrigger>
+                                    <HelpCircle class="h-4 w-4 text-muted-foreground" />
+                                </TooltipTrigger>
+                                <TooltipContent class="max-w-xs">
+                                    <p class="text-sm">
+                                        This score measures how likely AI assistants (ChatGPT, Claude, Perplexity, etc.)
+                                        are to cite your content when answering user questions. Higher scores indicate
+                                        content that is more "quotable" and authoritative for AI systems.
+                                    </p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    </CardTitle>
+                    <CardDescription>
+                        How likely AI assistants are to cite this content
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <!-- Main Score -->
+                    <div class="flex items-center gap-6 mb-6">
+                        <div class="flex items-center justify-center w-20 h-20 rounded-full border-4"
+                            :class="citationReadiness.score >= 70 ? 'border-green-500 bg-green-50 dark:bg-green-950' :
+                                    citationReadiness.score >= 50 ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-950' :
+                                    'border-red-500 bg-red-50 dark:bg-red-950'">
+                            <span class="text-2xl font-bold"
+                                :class="citationReadiness.score >= 70 ? 'text-green-600' :
+                                        citationReadiness.score >= 50 ? 'text-yellow-600' : 'text-red-600'">
+                                {{ citationReadiness.score }}
+                            </span>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm text-muted-foreground">{{ citationReadiness.summary }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Factor Breakdown -->
+                    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+                        <div v-for="(factor, key) in citationReadiness.factors" :key="key"
+                            class="bg-background/50 rounded-lg p-3 border">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-xs font-medium capitalize">{{ key.replace('_', ' ') }}</span>
+                                <span class="text-sm font-bold"
+                                    :class="factor.score >= 70 ? 'text-green-600' :
+                                            factor.score >= 50 ? 'text-yellow-600' : 'text-red-600'">
+                                    {{ factor.score }}
+                                </span>
+                            </div>
+                            <div class="h-1.5 bg-muted rounded-full overflow-hidden mb-2">
+                                <div class="h-full rounded-full transition-all"
+                                    :class="factor.score >= 70 ? 'bg-green-500' :
+                                            factor.score >= 50 ? 'bg-yellow-500' : 'bg-red-500'"
+                                    :style="{ width: `${factor.score}%` }">
+                                </div>
+                            </div>
+                            <p class="text-xs text-muted-foreground line-clamp-2">{{ factor.reason }}</p>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <!-- Benchmarks Section (only show when completed) -->
+            <div v-if="isCompleted && (benchmark || competitorBenchmark)" class="grid gap-4 md:grid-cols-2">
+                <!-- Own Content Benchmark -->
+                <Card v-if="benchmark">
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2 text-base">
+                            <BarChart3 class="h-5 w-5 text-blue-500" />
+                            Your Content Benchmark
+                            <TooltipProvider :delay-duration="0">
+                                <Tooltip>
+                                    <TooltipTrigger>
+                                        <HelpCircle class="h-4 w-4 text-muted-foreground hover:text-foreground cursor-help" />
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top" class="max-w-xs">
+                                        <p>Compare this page's GEO score against your other scanned content. Helps identify which of your pages perform best in AI search visibility.</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        </CardTitle>
+                        <CardDescription>
+                            How this scan compares to your other content
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div v-if="benchmark.position === 'insufficient_data'" class="text-center py-4">
+                            <p class="text-muted-foreground">{{ benchmark.comparison }}</p>
+                            <p class="text-xs text-muted-foreground mt-2">
+                                Scans needed: {{ benchmark.scans_until_benchmark }}
+                            </p>
+                        </div>
+                        <div v-else class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <TooltipProvider :delay-duration="0">
+                                    <Tooltip>
+                                        <TooltipTrigger class="text-sm text-muted-foreground flex items-center gap-1 cursor-help">
+                                            Position <HelpCircle class="h-3 w-3" />
+                                        </TooltipTrigger>
+                                        <TooltipContent side="left" class="max-w-xs">
+                                            <p>Your ranking among your own content: top performer, above average, average, or below average.</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                                <span class="font-semibold capitalize" :class="getPositionClass(benchmark.position)">
+                                    {{ benchmark.position.replace('_', ' ') }}
+                                </span>
+                            </div>
+                            <div v-if="benchmark.percentile !== null" class="flex items-center justify-between">
+                                <TooltipProvider :delay-duration="0">
+                                    <Tooltip>
+                                        <TooltipTrigger class="text-sm text-muted-foreground flex items-center gap-1 cursor-help">
+                                            Percentile <HelpCircle class="h-3 w-3" />
+                                        </TooltipTrigger>
+                                        <TooltipContent side="left" class="max-w-xs">
+                                            <p>This page scores better than {{ benchmark.percentile }}% of your other scanned content.</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                                <span class="font-semibold">{{ benchmark.percentile }}th</span>
+                            </div>
+                            <div v-if="benchmark.avg_similar_score !== null" class="flex items-center justify-between">
+                                <TooltipProvider :delay-duration="0">
+                                    <Tooltip>
+                                        <TooltipTrigger class="text-sm text-muted-foreground flex items-center gap-1 cursor-help">
+                                            Avg. Similar Content <HelpCircle class="h-3 w-3" />
+                                        </TooltipTrigger>
+                                        <TooltipContent side="left" class="max-w-xs">
+                                            <p>The average GEO score across all your scanned content (excluding competitors).</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                                <span class="font-semibold">{{ benchmark.avg_similar_score }}</span>
+                            </div>
+                            <div v-if="benchmark.score_difference !== null" class="flex items-center justify-between">
+                                <TooltipProvider :delay-duration="0">
+                                    <Tooltip>
+                                        <TooltipTrigger class="text-sm text-muted-foreground flex items-center gap-1 cursor-help">
+                                            Difference <HelpCircle class="h-3 w-3" />
+                                        </TooltipTrigger>
+                                        <TooltipContent side="left" class="max-w-xs">
+                                            <p>How many points this page scores above (+) or below (-) your average content score.</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                                <span class="font-semibold" :class="benchmark.score_difference >= 0 ? 'text-green-600' : 'text-orange-600'">
+                                    {{ benchmark.score_difference >= 0 ? '+' : '' }}{{ benchmark.score_difference }}
+                                </span>
+                            </div>
+                            <p class="text-sm text-muted-foreground pt-2 border-t">
+                                {{ benchmark.comparison }}
+                            </p>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <!-- Competitor Benchmark -->
+                <Card v-if="competitorBenchmark">
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2 text-base">
+                            <Users class="h-5 w-5 text-purple-500" />
+                            Competitor Benchmark
+                            <TooltipProvider :delay-duration="0">
+                                <Tooltip>
+                                    <TooltipTrigger>
+                                        <HelpCircle class="h-4 w-4 text-muted-foreground hover:text-foreground cursor-help" />
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top" class="max-w-xs">
+                                        <p>Compare your GEO score against competitor pages you've scanned. See where you stand in AI search visibility compared to your competition.</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        </CardTitle>
+                        <CardDescription>
+                            How you compare to competitor scans
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div v-if="competitorBenchmark.position === 'no_competitors'" class="text-center py-4">
+                            <p class="text-muted-foreground">{{ competitorBenchmark.comparison }}</p>
+                            <Link href="/scans" class="text-sm text-primary hover:underline mt-2 block">
+                                Start a competitor scan
+                            </Link>
+                        </div>
+                        <div v-else class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <TooltipProvider :delay-duration="0">
+                                    <Tooltip>
+                                        <TooltipTrigger class="text-sm text-muted-foreground flex items-center gap-1 cursor-help">
+                                            Position <HelpCircle class="h-3 w-3" />
+                                        </TooltipTrigger>
+                                        <TooltipContent side="left" class="max-w-xs">
+                                            <p>How you rank against competitors: beating, matching, or losing to them in AI search visibility.</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                                <span class="font-semibold capitalize" :class="getPositionClass(competitorBenchmark.position)">
+                                    {{ competitorBenchmark.position.replace('_', ' ') }}
+                                </span>
+                            </div>
+                            <div v-if="competitorBenchmark.percentile !== null" class="flex items-center justify-between">
+                                <TooltipProvider :delay-duration="0">
+                                    <Tooltip>
+                                        <TooltipTrigger class="text-sm text-muted-foreground flex items-center gap-1 cursor-help">
+                                            Beat % of Competitors <HelpCircle class="h-3 w-3" />
+                                        </TooltipTrigger>
+                                        <TooltipContent side="left" class="max-w-xs">
+                                            <p>You outperform {{ competitorBenchmark.percentile }}% of your tracked competitors in GEO score.</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                                <span class="font-semibold">{{ competitorBenchmark.percentile }}%</span>
+                            </div>
+                            <div v-if="competitorBenchmark.avg_competitor_score !== null" class="flex items-center justify-between">
+                                <TooltipProvider :delay-duration="0">
+                                    <Tooltip>
+                                        <TooltipTrigger class="text-sm text-muted-foreground flex items-center gap-1 cursor-help">
+                                            Avg. Competitor Score <HelpCircle class="h-3 w-3" />
+                                        </TooltipTrigger>
+                                        <TooltipContent side="left" class="max-w-xs">
+                                            <p>The average GEO score across all pages you've marked as competitors.</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                                <span class="font-semibold">{{ competitorBenchmark.avg_competitor_score }}</span>
+                            </div>
+                            <div v-if="competitorBenchmark.score_difference !== null" class="flex items-center justify-between">
+                                <TooltipProvider :delay-duration="0">
+                                    <Tooltip>
+                                        <TooltipTrigger class="text-sm text-muted-foreground flex items-center gap-1 cursor-help">
+                                            Score Gap <HelpCircle class="h-3 w-3" />
+                                        </TooltipTrigger>
+                                        <TooltipContent side="left" class="max-w-xs">
+                                            <p>How many points you're ahead (+) or behind (-) the average competitor score. Positive means you're winning!</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                                <span class="font-semibold" :class="competitorBenchmark.score_difference >= 0 ? 'text-green-600' : 'text-red-600'">
+                                    {{ competitorBenchmark.score_difference >= 0 ? '+' : '' }}{{ competitorBenchmark.score_difference }}
+                                </span>
+                            </div>
+                            <div v-if="competitorBenchmark.competitors_analyzed" class="flex items-center justify-between">
+                                <TooltipProvider :delay-duration="0">
+                                    <Tooltip>
+                                        <TooltipTrigger class="text-sm text-muted-foreground flex items-center gap-1 cursor-help">
+                                            Competitors Analyzed <HelpCircle class="h-3 w-3" />
+                                        </TooltipTrigger>
+                                        <TooltipContent side="left" class="max-w-xs">
+                                            <p>The number of competitor pages included in this benchmark comparison.</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                                <span class="font-semibold">{{ competitorBenchmark.competitors_analyzed }}</span>
+                            </div>
+                            <p class="text-sm text-muted-foreground pt-2 border-t">
+                                {{ competitorBenchmark.comparison }}
+                            </p>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            <!-- Parent Scan Notice (for auto-discovered competitor scans) -->
+            <Alert v-if="parentScan" class="border-purple-500/50 bg-purple-50 dark:bg-purple-950/20">
+                <Users class="h-4 w-4 text-purple-600" />
+                <AlertTitle>Auto-Discovered Competitor</AlertTitle>
+                <AlertDescription>
+                    This competitor was automatically discovered from
+                    <Link :href="`/scans/${parentScan.uuid}`" class="font-medium underline hover:no-underline">
+                        {{ parentScan.title || parentScan.url }}
+                    </Link>
+                </AlertDescription>
+            </Alert>
+
+            <!-- Discovered Competitors Section -->
+            <Collapsible v-if="isCompleted && scan.auto_find_competitors" v-model:open="isCompetitorsExpanded">
+                <Card>
+                    <CollapsibleTrigger class="w-full text-left">
+                        <CardHeader class="cursor-pointer hover:bg-muted/50 transition-colors rounded-t-lg">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <CardTitle class="flex items-center gap-2">
+                                        <Users class="h-5 w-5 text-purple-600" />
+                                        AI-Discovered Competitors
+                                        <span class="ml-2 text-sm font-normal text-muted-foreground">
+                                            ({{ discoveredCompetitorsList.length }} found)
+                                        </span>
+                                    </CardTitle>
+                                    <CardDescription class="mt-1">
+                                        Competitors automatically found and scanned for benchmarking
+                                    </CardDescription>
+                                </div>
+                                <ChevronDown
+                                    class="h-5 w-5 text-muted-foreground transition-transform duration-200"
+                                    :class="{ 'rotate-180': isCompetitorsExpanded }"
+                                />
+                            </div>
+                        </CardHeader>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                        <CardContent class="pt-0">
+                            <!-- Empty state when no competitors found -->
+                            <div v-if="!discoveredCompetitorsList || discoveredCompetitorsList.length === 0" class="text-center py-6">
+                                <Users class="h-12 w-12 text-muted-foreground/50 mx-auto mb-3" />
+                                <p class="text-muted-foreground mb-2">
+                                    <span v-if="competitorDiscoveryStatus === 'discovering'">
+                                        Discovering competitors...
+                                    </span>
+                                    <span v-else-if="competitorDiscoveryStatus === 'failed'">
+                                        Failed to discover competitors
+                                    </span>
+                                    <span v-else>
+                                        No competitors were found for this scan
+                                    </span>
+                                </p>
+                                <p class="text-xs text-muted-foreground">
+                                    Competitor limit may have been reached, or no suitable competitors were identified.
+                                </p>
+                            </div>
+                            <!-- Competitor list -->
+                            <div v-else class="space-y-3">
+                                <Link
+                                    v-for="competitor in discoveredCompetitorsList"
+                                    :key="competitor.uuid"
+                                    :href="`/scans/${competitor.uuid}`"
+                                    class="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
+                                >
+                                    <div class="flex items-center gap-4">
+                                        <div
+                                            v-if="competitor.status === 'completed' && competitor.grade"
+                                            class="flex h-12 w-12 items-center justify-center rounded-full text-lg font-bold"
+                                            :class="getGradeColor(competitor.grade)"
+                                        >
+                                            {{ competitor.grade }}
+                                        </div>
+                                        <div
+                                            v-else-if="competitor.status === 'failed'"
+                                            class="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-950"
+                                        >
+                                            <XCircle class="h-6 w-6" />
+                                        </div>
+                                        <div
+                                            v-else
+                                            class="flex h-12 w-12 items-center justify-center rounded-full bg-muted"
+                                        >
+                                            <Loader2 class="h-6 w-6 animate-spin text-muted-foreground" />
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="font-medium text-base">{{ competitor.title || 'Scanning...' }}</p>
+                                            <p class="text-sm text-muted-foreground truncate max-w-[400px]">{{ competitor.url }}</p>
+                                            <div class="flex items-center gap-2 mt-1">
+                                                <span
+                                                    v-if="competitor.status === 'completed'"
+                                                    class="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+                                                >
+                                                    Completed
+                                                </span>
+                                                <span
+                                                    v-else-if="competitor.status === 'failed'"
+                                                    class="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
+                                                >
+                                                    Failed to scan
+                                                </span>
+                                                <span
+                                                    v-else-if="competitor.status === 'processing'"
+                                                    class="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
+                                                >
+                                                    Scanning...
+                                                </span>
+                                                <span
+                                                    v-else
+                                                    class="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                                                >
+                                                    {{ competitor.status }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-4">
+                                        <div v-if="competitor.status === 'completed' && competitor.score !== null" class="text-right">
+                                            <p class="text-2xl font-bold" :class="getScoreColor(competitor.score)">
+                                                {{ competitor.score.toFixed(1) }}
+                                            </p>
+                                            <p class="text-xs text-muted-foreground">GEO Score</p>
+                                        </div>
+                                        <ChevronRight class="h-5 w-5 text-muted-foreground" />
+                                    </div>
+                                </Link>
+                            </div>
+                        </CardContent>
+                    </CollapsibleContent>
+                </Card>
+            </Collapsible>
+
+            <!-- Competitor Discovery Progress -->
+            <Card v-if="scan.auto_find_competitors && competitorDiscoveryStatus && competitorDiscoveryStatus !== 'completed'">
+                <CardHeader>
+                    <CardTitle class="flex items-center gap-2">
+                        <Sparkles class="h-5 w-5 text-primary animate-pulse" />
+                        <span v-if="competitorDiscoveryStatus === 'pending'">Competitor Discovery Queued</span>
+                        <span v-else-if="competitorDiscoveryStatus === 'discovering'">Discovering Competitors...</span>
+                        <span v-else-if="competitorDiscoveryStatus === 'scanning'">Scanning Competitors...</span>
+                        <span v-else-if="competitorDiscoveryStatus === 'failed'">Competitor Discovery Failed</span>
+                    </CardTitle>
+                    <CardDescription>
+                        <span v-if="competitorDiscoveryStatus === 'pending'">
+                            Competitor discovery will begin after your scan completes
+                        </span>
+                        <span v-else-if="competitorDiscoveryStatus === 'discovering'">
+                            AI is analyzing your content to find competitor websites
+                        </span>
+                        <span v-else-if="competitorDiscoveryStatus === 'scanning'">
+                            Found {{ competitorsFound }} competitors - scanning in progress
+                        </span>
+                        <span v-else-if="competitorDiscoveryStatus === 'failed'">
+                            There was an error discovering competitors. You will not be charged for this feature.
+                        </span>
+                    </CardDescription>
+                </CardHeader>
+                <CardContent v-if="competitorDiscoveryStatus !== 'failed'">
+                    <div class="space-y-3">
+                        <!-- Progress steps -->
+                        <div class="flex items-center gap-4">
+                            <div class="flex items-center gap-2">
+                                <div
+                                    class="flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium"
+                                    :class="competitorDiscoveryStatus === 'pending' ? 'bg-muted text-muted-foreground' : 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'"
+                                >
+                                    <CheckCircle2 v-if="competitorDiscoveryStatus !== 'pending'" class="h-4 w-4" />
+                                    <span v-else>1</span>
+                                </div>
+                                <span class="text-sm" :class="competitorDiscoveryStatus === 'pending' ? 'text-muted-foreground' : ''">Scan Complete</span>
+                            </div>
+                            <div class="h-px flex-1 bg-border" />
+                            <div class="flex items-center gap-2">
+                                <div
+                                    class="flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium"
+                                    :class="{
+                                        'bg-muted text-muted-foreground': competitorDiscoveryStatus === 'pending',
+                                        'bg-primary text-primary-foreground': competitorDiscoveryStatus === 'discovering',
+                                        'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300': competitorDiscoveryStatus === 'scanning'
+                                    }"
+                                >
+                                    <Loader2 v-if="competitorDiscoveryStatus === 'discovering'" class="h-4 w-4 animate-spin" />
+                                    <CheckCircle2 v-else-if="competitorDiscoveryStatus === 'scanning'" class="h-4 w-4" />
+                                    <span v-else>2</span>
+                                </div>
+                                <span class="text-sm" :class="competitorDiscoveryStatus === 'pending' ? 'text-muted-foreground' : ''">AI Discovery</span>
+                            </div>
+                            <div class="h-px flex-1 bg-border" />
+                            <div class="flex items-center gap-2">
+                                <div
+                                    class="flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium"
+                                    :class="competitorDiscoveryStatus === 'scanning' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'"
+                                >
+                                    <Loader2 v-if="competitorDiscoveryStatus === 'scanning'" class="h-4 w-4 animate-spin" />
+                                    <span v-else>3</span>
+                                </div>
+                                <span class="text-sm" :class="competitorDiscoveryStatus !== 'scanning' ? 'text-muted-foreground' : ''">
+                                    Scanning{{ competitorsFound > 0 ? ` (${competitorsFound})` : '' }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <!-- AI Suggestions Section (only show when completed and has suggestions) -->
+            <Collapsible v-if="isCompleted && aiSuggestions.length > 0" v-model:open="isSuggestionsExpanded">
+                <Card>
+                    <CollapsibleTrigger class="w-full text-left">
+                        <CardHeader class="cursor-pointer hover:bg-muted/50 transition-colors rounded-t-lg">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <CardTitle class="flex items-center gap-2">
+                                        <Lightbulb class="h-5 w-5 text-yellow-500" />
+                                        AI-Powered Suggestions
+                                        <span class="ml-2 text-sm font-normal text-muted-foreground">
+                                            ({{ aiSuggestions.length }} suggestions)
+                                        </span>
+                                    </CardTitle>
+                                    <CardDescription class="mt-1">
+                                        Personalized recommendations based on analysis of your content and similar high-performing pages
+                                    </CardDescription>
+                                </div>
+                                <ChevronDown
+                                    class="h-5 w-5 text-muted-foreground transition-transform duration-200"
+                                    :class="{ 'rotate-180': isSuggestionsExpanded }"
+                                />
+                            </div>
+                        </CardHeader>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                        <CardContent class="pt-0">
+                            <div class="space-y-3">
+                                <div
+                                    v-for="(suggestion, index) in aiSuggestions"
+                                    :key="index"
+                                    class="rounded-lg border p-4"
+                                >
+                                    <div class="flex items-start gap-3">
+                                        <Target class="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-2 mb-2">
+                                                <span
+                                                    v-if="suggestion.priority"
+                                                    class="text-xs font-medium px-2 py-0.5 rounded-full"
+                                                    :class="getPriorityBadgeClass(suggestion.priority)"
+                                                >
+                                                    {{ suggestion.priority }}
+                                                </span>
+                                                <span
+                                                    v-if="suggestion.category"
+                                                    class="text-xs text-muted-foreground capitalize"
+                                                >
+                                                    {{ suggestion.category?.replace('_', ' ') }}
+                                                </span>
+                                            </div>
+                                            <p class="text-sm font-medium leading-relaxed">{{ suggestion.suggestion }}</p>
+                                            <div v-if="suggestion.example" class="mt-3 bg-muted/50 p-3 rounded-lg border">
+                                                <p class="text-xs font-medium text-muted-foreground mb-1">Example:</p>
+                                                <p class="text-sm font-mono">{{ suggestion.example }}</p>
+                                            </div>
+                                            <p v-if="suggestion.reasoning" class="text-sm text-muted-foreground mt-3 italic border-l-2 border-primary/30 pl-3">
+                                                {{ suggestion.reasoning }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </CollapsibleContent>
+                </Card>
+            </Collapsible>
 
             <!-- Pillar Scores (only show when completed) -->
             <div v-if="isCompleted">

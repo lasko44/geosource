@@ -10,6 +10,10 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Represents a document for RAG-based vector search.
+ *
+ * Documents can belong to either a team OR a user for isolation:
+ * - team_id set: Team document (shared within team)
+ * - user_id set: Personal document (private to user)
  */
 class Document extends Model
 {
@@ -17,6 +21,7 @@ class Document extends Model
 
     protected $fillable = [
         'team_id',
+        'user_id',
         'title',
         'content',
         'metadata',
@@ -38,21 +43,38 @@ class Document extends Model
         return $this->belongsTo(Team::class);
     }
 
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
     /**
      * Set the embedding vector for this document.
      *
-     * Note: Uses raw expression for pgvector type casting - Eloquent doesn't
-     * natively support PostgreSQL vector types.
+     * Note: Uses parameterized DB::statement for pgvector type casting - Eloquent
+     * doesn't natively support PostgreSQL vector types. Input is validated and
+     * parameterized to prevent SQL injection.
      *
      * @param  array<int, float>  $vector
      */
     public function setEmbedding(array $vector): void
     {
-        $vectorString = '['.implode(',', $vector).']';
+        // Validate all elements are numeric to prevent SQL injection
+        foreach ($vector as $value) {
+            if (! is_numeric($value)) {
+                throw new \InvalidArgumentException('Vector elements must be numeric');
+            }
+        }
 
+        // Cast all values to float for safety, then build vector string
+        $vectorString = '['.implode(',', array_map('floatval', $vector)).']';
+
+        // Use parameterized query to prevent SQL injection
         // Raw expression required for pgvector type casting (::vector)
-        self::where('id', $this->id)
-            ->update(['embedding' => DB::raw("'$vectorString'::vector")]);
+        DB::statement(
+            'UPDATE documents SET embedding = ?::vector, updated_at = ? WHERE id = ?',
+            [$vectorString, now(), $this->id]
+        );
     }
 
     /**

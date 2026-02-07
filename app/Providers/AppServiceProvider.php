@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\BlogPost;
 use App\Observers\BlogPostObserver;
 use App\Services\RAG\ChunkingService;
+use App\Services\RAG\ContentExtractor;
 use App\Services\RAG\EmbeddingService;
 use App\Services\RAG\RAGService;
 use App\Services\RAG\VectorStore;
@@ -39,6 +40,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(EmbeddingService::class, fn () => new EmbeddingService);
         $this->app->singleton(ChunkingService::class, fn () => new ChunkingService);
+        $this->app->singleton(ContentExtractor::class, fn () => new ContentExtractor);
 
         $this->app->singleton(VectorStore::class, fn ($app) => new VectorStore(
             $app->make(EmbeddingService::class),

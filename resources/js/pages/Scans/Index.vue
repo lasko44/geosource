@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { ref, watch, computed } from 'vue';
-import { ExternalLink, Trash2, Globe, ArrowLeft, Search, X, ChevronUp, ChevronDown, Filter, Layers, Clock, CheckCircle2, XCircle, Repeat, Loader2 } from 'lucide-vue-next';
+import { ExternalLink, Trash2, Globe, ArrowLeft, Search, X, ChevronUp, ChevronDown, Filter, Layers, Clock, CheckCircle2, XCircle, Repeat, Loader2, Users, Info, Zap } from 'lucide-vue-next';
 import { useDebounceFn } from '@vueuse/core';
 
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -12,6 +12,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
 import { useDateFormat } from '@/composables/useDateFormat';
 import { type BreadcrumbItem, type Scan, type UsageSummary } from '@/types';
 
@@ -69,16 +71,62 @@ const canAffordTier = (tier: string): boolean => {
     return tokenBalance.value >= option.tokens;
 };
 
+// Auto-find competitors token costs
+const MAX_COMPETITORS = 5;
+const AI_DISCOVERY_FEE = 3; // Base fee for AI discovery (non-refundable)
+
 // Single URL scan form
 const scanForm = useForm({
     url: '',
     team_id: props.currentTeamId ?? null,
     tier: 'basic',
+    is_competitor: false,
+    auto_find_competitors: false,
+    competitor_scan_tier: 'basic',
 });
 
 // Selected tier info
 const selectedTierInfo = computed(() => {
     return tierOptions.find(t => t.value === scanForm.tier) || tierOptions[0];
+});
+
+// Get competitor tier info
+const competitorTierInfo = computed(() => {
+    return tierOptions.find(t => t.value === scanForm.competitor_scan_tier) || tierOptions[0];
+});
+
+// Calculate scan costs for competitors (refundable portion)
+const competitorScanCosts = computed(() => {
+    if (!scanForm.auto_find_competitors || scanForm.tier !== 'full') {
+        return 0;
+    }
+    return competitorTierInfo.value.tokens * MAX_COMPETITORS;
+});
+
+// Calculate total tokens for competitors (base fee + scan costs)
+const competitorTokens = computed(() => {
+    if (!scanForm.auto_find_competitors || scanForm.tier !== 'full') {
+        return 0;
+    }
+    return AI_DISCOVERY_FEE + competitorScanCosts.value;
+});
+
+// Reset auto_find_competitors when tier changes away from full
+watch(() => scanForm.tier, (newTier) => {
+    if (newTier !== 'full') {
+        scanForm.auto_find_competitors = false;
+    }
+});
+
+// Calculate total tokens for single scan (tier + auto-find if applicable)
+const totalTokensForScan = computed(() => {
+    const tierTokens = selectedTierInfo.value.tokens;
+    return tierTokens + competitorTokens.value;
+});
+
+// Check if user can afford the scan with all options
+const canAffordScan = computed(() => {
+    return tokenBalance.value >= totalTokensForScan.value;
 });
 
 // Cooldown state for single URL scan
@@ -173,7 +221,7 @@ watch(() => scanForm.tier, () => {
 
 const submitScan = () => {
     if (isOnCooldown.value) return;
-    if (!canAffordTier(scanForm.tier)) return;
+    if (!canAffordScan.value) return;
     scanForm.team_id = props.currentTeamId ?? null;
     scanForm.post('/scan', {
         preserveScroll: true,
@@ -496,7 +544,7 @@ const truncateUrl = (url: string, maxLength = 60) => {
                                     </div>
                                     <Button
                                         type="submit"
-                                        :disabled="scanForm.processing || !scanForm.url || !usage.can_scan || isOnCooldown || checkingCooldown || !canAffordTier(scanForm.tier)"
+                                        :disabled="scanForm.processing || !scanForm.url || !usage.can_scan || isOnCooldown || checkingCooldown || !canAffordScan"
                                         class="h-11 px-6"
                                     >
                                         <Clock v-if="isOnCooldown" class="mr-2 h-4 w-4" />
@@ -547,6 +595,93 @@ const truncateUrl = (url: string, maxLength = 60) => {
                                     </div>
                                 </div>
 
+                                <!-- Competitor Checkbox -->
+                                <div class="flex items-start space-x-3 rounded-lg border border-border p-3">
+                                    <input
+                                        id="is_competitor"
+                                        type="checkbox"
+                                        v-model="scanForm.is_competitor"
+                                        class="mt-0.5 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                    />
+                                    <div class="flex-1 space-y-1">
+                                        <label
+                                            for="is_competitor"
+                                            class="flex cursor-pointer items-center gap-2 text-sm font-medium leading-none"
+                                        >
+                                            <Users class="h-4 w-4 text-muted-foreground" />
+                                            Mark as competitor scan
+                                        </label>
+                                        <p class="text-xs text-muted-foreground">
+                                            Competitor scans are used for benchmarking and comparison analysis.
+                                            They won't appear in your "own content" metrics.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Auto-Find Competitors (Full tier only) -->
+                                <div
+                                    v-if="scanForm.tier === 'full'"
+                                    class="space-y-3 rounded-lg border p-3"
+                                    :class="scanForm.auto_find_competitors ? 'border-primary/50 bg-primary/5' : 'border-border'"
+                                >
+                                    <div class="flex items-start space-x-3">
+                                        <input
+                                            id="auto_find_competitors"
+                                            type="checkbox"
+                                            :checked="scanForm.auto_find_competitors"
+                                            @change="(e: Event) => scanForm.auto_find_competitors = (e.target as HTMLInputElement).checked"
+                                            class="mt-0.5 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                        />
+                                        <div class="flex-1 space-y-1">
+                                            <label
+                                                for="auto_find_competitors"
+                                                class="flex cursor-pointer items-center gap-2 text-sm font-medium leading-none"
+                                            >
+                                                <Zap class="h-4 w-4 text-primary" />
+                                                Auto-find competitors with AI
+                                                <Badge variant="secondary" class="ml-1 text-xs">{{ AI_DISCOVERY_FEE }}+ tokens</Badge>
+                                            </label>
+                                            <p class="text-xs text-muted-foreground">
+                                                AI will discover up to {{ MAX_COMPETITORS }} competitor websites and scan them automatically for benchmarking.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Competitor Scan Tier Selection -->
+                                    <div v-if="scanForm.auto_find_competitors" class="ml-7 space-y-2 border-l-2 border-primary/20 pl-3">
+                                        <label class="text-sm font-medium text-muted-foreground">Competitor scan tier:</label>
+                                        <div class="grid grid-cols-3 gap-2">
+                                            <button
+                                                v-for="tierOption in tierOptions"
+                                                :key="tierOption.value"
+                                                type="button"
+                                                @click="scanForm.competitor_scan_tier = tierOption.value"
+                                                class="rounded-md border px-3 py-2 text-sm transition-all"
+                                                :class="scanForm.competitor_scan_tier === tierOption.value
+                                                    ? 'border-primary bg-primary/10 text-primary font-medium'
+                                                    : 'border-border hover:border-primary/50'"
+                                            >
+                                                <div class="font-medium">{{ tierOption.label }}</div>
+                                                <div class="text-xs text-muted-foreground">
+                                                    {{ tierOption.tokens === 0 ? 'No scan cost' : `${tierOption.tokens} tokens each` }}
+                                                </div>
+                                            </button>
+                                        </div>
+                                        <div class="text-xs text-muted-foreground space-y-0.5">
+                                            <p>
+                                                <span class="font-medium">{{ competitorTokens }} tokens total:</span>
+                                                {{ AI_DISCOVERY_FEE }} AI discovery
+                                                <template v-if="competitorScanCosts > 0">
+                                                    + {{ competitorScanCosts }} for {{ MAX_COMPETITORS }} scans
+                                                </template>
+                                            </p>
+                                            <p v-if="competitorScanCosts > 0" class="text-primary">
+                                                Scan tokens refunded if fewer than {{ MAX_COMPETITORS }} found
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <Alert v-if="scanForm.errors.url" variant="destructive">
                                     <AlertDescription>{{ scanForm.errors.url }}</AlertDescription>
                                 </Alert>
@@ -556,9 +691,9 @@ const truncateUrl = (url: string, maxLength = 60) => {
                                         <Link href="/tokens" class="ml-1 underline">Buy more tokens</Link>
                                     </AlertDescription>
                                 </Alert>
-                                <Alert v-if="!canAffordTier(scanForm.tier) && scanForm.tier !== 'basic'" class="border-amber-500/50 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-950/50 dark:text-amber-200">
+                                <Alert v-if="!canAffordScan && (scanForm.tier !== 'basic' || scanForm.auto_find_competitors)" class="border-amber-500/50 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-950/50 dark:text-amber-200">
                                     <AlertDescription>
-                                        You need {{ selectedTierInfo.tokens }} tokens for a {{ selectedTierInfo.label }} scan but only have {{ tokenBalance }}.
+                                        You need {{ totalTokensForScan }} tokens for this scan but only have {{ tokenBalance }}.
                                         <Link href="/tokens" class="ml-1 underline">Buy more tokens</Link>
                                     </AlertDescription>
                                 </Alert>
@@ -580,6 +715,14 @@ const truncateUrl = (url: string, maxLength = 60) => {
                                         {{ scanForm.errors.limit }}
                                         <Link href="/billing/plans" class="ml-2 underline">Upgrade now</Link>
                                     </AlertDescription>
+                                </Alert>
+                                <Alert v-if="scanForm.errors.is_competitor" class="border-amber-500/50 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-950/50 dark:text-amber-200">
+                                    <Users class="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                                    <AlertDescription>{{ scanForm.errors.is_competitor }}</AlertDescription>
+                                </Alert>
+                                <Alert v-if="scanForm.errors.auto_find_competitors" class="border-amber-500/50 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-950/50 dark:text-amber-200">
+                                    <Zap class="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                                    <AlertDescription>{{ scanForm.errors.auto_find_competitors }}</AlertDescription>
                                 </Alert>
                                 <Alert v-if="!usage.can_scan && !scanForm.errors.limit" variant="destructive">
                                     <AlertDescription>
@@ -953,6 +1096,13 @@ https://example.com/page3"
                                 <div class="flex-1">
                                     <div class="flex items-center gap-2">
                                         <p class="font-medium">{{ scan.title || 'Untitled' }}</p>
+                                        <span
+                                            v-if="scan.is_competitor"
+                                            class="inline-flex items-center gap-1 rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700 dark:bg-purple-900 dark:text-purple-300"
+                                        >
+                                            <Users class="h-3 w-3" />
+                                            Competitor
+                                        </span>
                                         <span
                                             v-if="scan.scheduled_scan_id"
                                             class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900 dark:text-blue-300"

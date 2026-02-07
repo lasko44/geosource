@@ -15,9 +15,8 @@ use Illuminate\Support\Collection;
  * - Hybrid search (semantic + keyword)
  * - Metadata filtering
  *
- * Security: All operations require team_id and optionally accept a User
- * for authorization validation. When a User is provided, access is verified
- * before any operation.
+ * Security: All operations require either team_id or user_id for isolation.
+ * When a User is provided, access is verified before any operation.
  */
 class VectorStore
 {
@@ -36,10 +35,10 @@ class VectorStore
      *
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
-    private function authorizeTeamAccess(int $teamId, ?User $user): void
+    private function authorizeTeamAccess(?int $teamId, ?User $user): void
     {
-        if ($user === null) {
-            return; // No user provided, skip authorization (internal use)
+        if ($user === null || $teamId === null) {
+            return; // No user or no team provided, skip authorization
         }
 
         // Admins have access to all teams
@@ -56,6 +55,36 @@ class VectorStore
     }
 
     /**
+     * Validate isolation parameters - must have either team_id or user_id.
+     *
+     * @throws \InvalidArgumentException
+     */
+    private function validateIsolation(?int $teamId, ?int $userId): void
+    {
+        if ($teamId === null && $userId === null) {
+            throw new \InvalidArgumentException(
+                'Either team_id or user_id must be provided for document isolation.'
+            );
+        }
+    }
+
+    /**
+     * Get the isolation ID for caching (prefers team_id, falls back to user_id).
+     */
+    private function getIsolationId(?int $teamId, ?int $userId): int
+    {
+        return $teamId ?? $userId;
+    }
+
+    /**
+     * Get isolation type for logging/debugging.
+     */
+    private function getIsolationType(?int $teamId, ?int $userId): string
+    {
+        return $teamId !== null ? 'team' : 'user';
+    }
+
+    /**
      * Enforce maximum search limit to prevent resource exhaustion.
      */
     private function enforceSearchLimit(int $limit): int
@@ -66,18 +95,25 @@ class VectorStore
     /**
      * Add a document to the vector store.
      *
-     * @param  User|null  $user  Optional user for authorization check. If provided, access to teamId is verified.
+     * Documents are isolated by either team_id or user_id.
+     *
+     * @param  int|null  $teamId  Team ID for team isolation (preferred)
+     * @param  int|null  $userId  User ID for personal isolation (fallback)
+     * @param  User|null  $user  Optional user for authorization check
      */
     public function addDocument(
-        int $teamId,
+        ?int $teamId,
+        ?int $userId,
         string $title,
         string $content,
         array $metadata = [],
         bool $chunk = true,
         ?User $user = null
     ): array {
-        // Validate user has access to the team
+        $this->validateIsolation($teamId, $userId);
         $this->authorizeTeamAccess($teamId, $user);
+
+        $isolationId = $this->getIsolationId($teamId, $userId);
 
         $documents = [];
 
@@ -95,14 +131,15 @@ class VectorStore
             ]);
             array_unshift($chunks, $summaryChunk);
 
-            // Generate embeddings in batch (with team isolation for cache)
+            // Generate embeddings in batch (with isolation for cache)
             $texts = array_column($chunks, 'content');
-            $embeddings = $this->embeddingService->embedBatch($texts, true, $teamId);
+            $embeddings = $this->embeddingService->embedBatch($texts, true, $isolationId);
 
             // Store each chunk as a document
             foreach ($chunks as $index => $chunk) {
                 $doc = Document::create([
                     'team_id' => $teamId,
+                    'user_id' => $userId,
                     'title' => $chunk['metadata']['is_summary'] ?? false
                         ? "[Summary] {$title}"
                         : "{$title} (chunk {$index})",
@@ -117,11 +154,12 @@ class VectorStore
                 $documents[] = $doc;
             }
         } else {
-            // Store as single document (with team isolation for cache)
-            $embedding = $this->embeddingService->embed($content, true, $teamId);
+            // Store as single document (with isolation for cache)
+            $embedding = $this->embeddingService->embed($content, true, $isolationId);
 
             $doc = Document::create([
                 'team_id' => $teamId,
+                'user_id' => $userId,
                 'title' => $title,
                 'content' => $content,
                 'metadata' => $metadata,
@@ -137,26 +175,30 @@ class VectorStore
     /**
      * Search for similar documents using semantic search.
      *
-     * @param  User|null  $user  Optional user for authorization check. If provided, access to teamId is verified.
+     * @param  int|null  $teamId  Team ID for team isolation
+     * @param  int|null  $userId  User ID for personal isolation
+     * @param  User|null  $user  Optional user for authorization check
      */
     public function search(
         string $query,
-        int $teamId,
+        ?int $teamId,
+        ?int $userId = null,
         int $limit = 10,
         float $threshold = 0.5,
         array $filters = [],
         ?User $user = null
     ): Collection {
-        // Validate user has access to the team
+        $this->validateIsolation($teamId, $userId);
         $this->authorizeTeamAccess($teamId, $user);
 
         // Enforce max limit to prevent resource exhaustion
         $limit = $this->enforceSearchLimit($limit);
 
-        // Pass teamId for cache isolation
-        $queryEmbedding = $this->embeddingService->embed($query, true, $teamId);
+        // Use isolation ID for cache
+        $isolationId = $this->getIsolationId($teamId, $userId);
+        $queryEmbedding = $this->embeddingService->embed($query, true, $isolationId);
 
-        return $this->searchByVector($queryEmbedding, $teamId, $limit, $threshold, $filters);
+        return $this->searchByVector($queryEmbedding, $teamId, $userId, $limit, $threshold, $filters);
     }
 
     /**
@@ -165,17 +207,20 @@ class VectorStore
      * Note: Uses raw expressions for pgvector cosine similarity operator (<=>)
      * which is not supported by Eloquent natively.
      *
-     * @param  User|null  $user  Optional user for authorization check. If provided, access to teamId is verified.
+     * @param  int|null  $teamId  Team ID for team isolation
+     * @param  int|null  $userId  User ID for personal isolation
+     * @param  User|null  $user  Optional user for authorization check
      */
     public function searchByVector(
         array $vector,
-        int $teamId,
+        ?int $teamId,
+        ?int $userId = null,
         int $limit = 10,
         float $threshold = 0.5,
         array $filters = [],
         ?User $user = null
     ): Collection {
-        // Validate user has access to the team
+        $this->validateIsolation($teamId, $userId);
         $this->authorizeTeamAccess($teamId, $user);
 
         // Enforce max limit to prevent resource exhaustion
@@ -193,9 +238,15 @@ class VectorStore
                 'created_at',
             ])
             ->selectRaw('1 - (embedding <=> ?::vector) as similarity', [$vectorString])
-            ->where('team_id', $teamId)
             ->whereNotNull('embedding')
             ->whereRaw('1 - (embedding <=> ?::vector) >= ?', [$vectorString, $threshold]);
+
+        // Apply isolation filter (team or user)
+        if ($teamId !== null) {
+            $query->where('team_id', $teamId);
+        } else {
+            $query->where('user_id', $userId);
+        }
 
         // Apply metadata filters with validation
         $this->applyMetadataFilters($query, $filters);
@@ -212,24 +263,28 @@ class VectorStore
      * Note: Uses raw expressions for pgvector cosine similarity operator (<=>)
      * and PostgreSQL full-text search functions which are not supported by Eloquent natively.
      *
-     * @param  User|null  $user  Optional user for authorization check. If provided, access to teamId is verified.
+     * @param  int|null  $teamId  Team ID for team isolation
+     * @param  int|null  $userId  User ID for personal isolation
+     * @param  User|null  $user  Optional user for authorization check
      */
     public function hybridSearch(
         string $query,
-        int $teamId,
+        ?int $teamId,
+        ?int $userId = null,
         int $limit = 10,
         float $semanticWeight = 0.7,
         array $filters = [],
         ?User $user = null
     ): Collection {
-        // Validate user has access to the team
+        $this->validateIsolation($teamId, $userId);
         $this->authorizeTeamAccess($teamId, $user);
 
         // Enforce max limit to prevent resource exhaustion
         $limit = $this->enforceSearchLimit($limit);
 
-        // Pass teamId for cache isolation
-        $queryEmbedding = $this->embeddingService->embed($query, true, $teamId);
+        // Use isolation ID for cache
+        $isolationId = $this->getIsolationId($teamId, $userId);
+        $queryEmbedding = $this->embeddingService->embed($query, true, $isolationId);
         $vectorString = '['.implode(',', $queryEmbedding).']';
 
         // Normalize the query for text search
@@ -253,8 +308,14 @@ class VectorStore
                 '(? * (1 - (embedding <=> ?::vector))) + (? * ts_rank(to_tsvector(\'english\', content), plainto_tsquery(\'english\', ?))) as combined_score',
                 [$semanticWeight, $vectorString, 1 - $semanticWeight, $searchTerms]
             )
-            ->where('team_id', $teamId)
             ->whereNotNull('embedding');
+
+        // Apply isolation filter (team or user)
+        if ($teamId !== null) {
+            $results->where('team_id', $teamId);
+        } else {
+            $results->where('user_id', $userId);
+        }
 
         // Apply metadata filters with validation
         $this->applyMetadataFilters($results, $filters);
@@ -274,7 +335,7 @@ class VectorStore
      * Note: Uses raw expressions for pgvector cosine similarity operator (<=>)
      * which is not supported by Eloquent natively.
      *
-     * @param  User|null  $user  Optional user for authorization check. If provided, access to document's team is verified.
+     * @param  User|null  $user  Optional user for authorization check
      */
     public function findSimilar(
         int $documentId,
@@ -299,13 +360,21 @@ class VectorStore
         $vectorString = '['.implode(',', $embedding).']';
 
         // Raw expressions required for pgvector cosine distance operator (<=>)
-        return Document::query()
+        $query = Document::query()
             ->select(['id', 'title', 'content', 'metadata'])
             ->selectRaw('1 - (embedding <=> ?::vector) as similarity', [$vectorString])
-            ->where('team_id', $document->team_id)
             ->where('id', '!=', $documentId)
             ->whereNotNull('embedding')
-            ->whereRaw('1 - (embedding <=> ?::vector) >= ?', [$vectorString, $threshold])
+            ->whereRaw('1 - (embedding <=> ?::vector) >= ?', [$vectorString, $threshold]);
+
+        // Apply same isolation as the source document
+        if ($document->team_id !== null) {
+            $query->where('team_id', $document->team_id);
+        } else {
+            $query->where('user_id', $document->user_id);
+        }
+
+        return $query
             ->orderByRaw('embedding <=> ?::vector', [$vectorString])
             ->limit($limit)
             ->get();
@@ -314,17 +383,31 @@ class VectorStore
     /**
      * Get documents by metadata filter.
      *
-     * @param  User|null  $user  Optional user for authorization check. If provided, access to teamId is verified.
+     * @param  int|null  $teamId  Team ID for team isolation
+     * @param  int|null  $userId  User ID for personal isolation
+     * @param  User|null  $user  Optional user for authorization check
      */
-    public function getByMetadata(int $teamId, array $filters, int $limit = 100, ?User $user = null): Collection
-    {
-        // Validate user has access to the team
+    public function getByMetadata(
+        ?int $teamId,
+        ?int $userId,
+        array $filters,
+        int $limit = 100,
+        ?User $user = null
+    ): Collection {
+        $this->validateIsolation($teamId, $userId);
         $this->authorizeTeamAccess($teamId, $user);
 
         // Enforce max limit to prevent resource exhaustion
         $limit = $this->enforceSearchLimit($limit);
 
-        $query = Document::where('team_id', $teamId);
+        $query = Document::query();
+
+        // Apply isolation filter (team or user)
+        if ($teamId !== null) {
+            $query->where('team_id', $teamId);
+        } else {
+            $query->where('user_id', $userId);
+        }
 
         // Apply metadata filters with validation
         foreach ($filters as $key => $value) {
@@ -338,29 +421,43 @@ class VectorStore
     /**
      * Update document embedding.
      *
-     * @param  User|null  $user  Optional user for authorization check. If provided, access to document's team is verified.
+     * @param  User|null  $user  Optional user for authorization check
      */
     public function updateEmbedding(Document $document, ?User $user = null): void
     {
         // Validate user has access to the document's team
         $this->authorizeTeamAccess($document->team_id, $user);
 
-        // Pass teamId for cache isolation
-        $embedding = $this->embeddingService->embed($document->content, true, $document->team_id);
+        // Use isolation ID for cache (team or user)
+        $isolationId = $this->getIsolationId($document->team_id, $document->user_id);
+        $embedding = $this->embeddingService->embed($document->content, true, $isolationId);
         $document->setEmbedding($embedding);
     }
 
     /**
      * Delete documents by metadata filter.
      *
-     * @param  User|null  $user  Optional user for authorization check. If provided, access to teamId is verified.
+     * @param  int|null  $teamId  Team ID for team isolation
+     * @param  int|null  $userId  User ID for personal isolation
+     * @param  User|null  $user  Optional user for authorization check
      */
-    public function deleteByMetadata(int $teamId, array $filters, ?User $user = null): int
-    {
-        // Validate user has access to the team
+    public function deleteByMetadata(
+        ?int $teamId,
+        ?int $userId,
+        array $filters,
+        ?User $user = null
+    ): int {
+        $this->validateIsolation($teamId, $userId);
         $this->authorizeTeamAccess($teamId, $user);
 
-        $query = Document::where('team_id', $teamId);
+        $query = Document::query();
+
+        // Apply isolation filter (team or user)
+        if ($teamId !== null) {
+            $query->where('team_id', $teamId);
+        } else {
+            $query->where('user_id', $userId);
+        }
 
         // Apply metadata filters with validation
         foreach ($filters as $key => $value) {
@@ -374,16 +471,19 @@ class VectorStore
     /**
      * Get cluster of semantically similar documents.
      *
-     * @param  User|null  $user  Optional user for authorization check. If provided, access to teamId is verified.
+     * @param  int|null  $teamId  Team ID for team isolation
+     * @param  int|null  $userId  User ID for personal isolation
+     * @param  User|null  $user  Optional user for authorization check
      */
     public function getCluster(
-        int $teamId,
+        ?int $teamId,
+        ?int $userId,
         int $centroidDocumentId,
         float $threshold = 0.7,
         int $limit = 50,
         ?User $user = null
     ): Collection {
-        // Validate user has access to the team
+        $this->validateIsolation($teamId, $userId);
         $this->authorizeTeamAccess($teamId, $user);
 
         // Enforce max limit to prevent resource exhaustion
@@ -396,7 +496,7 @@ class VectorStore
             return collect([$centroid]);
         }
 
-        return $this->searchByVector($embedding, $teamId, $limit, $threshold)
+        return $this->searchByVector($embedding, $teamId, $userId, $limit, $threshold)
             ->prepend((object) [
                 'id' => $centroid->id,
                 'title' => $centroid->title,
@@ -409,11 +509,17 @@ class VectorStore
     /**
      * Calculate average similarity between documents.
      *
-     * @param  User|null  $user  Optional user for authorization check. If provided, access to teamId is verified.
+     * @param  int|null  $teamId  Team ID for team isolation
+     * @param  int|null  $userId  User ID for personal isolation
+     * @param  User|null  $user  Optional user for authorization check
      */
-    public function calculateTopicCoherence(int $teamId, array $documentIds, ?User $user = null): float
-    {
-        // Validate user has access to the team
+    public function calculateTopicCoherence(
+        ?int $teamId,
+        ?int $userId,
+        array $documentIds,
+        ?User $user = null
+    ): float {
+        $this->validateIsolation($teamId, $userId);
         $this->authorizeTeamAccess($teamId, $user);
 
         // Limit the number of documents to prevent O(n²) resource exhaustion
@@ -426,10 +532,15 @@ class VectorStore
             return 1.0;
         }
 
-        // Verify all documents belong to the specified team
-        $documents = Document::whereIn('id', $documentIds)
-            ->where('team_id', $teamId)
-            ->get();
+        // Verify all documents belong to the specified isolation scope
+        $query = Document::whereIn('id', $documentIds);
+        if ($teamId !== null) {
+            $query->where('team_id', $teamId);
+        } else {
+            $query->where('user_id', $userId);
+        }
+
+        $documents = $query->get();
         $embeddings = [];
 
         foreach ($documents as $doc) {
@@ -493,17 +604,51 @@ class VectorStore
     /**
      * Apply validated metadata filters to a query.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
+     * Supports comparison operators via key suffixes:
+     * - '_min' suffix: >= comparison (e.g., 'geo_score_min' => 70)
+     * - '_max' suffix: <= comparison (e.g., 'geo_score_max' => 90)
+     * - '_gt' suffix: > comparison
+     * - '_lt' suffix: < comparison
+     * - No suffix: exact match
+     *
+     * Also supports boolean values which are cast appropriately for JSONB comparison.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
      */
     private function applyMetadataFilters($query, array $filters): void
     {
         foreach ($filters as $key => $value) {
-            $safeKey = $this->validateFilterKey($key);
+            // Check for comparison operator suffixes
+            $operator = '=';
+            $actualKey = $key;
+
+            if (str_ends_with($key, '_min')) {
+                $operator = '>=';
+                $actualKey = substr($key, 0, -4);
+            } elseif (str_ends_with($key, '_max')) {
+                $operator = '<=';
+                $actualKey = substr($key, 0, -4);
+            } elseif (str_ends_with($key, '_gt')) {
+                $operator = '>';
+                $actualKey = substr($key, 0, -3);
+            } elseif (str_ends_with($key, '_lt')) {
+                $operator = '<';
+                $actualKey = substr($key, 0, -3);
+            }
+
+            $safeKey = $this->validateFilterKey($actualKey);
 
             if (is_array($value)) {
                 // Escape values for PostgreSQL array literal
                 $escapedValues = array_map(fn ($v) => str_replace(['\\', '"'], ['\\\\', '\\"'], (string) $v), $value);
                 $query->whereRaw('metadata->>? = ANY(?)', [$safeKey, '{'.implode(',', $escapedValues).'}']);
+            } elseif (is_bool($value)) {
+                // Boolean comparison - cast JSON value to boolean
+                // JSONB stores booleans as true/false, ->> returns string 'true'/'false'
+                $query->whereRaw("(metadata->>?)::boolean = ?", [$safeKey, $value]);
+            } elseif ($operator !== '=') {
+                // Numeric comparison - cast JSON value to numeric
+                $query->whereRaw("(metadata->>?)::numeric {$operator} ?", [$safeKey, $value]);
             } else {
                 $query->whereRaw('metadata->>? = ?', [$safeKey, $value]);
             }

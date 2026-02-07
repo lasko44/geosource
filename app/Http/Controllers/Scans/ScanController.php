@@ -7,6 +7,7 @@ use App\Models\Scan;
 use App\Services\ScanService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -68,7 +69,7 @@ class ScanController extends Controller
     {
         $this->authorize('view', $scan);
 
-        $scan->load('user:id,name');
+        $scan->load(['user:id,name', 'discoveredCompetitors', 'parentScan:id,uuid,url,title,score,grade']);
 
         $user = auth()->user();
         $scanData = $scan->toArray();
@@ -85,12 +86,35 @@ class ScanController extends Controller
             $scanData = $scanService->filterRecommendationsForDisplay($scanData, $user);
         }
 
+        // Normalize AI suggestions format for frontend compatibility
+        if (isset($scanData['results']['ai_suggestions'])) {
+            $scanData['results']['ai_suggestions'] = $scanService->normalizeAiSuggestions(
+                $scanData['results']['ai_suggestions']
+            );
+        }
+
+        // Format discovered competitors for display
+        $discoveredCompetitors = $scan->discoveredCompetitors->map(fn ($c) => [
+            'uuid' => $c->uuid,
+            'url' => $c->url,
+            'title' => $c->title,
+            'status' => $c->status,
+            'score' => $c->score,
+            'grade' => $c->grade,
+        ]);
+
         return Inertia::render('Scans/Show', [
             'scan' => $scanData,
             'usage' => $user->getUsageSummary(),
             'canExportPdf' => $user->hasFeature('pdf_export'),
             'canEmailReport' => true,
             'cooldown' => $scanService->buildCooldownData($scan, $user),
+            'discoveredCompetitors' => $discoveredCompetitors,
+            'parentScan' => $scan->parentScan ? [
+                'uuid' => $scan->parentScan->uuid,
+                'url' => $scan->parentScan->url,
+                'title' => $scan->parentScan->title,
+            ] : null,
         ]);
     }
 
@@ -105,7 +129,10 @@ class ScanController extends Controller
                 $request->url,
                 $request->getTier(),
                 $request->getValidatedTeam(),
-                $request
+                $request,
+                $request->isCompetitor(),
+                $request->shouldAutoFindCompetitors(),
+                $request->getCompetitorScanTier()
             );
 
             $scanService->dispatchScan($scan);

@@ -194,6 +194,108 @@ class TokenServiceTest extends TestCase
     }
 
     // ==========================================
+    // SpendAmount Tests (Dynamic Token Spending)
+    // ==========================================
+
+    public function test_spend_amount_deducts_tokens_and_creates_transaction(): void
+    {
+        $user = User::factory()->create(['token_balance' => 100]);
+
+        $transaction = $this->tokenService->spendAmount($user, 25, 'Auto-find competitors', ['scan_id' => 123]);
+
+        $user->refresh();
+        $this->assertEquals(75, $user->token_balance);
+        $this->assertNotNull($transaction);
+        $this->assertEquals(-25, $transaction->amount);
+        $this->assertEquals(75, $transaction->balance_after);
+        $this->assertEquals(TokenTransaction::TYPE_SPEND, $transaction->type);
+        $this->assertEquals('Auto-find competitors', $transaction->description);
+        $this->assertEquals(123, $transaction->metadata['scan_id']);
+    }
+
+    public function test_spend_amount_throws_exception_for_insufficient_balance(): void
+    {
+        $user = User::factory()->create(['token_balance' => 10]);
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Insufficient token balance. Required: 25, Available: 10');
+
+        $this->tokenService->spendAmount($user, 25, 'Not enough tokens');
+    }
+
+    public function test_spend_amount_returns_null_for_zero_amount(): void
+    {
+        $user = User::factory()->create(['token_balance' => 100]);
+
+        $transaction = $this->tokenService->spendAmount($user, 0, 'Zero amount');
+
+        $user->refresh();
+        $this->assertNull($transaction);
+        $this->assertEquals(100, $user->token_balance); // No change
+    }
+
+    public function test_spend_amount_returns_null_for_negative_amount(): void
+    {
+        $user = User::factory()->create(['token_balance' => 100]);
+
+        $transaction = $this->tokenService->spendAmount($user, -5, 'Negative amount');
+
+        $user->refresh();
+        $this->assertNull($transaction);
+        $this->assertEquals(100, $user->token_balance); // No change
+    }
+
+    public function test_spend_amount_exact_balance_leaves_zero(): void
+    {
+        $user = User::factory()->create(['token_balance' => 53]);
+
+        $transaction = $this->tokenService->spendAmount($user, 53, 'Full auto-find competitors');
+
+        $user->refresh();
+        $this->assertEquals(0, $user->token_balance);
+        $this->assertNotNull($transaction);
+        $this->assertEquals(0, $transaction->balance_after);
+    }
+
+    public function test_spend_amount_with_metadata(): void
+    {
+        $user = User::factory()->create(['token_balance' => 100]);
+
+        $metadata = [
+            'url' => 'https://example.com',
+            'competitor_tier' => 'full',
+            'max_competitors' => 5,
+            'ai_discovery_fee' => 3,
+            'scan_cost_each' => 10,
+        ];
+
+        $transaction = $this->tokenService->spendAmount($user, 53, 'Auto-find competitors (3 AI + 50 for 5 full scans)', $metadata);
+
+        $this->assertEquals('https://example.com', $transaction->metadata['url']);
+        $this->assertEquals('full', $transaction->metadata['competitor_tier']);
+        $this->assertEquals(5, $transaction->metadata['max_competitors']);
+        $this->assertEquals(3, $transaction->metadata['ai_discovery_fee']);
+        $this->assertEquals(10, $transaction->metadata['scan_cost_each']);
+    }
+
+    public function test_spend_amount_uses_database_lock_to_prevent_race_conditions(): void
+    {
+        $user = User::factory()->create(['token_balance' => 100]);
+
+        // First spend
+        $this->tokenService->spendAmount($user, 30, 'First spend');
+
+        $user->refresh();
+        $this->assertEquals(70, $user->token_balance);
+
+        // Second spend
+        $this->tokenService->spendAmount($user, 30, 'Second spend');
+
+        $user->refresh();
+        $this->assertEquals(40, $user->token_balance);
+    }
+
+    // ==========================================
     // Token Credit Tests
     // ==========================================
 

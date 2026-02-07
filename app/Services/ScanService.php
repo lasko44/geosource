@@ -9,6 +9,7 @@ use App\Models\ScanAuditLog;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -89,6 +90,38 @@ class ScanService
     }
 
     /**
+     * Maximum competitors to discover per scan.
+     */
+    public const MAX_COMPETITORS = 5;
+
+    /**
+     * Base fee for AI competitor discovery (covers API costs, non-refundable).
+     */
+    public const AI_DISCOVERY_FEE = 3;
+
+    /**
+     * Calculate total token cost for auto-find competitors.
+     * Includes base AI discovery fee + per-scan costs based on tier.
+     */
+    public function getCompetitorScanTokenCost(string $competitorTier): int
+    {
+        $costPerScan = $this->getTokenCost($competitorTier);
+
+        return self::AI_DISCOVERY_FEE + ($costPerScan * self::MAX_COMPETITORS);
+    }
+
+    /**
+     * Calculate refundable portion of competitor scan tokens (excludes base fee).
+     */
+    public function getRefundableCompetitorTokens(string $competitorTier, int $competitorsCreated): int
+    {
+        $costPerScan = $this->getTokenCost($competitorTier);
+        $unusedSlots = self::MAX_COMPETITORS - $competitorsCreated;
+
+        return $unusedSlots * $costPerScan;
+    }
+
+    /**
      * Execute a single scan with quota and token validation.
      */
     public function executeScan(
@@ -96,16 +129,20 @@ class ScanService
         string $url,
         string $tier,
         ?Team $team,
-        Request $request
+        Request $request,
+        bool $isCompetitor = false,
+        bool $autoFindCompetitors = false,
+        ?string $competitorScanTier = null
     ): Scan {
-        return DB::transaction(function () use ($user, $url, $tier, $team, $request) {
+        return DB::transaction(function () use ($user, $url, $tier, $team, $request, $isCompetitor, $autoFindCompetitors, $competitorScanTier) {
             $lockedUser = User::where('id', $user->id)->lockForUpdate()->first();
 
             $tokensRequired = 0;
             $tokensCharged = false;
             $tokenFeature = null;
+            $autoFindTokensCharged = false;
 
-            // Check if tokens needed
+            // Check if tokens needed for scan tier
             if ($tier !== 'basic' && ! $this->subscriptionCoversTier($lockedUser, $tier)) {
                 $tokenFeature = $tier === 'full' ? 'scan_full' : 'scan_pro';
                 $tokensRequired = config("tokens.costs.{$tokenFeature}", 0);
@@ -118,16 +155,53 @@ class ScanService
                 }
             }
 
+            // Calculate tokens for auto-find competitors based on selected tier
+            // Default to 'basic' (free) if not specified
+            $autoFindEnabled = $autoFindCompetitors && $tier === 'full';
+            $effectiveCompetitorTier = $autoFindEnabled ? ($competitorScanTier ?? 'basic') : null;
+            $autoFindTokens = $autoFindEnabled ? $this->getCompetitorScanTokenCost($effectiveCompetitorTier) : 0;
+            $totalTokensNeeded = $tokensRequired + $autoFindTokens;
+
+            if ($autoFindTokens > 0 && $lockedUser->token_balance < $totalTokensNeeded) {
+                $costPerScan = $this->getTokenCost($effectiveCompetitorTier);
+                $scanCosts = $costPerScan * self::MAX_COMPETITORS;
+                $breakdown = self::AI_DISCOVERY_FEE.' AI discovery';
+                if ($scanCosts > 0) {
+                    $breakdown .= ' + '.$scanCosts.' for '.self::MAX_COMPETITORS.' scans';
+                }
+                throw new QuotaExceededException(
+                    "You need {$totalTokensNeeded} tokens ({$tokensRequired} for scan + {$autoFindTokens} for competitors: {$breakdown}). You have {$lockedUser->token_balance} tokens.",
+                    'tokens'
+                );
+            }
+
             // Check quota
             $this->validateQuota($lockedUser, $team, $request);
 
-            // Deduct tokens if needed
+            // Deduct tokens for scan tier
             if ($tokenFeature && $tokensRequired > 0) {
                 $this->tokenService->spend($lockedUser, $tokenFeature, [
                     'url' => $url,
                     'tier' => $tier,
                 ]);
                 $tokensCharged = true;
+                $lockedUser->refresh();
+            }
+
+            // Deduct tokens for auto-find competitors (will be refunded if fewer than 5 found)
+            if ($autoFindTokens > 0) {
+                $costPerScan = $this->getTokenCost($effectiveCompetitorTier);
+                $description = 'Auto-find competitors ('.self::AI_DISCOVERY_FEE.' AI + '.($costPerScan * self::MAX_COMPETITORS).' for '.self::MAX_COMPETITORS.' '.$effectiveCompetitorTier.' scans)';
+
+                $this->tokenService->spendAmount($lockedUser, $autoFindTokens, $description, [
+                    'url' => $url,
+                    'competitor_tier' => $effectiveCompetitorTier,
+                    'max_competitors' => self::MAX_COMPETITORS,
+                    'ai_discovery_fee' => self::AI_DISCOVERY_FEE,
+                    'scan_cost_each' => $costPerScan,
+                ]);
+                $autoFindTokensCharged = true;
+                $lockedUser->refresh();
             }
 
             // Create scan
@@ -138,8 +212,12 @@ class ScanService
                 'title' => parse_url($url, PHP_URL_HOST),
                 'status' => 'pending',
                 'requested_tier' => $tier,
-                'tokens_charged' => $tokensCharged,
-                'tokens_amount' => $tokensCharged ? $tokensRequired : 0,
+                'is_competitor' => $isCompetitor,
+                'auto_find_competitors' => $autoFindEnabled,
+                'competitor_scan_tier' => $effectiveCompetitorTier,
+                'competitor_discovery_status' => $autoFindEnabled ? 'pending' : null,
+                'tokens_charged' => $tokensCharged || $autoFindTokensCharged,
+                'tokens_amount' => ($tokensCharged ? $tokensRequired : 0) + ($autoFindTokensCharged ? $autoFindTokens : 0),
             ]);
 
             ScanAuditLog::logScanCreated($scan, $lockedUser, $request);
@@ -637,6 +715,28 @@ class ScanService
     }
 
     /**
+     * Normalize AI suggestions format for frontend compatibility.
+     *
+     * Handles both old format (original/improved/explanation) and new format
+     * (suggestion/reasoning/example) to ensure consistent frontend display.
+     */
+    public function normalizeAiSuggestions(array $suggestions): array
+    {
+        $normalized = array_map(function ($item) {
+            return [
+                'priority' => Arr::get($item, 'priority', 'medium'),
+                'category' => Arr::get($item, 'category', 'general'),
+                'suggestion' => Arr::get($item, 'suggestion', Arr::get($item, 'improved', '')),
+                'reasoning' => Arr::get($item, 'reasoning', Arr::get($item, 'explanation', '')),
+                'example' => Arr::get($item, 'example', ''),
+            ];
+        }, $suggestions);
+
+        // Filter out any suggestions with empty content
+        return array_values(array_filter($normalized, fn ($item) => ! empty($item['suggestion'])));
+    }
+
+    /**
      * Build cooldown data for rescan button.
      */
     public function buildCooldownData(Scan $scan, User $user): ?array
@@ -752,7 +852,7 @@ class ScanService
      */
     public function getScanStatusData(Scan $scan): array
     {
-        return [
+        $data = [
             'status' => $scan->status,
             'progress_step' => $scan->progress_step,
             'progress_percent' => $scan->progress_percent,
@@ -760,7 +860,28 @@ class ScanService
             'error_message' => $scan->error_message,
             'score' => $scan->score,
             'grade' => $scan->grade,
+            'auto_find_competitors' => $scan->auto_find_competitors,
+            'competitor_discovery_status' => $scan->competitor_discovery_status,
+            'competitors_found' => $scan->competitors_found ?? 0,
         ];
+
+        // Include discovered competitors data if discovery is complete or in progress
+        if ($scan->auto_find_competitors && $scan->competitor_discovery_status) {
+            $data['discovered_competitors'] = $scan->discoveredCompetitors()
+                ->select(['uuid', 'url', 'title', 'status', 'score', 'grade'])
+                ->get()
+                ->map(fn ($c) => [
+                    'uuid' => $c->uuid,
+                    'url' => $c->url,
+                    'title' => $c->title,
+                    'status' => $c->status,
+                    'score' => $c->score,
+                    'grade' => $c->grade,
+                ])
+                ->toArray();
+        }
+
+        return $data;
     }
 
     /**

@@ -91,10 +91,16 @@ class GA4CallbackController extends Controller
             return redirect()->route('citations.analytics')
                 ->with('success', "Connected to {$propertyName} successfully. Initial data sync has started.");
         } catch (\Exception $e) {
-            Log::error('GA4 OAuth callback error', ['error' => $e->getMessage()]);
+            // Log detailed error for debugging, but don't expose to user
+            Log::error('GA4 OAuth callback error', [
+                'error_type' => class_basename($e),
+                'user_id' => $user->id,
+                'message' => $e->getMessage(),
+            ]);
 
+            // Return generic error message to prevent information disclosure
             return redirect()->route('citations.analytics')
-                ->withErrors(['oauth' => 'Failed to connect to Google Analytics: '.$e->getMessage()]);
+                ->withErrors(['oauth' => 'Failed to connect to Google Analytics. Please try again or contact support.']);
         }
     }
 }

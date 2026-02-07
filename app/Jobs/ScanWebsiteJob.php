@@ -5,8 +5,10 @@ namespace App\Jobs;
 use App\Mail\ScheduledScanCompletedMail;
 use App\Models\Scan;
 use App\Models\Team;
+use App\Services\CompetitorDiscoveryService;
 use App\Services\GEO\EnhancedGeoScorer;
 use App\Services\GEO\GeoScorer;
+use App\Services\RAG\ContentExtractor;
 use App\Services\RAG\VectorStore;
 use App\Services\SubscriptionService;
 use App\Services\TokenService;
@@ -15,6 +17,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -35,10 +38,15 @@ class ScanWebsiteJob implements ShouldQueue
 
     private const STEPS = [
         'fetching' => ['label' => 'Fetching webpage', 'percent' => 10],
-        'analyzing_structure' => ['label' => 'Analyzing page structure', 'percent' => 30],
-        'checking_llms_txt' => ['label' => 'Checking llms.txt', 'percent' => 50],
-        'scoring_content' => ['label' => 'Scoring content', 'percent' => 70],
-        'generating_recommendations' => ['label' => 'Generating recommendations', 'percent' => 90],
+        'analyzing_structure' => ['label' => 'Analyzing page structure', 'percent' => 20],
+        'checking_llms_txt' => ['label' => 'Checking llms.txt', 'percent' => 30],
+        'scoring_pillars' => ['label' => 'Scoring GEO pillars', 'percent' => 40],
+        'scoring_authority' => ['label' => 'Evaluating authority & trust', 'percent' => 50],
+        'scoring_advanced' => ['label' => 'Analyzing advanced metrics', 'percent' => 60],
+        'scoring_final' => ['label' => 'Finalizing pillar scores', 'percent' => 70],
+        'finding_similar' => ['label' => 'Finding similar content', 'percent' => 75],
+        'generating_recommendations' => ['label' => 'Generating AI recommendations', 'percent' => 85],
+        'calculating_benchmarks' => ['label' => 'Calculating benchmarks', 'percent' => 95],
         'completed' => ['label' => 'Completed', 'percent' => 100],
     ];
 
@@ -50,7 +58,8 @@ class ScanWebsiteJob implements ShouldQueue
         GeoScorer $geoScorer,
         EnhancedGeoScorer $enhancedGeoScorer,
         VectorStore $vectorStore,
-        SubscriptionService $subscriptionService
+        SubscriptionService $subscriptionService,
+        ContentExtractor $contentExtractor
     ): void {
         // Check if scan was cancelled before we start
         if ($this->isCancelled()) {
@@ -74,6 +83,10 @@ class ScanWebsiteJob implements ShouldQueue
             if ($html === null) {
                 return; // Error already handled in fetchWebpage
             }
+
+            // Sanitize HTML to prevent UTF-8 encoding issues
+            $html = $this->sanitizeUtf8($html);
+
             $title = $this->extractTitle($html) ?? parse_url($this->scan->url, PHP_URL_HOST);
 
             // Update title early so user sees it
@@ -82,11 +95,21 @@ class ScanWebsiteJob implements ShouldQueue
             // Step 2: Analyze structure
             $this->updateProgress('analyzing_structure');
 
-            $useEnhanced = config('rag.geo.use_rag_analysis', false) && ! empty(config('rag.openai.api_key'));
             $teamId = $this->scan->team_id;
+            $userId = $this->scan->user_id;
 
             // Determine user's plan tier for scoring pillars
             $tier = $this->getUserTier();
+
+            // RAG is available when enabled and API key exists
+            $ragAvailable = config('rag.geo.use_rag_analysis', false)
+                && ! empty(config('rag.openai.api_key'));
+
+            // RAG enhancement requires Pro/Full tier
+            // Documents are isolated by team_id (preferred) or user_id (fallback)
+            // Basic tier scans use rule-based scoring only
+            $useEnhanced = $ragAvailable
+                && $tier !== GeoScorer::TIER_FREE;
 
             // Step 3: Check llms.txt (happens inside MachineReadableScorer)
             $this->updateProgress('checking_llms_txt');
@@ -96,27 +119,35 @@ class ScanWebsiteJob implements ShouldQueue
                 return;
             }
 
-            // Step 4: Score content
-            $this->updateProgress('scoring_content');
-
-            // Configure scorer for user's plan tier
+            // Step 4: Score content - configure scorer for user's plan tier
             $geoScorer->forTier($tier);
             $enhancedGeoScorer->forTier($tier);
 
-            if ($useEnhanced && $teamId) {
-                $result = $enhancedGeoScorer->analyze($html, $teamId, ['url' => $this->scan->url]);
+            // Progress callback for granular updates
+            $progressCallback = fn (string $step) => $this->updateProgress($step);
+            $this->updateProgress('scoring_pillars');
+
+            if ($useEnhanced) {
+                $result = $enhancedGeoScorer->analyze(
+                    $html,
+                    $teamId,
+                    $userId,
+                    ['url' => $this->scan->url],
+                    $progressCallback
+                );
             } else {
                 $result = $geoScorer->score($html, ['url' => $this->scan->url]);
+                $this->updateProgress('generating_recommendations');
             }
 
-            // Step 5: Generate recommendations
-            $this->updateProgress('generating_recommendations');
+            // Sanitize results to prevent UTF-8 encoding errors
+            $sanitizedResult = $this->sanitizeUtf8($result);
 
             $this->scan->update([
-                'title' => $title,
-                'score' => $result['score'],
-                'grade' => $result['grade'],
-                'results' => $result,
+                'title' => $this->sanitizeUtf8($title),
+                'score' => Arr::get($sanitizedResult, 'score'),
+                'grade' => Arr::get($sanitizedResult, 'grade'),
+                'results' => $sanitizedResult,
                 'status' => 'completed',
                 'progress_step' => 'completed',
                 'progress_percent' => 100,
@@ -129,18 +160,26 @@ class ScanWebsiteJob implements ShouldQueue
             // Send email notification if this is a scheduled scan
             $this->sendScheduledScanNotification();
 
-            // Optional: Store in vector database
-            if ($teamId && config('rag.geo.use_rag_analysis', false)) {
+            // Store in vector database for Pro/Full scans (builds knowledge base for benchmarking)
+            if ($useEnhanced) {
                 try {
+                    // Extract main content for better vector storage
+                    $contentForStorage = $html;
+                    if (config('rag.extraction.enabled', true)) {
+                        $contentForStorage = $contentExtractor->extract($html);
+                    }
+
                     $vectorStore->addDocument(
                         $teamId,
+                        $userId,
                         $title,
-                        $html,
+                        $contentForStorage,
                         [
                             'type' => 'scanned_page',
                             'url' => $this->scan->url,
                             'scan_id' => $this->scan->id,
-                            'geo_score' => $result['score'],
+                            'geo_score' => Arr::get($result, 'score'),
+                            'is_competitor' => $this->scan->is_competitor,
                         ],
                         chunk: true
                     );
@@ -148,6 +187,14 @@ class ScanWebsiteJob implements ShouldQueue
                     logger()->warning('Failed to store scan in vector DB: '.$e->getMessage());
                 }
             }
+
+            // Discover and scan competitors if auto-find is enabled
+            if ($this->scan->auto_find_competitors) {
+                $this->discoverCompetitors();
+            }
+
+            // Check if this is a competitor scan and update parent status
+            $this->checkAndUpdateParentCompetitorStatus();
         } catch (\Exception $e) {
             $this->markFailed('Exception during scan: '.$e->getMessage());
         }
@@ -193,6 +240,122 @@ class ScanWebsiteJob implements ShouldQueue
 
         // Email notification to admin
         $this->notifyAdminOfFailure($internalMessage);
+
+        // Check if this is a competitor scan and update parent status
+        $this->checkAndUpdateParentCompetitorStatus();
+    }
+
+    /**
+     * Check if all sibling competitor scans are done and update the parent scan status.
+     */
+    private function checkAndUpdateParentCompetitorStatus(): void
+    {
+        // Only relevant for competitor scans
+        if (! $this->scan->is_competitor || ! $this->scan->parent_scan_id) {
+            return;
+        }
+
+        $parentScan = Scan::find($this->scan->parent_scan_id);
+        if (! $parentScan) {
+            return;
+        }
+
+        // Check if all sibling competitor scans are done (completed or failed)
+        $pendingCompetitors = Scan::where('parent_scan_id', $parentScan->id)
+            ->whereIn('status', ['pending', 'processing'])
+            ->count();
+
+        if ($pendingCompetitors === 0) {
+            // All competitor scans are done - get completed ones
+            $completedCompetitors = Scan::where('parent_scan_id', $parentScan->id)
+                ->where('status', 'completed')
+                ->whereNotNull('score')
+                ->get();
+
+            $completedCount = $completedCompetitors->count();
+
+            // Calculate competitor benchmark
+            $competitorBenchmark = $this->calculateCompetitorBenchmark($parentScan, $completedCompetitors);
+
+            // Update parent scan results with competitor benchmark
+            $results = $parentScan->results ?? [];
+            $results['competitor_benchmark'] = $competitorBenchmark;
+
+            $parentScan->update([
+                'competitor_discovery_status' => 'completed',
+                'competitors_found' => $completedCount,
+                'results' => $results,
+            ]);
+
+            Log::info('All competitor scans completed', [
+                'parent_scan_id' => $parentScan->id,
+                'completed_count' => $completedCount,
+                'benchmark' => $competitorBenchmark,
+            ]);
+        }
+    }
+
+    /**
+     * Calculate competitor benchmark for the parent scan.
+     */
+    private function calculateCompetitorBenchmark(Scan $parentScan, \Illuminate\Support\Collection $competitors): array
+    {
+        if ($competitors->isEmpty()) {
+            return [
+                'position' => 'no_competitors',
+                'percentile' => null,
+                'avg_competitor_score' => null,
+                'score_difference' => null,
+                'competitors_analyzed' => 0,
+                'comparison' => 'No competitor scans completed for comparison.',
+            ];
+        }
+
+        $scores = $competitors->pluck('score')->filter()->values()->toArray();
+        if (empty($scores)) {
+            return [
+                'position' => 'no_competitors',
+                'percentile' => null,
+                'avg_competitor_score' => null,
+                'score_difference' => null,
+                'competitors_analyzed' => 0,
+                'comparison' => 'No competitor scores available for comparison.',
+            ];
+        }
+
+        $avgScore = array_sum($scores) / count($scores);
+        $currentScore = $parentScan->score ?? 0;
+        $scoreDiff = $currentScore - $avgScore;
+
+        // Calculate percentile (how many competitors you beat)
+        $belowCount = count(array_filter($scores, fn ($s) => $s < $currentScore));
+        $percentile = round(($belowCount / count($scores)) * 100);
+
+        $position = match (true) {
+            $scoreDiff >= 15 => 'dominant',
+            $scoreDiff >= 5 => 'ahead',
+            $scoreDiff >= -5 => 'competitive',
+            $scoreDiff >= -15 => 'behind',
+            default => 'far_behind',
+        };
+
+        $comparison = match ($position) {
+            'dominant' => "Outstanding! You outperform {$percentile}% of competitors by ".abs(round($scoreDiff, 1)).' points.',
+            'ahead' => "Strong position. You're ".abs(round($scoreDiff, 1))." points ahead of your competitors' average.",
+            'competitive' => "You're competitive with your rivals. Focus on key differentiators.",
+            'behind' => "You're ".abs(round($scoreDiff, 1)).' points behind competitors. Review their strategies for insights.',
+            'far_behind' => "Significant gap to close. You're ".abs(round($scoreDiff, 1)).' points behind the competition.',
+            default => 'Unable to determine competitive position.',
+        };
+
+        return [
+            'position' => $position,
+            'percentile' => $percentile,
+            'avg_competitor_score' => round($avgScore, 1),
+            'score_difference' => round($scoreDiff, 1),
+            'competitors_analyzed' => count($scores),
+            'comparison' => $comparison,
+        ];
     }
 
     private function notifyAdminOfFailure(string $error): void
@@ -231,47 +394,74 @@ class ScanWebsiteJob implements ShouldQueue
      */
     private function fetchWebpage(string $url): ?string
     {
-        // First, try simple HTTP request (fast)
-        $response = Http::timeout(30)
-            ->withHeaders([
-                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-                'Accept-Language' => 'en-US,en;q=0.9',
-                'Accept-Encoding' => 'gzip, deflate, br',
-                'Cache-Control' => 'no-cache',
-                'Sec-Ch-Ua' => '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
-                'Sec-Ch-Ua-Mobile' => '?0',
-                'Sec-Ch-Ua-Platform' => '"Windows"',
-                'Sec-Fetch-Dest' => 'document',
-                'Sec-Fetch-Mode' => 'navigate',
-                'Sec-Fetch-Site' => 'none',
-                'Sec-Fetch-User' => '?1',
-                'Upgrade-Insecure-Requests' => '1',
-            ])
-            ->get($url);
+        try {
+            // First, try simple HTTP request (fast)
+            // Note: Only accept gzip/deflate - brotli (br) causes issues with some curl versions
+            $response = Http::timeout(30)
+                ->connectTimeout(15)
+                ->withHeaders([
+                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+                    'Accept-Language' => 'en-US,en;q=0.9',
+                    'Accept-Encoding' => 'gzip, deflate',
+                    'Cache-Control' => 'no-cache',
+                    'Sec-Ch-Ua' => '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+                    'Sec-Ch-Ua-Mobile' => '?0',
+                    'Sec-Ch-Ua-Platform' => '"Windows"',
+                    'Sec-Fetch-Dest' => 'document',
+                    'Sec-Fetch-Mode' => 'navigate',
+                    'Sec-Fetch-Site' => 'none',
+                    'Sec-Fetch-User' => '?1',
+                    'Upgrade-Insecure-Requests' => '1',
+                ])
+                ->get($url);
 
-        // If successful, return the HTML
-        if ($response->successful()) {
-            return $response->body();
-        }
+            // If successful, return the HTML
+            if ($response->successful()) {
+                return $response->body();
+            }
 
-        // If blocked (403, 503) or other issues, try headless browser
-        $status = $response->status();
-        if (in_array($status, [403, 503, 429, 406, 451])) {
-            Log::info("HTTP request blocked ({$status}) for {$url}, trying headless browser");
+            // If blocked or bot-protected, try headless browser
+            $status = $response->status();
+            if (in_array($status, [403, 406, 409, 429, 451, 503])) {
+                Log::info("HTTP request blocked ({$status}) for {$url}, trying headless browser");
+
+                return $this->fetchWithBrowser($url);
+            }
+
+            // For other errors (404, 500, etc.), fail immediately
+            $userMessage = match ($status) {
+                404 => 'The page was not found. Please check the URL is correct.',
+                500, 502, 503, 504 => 'The website is experiencing issues. Please try again later.',
+                default => null,
+            };
+            $this->markFailed("HTTP request failed with status {$status}", $userMessage);
+
+            return null;
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            // Handle connection errors (timeout, DNS failure, SSL issues)
+            Log::warning("HTTP connection error for {$url}: ".$e->getMessage().', trying headless browser');
 
             return $this->fetchWithBrowser($url);
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            // Handle request errors (HTTP 4xx/5xx responses)
+            Log::warning("HTTP request error for {$url}: ".$e->getMessage().', trying headless browser');
+
+            return $this->fetchWithBrowser($url);
+        } catch (\Exception $e) {
+            // Handle any other errors (curl errors, encoding issues, etc.)
+            $message = $e->getMessage();
+
+            // Check if it's a curl error that we can retry with browser
+            if (str_contains($message, 'cURL error') || str_contains($message, 'curl')) {
+                Log::warning("cURL error for {$url}: {$message}, trying headless browser");
+
+                return $this->fetchWithBrowser($url);
+            }
+
+            // For other exceptions, re-throw to be handled by the job's main try/catch
+            throw $e;
         }
-
-        // For other errors (404, 500, etc.), fail immediately
-        $userMessage = match ($status) {
-            404 => 'The page was not found. Please check the URL is correct.',
-            500, 502, 503, 504 => 'The website is experiencing issues. Please try again later.',
-            default => null,
-        };
-        $this->markFailed("HTTP request failed with status {$status}", $userMessage);
-
-        return null;
     }
 
     /**
@@ -375,6 +565,54 @@ class ScanWebsiteJob implements ShouldQueue
         }
 
         return null;
+    }
+
+    /**
+     * Recursively sanitize UTF-8 strings in an array to prevent JSON encoding errors.
+     */
+    /**
+     * Recursively sanitize UTF-8 strings to prevent JSON encoding errors.
+     * Handles various character encoding issues from web scraping.
+     */
+    private function sanitizeUtf8(mixed $data): mixed
+    {
+        if (is_string($data)) {
+            // Detect source encoding and convert to UTF-8
+            $encoding = mb_detect_encoding($data, ['UTF-8', 'ISO-8859-1', 'Windows-1252', 'ASCII'], true);
+            if ($encoding && $encoding !== 'UTF-8') {
+                $data = mb_convert_encoding($data, 'UTF-8', $encoding);
+            }
+
+            // Remove BOM if present
+            $data = preg_replace('/^\xEF\xBB\xBF/', '', $data);
+
+            // Remove null bytes and other control characters (except newlines/tabs)
+            $data = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $data);
+
+            // Replace invalid UTF-8 sequences with empty string
+            $data = mb_convert_encoding($data, 'UTF-8', 'UTF-8');
+
+            // Final pass with iconv to strip anything still invalid
+            $clean = @iconv('UTF-8', 'UTF-8//IGNORE', $data);
+
+            // If iconv failed completely, try aggressive cleanup
+            if ($clean === false || $clean === '') {
+                $clean = preg_replace('/[^\x20-\x7E\x0A\x0D\x09]/', '', $data);
+            }
+
+            return $clean ?: '';
+        }
+
+        if (is_array($data)) {
+            $result = [];
+            foreach ($data as $key => $value) {
+                $cleanKey = is_string($key) ? $this->sanitizeUtf8($key) : $key;
+                $result[$cleanKey] = $this->sanitizeUtf8($value);
+            }
+            return $result;
+        }
+
+        return $data;
     }
 
     /**
@@ -547,6 +785,30 @@ class ScanWebsiteJob implements ShouldQueue
                 'user_id' => $user->id,
                 'scan_id' => $this->scan->id,
                 'amount' => $this->scan->tokens_amount,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Discover and scan competitor websites using AI.
+     */
+    private function discoverCompetitors(): void
+    {
+        try {
+            $competitorService = app(CompetitorDiscoveryService::class);
+            $discoveredScans = $competitorService->discoverAndScanCompetitors($this->scan);
+
+            if (! empty($discoveredScans)) {
+                Log::info('Competitor discovery completed', [
+                    'parent_scan_id' => $this->scan->id,
+                    'competitors_found' => count($discoveredScans),
+                ]);
+            }
+        } catch (\Exception $e) {
+            // Log but don't fail the main scan if competitor discovery fails
+            Log::warning('Failed to discover competitors', [
+                'scan_id' => $this->scan->id,
                 'error' => $e->getMessage(),
             ]);
         }

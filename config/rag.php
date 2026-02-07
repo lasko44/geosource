@@ -89,6 +89,7 @@ return [
     | Strategies: 'semantic', 'fixed', 'sentence', 'paragraph'
     | Size: Target chunk size in characters
     | Overlap: Character overlap between chunks for context preservation
+    | Contextual: Prepend document title/section to chunks for better embeddings
     |
     */
 
@@ -96,6 +97,7 @@ return [
         'strategy' => env('CHUNKING_STRATEGY', 'semantic'),
         'size' => (int) env('CHUNK_SIZE', 1000),
         'overlap' => (int) env('CHUNK_OVERLAP', 200),
+        'contextual' => env('CHUNKING_CONTEXTUAL', true),
     ],
 
     /*
@@ -105,12 +107,50 @@ return [
     |
     | Default settings for vector similarity search.
     |
+    | default_threshold: Lowered to 0.35 for better recall (re-ranking filters)
+    | rerank_enabled: Whether to re-rank results using cross-encoder scoring
+    | rerank_top_n: Number of results to retrieve before re-ranking
+    | rerank_final_n: Number of results to return after re-ranking
+    |
     */
 
     'search' => [
         'default_limit' => 10,
-        'default_threshold' => 0.5,
+        'default_threshold' => (float) env('RAG_SEARCH_THRESHOLD', 0.35),
         'hybrid_semantic_weight' => 0.7,
+        'rerank_enabled' => env('RAG_RERANK_ENABLED', true),
+        'rerank_top_n' => (int) env('RAG_RERANK_TOP_N', 20),
+        'rerank_final_n' => (int) env('RAG_RERANK_FINAL_N', 5),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Context Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Settings for context handling in RAG generation.
+    |
+    | max_context_chars: Maximum characters for context in LLM prompts
+    | max_content_chars: Maximum characters for content analysis
+    |
+    */
+
+    'context' => [
+        'max_context_chars' => (int) env('RAG_MAX_CONTEXT_CHARS', 20000),
+        'max_content_chars' => (int) env('RAG_MAX_CONTENT_CHARS', 25000),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Content Extraction
+    |--------------------------------------------------------------------------
+    |
+    | Settings for extracting main content from HTML before embedding.
+    |
+    */
+
+    'extraction' => [
+        'enabled' => env('RAG_CONTENT_EXTRACTION', true),
     ],
 
     /*
@@ -125,7 +165,7 @@ return [
     'geo' => [
         'use_rag_analysis' => env('GEO_USE_RAG', true),
         'comparison_limit' => 5,
-        'min_similarity_for_comparison' => 0.4,
+        'min_similarity_for_comparison' => 0.35,
     ],
 
 ];

@@ -6,6 +6,7 @@ use App\Models\GA4Connection;
 use App\Models\Team;
 use App\Models\User;
 use App\Services\SubscriptionService;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -143,11 +144,11 @@ class GA4Service
 
         if (! $response->successful()) {
             $body = $response->json();
-            $errorDescription = $body['error_description'] ?? $body['error'] ?? 'Unknown error';
+            $errorDescription = Arr::get($body, 'error_description', Arr::get($body, 'error', 'Unknown error'));
 
             Log::error('GA4 OAuth token exchange failed', [
                 'status' => $response->status(),
-                'error' => $body['error'] ?? null,
+                'error' => Arr::get($body, 'error'),
                 'error_description' => $errorDescription,
             ]);
 
@@ -195,9 +196,9 @@ class GA4Service
 
         // Update the connection with new tokens
         $connection->updateTokens(
-            $data['access_token'],
-            $data['refresh_token'] ?? null,
-            $data['expires_in']
+            Arr::get($data, 'access_token', ''),
+            Arr::get($data, 'refresh_token'),
+            Arr::get($data, 'expires_in', 3600)
         );
 
         return $data;
@@ -226,8 +227,8 @@ class GA4Service
 
         if (! $response->successful()) {
             $body = $response->json();
-            $errorMessage = $body['error']['message'] ?? 'Unknown error';
-            $errorStatus = $body['error']['status'] ?? null;
+            $errorMessage = Arr::get($body, 'error.message', 'Unknown error');
+            $errorStatus = Arr::get($body, 'error.status');
 
             Log::error('GA4 list properties failed', [
                 'status' => $response->status(),
@@ -253,13 +254,13 @@ class GA4Service
         $data = $response->json();
         $properties = [];
 
-        foreach ($data['accountSummaries'] ?? [] as $account) {
-            foreach ($account['propertySummaries'] ?? [] as $property) {
+        foreach (Arr::get($data, 'accountSummaries', []) as $account) {
+            foreach (Arr::get($account, 'propertySummaries', []) as $property) {
                 $properties[] = [
-                    'account_id' => $account['account'],
-                    'account_name' => $account['displayName'],
-                    'property_id' => $property['property'],
-                    'property_name' => $property['displayName'],
+                    'account_id' => Arr::get($account, 'account'),
+                    'account_name' => Arr::get($account, 'displayName'),
+                    'property_id' => Arr::get($property, 'property'),
+                    'property_name' => Arr::get($property, 'displayName'),
                 ];
             }
         }
@@ -574,9 +575,9 @@ class GA4Service
     {
         session([
             'ga4_tokens' => [
-                'access_token' => $tokens['access_token'] ?? null,
-                'refresh_token' => $tokens['refresh_token'] ?? null,
-                'expires_in' => $tokens['expires_in'] ?? 3600,
+                'access_token' => Arr::get($tokens, 'access_token'),
+                'refresh_token' => Arr::get($tokens, 'refresh_token'),
+                'expires_in' => Arr::get($tokens, 'expires_in', 3600),
             ],
         ]);
     }
@@ -616,12 +617,12 @@ class GA4Service
             $connection = $this->createConnection(
                 $user,
                 $team,
-                $property['account_id'] ?? '',
+                Arr::get($property, 'account_id', ''),
                 $propertyId ?? '',
-                $property['property_name'] ?? '',
-                $tokens['access_token'] ?? '',
-                $tokens['refresh_token'] ?? '',
-                $tokens['expires_in'] ?? 3600
+                Arr::get($property, 'property_name', ''),
+                Arr::get($tokens, 'access_token', ''),
+                Arr::get($tokens, 'refresh_token', ''),
+                Arr::get($tokens, 'expires_in', 3600)
             );
 
             return ['success' => true, 'connection' => $connection];
