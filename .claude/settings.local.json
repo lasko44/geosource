@@ -55,7 +55,16 @@
       "Bash(pecl install:*)",
       "Bash(brew install:*)",
       "Bash(__NEW_LINE_2b2627e7c06020f0__ echo \"\")",
-      "Bash(yarn build)"
+      "Bash(yarn build)",
+      "Bash(git status:*)",
+      "Bash(git checkout:*)",
+      "Bash(git pull:*)",
+      "Bash(git merge:*)",
+      "Bash(git stash:*)",
+      "Bash(git push:*)",
+      "WebFetch(domain:jobs.ashbyhq.com)",
+      "Bash(pandoc:*)",
+      "Bash(open:*)"
     ]
   }
 }

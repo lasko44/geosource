@@ -21,7 +21,8 @@ class DashboardController extends Controller
         Request $request,
         DashboardService $dashboardService,
         CitationService $citationService
-    ): Response {
+    ): Response
+    {
         $user = $request->user();
 
         $teamContext = $dashboardService->resolveTeamContext($user, $request);
@@ -33,6 +34,8 @@ class DashboardController extends Controller
 
         $scanQuery = $dashboardService->buildDashboardScanQuery($user, $currentTeamId, $currentTeam);
 
+        // Clone the base query so modifications below (eager loads, ordering, limit)
+        // don't mutate the original $scanQuery used later (for stats/usage, etc.).
         $recentScans = (clone $scanQuery)
             ->with('user:id,name')
             ->orderByDesc('created_at')
