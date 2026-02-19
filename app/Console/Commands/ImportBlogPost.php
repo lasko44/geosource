@@ -1196,11 +1196,11 @@ MARKDOWN;
             'tags' => ['GEO', 'Topical Authority', 'Backlinks', 'AI Search', 'Content Strategy'],
             'faq' => $faq,
             'quick_links' => $quickLinks,
-            'status' => 'draft',
-            'published_at' => null,
+            'status' => 'published',
+            'published_at' => '2026-02-15 10:00:00',
         ]);
 
-        $this->info("✓ Imported blog post: {$slug} (draft)");
+        $this->info("✓ Imported blog post: {$slug}");
     }
 
     protected function importWhySomeContentBecomesAiKnowledge(): void
