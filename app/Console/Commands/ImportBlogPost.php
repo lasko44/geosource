@@ -30,6 +30,10 @@ class ImportBlogPost extends Command
             $this->importTopicalAuthorityMattersMoreThanBacklinks();
         }
 
+        if ($slug === 'why-some-content-becomes-ai-knowledge' || ! $slug) {
+            $this->importWhySomeContentBecomesAiKnowledge();
+        }
+
         return 0;
     }
 
@@ -1197,5 +1201,355 @@ MARKDOWN;
         ]);
 
         $this->info("✓ Imported blog post: {$slug} (draft)");
+    }
+
+    protected function importWhySomeContentBecomesAiKnowledge(): void
+    {
+        $slug = 'why-some-content-becomes-ai-knowledge';
+
+        if (BlogPost::where('slug', $slug)->exists()) {
+            $this->warn("Blog post '{$slug}' already exists. Skipping.");
+
+            return;
+        }
+
+        $content = <<<'MARKDOWN'
+Every day, billions of pages compete for attention.
+
+But when someone asks ChatGPT, Perplexity, or Claude a question, only a handful of sources get cited.
+
+**Most content is invisible to AI.**
+
+Not because it's wrong. Not because it's poorly written. But because AI systems aren't designed to use everything — they're designed to select what they can trust.
+
+Understanding that selection process is the difference between content that gets cited and content that gets ignored.
+
+---
+
+## How AI Decides What to Cite
+
+AI search engines don't read content the way humans do.
+
+They scan, extract, and evaluate. Every piece of content goes through a filter:
+
+| AI Evaluation | What It Measures |
+|---------------|------------------|
+| Clarity | Can the answer be extracted quickly? |
+| Structure | Is information organized logically? |
+| Authority | Does this source demonstrate expertise? |
+| Confidence | Can AI cite this without risk of error? |
+
+Content that passes all four becomes citable.
+
+**Content that fails any one often becomes invisible.**
+
+This is why well-researched articles with buried answers get skipped, while simpler pages with clear structure get cited.
+
+---
+
+## The Selection Problem Most Content Creators Miss
+
+Here's what most content strategies get wrong:
+
+They optimize for **discovery** — rankings, keywords, clicks.
+
+But AI search doesn't discover content the same way humans do.
+
+**AI search selects content.**
+
+Selection requires:
+
+- **Extractability** — Can AI pull out a clean answer?
+- **Definitiveness** — Does the content answer the question directly?
+- **Trust signals** — Is this source consistently reliable?
+
+If your page ranks #1 in Google but buries the answer in paragraph seven, AI will skip it and cite someone else.
+
+This is explored further in [AI Search Is Stealing Your Traffic — Here's How to Get It Back](/blog/ai-search-is-stealing-your-traffic).
+
+---
+
+## Why Most Content Fails AI Selection
+
+Most content fails because it was written for humans browsing, not machines extracting.
+
+**Common failure patterns:**
+
+1. **Buried answers** — The key information appears after long intros
+2. **Mixed intent** — The page tries to answer too many questions
+3. **Implicit context** — Assumes the reader already knows background
+4. **Weak structure** — No clear headings, lists, or summaries
+5. **Narrative-first** — Tells a story instead of stating facts
+
+AI systems avoid these patterns because they introduce uncertainty.
+
+**Uncertainty is the enemy of citation.**
+
+When AI can't confidently extract an answer, it moves on to a source that makes extraction easier.
+
+---
+
+## What Makes Content Citable
+
+Citable content shares common traits:
+
+### 1. Answer-First Structure
+
+The answer appears immediately after the question or heading.
+
+> **Question:** What is Generative Engine Optimization?
+>
+> **Answer:** Generative Engine Optimization (GEO) is the practice of structuring content so AI systems can accurately extract, understand, and cite it in generated responses.
+
+No preamble. No buildup. Just the answer.
+
+### 2. Clear Definitions
+
+AI relies heavily on definitions to establish entity relationships.
+
+A strong definition:
+
+- Uses the "X is Y" format
+- Appears early on the page
+- Avoids marketing language
+- Is quotable without modification
+
+### 3. Logical Hierarchy
+
+Headings create a machine-readable outline.
+
+| Good Hierarchy | Bad Hierarchy |
+|----------------|---------------|
+| H1: Main Topic | H1: Welcome! |
+| H2: Subtopic A | H3: Random Thoughts |
+| H3: Detail | H2: More Stuff |
+
+AI uses headings to understand relationships. Broken hierarchy breaks understanding.
+
+### 4. Structured Data
+
+Lists, tables, and FAQs are AI gold.
+
+Each item in a list is a discrete extractable fact. Tables encode relationships explicitly. FAQs mirror the exact question-answer pattern AI uses internally.
+
+For tactical implementation, see [Designing Content for AI Snippet Extraction](/blog/designing-content-for-ai-snippet-extraction).
+
+---
+
+## The Trust Factor
+
+Selection isn't just about structure. It's about trust.
+
+AI systems evaluate trust signals including:
+
+- **Topical consistency** — Does this site cover this subject deeply?
+- **Internal linking** — Are concepts connected across pages?
+- **Freshness** — Is the content current?
+- **External references** — Does the content cite credible sources?
+
+A single well-structured page won't build trust alone.
+
+**Trust emerges from patterns.**
+
+This is why [Topical Authority Matters More Than Backlinks in AI Search](/blog/topical-authority-matters-more-than-backlinks-in-ai-search) — consistency beats popularity in the generative era.
+
+---
+
+## Why This Matters Now
+
+The shift to AI search is accelerating.
+
+Google's AI Overviews, ChatGPT's search features, Perplexity's growth — these aren't experiments anymore. They're becoming the primary interface for information discovery.
+
+Every month, more queries get answered without clicks.
+
+**The window to establish AI visibility is closing.**
+
+Sites that optimize now will become the default sources AI trusts. Sites that wait will compete for whatever citations remain.
+
+---
+
+## How to Know If Your Content Is Citable
+
+Ask yourself:
+
+- ✅ Can the main question be answered from the first paragraph?
+- ✅ Are headings descriptive and question-aligned?
+- ✅ Would an AI safely quote any sentence without context?
+- ✅ Does the page cover one topic thoroughly, not many topics lightly?
+- ✅ Are definitions explicit and quotable?
+
+If the answer to any is no, your content may be structurally invisible.
+
+---
+
+## The Path Forward
+
+Content becoming AI knowledge isn't random. It follows predictable patterns.
+
+**What works:**
+
+- Structure for extraction
+- Definitions for clarity
+- Consistency for trust
+- Depth over breadth
+
+**What doesn't:**
+
+- Clever writing that buries information
+- Broad coverage that lacks specificity
+- Assumptions that readers have context
+- Narrative-first approaches
+
+The goal isn't more content. **It's more citable content.**
+
+---
+
+## Measure Before You Optimize
+
+Most teams have no visibility into how AI evaluates their content.
+
+[GeoSource.ai](/) provides exactly that:
+
+1. **Scan any URL** — Analyze structure and extractability
+2. **Get a GEO score** — 0-100 rating across 12 AI evaluation pillars
+3. **See what's blocking citations** — Specific, actionable recommendations
+4. **Track improvement** — Measure changes over time
+
+You can't optimize what you can't measure.
+
+---
+
+## Final Thought
+
+AI search is not a future trend. It's the present reality.
+
+**The content that becomes AI knowledge isn't better written — it's better structured.**
+
+Understanding how AI selects sources isn't optional anymore. It's the foundation of visibility in the generative era.
+
+Your content can either become part of AI's knowledge or remain invisible.
+
+The choice — and the structure — is yours.
+MARKDOWN;
+
+        $faq = [
+            [
+                'question' => 'Why doesn\'t my content appear in AI answers?',
+                'answer' => 'AI systems select content based on extractability, clarity, structure, and trust signals. If your content buries answers, lacks clear headings, or mixes multiple topics, AI will skip it — not because it\'s wrong, but because it introduces uncertainty.',
+            ],
+            [
+                'question' => 'What makes content citable by AI?',
+                'answer' => 'Citable content has answer-first structure, clear definitions, logical heading hierarchy, and structured data like lists and tables. Each element reduces AI\'s uncertainty about what your content actually says.',
+            ],
+            [
+                'question' => 'How does AI decide which sources to trust?',
+                'answer' => 'AI evaluates trust through topical consistency (covering a subject deeply across pages), internal linking, content freshness, and external references. Trust emerges from patterns, not single pages.',
+            ],
+            [
+                'question' => 'Can well-written content still be invisible to AI?',
+                'answer' => 'Yes. Content written for human browsing often fails AI selection. Narrative-first approaches, buried answers, and implicit context make extraction risky. AI prioritizes structure over prose quality.',
+            ],
+            [
+                'question' => 'How do I know if my content is AI-ready?',
+                'answer' => 'Use a GEO score tool to analyze your pages across AI evaluation pillars. Key questions: Can the main answer be extracted from paragraph one? Are headings descriptive? Would AI safely quote any sentence? If not, your content may be structurally invisible.',
+            ],
+        ];
+
+        $quickLinks = [
+            ['title' => 'How AI Decides What to Cite', 'anchor' => 'how-ai-decides-what-to-cite'],
+            ['title' => 'The Selection Problem', 'anchor' => 'the-selection-problem-most-content-creators-miss'],
+            ['title' => 'Why Most Content Fails', 'anchor' => 'why-most-content-fails-ai-selection'],
+            ['title' => 'What Makes Content Citable', 'anchor' => 'what-makes-content-citable'],
+            ['title' => 'The Trust Factor', 'anchor' => 'the-trust-factor'],
+            ['title' => 'Why This Matters Now', 'anchor' => 'why-this-matters-now'],
+            ['title' => 'Is Your Content Citable?', 'anchor' => 'how-to-know-if-your-content-is-citable'],
+            ['title' => 'The Path Forward', 'anchor' => 'the-path-forward'],
+            ['title' => 'Measure Before You Optimize', 'anchor' => 'measure-before-you-optimize'],
+        ];
+
+        $schemaJson = [
+            '@context' => 'https://schema.org',
+            '@graph' => [
+                [
+                    '@type' => 'BlogPosting',
+                    'headline' => 'Why Some Content Becomes AI Knowledge and Most Still Doesn\'t',
+                    'description' => 'Understand how AI search engines select sources to cite. Learn why most content fails AI selection and what makes content citable in the generative era.',
+                    'url' => 'https://geosource.ai/blog/why-some-content-becomes-ai-knowledge',
+                    'datePublished' => '2026-02-18',
+                    'dateModified' => '2026-02-18',
+                    'author' => [
+                        '@type' => 'Organization',
+                        'name' => 'GeoSource.ai',
+                        'url' => 'https://geosource.ai',
+                    ],
+                    'publisher' => [
+                        '@type' => 'Organization',
+                        'name' => 'GeoSource.ai',
+                        'url' => 'https://geosource.ai',
+                    ],
+                    'image' => 'https://geosource.ai/images/blog/why-some-content-becomes-ai-knowledge.png',
+                    'mainEntityOfPage' => [
+                        '@type' => 'WebPage',
+                        '@id' => 'https://geosource.ai/blog/why-some-content-becomes-ai-knowledge',
+                    ],
+                    'about' => [
+                        '@type' => 'Thing',
+                        'name' => 'AI Content Selection',
+                        'description' => 'The process by which AI search engines evaluate and select content to cite in generated responses.',
+                    ],
+                ],
+                [
+                    '@type' => 'FAQPage',
+                    'mainEntity' => [
+                        [
+                            '@type' => 'Question',
+                            'name' => 'Why doesn\'t my content appear in AI answers?',
+                            'acceptedAnswer' => [
+                                '@type' => 'Answer',
+                                'text' => 'AI systems select content based on extractability, clarity, structure, and trust signals. Content that buries answers or lacks clear structure introduces uncertainty and gets skipped.',
+                            ],
+                        ],
+                        [
+                            '@type' => 'Question',
+                            'name' => 'What makes content citable by AI?',
+                            'acceptedAnswer' => [
+                                '@type' => 'Answer',
+                                'text' => 'Citable content has answer-first structure, clear definitions, logical heading hierarchy, and structured data like lists and tables.',
+                            ],
+                        ],
+                        [
+                            '@type' => 'Question',
+                            'name' => 'How does AI decide which sources to trust?',
+                            'acceptedAnswer' => [
+                                '@type' => 'Answer',
+                                'text' => 'AI evaluates trust through topical consistency, internal linking, content freshness, and external references. Trust emerges from patterns across multiple pages.',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $author = \App\Models\User::where('email', 'matthew.laszkewicz@gmail.com')->first();
+
+        BlogPost::create([
+            'title' => 'Why Some Content Becomes AI Knowledge and Most Still Doesn\'t',
+            'slug' => $slug,
+            'author_id' => $author?->id,
+            'excerpt' => 'AI search engines don\'t discover content — they select it. Learn how AI decides what to cite, why most content fails selection, and how to structure content for AI visibility.',
+            'content' => $content,
+            'featured_image' => '/images/blog/why-some-content-becomes-ai-knowledge.png',
+            'meta_title' => 'Why Some Content Becomes AI Knowledge and Most Still Doesn\'t | GeoSource.ai',
+            'meta_description' => 'Understand how AI search engines select sources to cite. Learn why most content fails AI selection and how to structure content for visibility in ChatGPT, Perplexity, and Claude.',
+            'schema_json' => $schemaJson,
+            'tags' => ['GEO', 'AI Search', 'Content Strategy', 'AI Citations', 'Visibility'],
+            'faq' => $faq,
+            'quick_links' => $quickLinks,
+            'status' => 'published',
+            'published_at' => now(),
+        ]);
+
+        $this->info("✓ Imported blog post: {$slug}");
     }
 }

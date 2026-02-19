@@ -1,0 +1,97 @@
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="100%" style="stop-color:#1e293b"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#3b82f6"/>
+      <stop offset="100%" style="stop-color:#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="green" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#4ade80"/>
+      <stop offset="100%" style="stop-color:#22c55e"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Decorative circles -->
+  <circle cx="1050" cy="120" r="220" fill="#3b82f6" opacity="0.08"/>
+  <circle cx="150" cy="500" r="180" fill="#8b5cf6" opacity="0.08"/>
+  <circle cx="950" cy="480" r="120" fill="#10b981" opacity="0.06"/>
+
+  <!-- Visual: Content filtering concept -->
+  <g transform="translate(750, 100)">
+    <!-- Funnel shape -->
+    <path d="M100 0 L300 0 L250 80 L150 80 Z" fill="#3b82f6" opacity="0.15" stroke="#3b82f6" stroke-width="1.5"/>
+    <path d="M150 80 L250 80 L230 140 L170 140 Z" fill="#3b82f6" opacity="0.25" stroke="#3b82f6" stroke-width="1.5"/>
+    <path d="M170 140 L230 140 L220 200 L180 200 Z" fill="#3b82f6" opacity="0.4" stroke="#3b82f6" stroke-width="1.5"/>
+
+    <!-- Input content icons (scattered) -->
+    <rect x="120" y="-30" width="30" height="20" rx="3" fill="#475569" opacity="0.6"/>
+    <rect x="160" y="-35" width="30" height="20" rx="3" fill="#475569" opacity="0.6"/>
+    <rect x="200" y="-28" width="30" height="20" rx="3" fill="#475569" opacity="0.6"/>
+    <rect x="240" y="-32" width="30" height="20" rx="3" fill="#475569" opacity="0.6"/>
+
+    <!-- Rejected content (faded, moving away) -->
+    <rect x="50" y="90" width="25" height="16" rx="2" fill="#ef4444" opacity="0.3" transform="rotate(-15, 62, 98)"/>
+    <rect x="310" y="100" width="25" height="16" rx="2" fill="#ef4444" opacity="0.3" transform="rotate(15, 322, 108)"/>
+    <rect x="40" y="130" width="25" height="16" rx="2" fill="#ef4444" opacity="0.2" transform="rotate(-20, 52, 138)"/>
+    <rect x="320" y="140" width="25" height="16" rx="2" fill="#ef4444" opacity="0.2" transform="rotate(20, 332, 148)"/>
+
+    <!-- Selected content (glowing, going through) -->
+    <rect x="185" y="220" width="30" height="20" rx="3" fill="url(#green)" opacity="0.9"/>
+    <circle cx="200" cy="230" r="25" fill="#22c55e" opacity="0.2"/>
+
+    <!-- AI brain icon at bottom -->
+    <g transform="translate(165, 260)">
+      <circle cx="35" cy="25" r="22" fill="#8b5cf6" opacity="0.2" stroke="#8b5cf6" stroke-width="2"/>
+      <path d="M25 25 Q25 15 35 15 Q45 15 45 25 Q45 35 35 35 Q25 35 25 25" stroke="#a78bfa" stroke-width="2" fill="none"/>
+      <circle cx="30" cy="22" r="3" fill="#a78bfa"/>
+      <circle cx="40" cy="22" r="3" fill="#a78bfa"/>
+      <path d="M28 30 Q35 35 42 30" stroke="#a78bfa" stroke-width="2" fill="none" stroke-linecap="round"/>
+    </g>
+  </g>
+
+  <!-- Category badge -->
+  <rect x="80" y="80" width="130" height="32" rx="16" fill="#3b82f6" opacity="0.2"/>
+  <text x="145" y="102" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" fill="#60a5fa" text-anchor="middle">AI KNOWLEDGE</text>
+
+  <!-- Main title -->
+  <text x="80" y="200" font-family="system-ui, -apple-system, sans-serif" font-size="52" font-weight="bold" fill="white">Why Some Content</text>
+  <text x="80" y="265" font-family="system-ui, -apple-system, sans-serif" font-size="52" font-weight="bold" fill="white">Becomes</text>
+  <text x="340" y="265" font-family="system-ui, -apple-system, sans-serif" font-size="52" font-weight="bold" fill="url(#accent)">AI Knowledge</text>
+
+  <!-- Second line -->
+  <text x="80" y="340" font-family="system-ui, -apple-system, sans-serif" font-size="36" fill="#94a3b8">And Most Still</text>
+  <text x="335" y="340" font-family="system-ui, -apple-system, sans-serif" font-size="36" fill="#ef4444" font-weight="600">Doesn't</text>
+
+  <!-- Subtitle -->
+  <text x="80" y="410" font-family="system-ui, -apple-system, sans-serif" font-size="22" fill="#94a3b8">How generative AI selects content and how to</text>
+  <text x="80" y="440" font-family="system-ui, -apple-system, sans-serif" font-size="22" fill="#94a3b8">earn visibility in AI search</text>
+
+  <!-- Feature pills -->
+  <g transform="translate(80, 490)">
+    <rect x="0" y="0" width="130" height="36" rx="18" fill="#3b82f6" opacity="0.2"/>
+    <text x="65" y="24" font-family="system-ui, sans-serif" font-size="14" fill="#60a5fa" text-anchor="middle">AI Citations</text>
+
+    <rect x="150" y="0" width="140" height="36" rx="18" fill="#10b981" opacity="0.2"/>
+    <text x="220" y="24" font-family="system-ui, sans-serif" font-size="14" fill="#34d399" text-anchor="middle">GEO Strategy</text>
+
+    <rect x="310" y="0" width="160" height="36" rx="18" fill="#8b5cf6" opacity="0.2"/>
+    <text x="390" y="24" font-family="system-ui, sans-serif" font-size="14" fill="#a78bfa" text-anchor="middle">Content Selection</text>
+  </g>
+
+  <!-- Logo and URL -->
+  <g transform="translate(80, 560)">
+    <circle cx="16" cy="16" r="13" stroke="#8B5CF6" stroke-width="2" fill="none"/>
+    <path d="M16 3a19 19 0 0 0 0 26 19 19 0 0 0 0-26" stroke="#8B5CF6" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M3 16h26" stroke="#8B5CF6" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="42" y="22" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="white">GeoSource.ai</text>
+  </g>
+
+  <!-- URL right side -->
+  <text x="1120" y="590" text-anchor="end" font-family="system-ui, sans-serif" font-size="16" fill="#64748b">geosource.ai/blog</text>
+</svg>
