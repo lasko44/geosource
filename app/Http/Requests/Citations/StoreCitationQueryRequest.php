@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Citations;
 
+use App\Models\Team;
 use App\Services\Citation\CitationService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
@@ -61,7 +62,7 @@ class StoreCitationQueryRequest extends FormRequest
         ];
     }
 
-    public function getTeam(): ?\App\Models\Team
+    public function getTeam(): ?Team
     {
         $currentTeamId = session('current_team_id');
 

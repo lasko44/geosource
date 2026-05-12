@@ -12,6 +12,7 @@ import {
     BarChart3,
     RefreshCw,
     Loader2,
+    Sparkles,
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
@@ -168,6 +169,12 @@ const markAlertRead = (alertId: number) => {
                 </div>
 
                 <div class="flex gap-2">
+                    <Link href="/citations/research">
+                        <Button variant="outline">
+                            <Sparkles class="mr-2 h-4 w-4" />
+                            Research
+                        </Button>
+                    </Link>
                     <Link v-if="usage.can_access_ga4" href="/analytics/ga4">
                         <Button variant="outline">
                             <BarChart3 class="mr-2 h-4 w-4" />

@@ -29,6 +29,10 @@ return [
         // Other Features
         'pdf_export' => 2,
         'scheduled_scan' => 5, // per run
+
+        // Citation Research
+        'citation_research' => 20,       // 5 AI platforms + analysis + report
+        'citation_research_audit' => 35, // Research + GEO scans of top 3 sources
     ],
 
     /*
@@ -54,6 +58,8 @@ return [
         'citation_chatgpt' => 'ChatGPT Citation',
         'pdf_export' => 'PDF Export',
         'scheduled_scan' => 'Scheduled Scan',
+        'citation_research' => 'Citation Research (5 platforms)',
+        'citation_research_audit' => 'Citation Research + Audit',
     ],
 
     /*

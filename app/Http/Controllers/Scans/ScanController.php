@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Scans;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Scans\StoreScanRequest;
 use App\Models\Scan;
 use App\Services\ScanService;
 use Illuminate\Http\RedirectResponse;
@@ -121,7 +122,7 @@ class ScanController extends Controller
     /**
      * Store a newly created scan.
      */
-    public function store(\App\Http\Requests\Scans\StoreScanRequest $request, ScanService $scanService): RedirectResponse
+    public function store(StoreScanRequest $request, ScanService $scanService): RedirectResponse
     {
         try {
             $scan = $scanService->executeScan(

@@ -26,6 +26,7 @@ class Scan extends Model
         'user_id',
         'team_id',
         'scheduled_scan_id',
+        'citation_research_id',
         'url',
         'title',
         'score',
@@ -115,6 +116,14 @@ class Scan extends Model
     public function scheduledScan(): BelongsTo
     {
         return $this->belongsTo(ScheduledScan::class);
+    }
+
+    /**
+     * Get the citation research that created this scan.
+     */
+    public function citationResearch(): BelongsTo
+    {
+        return $this->belongsTo(CitationResearch::class);
     }
 
     /**

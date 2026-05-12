@@ -15,6 +15,7 @@ use App\Services\TokenService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Arr;
@@ -438,7 +439,7 @@ class ScanWebsiteJob implements ShouldQueue
             $this->markFailed("HTTP request failed with status {$status}", $userMessage);
 
             return null;
-        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+        } catch (ConnectionException $e) {
             // Handle connection errors (timeout, DNS failure, SSL issues)
             Log::warning("HTTP connection error for {$url}: ".$e->getMessage().', trying headless browser');
 

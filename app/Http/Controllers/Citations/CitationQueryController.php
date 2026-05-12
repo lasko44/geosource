@@ -7,6 +7,7 @@ use App\Http\Requests\Citations\StoreCitationQueryRequest;
 use App\Http\Requests\Citations\UpdateCitationQueryRequest;
 use App\Models\CitationQuery;
 use App\Services\Citation\CitationService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -71,7 +72,7 @@ class CitationQueryController extends Controller
     /**
      * Store a new citation query.
      */
-    public function store(StoreCitationQueryRequest $request, CitationService $citationService): \Illuminate\Http\RedirectResponse
+    public function store(StoreCitationQueryRequest $request, CitationService $citationService): RedirectResponse
     {
         $citationQuery = $citationService->createQuery(
             $request->user(),
@@ -112,7 +113,7 @@ class CitationQueryController extends Controller
     /**
      * Update a citation query.
      */
-    public function update(UpdateCitationQueryRequest $request, CitationQuery $query): \Illuminate\Http\RedirectResponse
+    public function update(UpdateCitationQueryRequest $request, CitationQuery $query): RedirectResponse
     {
         $query->update($request->validated());
 
@@ -126,7 +127,7 @@ class CitationQueryController extends Controller
     /**
      * Delete a citation query.
      */
-    public function destroy(CitationQuery $query)
+    public function destroy(CitationQuery $query): RedirectResponse
     {
         $this->authorize('delete', $query);
 

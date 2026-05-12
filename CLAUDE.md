@@ -4,6 +4,52 @@ This document defines the architectural decisions and coding standards for this 
 
 ---
 
+## Table of Contents
+
+### Core Architecture
+- [ADR-001: Skinny Controllers, Fat Services](#adr-001-skinny-controllers-fat-services)
+- [ADR-002: Form Requests for Validation](#adr-002-form-requests-for-validation)
+- [ADR-003: Policy Classes for Authorization](#adr-003-policy-classes-for-authorization)
+- [ADR-004: Eloquent ORM Only](#adr-004-eloquent-orm-only)
+
+### Security
+- [ADR-005: Return 404 Instead of 403](#adr-005-return-404-instead-of-403)
+
+### Code Quality
+- [ADR-006: Type Hints and Return Types Everywhere](#adr-006-type-hints-and-return-types-everywhere)
+- [ADR-007: Class Documentation](#adr-007-class-documentation)
+- [ADR-008: Array Access via Arr Helper](#adr-008-array-access-via-arr-helper)
+
+### Controller Rules
+- [ADR-009: Method Injection in Controllers](#adr-009-method-injection-in-controllers)
+- [ADR-010: Invokable Controllers for Single Actions](#adr-010-invokable-controllers-for-single-actions)
+- [ADR-011: No Private Methods in Controllers](#adr-011-no-private-methods-in-controllers)
+
+### Service Rules
+- [ADR-012: Services Use Constructor Injection](#adr-012-services-use-constructor-injection)
+- [ADR-013: Singleton Registration for Stateless Services](#adr-013-singleton-registration-for-stateless-services)
+
+### Project Organization
+- [ADR-014: Feature-Based Directory Structure](#adr-014-feature-based-directory-structure)
+
+### Performance
+- [ADR-015: Efficient Eloquent Query Methods](#adr-015-efficient-eloquent-query-methods)
+- [ADR-016: Large Dataset Processing](#adr-016-large-dataset-processing)
+- [ADR-017: Queue Heavy Operations](#adr-017-queue-heavy-operations)
+- [ADR-018: Database Indexing Strategy](#adr-018-database-indexing-strategy)
+- [ADR-019: Eager Loading Relationships](#adr-019-eager-loading-relationships)
+- [ADR-020: Caching Expensive Operations](#adr-020-caching-expensive-operations)
+- [ADR-021: Production Optimization Commands](#adr-021-production-optimization-commands)
+- [ADR-022: Avoiding Memory Leaks in Long-Running Processes](#adr-022-avoiding-memory-leaks-in-long-running-processes)
+- [ADR-023: Select Only Required Columns](#adr-023-select-only-required-columns)
+- [ADR-024: Use Database Aggregates Over Collection Methods](#adr-024-use-database-aggregates-over-collection-methods)
+
+### Reference
+- [Architecture Overview](#architecture-overview)
+- [Quick Reference](#quick-reference)
+
+---
+
 # Architectural Decision Records (ADR)
 
 ## Core Architecture
@@ -471,6 +517,623 @@ app/Http/Controllers/
 
 ---
 
+## Performance
+
+### ADR-015: Efficient Eloquent Query Methods
+
+### Decision
+Use Eloquent query builder methods directly instead of fetching data first and then processing in PHP.
+
+### Context
+Methods like `pluck()`, `count()`, `sum()`, `exists()` are available on both the Query Builder and Collection classes. Using them on the Query Builder executes optimized SQL, while using them on a Collection processes data in PHP after loading everything into memory.
+
+### Rationale
+1. **Memory efficiency**: Query builder methods only fetch what's needed from the database.
+2. **Database optimization**: The database engine is optimized for these operations.
+3. **Network efficiency**: Less data transferred between database and application.
+4. **Scalability**: Performance difference grows dramatically with data size.
+
+### Rules
+
+**Use query builder methods directly:**
+```php
+// ✅ CORRECT - Single column fetched: SELECT name FROM users
+$names = User::where('active', true)->pluck('name');
+
+// ✅ CORRECT - Count in database: SELECT COUNT(*) FROM users
+$count = User::where('active', true)->count();
+
+// ✅ CORRECT - Existence check: SELECT EXISTS(...)
+$exists = User::where('email', $email)->exists();
+
+// ✅ CORRECT - Sum in database: SELECT SUM(amount) FROM orders
+$total = Order::where('user_id', $userId)->sum('amount');
+```
+
+**Avoid fetching all data first:**
+```php
+// ❌ WRONG - Loads ALL rows, ALL columns into memory, then extracts names
+$names = User::where('active', true)->get()->pluck('name');
+
+// ❌ WRONG - Loads ALL rows into memory just to count them
+$count = User::where('active', true)->get()->count();
+
+// ❌ WRONG - Loads ALL rows into memory to check if any exist
+$exists = User::where('email', $email)->get()->isNotEmpty();
+```
+
+### The `::query()` Method
+
+The `::query()` method is optional when chaining. Only use it when it provides clarity:
+
+```php
+// These are identical - prefer the shorter form
+User::where('active', true)->get();
+User::query()->where('active', true)->get();
+
+// ✅ Useful when building queries conditionally
+$query = User::query();
+
+if ($request->has('role')) {
+    $query->where('role', $request->role);
+}
+
+if ($request->has('status')) {
+    $query->where('status', $request->status);
+}
+
+return $query->get();
+```
+
+---
+
+### ADR-016: Large Dataset Processing
+
+### Decision
+Use `cursor()`, `lazy()`, or `chunk()` for processing large datasets. Never use `get()` or `all()` on unbounded queries.
+
+### Context
+Each Eloquent model consumes ~2-5KB of RAM. Loading 10,000 rows uses 20-50MB just for model objects, before any processing.
+
+### Rationale
+1. **Memory safety**: Prevents out-of-memory errors on large tables.
+2. **Predictable resource usage**: Memory consumption stays constant regardless of dataset size.
+3. **Production stability**: Workers and commands won't crash from memory exhaustion.
+4. **Scalability**: Code that works on 1,000 rows will work on 1,000,000 rows.
+
+### Memory Comparison (100k rows)
+| Method | Peak RAM | Use Case |
+|--------|----------|----------|
+| `get()` | ~500MB | Never for large sets |
+| `chunk(1000)` | ~5MB | When you need to save/update |
+| `lazy()` | ~2MB | Read-only iteration |
+| `cursor()` | ~1MB | Read-only, absolute minimum |
+
+### Rules
+
+```php
+// ❌ WRONG - Loads all rows into memory
+$users = User::all();
+foreach ($users as $user) {
+    $this->process($user);
+}
+
+// ✅ CORRECT - Chunks process then free memory (use when writing to DB)
+User::chunk(1000, function ($users) {
+    foreach ($users as $user) {
+        $user->update(['processed' => true]);
+    }
+});
+
+// ✅ CORRECT - Lazy collection, single row in memory (read-only)
+foreach (User::lazy() as $user) {
+    $this->sendEmail($user);
+}
+
+// ✅ BEST - Database cursor, absolute minimum RAM (read-only)
+foreach (User::cursor() as $user) {
+    $this->export($user);
+}
+```
+
+### When to Use Each
+- **`chunk()`**: Need to write back to DB (avoids database locks)
+- **`lazy()`**: Read-only iteration, need Collection methods
+- **`cursor()`**: Read-only, maximum memory efficiency
+
+---
+
+### ADR-017: Queue Heavy Operations
+
+### Decision
+Any operation taking >500ms or consuming significant resources must be queued. User requests should return in <200ms.
+
+### Context
+HTTP requests should be fast. Heavy operations block web workers and degrade user experience.
+
+### Rationale
+1. **User experience**: Users perceive responses >200ms as slow; >1s feels broken.
+2. **Worker availability**: Long requests block PHP-FPM workers, reducing throughput.
+3. **Timeout safety**: Web servers timeout long requests (typically 30-60s).
+4. **Retry capability**: Queued jobs can retry on failure; HTTP requests cannot.
+5. **Resource isolation**: Queue workers can have different memory/CPU limits than web workers.
+
+### What Must Be Queued
+| Operation | Why |
+|-----------|-----|
+| External API calls | Network latency unpredictable |
+| Email sending | SMTP can be slow |
+| PDF generation | CPU + memory intensive |
+| Image processing | CPU + memory intensive |
+| Large data exports | Memory + time intensive |
+| Webhook deliveries | Network latency |
+| Search indexing | Can be slow |
+
+### Rules
+
+```php
+// ❌ WRONG - User waits for PDF generation
+public function download(Report $report)
+{
+    $pdf = $this->generatePdf($report); // 5-10 seconds
+    return $pdf->download();
+}
+
+// ✅ CORRECT - Generate async, notify when ready
+public function requestDownload(Report $report)
+{
+    GenerateReportJob::dispatch($report, auth()->user());
+
+    return back()->with('status', 'Generating report. We\'ll email you when ready.');
+}
+
+// ❌ WRONG - External API in request
+public function store(Request $request)
+{
+    $order = Order::create($request->validated());
+    Http::post('payment-api.com', $order->toArray()); // 2-3 seconds
+    return redirect()->route('orders.show', $order);
+}
+
+// ✅ CORRECT - Queue the API call
+public function store(Request $request)
+{
+    $order = Order::create($request->validated());
+    ProcessPaymentJob::dispatch($order);
+    return redirect()->route('orders.show', $order);
+}
+```
+
+### Job Best Practices
+```php
+class ProcessPaymentJob implements ShouldQueue
+{
+    public int $tries = 3;
+    public int $timeout = 120;
+    public int $backoff = 60;
+
+    // Pass IDs, not models (smaller payload, fresh data)
+    public function __construct(
+        public int $orderId
+    ) {}
+
+    public function handle(): void
+    {
+        $order = Order::findOrFail($this->orderId);
+        // Process...
+    }
+}
+```
+
+---
+
+### ADR-018: Database Indexing Strategy
+
+### Decision
+Add indexes to all columns used in `WHERE`, `ORDER BY`, and `JOIN` clauses. Foreign keys must always have indexes.
+
+### Context
+Without indexes, the database performs full table scans. A query on 1M rows can take seconds without an index, milliseconds with one.
+
+### Rationale
+1. **Query speed**: Indexes turn O(n) table scans into O(log n) lookups.
+2. **Database load**: Unindexed queries consume excessive CPU and I/O.
+3. **Connection pooling**: Slow queries hold connections longer, exhausting pools.
+4. **User experience**: Page loads depend on query performance.
+5. **Scaling**: Proper indexing delays the need for read replicas or sharding.
+
+### Rules
+
+```php
+// ✅ CORRECT - Index columns you filter by
+Schema::create('scans', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('user_id')->constrained();     // Auto-indexed by FK
+    $table->foreignId('team_id')->nullable()->constrained(); // Auto-indexed
+    $table->string('status')->index();                // Filtered frequently
+    $table->timestamp('created_at')->index();         // Sorted frequently
+
+    // Composite index for common query patterns
+    $table->index(['user_id', 'status']);             // WHERE user_id = ? AND status = ?
+    $table->index(['status', 'created_at']);          // WHERE status = ? ORDER BY created_at
+});
+```
+
+### Index Selection Guide
+| Query Pattern | Index Needed |
+|--------------|--------------|
+| `WHERE status = ?` | `index('status')` |
+| `WHERE user_id = ? AND status = ?` | `index(['user_id', 'status'])` |
+| `ORDER BY created_at` | `index('created_at')` |
+| `WHERE status = ? ORDER BY created_at` | `index(['status', 'created_at'])` |
+| Foreign key relationships | Automatic with `constrained()` |
+
+### Don't Over-Index
+- Each index slows down `INSERT`/`UPDATE` operations
+- Only index columns actually used in queries
+- Use `EXPLAIN ANALYZE` to verify indexes are being used
+
+---
+
+### ADR-019: Eager Loading Relationships
+
+### Decision
+Always eager load relationships that will be accessed. Use `with()` to prevent N+1 queries.
+
+### Context
+Accessing a relationship in a loop without eager loading causes N+1 queries: 1 query for the parent + N queries for each child.
+
+### Rationale
+1. **Query reduction**: N+1 becomes 2 queries regardless of dataset size.
+2. **Database load**: Fewer queries mean fewer connections and less parsing overhead.
+3. **Latency**: Each query has network round-trip time; fewer queries = faster response.
+4. **Predictability**: Performance doesn't degrade as data grows.
+5. **Debuggability**: Easy to spot with Laravel Debugbar or `preventLazyLoading()`.
+
+### Rules
+
+```php
+// ❌ WRONG - N+1 queries (1 + 100 queries for 100 posts)
+$posts = Post::all();
+foreach ($posts as $post) {
+    echo $post->author->name;    // Query per post
+    echo $post->category->name;  // Another query per post
+}
+
+// ✅ CORRECT - 3 queries total
+$posts = Post::with(['author', 'category'])->get();
+foreach ($posts as $post) {
+    echo $post->author->name;    // Already loaded
+    echo $post->category->name;  // Already loaded
+}
+
+// ✅ CORRECT - Nested eager loading
+$posts = Post::with(['author.profile', 'comments.user'])->get();
+
+// ✅ CORRECT - Constrained eager loading
+$posts = Post::with([
+    'comments' => fn ($query) => $query->where('approved', true)->limit(5)
+])->get();
+```
+
+### Automatic Eager Loading in Models
+```php
+class Post extends Model
+{
+    // Always load these relationships
+    protected $with = ['author'];
+}
+```
+
+### Detecting N+1 in Development
+```php
+// In AppServiceProvider::boot()
+if (app()->isLocal()) {
+    \Illuminate\Database\Eloquent\Model::preventLazyLoading();
+}
+```
+
+---
+
+### ADR-020: Caching Expensive Operations
+
+### Decision
+Cache results of expensive operations (database queries, API calls, computations) that don't change frequently.
+
+### Context
+Repeatedly executing expensive operations wastes resources. Cache results with appropriate TTL based on data freshness requirements.
+
+### Rationale
+1. **Response time**: Cached data returns in microseconds vs milliseconds/seconds.
+2. **Database load**: Reduces repetitive queries, especially for dashboard/aggregate data.
+3. **API costs**: External API calls often have rate limits and costs.
+4. **Scalability**: Cache handles traffic spikes without scaling database.
+5. **Consistency**: All users see the same cached result (useful for shared data).
+
+### Rules
+
+```php
+// ❌ WRONG - Hits database every request
+$stats = $this->calculateDashboardStats();
+
+// ✅ CORRECT - Cache for 5 minutes
+$stats = Cache::remember('dashboard:stats:' . $userId, 300, function () {
+    return $this->calculateDashboardStats();
+});
+
+// ✅ CORRECT - Cache forever, invalidate manually
+$settings = Cache::rememberForever('app:settings', fn () =>
+    Setting::pluck('value', 'key')->toArray()
+);
+
+// Invalidate when settings change
+Cache::forget('app:settings');
+```
+
+### Cache Key Strategies
+```php
+// User-specific cache
+$key = "user:{$userId}:dashboard";
+
+// Team-specific cache
+$key = "team:{$teamId}:reports";
+
+// Query-specific cache (careful with this)
+$key = 'search:' . md5(serialize($filters));
+
+// Time-based cache keys (auto-expire pattern)
+$key = "stats:" . now()->format('Y-m-d-H'); // Hourly
+```
+
+### What to Cache
+| Data Type | TTL | Strategy |
+|-----------|-----|----------|
+| App configuration | Forever | Invalidate on change |
+| User preferences | 1 hour | Invalidate on change |
+| Dashboard stats | 5-15 min | TTL expiry |
+| API responses | Varies | Based on API cache headers |
+| Computed reports | 1 hour+ | Regenerate via queue |
+
+### What NOT to Cache
+- Frequently changing data
+- User-specific sensitive data (unless properly keyed)
+- Data that must be real-time
+
+---
+
+### ADR-021: Production Optimization Commands
+
+### Decision
+Always run optimization commands in production deployments. Never run them in development.
+
+### Context
+Laravel's optimization commands compile and cache configuration, routes, and views. This eliminates file parsing overhead on every request.
+
+### Rationale
+1. **Startup time**: Eliminates file I/O and parsing on every request.
+2. **Consistency**: Cached config prevents env var race conditions.
+3. **Autoloader efficiency**: Optimized class maps avoid filesystem lookups.
+4. **Memory**: Pre-compiled views use less memory than on-the-fly compilation.
+5. **Measurable impact**: 10-30ms savings per request adds up significantly.
+
+### Required in Production
+```bash
+# Cache configuration (all config files → single cached file)
+php artisan config:cache
+
+# Cache routes (route registration → single cached file)
+php artisan route:cache
+
+# Cache views (Blade compilation)
+php artisan view:cache
+
+# Cache events (event discovery → cached file)
+php artisan event:cache
+
+# Optimize autoloader
+composer install --optimize-autoloader --no-dev
+```
+
+### Performance Impact
+| Command | Without | With |
+|---------|---------|------|
+| Config loading | 5-10ms | <1ms |
+| Route matching | 5-20ms | <1ms |
+| View compilation | First-hit penalty | Pre-compiled |
+
+### Deployment Script
+```bash
+php artisan down
+git pull origin main
+composer install --optimize-autoloader --no-dev
+php artisan migrate --force
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+php artisan event:cache
+php artisan queue:restart
+php artisan up
+```
+
+### Clearing in Development
+```bash
+php artisan optimize:clear  # Clears all cached data
+```
+
+### Important Notes
+- After `config:cache`, `env()` only works inside config files
+- After `route:cache`, closure routes won't work (use controller routes)
+- Always clear cache before caching in deployment
+
+---
+
+### ADR-022: Avoiding Memory Leaks in Long-Running Processes
+
+### Decision
+Queue workers and scheduled commands must not accumulate memory. Use `cursor()`, unset large variables, and configure worker restarts.
+
+### Context
+Queue workers run continuously. Without proper memory management, they grow until they crash.
+
+### Rationale
+1. **Worker stability**: Prevents OOM crashes that lose in-progress jobs.
+2. **Predictable behavior**: Memory stays constant regardless of jobs processed.
+3. **Resource planning**: Can accurately size worker instances.
+4. **Debugging**: Memory growth indicates a leak to investigate.
+5. **Cost efficiency**: Smaller instance sizes when memory is well-managed.
+
+### Rules
+
+```php
+// ❌ WRONG - Accumulates memory
+class ProcessDataJob implements ShouldQueue
+{
+    private array $results = [];
+
+    public function handle(): void
+    {
+        foreach (Data::all() as $record) {
+            $this->results[] = $this->process($record); // Memory grows
+        }
+    }
+}
+
+// ✅ CORRECT - Process and release
+class ProcessDataJob implements ShouldQueue
+{
+    public function handle(): void
+    {
+        foreach (Data::cursor() as $record) {
+            $result = $this->process($record);
+            $this->save($result);
+            // $record and $result released each iteration
+        }
+    }
+}
+
+// ✅ CORRECT - Explicit cleanup for large objects
+public function handle(): void
+{
+    $largeData = $this->fetchLargeDataset();
+    $this->process($largeData);
+
+    unset($largeData);          // Release memory
+    gc_collect_cycles();         // Force garbage collection
+}
+```
+
+### Worker Configuration
+```bash
+# Restart worker after 500 jobs (prevents memory buildup)
+php artisan queue:work --max-jobs=500
+
+# Restart worker if memory exceeds 128MB
+php artisan queue:work --memory=128
+
+# Restart workers after deployment
+php artisan queue:restart
+```
+
+### Supervisor Configuration
+```ini
+[program:laravel-worker]
+command=php /var/www/artisan queue:work --max-jobs=500 --memory=128
+numprocs=4
+autostart=true
+autorestart=true
+```
+
+---
+
+### ADR-023: Select Only Required Columns
+
+### Decision
+Use `select()` to fetch only the columns needed. Avoid `SELECT *` patterns.
+
+### Context
+Fetching unnecessary columns wastes memory and network bandwidth. A table with 50 columns vs selecting 3 columns can be 10x difference in data transfer.
+
+### Rationale
+1. **Memory efficiency**: Each column consumes RAM in PHP and database buffers.
+2. **Network bandwidth**: Less data transferred between database and application.
+3. **Index optimization**: Covering indexes can serve queries entirely from index.
+4. **Serialization cost**: Smaller models serialize faster for caching/queuing.
+5. **Security**: Avoid accidentally exposing sensitive columns in API responses.
+
+### Rules
+
+```php
+// ❌ WRONG - Fetches all 50 columns
+$users = User::where('active', true)->get();
+
+// ✅ CORRECT - Only fetch what's needed
+$users = User::select(['id', 'name', 'email'])
+    ->where('active', true)
+    ->get();
+
+// ✅ CORRECT - When using relationships
+$posts = Post::select(['id', 'title', 'user_id'])
+    ->with(['author' => fn ($q) => $q->select(['id', 'name'])])
+    ->get();
+
+// ✅ CORRECT - For simple key-value needs
+$userNames = User::pluck('name', 'id');
+```
+
+### Exceptions
+- When you genuinely need all columns
+- In admin panels where all data is displayed
+- API resources that explicitly select fields
+
+---
+
+### ADR-024: Use Database Aggregates Over Collection Methods
+
+### Decision
+Use database aggregate functions (`count`, `sum`, `avg`, `min`, `max`) instead of fetching data and computing in PHP.
+
+### Context
+The database engine is optimized for aggregate calculations. Computing in PHP requires loading all data into memory first.
+
+### Rationale
+1. **Performance**: Database aggregates run in optimized C code with direct disk access.
+2. **Memory**: Only the result (single value) crosses the network, not all rows.
+3. **Indexing**: Aggregates can use indexes; PHP computation cannot.
+4. **Parallelism**: Databases parallelize aggregate operations; PHP is single-threaded.
+5. **Accuracy**: Database handles precision and overflow better than PHP floats.
+
+### Rules
+
+```php
+// ❌ WRONG - Loads all rows into memory
+$count = User::all()->count();
+$total = Order::all()->sum('amount');
+$average = Product::all()->avg('price');
+
+// ✅ CORRECT - Database does the math
+$count = User::count();
+$total = Order::sum('amount');
+$average = Product::avg('price');
+
+// ✅ CORRECT - With conditions
+$activeUsers = User::where('status', 'active')->count();
+$revenue = Order::where('paid', true)->sum('amount');
+
+// ✅ CORRECT - Grouped aggregates
+$salesByMonth = Order::selectRaw('MONTH(created_at) as month, SUM(amount) as total')
+    ->groupByRaw('MONTH(created_at)')
+    ->pluck('total', 'month');
+
+// ✅ CORRECT - Multiple aggregates in one query
+$stats = User::selectRaw('
+    COUNT(*) as total,
+    SUM(CASE WHEN active = 1 THEN 1 ELSE 0 END) as active_count,
+    AVG(age) as average_age
+')->first();
+```
+
+---
+
 # Architecture Overview
 
 ```
@@ -512,12 +1175,21 @@ HTTP Request
 - Put all validation in Form Requests
 - Put all authorization in Policies
 - Use Eloquent for all database queries
+- Use query builder methods (`pluck`, `count`, `exists`) directly
+- Use `cursor()` or `lazy()` for large dataset iteration
+- Use `chunk()` when updating large datasets
+- Use `select()` to fetch only needed columns
+- Queue operations >500ms (emails, PDFs, API calls)
+- Eager load relationships with `with()`
+- Cache expensive operations
+- Add indexes to columns in WHERE/ORDER BY
 - Return 404 for authorization failures (log 403 internally)
 - Add return types to all methods
 - Add docblocks to all classes
 - Use `Arr::get()` for array access
 - Use method injection in controllers
 - Use constructor injection in services
+- Run `config:cache` and `route:cache` in production
 
 ## Don't
 - Business logic in controllers
@@ -525,11 +1197,17 @@ HTTP Request
 - Private/protected methods in controllers
 - Constructor injection in controllers
 - Raw DB queries (`DB::select`, `DB::table`, etc.)
+- `->get()->pluck()` or `->get()->count()` (fetch then process)
+- `User::all()` on large tables (use `cursor`/`lazy`/`chunk`)
+- `SELECT *` when you only need specific columns
+- Synchronous external API calls in requests
+- N+1 queries (always eager load)
 - Return 403 for authorization failures (leaks info)
 - Missing return types
 - Missing class docblocks
 - Direct array access (`$data['key']`)
 - Register mutable services as singletons
+- Use `env()` outside config files in production
 
 ## Naming Conventions
 | Type | Pattern | Example |

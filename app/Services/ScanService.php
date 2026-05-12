@@ -387,6 +387,7 @@ class ScanService
 
     /**
      * Validate quota for scan.
+     * @throws QuotaExceededException
      */
     protected function validateQuota(User $user, ?Team $team, Request $request, string $action = 'scan'): void
     {

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Citations\CitationAlertController;
 use App\Http\Controllers\Citations\CitationCheckController;
 use App\Http\Controllers\Citations\CitationQueryController;
+use App\Http\Controllers\Citations\CitationResearchController;
 use App\Http\Controllers\Citations\CitationTrendController;
 use App\Http\Controllers\GA4\GA4CallbackController;
 use App\Http\Controllers\GA4\GA4ConnectController;
@@ -33,6 +34,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard alias
     Route::get('citations', [CitationQueryController::class, 'index'])
         ->name('citations.index');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Citation Research Routes
+    |--------------------------------------------------------------------------
+    */
+
+    Route::resource('citations/research', CitationResearchController::class)
+        ->names('citations.research')
+        ->only(['index', 'create', 'store', 'show', 'destroy'])
+        ->middleware([
+            'store' => 'throttle:5,1',
+        ]);
 
     /*
     |--------------------------------------------------------------------------
