@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, useForm, usePage, router } from '@inertiajs/vue3';
-import { Globe, TrendingUp, Target, Calendar, ExternalLink, Zap, ArrowRight, Users, Crown, Plus, Building2, User, ChevronDown, Quote, CheckCircle2, XCircle, Clock, Layers, Repeat, Loader2, X, Coins, Info } from 'lucide-vue-next';
-import { computed, ref, watch } from 'vue';
+import { Globe, TrendingUp, Target, Calendar, ExternalLink, Zap, ArrowRight, Users, Crown, Plus, Building2, User, ChevronDown, Quote, CheckCircle2, XCircle, Clock, Layers, Repeat, Loader2, X, Coins, Info, Terminal, Plug } from 'lucide-vue-next';
+import { computed, ref, watch, onMounted } from 'vue';
 
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -114,6 +115,21 @@ const promoBannerDismissed = ref(localStorage.getItem(PROMO_BANNER_KEY) === 'tru
 const dismissPromoBanner = () => {
     promoBannerDismissed.value = true;
     localStorage.setItem(PROMO_BANNER_KEY, 'true');
+};
+
+// MCP Server announcement modal (shown once per user)
+const MCP_SEEN_KEY = 'geosource_mcp_announcement_seen';
+const showMcpModal = ref(false);
+
+onMounted(() => {
+    if (localStorage.getItem(MCP_SEEN_KEY) !== 'true') {
+        showMcpModal.value = true;
+    }
+});
+
+const dismissMcpModal = () => {
+    showMcpModal.value = false;
+    localStorage.setItem(MCP_SEEN_KEY, 'true');
 };
 
 // Maximum number of competitors discovered by AI
@@ -491,6 +507,33 @@ const getProgressColor = () => {
 
 <template>
     <Head title="Dashboard" />
+
+    <!-- MCP Server Announcement Modal -->
+    <Dialog :open="showMcpModal" @update:open="(val: boolean) => { if (!val) dismissMcpModal(); }">
+        <DialogContent class="sm:max-w-md">
+            <DialogHeader>
+                <div class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+                    <Terminal class="h-7 w-7 text-primary" />
+                </div>
+                <DialogTitle class="text-center text-xl">GEOSource now works with MCP</DialogTitle>
+                <DialogDescription class="text-center">
+                    Run scans, track citations, and monitor your GEO performance from Claude Desktop, Cursor, Windsurf, or any MCP-compatible client.
+                </DialogDescription>
+            </DialogHeader>
+
+            <div class="flex flex-col gap-3 pt-2">
+                <Link href="/mcp" @click="dismissMcpModal">
+                    <Button class="w-full gap-2">
+                        View Setup Guide
+                        <ArrowRight class="h-4 w-4" />
+                    </Button>
+                </Link>
+                <Button variant="ghost" class="w-full" @click="dismissMcpModal">
+                    Maybe later
+                </Button>
+            </div>
+        </DialogContent>
+    </Dialog>
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex flex-col gap-6 p-6">
@@ -1130,6 +1173,25 @@ https://example.com/page3"
                     </CardContent>
                 </Card>
             </div>
+
+            <!-- MCP Server CTA -->
+            <Link href="/mcp" class="block">
+                <Card class="border-primary/20 bg-gradient-to-r from-primary/5 via-transparent to-primary/5 transition-colors hover:border-primary/40 hover:from-primary/10">
+                    <CardContent class="flex items-center gap-5 py-5">
+                        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                            <Plug class="h-6 w-6 text-primary" />
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-semibold">Connect GEOSource to Claude</h3>
+                            <p class="text-sm text-muted-foreground">Run scans, track citations, and monitor performance directly from Claude Desktop via MCP.</p>
+                        </div>
+                        <div class="flex shrink-0 items-center gap-2 text-sm font-medium text-primary">
+                            Setup Guide
+                            <ArrowRight class="h-4 w-4" />
+                        </div>
+                    </CardContent>
+                </Card>
+            </Link>
 
             <!-- Recent Scans -->
             <Card>

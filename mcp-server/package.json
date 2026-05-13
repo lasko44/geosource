@@ -1,0 +1,51 @@
+{
+  "name": "geosource-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for GeoSource.ai — run GEO scans, track AI citations, and monitor your GEO performance from Claude Desktop, Cursor, or any MCP client.",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "geosource-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "geosource",
+    "geo",
+    "seo",
+    "ai-search",
+    "claude",
+    "chatgpt",
+    "perplexity"
+  ],
+  "author": "GeoSource.ai",
+  "license": "MIT",
+  "homepage": "https://geosource.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/geosource-ai/geosource-mcp.git"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0"
+  },
+  "types": "./dist/index.d.ts",
+  "bugs": {
+    "url": "https://github.com/geosource-ai/geosource-mcp/issues"
+  }
+}

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\BlogPost;
 use Illuminate\Http\Response;
+use Illuminate\Support\Arr;
 
 /**
  * Generates the XML sitemap for search engine crawlers.
@@ -162,6 +163,44 @@ class SitemapController extends Controller
                 'priority' => '0.8',
             ],
         ];
+
+        // Programmatic SEO: Guides hub
+        $pages[] = [
+            'url' => '/guides',
+            'lastmod' => now()->format('Y-m-d'),
+            'changefreq' => 'weekly',
+            'priority' => '0.9',
+        ];
+
+        // Programmatic SEO: Industry pages
+        foreach (config('programmatic-seo.industries', []) as $industry) {
+            $pages[] = [
+                'url' => '/geo-for-'.Arr::get($industry, 'slug'),
+                'lastmod' => now()->format('Y-m-d'),
+                'changefreq' => 'monthly',
+                'priority' => '0.7',
+            ];
+        }
+
+        // Programmatic SEO: Platform pages
+        foreach (config('programmatic-seo.platforms', []) as $platform) {
+            $pages[] = [
+                'url' => '/optimize-for-'.Arr::get($platform, 'slug'),
+                'lastmod' => now()->format('Y-m-d'),
+                'changefreq' => 'monthly',
+                'priority' => '0.7',
+            ];
+        }
+
+        // Programmatic SEO: Comparison pages
+        foreach (config('programmatic-seo.comparisons', []) as $comparison) {
+            $pages[] = [
+                'url' => '/compare/'.Arr::get($comparison, 'slug'),
+                'lastmod' => now()->format('Y-m-d'),
+                'changefreq' => 'monthly',
+                'priority' => '0.7',
+            ];
+        }
 
         // Add blog posts dynamically
         $blogPosts = BlogPost::published()

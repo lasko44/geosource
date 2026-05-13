@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Arr;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -12,7 +13,25 @@ class ResourceController extends Controller
 {
     public function index(): Response
     {
-        return Inertia::render('Resources/Index');
+        return Inertia::render('Resources/Index', [
+            'industries' => collect(config('programmatic-seo.industries', []))->map(fn (array $item): array => [
+                'slug' => Arr::get($item, 'slug'),
+                'name' => Arr::get($item, 'name'),
+                'title' => Arr::get($item, 'title'),
+                'meta_description' => Arr::get($item, 'meta_description'),
+            ])->all(),
+            'platforms' => collect(config('programmatic-seo.platforms', []))->map(fn (array $item): array => [
+                'slug' => Arr::get($item, 'slug'),
+                'name' => Arr::get($item, 'name'),
+                'title' => Arr::get($item, 'title'),
+                'meta_description' => Arr::get($item, 'meta_description'),
+            ])->all(),
+            'comparisons' => collect(config('programmatic-seo.comparisons', []))->map(fn (array $item): array => [
+                'slug' => Arr::get($item, 'slug'),
+                'title' => Arr::get($item, 'title'),
+                'meta_description' => Arr::get($item, 'meta_description'),
+            ])->all(),
+        ]);
     }
 
     public function whatIsGeo(): Response

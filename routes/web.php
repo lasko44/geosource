@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AnalyticsController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\SuggestedContentController;
 use App\Http\Controllers\Marketing\ProcessUnsubscribeController;
 use App\Http\Controllers\Marketing\ShowUnsubscribeController;
 use App\Http\Controllers\Marketing\TrackClickController;
@@ -39,9 +40,21 @@ Route::get('/llms.txt', function () {
 Route::get('/auth/google', [GoogleController::class, 'redirect'])->name('auth.google');
 Route::get('/auth/google/callback', [GoogleController::class, 'callback']);
 
+// MCP Server Authorization
+Route::get('/auth/mcp', [\App\Http\Controllers\Auth\McpAuthController::class, 'show'])
+    ->middleware(['auth', 'verified'])
+    ->name('auth.mcp');
+Route::post('/auth/mcp', [\App\Http\Controllers\Auth\McpAuthController::class, 'store'])
+    ->middleware(['auth', 'verified', 'throttle:5,1'])
+    ->name('auth.mcp.authorize');
+
 Route::get('dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
+
+Route::get('mcp', function () {
+    return Inertia::render('McpSetup');
+})->middleware(['auth', 'verified'])->name('mcp.setup');
 
 // User Guide / Help
 Route::get('/help', function () {
@@ -57,6 +70,7 @@ require __DIR__.'/scheduled-scans.php';
 require __DIR__.'/resources.php';
 require __DIR__.'/citations.php';
 require __DIR__.'/blog.php';
+require __DIR__.'/programmatic-seo.php';
 
 // Marketing email unsubscribe
 Route::get('/unsubscribe', ShowUnsubscribeController::class)->name('marketing.unsubscribe');
@@ -67,3 +81,8 @@ Route::get('/email/track/click', TrackClickController::class)->name('marketing.t
 
 // Analytics tracking (for marking page views as engaged)
 Route::post('/analytics/engaged', AnalyticsController::class)->name('analytics.engaged');
+
+// RAG-powered suggested content (public, cached)
+Route::get('/api/suggested-content', SuggestedContentController::class)
+    ->middleware('throttle:30,1')
+    ->name('suggested-content');

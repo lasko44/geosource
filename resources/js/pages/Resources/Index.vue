@@ -26,7 +26,15 @@ import {
     HelpCircle,
     Image,
     Calendar,
+    Layers,
+    Monitor,
 } from 'lucide-vue-next';
+
+const props = defineProps<{
+    industries: { slug: string; name: string; title: string; meta_description: string }[];
+    platforms: { slug: string; name: string; title: string; meta_description: string }[];
+    comparisons: { slug: string; title: string; meta_description: string }[];
+}>();
 
 const articles = [
     {
@@ -183,11 +191,38 @@ const featuredResources = [
     },
 ];
 
+const allItemListElements = [
+    ...articles.map((article, index) => ({
+        '@type': 'ListItem' as const,
+        position: index + 1,
+        url: `https://geosource.ai/resources/${article.slug}`,
+        name: article.title,
+    })),
+    ...props.industries.map((industry, index) => ({
+        '@type': 'ListItem' as const,
+        position: articles.length + index + 1,
+        url: `https://geosource.ai/geo-for-${industry.slug}`,
+        name: industry.title,
+    })),
+    ...props.platforms.map((platform, index) => ({
+        '@type': 'ListItem' as const,
+        position: articles.length + props.industries.length + index + 1,
+        url: `https://geosource.ai/optimize-for-${platform.slug}`,
+        name: platform.title,
+    })),
+    ...props.comparisons.map((comparison, index) => ({
+        '@type': 'ListItem' as const,
+        position: articles.length + props.industries.length + props.platforms.length + index + 1,
+        url: `https://geosource.ai/compare/${comparison.slug}`,
+        name: comparison.title,
+    })),
+];
+
 const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
-    name: 'GEO Learning Resources',
-    description: 'Comprehensive guides to Generative Engine Optimization (GEO) — learn how to optimize your content for AI search engines.',
+    name: 'GEO Resources & Guides',
+    description: 'Comprehensive GEO resources, industry guides, and platform-specific strategies for optimizing content for AI search engines.',
     url: 'https://geosource.ai/resources',
     publisher: {
         '@type': 'Organization',
@@ -196,27 +231,22 @@ const jsonLd = {
     },
     mainEntity: {
         '@type': 'ItemList',
-        itemListElement: articles.map((article, index) => ({
-            '@type': 'ListItem',
-            position: index + 1,
-            url: `https://geosource.ai/resources/${article.slug}`,
-            name: article.title,
-        })),
+        itemListElement: allItemListElements,
     },
 };
 </script>
 
 <template>
-    <Head title="GEO Learning Resources - GeoSource.ai">
-        <meta name="description" content="Comprehensive guides to Generative Engine Optimization (GEO). Learn how to optimize your content for AI search engines like ChatGPT, Perplexity, and Claude." />
-        <meta property="og:title" content="GEO Learning Resources - GeoSource.ai" />
-        <meta property="og:description" content="Comprehensive guides to Generative Engine Optimization (GEO). Learn how to optimize your content for AI search engines." />
+    <Head title="GEO Resources & Guides - GeoSource.ai">
+        <meta name="description" content="GEO resources, industry guides, and platform-specific strategies for optimizing content for AI search engines like ChatGPT, Perplexity, and Claude." />
+        <meta property="og:title" content="GEO Resources & Guides - GeoSource.ai" />
+        <meta property="og:description" content="GEO resources, industry guides, and platform-specific strategies for optimizing content for AI search engines." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://geosource.ai/resources" />
         <meta property="og:site_name" content="GeoSource.ai" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="GEO Learning Resources - GeoSource.ai" />
-        <meta name="twitter:description" content="Comprehensive guides to Generative Engine Optimization (GEO). Learn how to optimize your content for AI search engines." />
+        <meta name="twitter:title" content="GEO Resources & Guides - GeoSource.ai" />
+        <meta name="twitter:description" content="GEO resources, industry guides, and platform-specific strategies for optimizing content for AI search engines." />
         <meta name="twitter:site" content="@geosourceai" />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href="https://geosource.ai/resources" />
@@ -238,10 +268,10 @@ const jsonLd = {
                             Learning Hub
                         </Badge>
                         <h1 id="hero-heading" class="text-4xl font-bold tracking-tight sm:text-5xl">
-                            GEO Learning Resources
+                            GEO Resources & Guides
                         </h1>
                         <p class="mt-6 text-lg leading-8 text-muted-foreground">
-                            Everything you need to understand <strong class="text-foreground">Generative Engine Optimization</strong> and how to make your content visible to AI search systems.
+                            Learning resources, industry-specific guides, and platform strategies to understand <strong class="text-foreground">Generative Engine Optimization</strong> and make your content visible to AI search systems.
                         </p>
                     </div>
                 </div>
@@ -322,6 +352,126 @@ const jsonLd = {
                                                 <time :datetime="'2026-01'">{{ article.date }}</time>
                                             </span>
                                         </div>
+                                    </CardContent>
+                                </Card>
+                            </Link>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Industry GEO Guides -->
+            <section v-if="industries.length" aria-labelledby="industries-heading" class="border-t py-16">
+                <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    <div class="mx-auto max-w-2xl text-center mb-8">
+                        <h2 id="industries-heading" class="text-2xl font-bold">GEO by Industry</h2>
+                        <p class="mt-2 text-muted-foreground">Industry-specific guides to optimizing content for AI search visibility.</p>
+                    </div>
+                    <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" role="list">
+                        <li v-for="industry in industries" :key="industry.slug">
+                            <Link
+                                :href="`/geo-for-${industry.slug}`"
+                                class="group block h-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg"
+                                :aria-label="`${industry.name}: ${industry.meta_description}`"
+                            >
+                                <Card class="h-full transition-colors hover:border-primary/50">
+                                    <CardHeader>
+                                        <div class="flex items-center justify-between">
+                                            <Layers class="h-8 w-8 text-primary" aria-hidden="true" />
+                                            <Badge variant="outline">Industry</Badge>
+                                        </div>
+                                        <CardTitle class="mt-4 text-xl group-hover:text-primary transition-colors">
+                                            {{ industry.name }}
+                                        </CardTitle>
+                                        <CardDescription class="text-base">
+                                            {{ industry.meta_description }}
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <span class="inline-flex items-center text-sm font-medium text-primary" aria-hidden="true">
+                                            Read guide
+                                            <ArrowRight class="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                                        </span>
+                                    </CardContent>
+                                </Card>
+                            </Link>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Platform Optimization -->
+            <section v-if="platforms.length" aria-labelledby="platforms-heading" class="border-t bg-muted/30 py-16">
+                <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    <div class="mx-auto max-w-2xl text-center mb-8">
+                        <h2 id="platforms-heading" class="text-2xl font-bold">Optimize for AI Platforms</h2>
+                        <p class="mt-2 text-muted-foreground">Platform-specific strategies for getting cited by each AI search engine.</p>
+                    </div>
+                    <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" role="list">
+                        <li v-for="platform in platforms" :key="platform.slug">
+                            <Link
+                                :href="`/optimize-for-${platform.slug}`"
+                                class="group block h-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg"
+                                :aria-label="`${platform.name}: ${platform.meta_description}`"
+                            >
+                                <Card class="h-full transition-colors hover:border-primary/50">
+                                    <CardHeader>
+                                        <div class="flex items-center justify-between">
+                                            <Monitor class="h-8 w-8 text-primary" aria-hidden="true" />
+                                            <Badge variant="outline">Platform</Badge>
+                                        </div>
+                                        <CardTitle class="mt-4 text-xl group-hover:text-primary transition-colors">
+                                            {{ platform.name }}
+                                        </CardTitle>
+                                        <CardDescription class="text-base">
+                                            {{ platform.meta_description }}
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <span class="inline-flex items-center text-sm font-medium text-primary" aria-hidden="true">
+                                            Read guide
+                                            <ArrowRight class="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                                        </span>
+                                    </CardContent>
+                                </Card>
+                            </Link>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Tool Comparisons -->
+            <section v-if="comparisons.length" aria-labelledby="comparisons-heading" class="border-t py-16">
+                <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    <div class="mx-auto max-w-2xl text-center mb-8">
+                        <h2 id="comparisons-heading" class="text-2xl font-bold">GEO vs SEO Tool Comparisons</h2>
+                        <p class="mt-2 text-muted-foreground">See how GEO optimization compares to traditional SEO tools.</p>
+                    </div>
+                    <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" role="list">
+                        <li v-for="comparison in comparisons" :key="comparison.slug">
+                            <Link
+                                :href="`/compare/${comparison.slug}`"
+                                class="group block h-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg"
+                                :aria-label="`${comparison.title}: ${comparison.meta_description}`"
+                            >
+                                <Card class="h-full transition-colors hover:border-primary/50">
+                                    <CardHeader>
+                                        <div class="flex items-center justify-between">
+                                            <Scale class="h-8 w-8 text-primary" aria-hidden="true" />
+                                            <Badge variant="outline">Comparison</Badge>
+                                        </div>
+                                        <CardTitle class="mt-4 text-xl group-hover:text-primary transition-colors">
+                                            {{ comparison.title }}
+                                        </CardTitle>
+                                        <CardDescription class="text-base">
+                                            {{ comparison.meta_description }}
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <span class="inline-flex items-center text-sm font-medium text-primary" aria-hidden="true">
+                                            Read comparison
+                                            <ArrowRight class="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                                        </span>
                                     </CardContent>
                                 </Card>
                             </Link>
