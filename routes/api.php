@@ -41,7 +41,7 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->prefix('v1')->group(functi
     |--------------------------------------------------------------------------
     */
 
-    Route::get('/tokens/balance', TokenBalanceApiController::class)->name('api.tokens.balance');
+    Route::get('/tokens/balance', TokenBalanceApiController::class)->name('api.v1.tokens.balance');
 
     /*
     |--------------------------------------------------------------------------
