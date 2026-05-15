@@ -52,10 +52,20 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
 
+        {{-- Server-side meta tags for crawlers that don't execute JS --}}
+        @if($page['component'] === 'Welcome')
+            @include('partials.welcome-meta')
+        @endif
+
         @vite(['resources/js/app.ts', "resources/js/pages/{$page['component']}.vue"])
         @inertiaHead
     </head>
     <body class="font-sans antialiased">
         @inertia
+
+        {{-- Server-side SEO content for crawlers that don't execute JS --}}
+        @if($page['component'] === 'Welcome')
+            @include('partials.welcome-content')
+        @endif
     </body>
 </html>
