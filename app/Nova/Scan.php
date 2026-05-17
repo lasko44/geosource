@@ -109,6 +109,7 @@ class Scan extends Resource
                     'processing' => 'info',
                     'completed' => 'success',
                     'failed' => 'danger',
+                    'cancelled' => 'warning',
                 ])
                 ->sortable()
                 ->filterable(),
