@@ -9,7 +9,7 @@ import ResourceHeader from '@/components/resources/ResourceHeader.vue';
 import ResourceFooter from '@/components/resources/ResourceFooter.vue';
 import ResourceBreadcrumb from '@/components/resources/ResourceBreadcrumb.vue';
 import SuggestedContent from '@/components/resources/SuggestedContent.vue';
-import { ChevronDown, Lightbulb, AlertTriangle, ArrowRight, Layers } from 'lucide-vue-next';
+import { ChevronDown, Lightbulb, AlertTriangle, ArrowRight, Layers, Calendar } from 'lucide-vue-next';
 import { register } from '@/routes';
 import { ref, computed } from 'vue';
 
@@ -20,6 +20,8 @@ interface Industry {
     meta_description: string;
     hero_headline: string;
     hero_description: string;
+    published_at: string;
+    updated_at: string;
     challenges: string[];
     tips: { title: string; description: string }[];
     faq: { question: string; answer: string }[];
@@ -56,6 +58,11 @@ const toggleFaq = (index: number) => {
     openFaqIndex.value = openFaqIndex.value === index ? null : index;
 };
 
+const formatDate = (dateStr: string) => {
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+};
+
 const articleJsonLd = computed(() =>
     JSON.stringify({
         '@context': 'https://schema.org',
@@ -63,6 +70,8 @@ const articleJsonLd = computed(() =>
         headline: props.industry.hero_headline,
         description: props.industry.meta_description,
         url: canonicalUrl.value,
+        datePublished: props.industry.published_at,
+        dateModified: props.industry.updated_at,
         publisher: {
             '@type': 'Organization',
             name: 'GeoSource.ai',
@@ -121,6 +130,14 @@ const faqJsonLd = computed(() =>
                     <p class="mt-4 max-w-2xl text-lg text-muted-foreground sm:text-xl">
                         {{ industry.hero_description }}
                     </p>
+                    <div class="mt-4 flex items-center gap-4 text-sm text-muted-foreground">
+                        <span class="flex items-center gap-1.5">
+                            <Calendar class="h-3.5 w-3.5" aria-hidden="true" />
+                            Published {{ formatDate(industry.published_at) }}
+                        </span>
+                        <span>&middot;</span>
+                        <span>Updated {{ formatDate(industry.updated_at) }}</span>
+                    </div>
                 </div>
             </section>
 

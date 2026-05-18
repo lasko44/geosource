@@ -15,6 +15,8 @@ return [
     'industries' => [
         [
             'slug' => 'saas',
+            'published_at' => '2026-01-15',
+            'updated_at' => '2026-05-16',
             'name' => 'SaaS',
             'title' => 'GEO for SaaS: Optimize Your Software for AI Search',
             'meta_description' => 'Learn how SaaS companies can optimize content for AI search engines. Get cited by ChatGPT, Perplexity, and Claude with GEO strategies built for software businesses.',
@@ -44,6 +46,8 @@ return [
         ],
         [
             'slug' => 'ecommerce',
+            'published_at' => '2026-01-16',
+            'updated_at' => '2026-05-14',
             'name' => 'Ecommerce',
             'title' => 'GEO for Ecommerce: Get Your Products Cited by AI',
             'meta_description' => 'Optimize your ecommerce store for AI search engines. Learn how to get product recommendations from ChatGPT, Perplexity, and Claude with GEO strategies for online retail.',
@@ -73,6 +77,8 @@ return [
         ],
         [
             'slug' => 'healthcare',
+            'published_at' => '2026-01-18',
+            'updated_at' => '2026-05-15',
             'name' => 'Healthcare',
             'title' => 'GEO for Healthcare: AI Search Visibility for Medical Content',
             'meta_description' => 'Optimize healthcare content for AI search engines. Ensure medical information is accurately cited by ChatGPT, Perplexity, and Claude with healthcare-specific GEO strategies.',
@@ -102,6 +108,8 @@ return [
         ],
         [
             'slug' => 'real-estate',
+            'published_at' => '2026-01-20',
+            'updated_at' => '2026-05-12',
             'name' => 'Real Estate',
             'title' => 'GEO for Real Estate: AI Search Optimization for Property',
             'meta_description' => 'Optimize real estate content for AI search engines. Get property listings and market insights cited by ChatGPT, Perplexity, and Claude with real estate GEO strategies.',
@@ -131,6 +139,8 @@ return [
         ],
         [
             'slug' => 'legal',
+            'published_at' => '2026-01-22',
+            'updated_at' => '2026-05-13',
             'name' => 'Legal',
             'title' => 'GEO for Legal: AI Search Visibility for Law Firms',
             'meta_description' => 'Optimize legal content for AI search engines. Ensure your law firm and legal expertise are cited by ChatGPT, Perplexity, and Claude with legal-specific GEO strategies.',
@@ -160,6 +170,8 @@ return [
         ],
         [
             'slug' => 'finance',
+            'published_at' => '2026-01-24',
+            'updated_at' => '2026-05-16',
             'name' => 'Finance',
             'title' => 'GEO for Finance: AI Search Optimization for Financial Services',
             'meta_description' => 'Optimize financial content for AI search engines. Get your financial expertise cited by ChatGPT, Perplexity, and Claude with finance-specific GEO strategies.',
@@ -189,6 +201,8 @@ return [
         ],
         [
             'slug' => 'education',
+            'published_at' => '2026-01-26',
+            'updated_at' => '2026-05-11',
             'name' => 'Education',
             'title' => 'GEO for Education: AI Search Visibility for Schools & EdTech',
             'meta_description' => 'Optimize educational content for AI search engines. Get schools, courses, and learning resources cited by ChatGPT, Perplexity, and Claude with education GEO strategies.',
@@ -218,6 +232,8 @@ return [
         ],
         [
             'slug' => 'travel',
+            'published_at' => '2026-01-28',
+            'updated_at' => '2026-05-14',
             'name' => 'Travel & Hospitality',
             'title' => 'GEO for Travel: AI Search Optimization for Tourism & Hotels',
             'meta_description' => 'Optimize travel and hospitality content for AI search engines. Get destinations and hotels cited by ChatGPT, Perplexity, and Claude with travel GEO strategies.',
@@ -247,6 +263,8 @@ return [
         ],
         [
             'slug' => 'restaurants',
+            'published_at' => '2026-01-30',
+            'updated_at' => '2026-05-10',
             'name' => 'Restaurants & Food Service',
             'title' => 'GEO for Restaurants: Get Found by AI Search Engines',
             'meta_description' => 'Optimize restaurant content for AI search engines. Get your restaurant recommended by ChatGPT, Perplexity, and Claude when diners ask for recommendations.',
@@ -276,6 +294,8 @@ return [
         ],
         [
             'slug' => 'b2b',
+            'published_at' => '2026-02-01',
+            'updated_at' => '2026-05-15',
             'name' => 'B2B',
             'title' => 'GEO for B2B: AI Search Optimization for Business Services',
             'meta_description' => 'Optimize B2B content for AI search engines. Get your business services cited by ChatGPT, Perplexity, and Claude with B2B-specific GEO strategies.',
@@ -305,6 +325,8 @@ return [
         ],
         [
             'slug' => 'agencies',
+            'published_at' => '2026-02-03',
+            'updated_at' => '2026-05-12',
             'name' => 'Marketing Agencies',
             'title' => 'GEO for Agencies: Help Clients Win in AI Search',
             'meta_description' => 'Learn how marketing agencies can offer GEO services. Help clients get cited by ChatGPT, Perplexity, and Claude with agency-specific GEO strategies and tools.',
@@ -334,6 +356,8 @@ return [
         ],
         [
             'slug' => 'startups',
+            'published_at' => '2026-02-05',
+            'updated_at' => '2026-05-16',
             'name' => 'Startups',
             'title' => 'GEO for Startups: AI Search Visibility from Day One',
             'meta_description' => 'Optimize startup content for AI search engines from launch. Get your product discovered by ChatGPT, Perplexity, and Claude with startup-specific GEO strategies.',
@@ -363,6 +387,8 @@ return [
         ],
         [
             'slug' => 'news-media',
+            'published_at' => '2026-02-07',
+            'updated_at' => '2026-05-13',
             'name' => 'News & Media',
             'title' => 'GEO for News & Media: AI Citation Strategies for Publishers',
             'meta_description' => 'Optimize news and media content for AI search engines. Ensure your journalism and editorial content is cited by ChatGPT, Perplexity, and Claude.',
@@ -392,6 +418,8 @@ return [
         ],
         [
             'slug' => 'non-profit',
+            'published_at' => '2026-02-09',
+            'updated_at' => '2026-05-11',
             'name' => 'Non-Profit',
             'title' => 'GEO for Non-Profits: AI Search Visibility for Causes',
             'meta_description' => 'Optimize non-profit content for AI search engines. Get your mission and impact cited by ChatGPT, Perplexity, and Claude with non-profit GEO strategies.',
@@ -421,6 +449,8 @@ return [
         ],
         [
             'slug' => 'automotive',
+            'published_at' => '2026-02-11',
+            'updated_at' => '2026-05-14',
             'name' => 'Automotive',
             'title' => 'GEO for Automotive: AI Search Visibility for Dealerships & Brands',
             'meta_description' => 'Optimize automotive content for AI search engines. Get vehicles and services recommended by ChatGPT, Perplexity, and Claude with automotive GEO strategies.',
@@ -450,6 +480,8 @@ return [
         ],
         [
             'slug' => 'insurance',
+            'published_at' => '2026-02-13',
+            'updated_at' => '2026-05-10',
             'name' => 'Insurance',
             'title' => 'GEO for Insurance: AI Search Optimization for Carriers & Agents',
             'meta_description' => 'Optimize insurance content for AI search engines. Get your policies and expertise cited by ChatGPT, Perplexity, and Claude with insurance-specific GEO strategies.',
@@ -479,6 +511,8 @@ return [
         ],
         [
             'slug' => 'recruitment',
+            'published_at' => '2026-02-15',
+            'updated_at' => '2026-05-15',
             'name' => 'Recruitment & HR',
             'title' => 'GEO for Recruitment: AI Search Visibility for Hiring',
             'meta_description' => 'Optimize recruitment content for AI search engines. Get your job listings and employer brand cited by ChatGPT, Perplexity, and Claude with recruitment GEO strategies.',
@@ -508,6 +542,8 @@ return [
         ],
         [
             'slug' => 'cybersecurity',
+            'published_at' => '2026-02-17',
+            'updated_at' => '2026-05-12',
             'name' => 'Cybersecurity',
             'title' => 'GEO for Cybersecurity: AI Search Visibility for Security Firms',
             'meta_description' => 'Optimize cybersecurity content for AI search engines. Get your security expertise cited by ChatGPT, Perplexity, and Claude with cybersecurity GEO strategies.',
@@ -537,6 +573,8 @@ return [
         ],
         [
             'slug' => 'fitness',
+            'published_at' => '2026-02-19',
+            'updated_at' => '2026-05-16',
             'name' => 'Fitness & Wellness',
             'title' => 'GEO for Fitness: AI Search Visibility for Gyms & Wellness',
             'meta_description' => 'Optimize fitness and wellness content for AI search engines. Get your gym, programs, and expertise cited by ChatGPT, Perplexity, and Claude.',
@@ -566,6 +604,8 @@ return [
         ],
         [
             'slug' => 'beauty',
+            'published_at' => '2026-02-21',
+            'updated_at' => '2026-05-13',
             'name' => 'Beauty & Skincare',
             'title' => 'GEO for Beauty: AI Search Visibility for Beauty Brands',
             'meta_description' => 'Optimize beauty and skincare content for AI search engines. Get your products and expertise cited by ChatGPT, Perplexity, and Claude with beauty GEO strategies.',
@@ -595,6 +635,8 @@ return [
         ],
         [
             'slug' => 'manufacturing',
+            'published_at' => '2026-02-23',
+            'updated_at' => '2026-05-11',
             'name' => 'Manufacturing',
             'title' => 'GEO for Manufacturing: AI Search Visibility for Industrial Companies',
             'meta_description' => 'Optimize manufacturing content for AI search engines. Get your products and capabilities cited by ChatGPT, Perplexity, and Claude with manufacturing GEO strategies.',
@@ -624,6 +666,8 @@ return [
         ],
         [
             'slug' => 'logistics',
+            'published_at' => '2026-02-25',
+            'updated_at' => '2026-05-14',
             'name' => 'Logistics & Supply Chain',
             'title' => 'GEO for Logistics: AI Search Visibility for Supply Chain',
             'meta_description' => 'Optimize logistics content for AI search engines. Get your shipping and supply chain services cited by ChatGPT, Perplexity, and Claude with logistics GEO strategies.',
@@ -653,6 +697,8 @@ return [
         ],
         [
             'slug' => 'construction',
+            'published_at' => '2026-02-27',
+            'updated_at' => '2026-05-10',
             'name' => 'Construction',
             'title' => 'GEO for Construction: AI Search Visibility for Contractors',
             'meta_description' => 'Optimize construction content for AI search engines. Get your services and expertise cited by ChatGPT, Perplexity, and Claude with construction GEO strategies.',
@@ -682,6 +728,8 @@ return [
         ],
         [
             'slug' => 'energy',
+            'published_at' => '2026-03-01',
+            'updated_at' => '2026-05-15',
             'name' => 'Energy & Utilities',
             'title' => 'GEO for Energy: AI Search Visibility for Energy Companies',
             'meta_description' => 'Optimize energy content for AI search engines. Get your energy solutions cited by ChatGPT, Perplexity, and Claude with energy-specific GEO strategies.',
@@ -711,6 +759,8 @@ return [
         ],
         [
             'slug' => 'telecommunications',
+            'published_at' => '2026-03-03',
+            'updated_at' => '2026-05-12',
             'name' => 'Telecommunications',
             'title' => 'GEO for Telecom: AI Search Visibility for Telecom Providers',
             'meta_description' => 'Optimize telecom content for AI search engines. Get your services cited by ChatGPT, Perplexity, and Claude with telecommunications GEO strategies.',
@@ -740,6 +790,8 @@ return [
         ],
         [
             'slug' => 'gaming',
+            'published_at' => '2026-03-05',
+            'updated_at' => '2026-05-16',
             'name' => 'Gaming',
             'title' => 'GEO for Gaming: AI Search Visibility for Game Studios & Platforms',
             'meta_description' => 'Optimize gaming content for AI search engines. Get your games and platforms cited by ChatGPT, Perplexity, and Claude with gaming GEO strategies.',
@@ -769,6 +821,8 @@ return [
         ],
         [
             'slug' => 'fashion',
+            'published_at' => '2026-03-07',
+            'updated_at' => '2026-05-13',
             'name' => 'Fashion & Apparel',
             'title' => 'GEO for Fashion: AI Search Visibility for Fashion Brands',
             'meta_description' => 'Optimize fashion content for AI search engines. Get your clothing and brand cited by ChatGPT, Perplexity, and Claude with fashion GEO strategies.',
@@ -798,6 +852,8 @@ return [
         ],
         [
             'slug' => 'pet-care',
+            'published_at' => '2026-03-09',
+            'updated_at' => '2026-05-11',
             'name' => 'Pet Care',
             'title' => 'GEO for Pet Care: AI Search Visibility for Pet Businesses',
             'meta_description' => 'Optimize pet care content for AI search engines. Get your pet products and services cited by ChatGPT, Perplexity, and Claude with pet care GEO strategies.',
@@ -827,6 +883,8 @@ return [
         ],
         [
             'slug' => 'food-beverage',
+            'published_at' => '2026-03-11',
+            'updated_at' => '2026-05-14',
             'name' => 'Food & Beverage',
             'title' => 'GEO for Food & Beverage: AI Search Visibility for F&B Brands',
             'meta_description' => 'Optimize food and beverage content for AI search engines. Get your products cited by ChatGPT, Perplexity, and Claude with F&B GEO strategies.',
@@ -869,6 +927,8 @@ return [
     'platforms' => [
         [
             'slug' => 'chatgpt',
+            'published_at' => '2026-01-20',
+            'updated_at' => '2026-05-17',
             'name' => 'ChatGPT',
             'title' => 'How to Optimize for ChatGPT: Get Cited by OpenAI\'s AI',
             'meta_description' => 'Learn how to optimize your content so ChatGPT cites and recommends it. Step-by-step guide to improving your visibility in ChatGPT\'s AI-generated answers.',
@@ -904,6 +964,8 @@ return [
         ],
         [
             'slug' => 'perplexity',
+            'published_at' => '2026-01-22',
+            'updated_at' => '2026-05-16',
             'name' => 'Perplexity',
             'title' => 'How to Optimize for Perplexity: Get Cited by Perplexity AI',
             'meta_description' => 'Learn how to optimize your content for Perplexity AI. Step-by-step guide to getting your website cited in Perplexity\'s AI-powered search answers.',
@@ -939,6 +1001,8 @@ return [
         ],
         [
             'slug' => 'claude',
+            'published_at' => '2026-01-24',
+            'updated_at' => '2026-05-17',
             'name' => 'Claude',
             'title' => 'How to Optimize for Claude: Get Cited by Anthropic\'s AI',
             'meta_description' => 'Learn how to optimize your content for Claude AI. Step-by-step guide to ensuring your content is referenced and cited in Claude\'s AI-generated answers.',
@@ -974,6 +1038,8 @@ return [
         ],
         [
             'slug' => 'gemini',
+            'published_at' => '2026-01-26',
+            'updated_at' => '2026-05-15',
             'name' => 'Google Gemini',
             'title' => 'How to Optimize for Gemini: Get Cited by Google\'s AI',
             'meta_description' => 'Learn how to optimize your content for Google Gemini. Step-by-step guide to getting cited in Gemini\'s AI answers and AI Overviews in search results.',
@@ -1009,6 +1075,8 @@ return [
         ],
         [
             'slug' => 'ai-overviews',
+            'published_at' => '2026-01-28',
+            'updated_at' => '2026-05-17',
             'name' => 'Google AI Overviews',
             'title' => 'How to Optimize for AI Overviews: Get Cited in Google\'s AI Answers',
             'meta_description' => 'Learn how to get your content cited in Google AI Overviews. Step-by-step optimization guide for appearing in Google\'s AI-generated search answers.',
@@ -1057,6 +1125,8 @@ return [
     'comparisons' => [
         [
             'slug' => 'geosource-vs-ahrefs',
+            'published_at' => '2026-02-01',
+            'updated_at' => '2026-05-16',
             'title' => 'GeoSource vs Ahrefs: GEO Optimization vs SEO Tools',
             'meta_description' => 'Compare GeoSource.ai and Ahrefs. Understand the difference between GEO optimization for AI search and traditional SEO tools for Google rankings.',
             'tool_a' => 'GeoSource.ai',
@@ -1083,6 +1153,8 @@ return [
         ],
         [
             'slug' => 'geosource-vs-semrush',
+            'published_at' => '2026-02-03',
+            'updated_at' => '2026-05-15',
             'title' => 'GeoSource vs Semrush: GEO Optimization vs SEO Platform',
             'meta_description' => 'Compare GeoSource.ai and Semrush. Understand the difference between GEO for AI search visibility and Semrush\'s all-in-one SEO marketing platform.',
             'tool_a' => 'GeoSource.ai',
@@ -1109,6 +1181,8 @@ return [
         ],
         [
             'slug' => 'geosource-vs-moz',
+            'published_at' => '2026-02-05',
+            'updated_at' => '2026-05-14',
             'title' => 'GeoSource vs Moz: GEO Optimization vs SEO Software',
             'meta_description' => 'Compare GeoSource.ai and Moz. Understand the difference between GEO for AI search citations and Moz\'s SEO tools for Google rankings.',
             'tool_a' => 'GeoSource.ai',
@@ -1135,6 +1209,8 @@ return [
         ],
         [
             'slug' => 'geosource-vs-surfer-seo',
+            'published_at' => '2026-02-07',
+            'updated_at' => '2026-05-16',
             'title' => 'GeoSource vs Surfer SEO: GEO vs On-Page Optimization',
             'meta_description' => 'Compare GeoSource.ai and Surfer SEO. Understand the difference between GEO for AI citations and Surfer\'s on-page SEO content optimization.',
             'tool_a' => 'GeoSource.ai',
@@ -1161,6 +1237,8 @@ return [
         ],
         [
             'slug' => 'geosource-vs-clearscope',
+            'published_at' => '2026-02-09',
+            'updated_at' => '2026-05-13',
             'title' => 'GeoSource vs Clearscope: GEO vs Content Optimization',
             'meta_description' => 'Compare GeoSource.ai and Clearscope. Understand the difference between GEO for AI citations and Clearscope\'s SEO content optimization platform.',
             'tool_a' => 'GeoSource.ai',
@@ -1187,6 +1265,8 @@ return [
         ],
         [
             'slug' => 'geosource-vs-marketmuse',
+            'published_at' => '2026-02-11',
+            'updated_at' => '2026-05-15',
             'title' => 'GeoSource vs MarketMuse: GEO vs Content Intelligence',
             'meta_description' => 'Compare GeoSource.ai and MarketMuse. Understand the difference between GEO for AI search and MarketMuse\'s AI-powered content intelligence platform.',
             'tool_a' => 'GeoSource.ai',
@@ -1213,6 +1293,8 @@ return [
         ],
         [
             'slug' => 'geosource-vs-frase',
+            'published_at' => '2026-02-13',
+            'updated_at' => '2026-05-14',
             'title' => 'GeoSource vs Frase: GEO vs AI Content Optimization',
             'meta_description' => 'Compare GeoSource.ai and Frase. Understand the difference between GEO for AI search citations and Frase\'s AI-powered SEO content tool.',
             'tool_a' => 'GeoSource.ai',
@@ -1239,6 +1321,8 @@ return [
         ],
         [
             'slug' => 'geosource-vs-screaming-frog',
+            'published_at' => '2026-02-15',
+            'updated_at' => '2026-05-16',
             'title' => 'GeoSource vs Screaming Frog: GEO vs Technical SEO Crawler',
             'meta_description' => 'Compare GeoSource.ai and Screaming Frog. Understand the difference between GEO content optimization and Screaming Frog\'s technical SEO crawling.',
             'tool_a' => 'GeoSource.ai',
@@ -1265,6 +1349,8 @@ return [
         ],
         [
             'slug' => 'geo-vs-traditional-seo-tools',
+            'published_at' => '2026-02-17',
+            'updated_at' => '2026-05-17',
             'title' => 'GEO Tools vs Traditional SEO Tools: What\'s the Difference?',
             'meta_description' => 'Understand the fundamental difference between GEO optimization tools and traditional SEO tools. Learn why you need both for modern search visibility.',
             'tool_a' => 'GEO Tools (like GeoSource.ai)',
@@ -1291,6 +1377,8 @@ return [
         ],
         [
             'slug' => 'ai-search-vs-google-search',
+            'published_at' => '2026-02-19',
+            'updated_at' => '2026-05-17',
             'title' => 'AI Search vs Google Search: How Search Is Changing',
             'meta_description' => 'Understand the shift from traditional Google search to AI-powered search. Learn how AI search engines like ChatGPT and Perplexity are changing content discovery.',
             'tool_a' => 'AI Search Engines',

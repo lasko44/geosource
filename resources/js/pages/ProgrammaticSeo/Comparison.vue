@@ -9,7 +9,7 @@ import ResourceHeader from '@/components/resources/ResourceHeader.vue';
 import ResourceFooter from '@/components/resources/ResourceFooter.vue';
 import ResourceBreadcrumb from '@/components/resources/ResourceBreadcrumb.vue';
 import SuggestedContent from '@/components/resources/SuggestedContent.vue';
-import { ChevronDown, ArrowRight, Scale, CheckCircle, Lightbulb } from 'lucide-vue-next';
+import { Calendar, ChevronDown, ArrowRight, Scale, CheckCircle, Lightbulb } from 'lucide-vue-next';
 import { register } from '@/routes';
 import { ref, computed } from 'vue';
 
@@ -17,6 +17,8 @@ interface Comparison {
     slug: string;
     title: string;
     meta_description: string;
+    published_at: string;
+    updated_at: string;
     tool_a: string;
     tool_b: string;
     tool_b_description: string;
@@ -55,6 +57,11 @@ const toggleFaq = (index: number): void => {
     openFaqIndex.value = openFaqIndex.value === index ? null : index;
 };
 
+const formatDate = (dateStr: string) => {
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+};
+
 const articleJsonLd = computed(() =>
     JSON.stringify({
         '@context': 'https://schema.org',
@@ -62,6 +69,8 @@ const articleJsonLd = computed(() =>
         headline: props.comparison.title,
         description: props.comparison.meta_description,
         url: canonicalUrl.value,
+        datePublished: props.comparison.published_at,
+        dateModified: props.comparison.updated_at,
         publisher: {
             '@type': 'Organization',
             name: 'GeoSource.ai',
@@ -120,6 +129,14 @@ const faqJsonLd = computed(() =>
                     <p class="mt-4 max-w-2xl text-lg text-muted-foreground sm:text-xl">
                         An in-depth comparison of {{ comparison.tool_a }} and {{ comparison.tool_b }} to help you choose the right tool for your GEO strategy.
                     </p>
+                    <div class="mt-4 flex items-center gap-4 text-sm text-muted-foreground">
+                        <span class="flex items-center gap-1.5">
+                            <Calendar class="h-3.5 w-3.5" aria-hidden="true" />
+                            Published {{ formatDate(comparison.published_at) }}
+                        </span>
+                        <span>&middot;</span>
+                        <span>Updated {{ formatDate(comparison.updated_at) }}</span>
+                    </div>
                 </div>
             </section>
 

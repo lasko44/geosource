@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import {
+    Calendar,
     CheckCircle,
     ChevronDown,
     ChevronUp,
@@ -30,6 +31,8 @@ interface Platform {
     color: string;
     hero_headline: string;
     hero_description: string;
+    published_at: string;
+    updated_at: string;
     how_it_works: string;
     ranking_factors: { factor: string; description: string }[];
     checklist: string[];
@@ -85,12 +88,19 @@ const accentBorderClass = computed(() => {
     return colorMap[props.platform.color] ?? colorMap.blue;
 });
 
+const formatDate = (dateStr: string) => {
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+};
+
 const articleJsonLd = computed(() => ({
     '@context': 'https://schema.org',
     '@type': 'Article',
     headline: props.platform.title,
     description: props.platform.meta_description,
     url: canonicalUrl.value,
+    datePublished: props.platform.published_at,
+    dateModified: props.platform.updated_at,
     publisher: {
         '@type': 'Organization',
         name: 'GeoSource.ai',
@@ -143,6 +153,14 @@ const faqJsonLd = computed(() => ({
                     <p class="max-w-2xl text-lg text-muted-foreground sm:text-xl">
                         {{ platform.hero_description }}
                     </p>
+                    <div class="flex items-center gap-4 text-sm text-muted-foreground">
+                        <span class="flex items-center gap-1.5">
+                            <Calendar class="h-3.5 w-3.5" aria-hidden="true" />
+                            Published {{ formatDate(platform.published_at) }}
+                        </span>
+                        <span>&middot;</span>
+                        <span>Updated {{ formatDate(platform.updated_at) }}</span>
+                    </div>
                     <div class="flex flex-wrap gap-3">
                         <Link :href="register().url">
                             <Button size="lg">
