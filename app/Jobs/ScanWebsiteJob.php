@@ -533,23 +533,70 @@ class ScanWebsiteJob implements ShouldQueue
 
             // Check if we got a Cloudflare challenge page or access denied
             if (str_contains($html, 'challenge-platform') || str_contains($html, 'cf-browser-verification') || str_contains($html, 'Access denied') || str_contains($html, 'Just a moment')) {
-                Log::warning("Bot protection detected for {$url}, waiting longer...");
+                Log::info("Bot protection detected for {$url}, trying stealth browser");
 
-                // Try again with longer delay
-                $html = $browsershot->setDelay(10000)->bodyHtml();
-
-                // If still blocked, fail with helpful message
-                if (str_contains($html, 'challenge-platform') || str_contains($html, 'Access denied') || str_contains($html, 'Just a moment')) {
-                    $this->markFailed('Bot protection (Cloudflare/etc) blocked scan after retry for '.$url);
-
-                    return null;
-                }
+                return $this->fetchWithStealthBrowser($url);
             }
 
             return $html;
         } catch (\Exception $e) {
             Log::error("Browsershot failed for {$url}: ".$e->getMessage());
             $this->markFailed('Browsershot exception: '.$e->getMessage());
+
+            return null;
+        }
+    }
+
+    /**
+     * Fetch webpage using puppeteer-extra with stealth plugin to bypass Cloudflare.
+     */
+    private function fetchWithStealthBrowser(string $url): ?string
+    {
+        try {
+            $scriptPath = base_path('scripts/stealth-fetch.mjs');
+            $nodeBinary = config('browsershot.node_binary', '/usr/bin/node');
+            $timeout = 60000;
+
+            $command = sprintf(
+                '%s %s %s %d 2>&1',
+                escapeshellarg($nodeBinary),
+                escapeshellarg($scriptPath),
+                escapeshellarg($url),
+                $timeout
+            );
+
+            $output = null;
+            $exitCode = null;
+            exec($command, $output, $exitCode);
+
+            $result = json_decode(implode("\n", $output), true);
+
+            if ($exitCode !== 0 || ! $result || isset($result['error'])) {
+                $error = $result['error'] ?? 'Stealth browser returned no output';
+                $this->markFailed("Stealth browser failed for {$url}: {$error}");
+
+                return null;
+            }
+
+            $html = $result['html'] ?? '';
+
+            if (empty($html)) {
+                $this->markFailed("Stealth browser returned empty response for {$url}");
+
+                return null;
+            }
+
+            // Final check — if still on a challenge page after stealth, give up
+            if (str_contains($html, 'challenge-platform') || str_contains($html, 'Just a moment')) {
+                $this->markFailed("Bot protection blocked stealth browser for {$url}");
+
+                return null;
+            }
+
+            return $html;
+        } catch (\Exception $e) {
+            Log::error("Stealth browser exception for {$url}: ".$e->getMessage());
+            $this->markFailed('Stealth browser exception: '.$e->getMessage());
 
             return null;
         }
