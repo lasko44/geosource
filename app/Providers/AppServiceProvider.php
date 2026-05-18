@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\BlogPost;
 use App\Observers\BlogPostObserver;
+use App\Services\ExperimentService;
 use App\Services\RAG\ChunkingService;
 use App\Services\RAG\ContentExtractor;
 use App\Services\RAG\EmbeddingService;
@@ -38,6 +39,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->singleton(ExperimentService::class, fn () => new ExperimentService);
         $this->app->singleton(EmbeddingService::class, fn () => new EmbeddingService);
         $this->app->singleton(ChunkingService::class, fn () => new ChunkingService);
         $this->app->singleton(ContentExtractor::class, fn () => new ContentExtractor);

@@ -103,6 +103,15 @@ class Scan extends Resource
                 ->sortable()
                 ->filterable(),
 
+            Badge::make('Tier', 'requested_tier')
+                ->map([
+                    'basic' => 'info',
+                    'pro' => 'success',
+                    'full' => 'warning',
+                ])
+                ->sortable()
+                ->filterable(),
+
             Badge::make('Status')
                 ->map([
                     'pending' => 'warning',

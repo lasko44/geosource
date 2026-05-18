@@ -366,6 +366,20 @@ class ScanService
     }
 
     /**
+     * Create a guest scan (no user, no quota/token checks).
+     */
+    public function executeGuestScan(string $url, string $visitorId): Scan
+    {
+        return Scan::create([
+            'visitor_id' => $visitorId,
+            'url' => $url,
+            'title' => parse_url($url, PHP_URL_HOST),
+            'status' => 'pending',
+            'requested_tier' => 'basic',
+        ]);
+    }
+
+    /**
      * Dispatch scan job.
      */
     public function dispatchScan(Scan $scan): void

@@ -55,6 +55,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { register } from '@/routes';
 import { useDateFormat } from '@/composables/useDateFormat';
 import { getPillarExplanations as getPillarExplanationsFromModule } from '@/utils/pillar-explanations';
 import { type BreadcrumbItem, type Scan, type PillarResult, type Recommendation, type AISuggestion, type BenchmarkResult, type CompetitorBenchmarkResult } from '@/types';
@@ -93,6 +94,9 @@ interface Props {
     cooldown?: CooldownInfo | null;
     discoveredCompetitors?: DiscoveredCompetitor[];
     parentScan?: ParentScan | null;
+    isGuest?: boolean;
+    remainingGuestScans?: number;
+    statusUrl?: string;
 }
 
 const props = defineProps<Props>();
@@ -312,9 +316,11 @@ const currentStepIndex = computed(() => {
     return 0; // fetching
 });
 
+const scanStatusUrl = computed(() => props.statusUrl ?? `/scans/${props.scan.uuid}/status`);
+
 const pollStatus = async () => {
     try {
-        const response = await fetch(`/scans/${props.scan.uuid}/status`);
+        const response = await fetch(scanStatusUrl.value);
         const data = await response.json();
 
         // Only update UI state if scan is still in progress
@@ -381,7 +387,7 @@ const pollStatus = async () => {
 // Competitor discovery polling
 const pollCompetitorStatus = async () => {
     try {
-        const response = await fetch(`/scans/${props.scan.uuid}/status`);
+        const response = await fetch(scanStatusUrl.value);
         const data = await response.json();
 
         // Update competitor discovery state
@@ -806,13 +812,28 @@ const getPillarExplanations = (pillar: any): Array<{ label: string; achieved: bo
 <template>
     <Head :title="`Scan: ${scan.title || scan.url}`" />
 
-    <AppLayout :breadcrumbs="breadcrumbs">
+    <component :is="isGuest ? 'div' : AppLayout" v-bind="isGuest ? { class: 'min-h-screen bg-background text-foreground' } : { breadcrumbs }">
+        <!-- Guest banner -->
+        <div v-if="isGuest" class="border-b bg-primary/5 px-6 py-3">
+            <div class="mx-auto flex max-w-7xl items-center justify-between">
+                <p class="text-sm text-muted-foreground">
+                    <span class="font-medium text-foreground">Free scan</span> —
+                    <template v-if="remainingGuestScans && remainingGuestScans > 0">{{ remainingGuestScans }} free scan{{ remainingGuestScans !== 1 ? 's' : '' }} remaining.</template>
+                    <template v-else>You've used all free scans.</template>
+                    <Link :href="register()" class="ml-1 font-medium text-primary hover:underline">Create a free account</Link> for unlimited basic scans.
+                </p>
+                <Link :href="register()">
+                    <Button size="sm">Sign Up Free</Button>
+                </Link>
+            </div>
+        </div>
+
         <div class="flex flex-col gap-6 p-6">
             <!-- Header -->
             <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div>
                     <div class="flex items-center gap-2">
-                        <Link href="/dashboard">
+                        <Link :href="isGuest ? '/' : '/dashboard'">
                             <Button variant="ghost" size="sm">
                                 <ArrowLeft class="mr-1 h-4 w-4" />
                                 Back
@@ -1908,5 +1929,5 @@ const getPillarExplanations = (pillar: any): Array<{ label: string; achieved: bo
                 </DialogFooter>
             </DialogContent>
         </Dialog>
-    </AppLayout>
+    </component>
 </template>

@@ -65,6 +65,11 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
                     MenuItem::resource(\App\Nova\FailedJob::class),
                 ])->icon('server')->collapsable(),
 
+                MenuSection::make('Experiments', [
+                    MenuItem::resource(\App\Nova\Experiment::class),
+                    MenuItem::resource(\App\Nova\ExperimentParticipant::class)->name('Participants'),
+                ])->icon('beaker')->collapsable(),
+
                 MenuSection::make('Documentation')
                     ->path('/documentation')
                     ->icon('book-open'),

@@ -43,15 +43,21 @@ import {
 } from 'lucide-vue-next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ref, onMounted } from 'vue';
+import { useForm } from '@inertiajs/vue3';
 
 withDefaults(
     defineProps<{
         canRegister: boolean;
+        experiment: { variant: string };
     }>(),
     {
         canRegister: true,
+        experiment: () => ({ variant: 'control' }),
     },
 );
+
+// Guest scan form for experiment variant
+const scanForm = useForm({ url: '' });
 
 // FAQ accordion state
 const openFaqIndex = ref<number | null>(null);
@@ -397,7 +403,38 @@ const faqItems = [
                                 <strong class="text-foreground">Generative Engine Optimization (GEO)</strong> determines whether ChatGPT, Perplexity, and Claude cite your content. GeoSource measures your GEO score and shows you exactly what to fix.
                             </p>
 
-                            <div class="mt-8 flex flex-wrap items-center gap-4">
+                            <!-- Experiment: scan_input variant shows URL input -->
+                            <div v-if="experiment.variant === 'scan_input'" class="mt-8">
+                                <form
+                                    class="flex flex-col gap-3 sm:flex-row"
+                                    @submit.prevent="scanForm.post('/experiment/scan')"
+                                >
+                                    <div class="relative flex-1">
+                                        <Search class="absolute left-3.5 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+                                        <input
+                                            v-model="scanForm.url"
+                                            type="url"
+                                            placeholder="https://example.com/your-page"
+                                            required
+                                            class="h-12 w-full rounded-lg border bg-background pl-11 pr-4 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                        />
+                                    </div>
+                                    <Button
+                                        type="submit"
+                                        size="lg"
+                                        class="h-12 shrink-0 gap-2 px-6 text-base font-semibold"
+                                        :disabled="scanForm.processing"
+                                    >
+                                        Scan Free
+                                        <ArrowRight class="h-4 w-4" aria-hidden="true" />
+                                    </Button>
+                                </form>
+                                <p v-if="scanForm.errors.url" class="mt-2 text-sm text-red-500">{{ scanForm.errors.url }}</p>
+                                <span class="mt-3 block text-sm text-muted-foreground">No credit card required. Creates a free account to view results.</span>
+                            </div>
+
+                            <!-- Control variant: existing CTA button -->
+                            <div v-else class="mt-8 flex flex-wrap items-center gap-4">
                                 <Link :href="register()">
                                     <Button size="lg" class="h-12 gap-2 px-6 text-base font-semibold">
                                         Scan Your First Page Free

@@ -3,6 +3,10 @@
 use App\Http\Controllers\Api\AnalyticsController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Experiments\GuestScanController;
+use App\Http\Controllers\Experiments\GuestScanShowController;
+use App\Http\Controllers\Experiments\GuestScanStatusController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\SuggestedContentController;
 use App\Http\Controllers\Marketing\ProcessUnsubscribeController;
 use App\Http\Controllers\Marketing\ShowUnsubscribeController;
@@ -14,11 +18,10 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canRegister' => Features::enabled(Features::registration()),
-    ]);
-})->name('home');
+Route::get('/', HomeController::class)->name('home');
+Route::post('/experiment/scan', GuestScanController::class)->name('experiment.scan');
+Route::get('/experiment/scans/{scan}', GuestScanShowController::class)->name('experiment.scan.show');
+Route::get('/experiment/scans/{scan}/status', GuestScanStatusController::class)->name('experiment.scan.status');
 
 Route::get('/pricing', function () {
     return Inertia::render('Pricing', [

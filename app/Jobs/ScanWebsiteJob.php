@@ -712,7 +712,8 @@ class ScanWebsiteJob implements ShouldQueue
         $user = $this->scan->user;
 
         if (! $user) {
-            return false;
+            // Guest scans (visitor_id set, no user) are always valid for basic tier
+            return $this->scan->visitor_id !== null;
         }
 
         // Refresh the user model to get current subscription state

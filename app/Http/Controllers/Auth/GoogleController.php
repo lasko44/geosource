@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\ExperimentService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -27,7 +29,7 @@ class GoogleController extends Controller
     /**
      * Handle Google OAuth callback.
      */
-    public function callback(): RedirectResponse
+    public function callback(Request $request, ExperimentService $experimentService): RedirectResponse
     {
         try {
             $googleUser = Socialite::driver('google')->user();
@@ -73,6 +75,12 @@ class GoogleController extends Controller
         ]);
 
         Auth::login($user, remember: true);
+
+        // Record experiment conversion for new user
+        $visitorId = $request->cookie('ab_visitor');
+        if ($visitorId) {
+            $experimentService->recordConversion($visitorId, $user);
+        }
 
         return redirect('/dashboard');
     }

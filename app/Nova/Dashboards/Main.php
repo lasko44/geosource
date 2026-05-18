@@ -3,6 +3,8 @@
 namespace App\Nova\Dashboards;
 
 use App\Nova\Metrics\DeviceBreakdown;
+use App\Nova\Metrics\ExperimentConversionRate;
+use App\Nova\Metrics\ExperimentParticipantsPerDay;
 use App\Nova\Metrics\FailedJobsCount;
 use App\Nova\Metrics\NewUsersPerDay;
 use App\Nova\Metrics\PageViewsPerDay;
@@ -45,6 +47,10 @@ class Main extends Dashboard
             (new TopReferrers)->width('1/3'),
             (new TopCountries)->width('1/3'),
             (new DeviceBreakdown)->width('1/3'),
+
+            // Experiments
+            (new ExperimentConversionRate)->width('1/2'),
+            (new ExperimentParticipantsPerDay)->width('1/2'),
         ];
     }
 }
