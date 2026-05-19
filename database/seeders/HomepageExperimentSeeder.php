@@ -15,8 +15,8 @@ class HomepageExperimentSeeder extends Seeder
         Experiment::updateOrCreate(
             ['name' => 'homepage_scan_input'],
             [
-                'description' => 'Test whether showing a free scan URL input on the homepage hero leads to more registrations vs the current CTA button.',
-                'variants' => ['control', 'scan_input'],
+                'description' => 'Test free scan input vs free citation check on homepage hero. Both give guests a free taste of the product.',
+                'variants' => ['scan_input', 'citation_check'],
                 'status' => 'running',
                 'started_at' => now(),
             ]

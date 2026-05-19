@@ -3,6 +3,9 @@
 use App\Http\Controllers\Api\AnalyticsController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Experiments\GuestCitationCheckController;
+use App\Http\Controllers\Experiments\GuestCitationShowController;
+use App\Http\Controllers\Experiments\GuestCitationStatusController;
 use App\Http\Controllers\Experiments\GuestScanController;
 use App\Http\Controllers\Experiments\GuestScanShowController;
 use App\Http\Controllers\Experiments\GuestScanStatusController;
@@ -22,6 +25,9 @@ Route::get('/', HomeController::class)->name('home');
 Route::post('/experiment/scan', GuestScanController::class)->name('experiment.scan');
 Route::get('/experiment/scans/{scan}', GuestScanShowController::class)->name('experiment.scan.show');
 Route::get('/experiment/scans/{scan}/status', GuestScanStatusController::class)->name('experiment.scan.status');
+Route::post('/experiment/citation-check', GuestCitationCheckController::class)->name('experiment.citation.check');
+Route::get('/experiment/citations/{citationQuery}', GuestCitationShowController::class)->name('experiment.citation.show');
+Route::get('/experiment/citations/{citationQuery}/status', GuestCitationStatusController::class)->name('experiment.citation.status');
 
 Route::get('/pricing', function () {
     return Inertia::render('Pricing', [

@@ -19,6 +19,7 @@ class CitationCheck extends Model
     protected $fillable = [
         'citation_query_id',
         'user_id',
+        'visitor_id',
         'team_id',
         'platform',
         'status',

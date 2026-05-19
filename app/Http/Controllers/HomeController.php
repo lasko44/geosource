@@ -25,7 +25,8 @@ class HomeController extends Controller
             $newCookie = true;
         }
 
-        $variant = $experimentService->assignVariant('homepage_scan_input', $visitorId);
+        // Allow ?variant= override for testing
+        $variant = $request->query('variant') ?? $experimentService->assignVariant('homepage_scan_input', $visitorId);
 
         $response = Inertia::render('Welcome', [
             'canRegister' => Features::enabled(Features::registration()),

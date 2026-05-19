@@ -57,6 +57,7 @@ class ExperimentParticipant extends Resource
                 ->map([
                     'control' => 'info',
                     'scan_input' => 'success',
+                    'citation_check' => 'warning',
                 ])
                 ->sortable()
                 ->filterable(),

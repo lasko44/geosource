@@ -59,6 +59,9 @@ withDefaults(
 // Guest scan form for experiment variant
 const scanForm = useForm({ url: '' });
 
+// Guest citation check form for experiment variant
+const citationForm = useForm({ domain: '', query: '' });
+
 // FAQ accordion state
 const openFaqIndex = ref<number | null>(null);
 const toggleFaq = (index: number) => {
@@ -433,7 +436,50 @@ const faqItems = [
                                 <span class="mt-3 block text-sm text-muted-foreground">No credit card required. Creates a free account to view results.</span>
                             </div>
 
-                            <!-- Control variant: existing CTA button -->
+                            <!-- Experiment: citation_check variant shows domain + query input -->
+                            <div v-else-if="experiment.variant === 'citation_check'" class="mt-8">
+                                <form
+                                    class="flex flex-col gap-3"
+                                    @submit.prevent="citationForm.post('/experiment/citation-check')"
+                                >
+                                    <div class="flex flex-col gap-3 sm:flex-row">
+                                        <div class="relative flex-1">
+                                            <Globe class="absolute left-3.5 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+                                            <input
+                                                v-model="citationForm.domain"
+                                                type="text"
+                                                placeholder="yourdomain.com"
+                                                required
+                                                class="h-12 w-full rounded-lg border bg-background pl-11 pr-4 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                            />
+                                        </div>
+                                        <div class="relative flex-1">
+                                            <Search class="absolute left-3.5 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+                                            <input
+                                                v-model="citationForm.query"
+                                                type="text"
+                                                placeholder="e.g. best project management tools"
+                                                required
+                                                class="h-12 w-full rounded-lg border bg-background pl-11 pr-4 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                            />
+                                        </div>
+                                    </div>
+                                    <Button
+                                        type="submit"
+                                        size="lg"
+                                        class="h-12 gap-2 px-6 text-base font-semibold sm:self-start"
+                                        :disabled="citationForm.processing"
+                                    >
+                                        Check If AI Cites You
+                                        <ArrowRight class="h-4 w-4" aria-hidden="true" />
+                                    </Button>
+                                </form>
+                                <p v-if="citationForm.errors.domain" class="mt-2 text-sm text-red-500">{{ citationForm.errors.domain }}</p>
+                                <p v-if="citationForm.errors.query" class="mt-2 text-sm text-red-500">{{ citationForm.errors.query }}</p>
+                                <span class="mt-3 block text-sm text-muted-foreground">Free check across ChatGPT, Perplexity, and Claude. No account required.</span>
+                            </div>
+
+                            <!-- Fallback: CTA button -->
                             <div v-else class="mt-8 flex flex-wrap items-center gap-4">
                                 <Link :href="register()">
                                     <Button size="lg" class="h-12 gap-2 px-6 text-base font-semibold">

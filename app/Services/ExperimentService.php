@@ -93,8 +93,8 @@ class ExperimentService
      * As real data accumulates, the priors become negligible.
      */
     private const VARIANT_PRIORS = [
-        'scan_input' => ['alpha' => 3, 'beta' => 1],
-        'control' => ['alpha' => 1, 'beta' => 1],
+        'scan_input' => ['alpha' => 1, 'beta' => 3],
+        'citation_check' => ['alpha' => 3, 'beta' => 1],
     ];
 
     /**

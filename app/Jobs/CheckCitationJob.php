@@ -187,7 +187,8 @@ class CheckCitationJob implements ShouldQueue
         $user = $this->check->user;
 
         if (! $user) {
-            return false;
+            // Guest citation checks (visitor_id set, no user) are always valid
+            return $this->check->visitor_id !== null;
         }
 
         // Refresh the user model

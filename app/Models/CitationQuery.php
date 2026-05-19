@@ -18,6 +18,7 @@ class CitationQuery extends Model
 
     protected $fillable = [
         'user_id',
+        'visitor_id',
         'team_id',
         'query',
         'domain',
