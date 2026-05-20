@@ -28,13 +28,20 @@ import {
     Calendar,
     Layers,
     Monitor,
+    Sparkles,
 } from 'lucide-vue-next';
 
 const props = defineProps<{
-    industries: { slug: string; name: string; title: string; meta_description: string }[];
-    platforms: { slug: string; name: string; title: string; meta_description: string }[];
-    comparisons: { slug: string; title: string; meta_description: string }[];
+    industries: { slug: string; name: string; title: string; meta_description: string; published_at: string; updated_at: string }[];
+    platforms: { slug: string; name: string; title: string; meta_description: string; published_at: string; updated_at: string }[];
+    comparisons: { slug: string; title: string; meta_description: string; published_at: string; updated_at: string }[];
+    useCases: { slug: string; title: string; meta_description: string; published_at: string; updated_at: string }[];
 }>();
+
+const formatDate = (dateStr: string): string => {
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+};
 
 const articles = [
     {
@@ -216,6 +223,12 @@ const allItemListElements = [
         url: `https://geosource.ai/compare/${comparison.slug}`,
         name: comparison.title,
     })),
+    ...props.useCases.map((useCase, index) => ({
+        '@type': 'ListItem' as const,
+        position: articles.length + props.industries.length + props.platforms.length + props.comparisons.length + index + 1,
+        url: `https://geosource.ai/how-to/${useCase.slug}`,
+        name: useCase.title,
+    })),
 ];
 
 const jsonLd = {
@@ -388,10 +401,16 @@ const jsonLd = {
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent>
-                                        <span class="inline-flex items-center text-sm font-medium text-primary" aria-hidden="true">
-                                            Read guide
-                                            <ArrowRight class="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                                        </span>
+                                        <div class="flex items-center justify-between">
+                                            <span class="inline-flex items-center text-sm font-medium text-primary" aria-hidden="true">
+                                                Read guide
+                                                <ArrowRight class="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                                            </span>
+                                            <span class="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                                                <Calendar class="h-3 w-3" aria-hidden="true" />
+                                                <time :datetime="industry.updated_at">{{ formatDate(industry.updated_at) }}</time>
+                                            </span>
+                                        </div>
                                     </CardContent>
                                 </Card>
                             </Link>
@@ -428,10 +447,16 @@ const jsonLd = {
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent>
-                                        <span class="inline-flex items-center text-sm font-medium text-primary" aria-hidden="true">
-                                            Read guide
-                                            <ArrowRight class="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                                        </span>
+                                        <div class="flex items-center justify-between">
+                                            <span class="inline-flex items-center text-sm font-medium text-primary" aria-hidden="true">
+                                                Read guide
+                                                <ArrowRight class="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                                            </span>
+                                            <span class="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                                                <Calendar class="h-3 w-3" aria-hidden="true" />
+                                                <time :datetime="platform.updated_at">{{ formatDate(platform.updated_at) }}</time>
+                                            </span>
+                                        </div>
                                     </CardContent>
                                 </Card>
                             </Link>
@@ -468,10 +493,62 @@ const jsonLd = {
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent>
-                                        <span class="inline-flex items-center text-sm font-medium text-primary" aria-hidden="true">
-                                            Read comparison
-                                            <ArrowRight class="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                                        </span>
+                                        <div class="flex items-center justify-between">
+                                            <span class="inline-flex items-center text-sm font-medium text-primary" aria-hidden="true">
+                                                Read comparison
+                                                <ArrowRight class="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                                            </span>
+                                            <span class="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                                                <Calendar class="h-3 w-3" aria-hidden="true" />
+                                                <time :datetime="comparison.updated_at">{{ formatDate(comparison.updated_at) }}</time>
+                                            </span>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </Link>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- How-To Guides -->
+            <section v-if="useCases.length" aria-labelledby="use-cases-heading" class="border-t bg-muted/30 py-16">
+                <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    <div class="mx-auto max-w-2xl text-center mb-8">
+                        <h2 id="use-cases-heading" class="text-2xl font-bold">How-To Guides</h2>
+                        <p class="mt-2 text-muted-foreground">Step-by-step guides for AI search optimization tasks.</p>
+                    </div>
+                    <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" role="list">
+                        <li v-for="useCase in useCases" :key="useCase.slug">
+                            <Link
+                                :href="`/how-to/${useCase.slug}`"
+                                class="group block h-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg"
+                                :aria-label="`${useCase.title}: ${useCase.meta_description}`"
+                            >
+                                <Card class="h-full transition-colors hover:border-primary/50">
+                                    <CardHeader>
+                                        <div class="flex items-center justify-between">
+                                            <Sparkles class="h-8 w-8 text-primary" aria-hidden="true" />
+                                            <Badge variant="outline">How-To</Badge>
+                                        </div>
+                                        <CardTitle class="mt-4 text-xl group-hover:text-primary transition-colors">
+                                            {{ useCase.title }}
+                                        </CardTitle>
+                                        <CardDescription class="text-base">
+                                            {{ useCase.meta_description }}
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div class="flex items-center justify-between">
+                                            <span class="inline-flex items-center text-sm font-medium text-primary" aria-hidden="true">
+                                                Read guide
+                                                <ArrowRight class="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                                            </span>
+                                            <span class="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                                                <Calendar class="h-3 w-3" aria-hidden="true" />
+                                                <time :datetime="useCase.updated_at">{{ formatDate(useCase.updated_at) }}</time>
+                                            </span>
+                                        </div>
                                     </CardContent>
                                 </Card>
                             </Link>

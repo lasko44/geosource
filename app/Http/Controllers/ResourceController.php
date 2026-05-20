@@ -19,17 +19,30 @@ class ResourceController extends Controller
                 'name' => Arr::get($item, 'name'),
                 'title' => Arr::get($item, 'title'),
                 'meta_description' => Arr::get($item, 'meta_description'),
+                'published_at' => Arr::get($item, 'published_at'),
+                'updated_at' => Arr::get($item, 'updated_at'),
             ])->all(),
             'platforms' => collect(config('programmatic-seo.platforms', []))->map(fn (array $item): array => [
                 'slug' => Arr::get($item, 'slug'),
                 'name' => Arr::get($item, 'name'),
                 'title' => Arr::get($item, 'title'),
                 'meta_description' => Arr::get($item, 'meta_description'),
+                'published_at' => Arr::get($item, 'published_at'),
+                'updated_at' => Arr::get($item, 'updated_at'),
             ])->all(),
             'comparisons' => collect(config('programmatic-seo.comparisons', []))->map(fn (array $item): array => [
                 'slug' => Arr::get($item, 'slug'),
                 'title' => Arr::get($item, 'title'),
                 'meta_description' => Arr::get($item, 'meta_description'),
+                'published_at' => Arr::get($item, 'published_at'),
+                'updated_at' => Arr::get($item, 'updated_at'),
+            ])->all(),
+            'useCases' => collect(config('programmatic-seo.use_cases', []))->map(fn (array $item): array => [
+                'slug' => Arr::get($item, 'slug'),
+                'title' => Arr::get($item, 'title'),
+                'meta_description' => Arr::get($item, 'meta_description'),
+                'published_at' => Arr::get($item, 'published_at'),
+                'updated_at' => Arr::get($item, 'updated_at'),
             ])->all(),
         ]);
     }

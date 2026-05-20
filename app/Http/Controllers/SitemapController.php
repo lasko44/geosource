@@ -202,6 +202,16 @@ class SitemapController extends Controller
             ];
         }
 
+        // Programmatic SEO: Use case "how to" pages
+        foreach (config('programmatic-seo.use_cases', []) as $useCase) {
+            $pages[] = [
+                'url' => '/how-to/'.Arr::get($useCase, 'slug'),
+                'lastmod' => now()->format('Y-m-d'),
+                'changefreq' => 'monthly',
+                'priority' => '0.7',
+            ];
+        }
+
         // Add blog posts dynamically
         $blogPosts = BlogPost::published()
             ->orderByDesc('published_at')
