@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProgrammaticSeo\ComparisonController;
 use App\Http\Controllers\ProgrammaticSeo\IndustryGeoController;
 use App\Http\Controllers\ProgrammaticSeo\PlatformOptimizeController;
+use App\Http\Controllers\ProgrammaticSeo\UseCaseController;
 use Illuminate\Support\Facades\Route;
 
 // Redirect /guides to unified /resources hub
@@ -22,3 +23,8 @@ Route::get('/optimize-for-{slug}', PlatformOptimizeController::class)
 Route::get('/compare/{slug}', ComparisonController::class)
     ->where('slug', '[a-z0-9\-]+')
     ->name('compare');
+
+// Use case "how to" pages
+Route::get('/how-to/{slug}', UseCaseController::class)
+    ->where('slug', '[a-z0-9\-]+')
+    ->name('how-to');

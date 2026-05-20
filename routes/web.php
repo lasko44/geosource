@@ -63,7 +63,7 @@ Route::get('dashboard', [DashboardController::class, 'index'])
 
 Route::get('mcp', function () {
     return Inertia::render('McpSetup');
-})->middleware(['auth', 'verified'])->name('mcp.setup');
+})->name('mcp.setup');
 
 // User Guide / Help
 Route::get('/help', function () {
