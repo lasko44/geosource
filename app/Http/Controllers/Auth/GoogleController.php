@@ -53,10 +53,11 @@ class GoogleController extends Controller
         $user = User::where('email', $googleUser->getEmail())->first();
 
         if ($user) {
-            // Link Google account to existing user
+            // Link Google account to existing user and auto-verify email
             $user->update([
                 'google_id' => $googleUser->getId(),
                 'avatar' => $googleUser->getAvatar(),
+                'email_verified_at' => $user->email_verified_at ?? now(),
             ]);
 
             Auth::login($user, remember: true);
