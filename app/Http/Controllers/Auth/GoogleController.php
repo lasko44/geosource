@@ -3,12 +3,16 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Mail\AdminNewUserNotification;
+use App\Mail\WelcomeEmail;
+use App\Models\TokenTransaction;
 use App\Models\User;
 use App\Services\ExperimentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 use Symfony\Component\HttpFoundation\RedirectResponse as SymfonyRedirectResponse;
@@ -65,7 +69,9 @@ class GoogleController extends Controller
             return redirect()->intended('/dashboard');
         }
 
-        // Create new user
+        // Create new user with registration bonus tokens
+        $bonusTokens = 20;
+
         $user = User::create([
             'name' => $googleUser->getName(),
             'email' => $googleUser->getEmail(),
@@ -73,9 +79,23 @@ class GoogleController extends Controller
             'avatar' => $googleUser->getAvatar(),
             'password' => Hash::make(Str::random(24)),
             'email_verified_at' => now(),
+            'token_balance' => $bonusTokens,
+        ]);
+
+        TokenTransaction::create([
+            'user_id' => $user->id,
+            'type' => TokenTransaction::TYPE_BONUS,
+            'amount' => $bonusTokens,
+            'balance_after' => $bonusTokens,
+            'description' => 'Welcome bonus - free tokens on registration',
+            'metadata' => ['reason' => 'registration_bonus'],
         ]);
 
         Auth::login($user, remember: true);
+
+        // Send welcome email to user and notify admin
+        Mail::to($user->email)->send(new WelcomeEmail($user));
+        Mail::to('matt@geosource.ai')->send(new AdminNewUserNotification($user));
 
         // Record experiment conversion for new user
         $visitorId = $request->cookie('ab_visitor');

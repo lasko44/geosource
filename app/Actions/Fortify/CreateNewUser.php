@@ -5,6 +5,7 @@ namespace App\Actions\Fortify;
 use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
 use App\Mail\AdminNewUserNotification;
+use App\Mail\WelcomeEmail;
 use App\Models\TokenTransaction;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
@@ -47,7 +48,8 @@ class CreateNewUser implements CreatesNewUsers
             'metadata' => ['reason' => 'registration_bonus'],
         ]);
 
-        // Notify admin of new registration
+        // Send welcome email to user and notify admin
+        Mail::to($user->email)->send(new WelcomeEmail($user));
         Mail::to('matt@geosource.ai')->send(new AdminNewUserNotification($user));
 
         return $user;
