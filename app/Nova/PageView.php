@@ -193,9 +193,14 @@ class PageView extends Resource
         return [
             (new \App\Nova\Metrics\PageViewsPerDay)->width('1/3'),
             (new \App\Nova\Metrics\UniqueVisitorsPerDay)->width('1/3'),
+            (new \App\Nova\Metrics\EngagementRate)->width('1/3'),
+            (new \App\Nova\Metrics\TopPages)->width('1/2'),
+            (new \App\Nova\Metrics\TopEntryPages)->width('1/2'),
+            (new \App\Nova\Metrics\PageViewsByType)->width('1/3'),
             (new \App\Nova\Metrics\TopReferrers)->width('1/3'),
-            (new \App\Nova\Metrics\TopCountries)->width('1/2'),
+            (new \App\Nova\Metrics\TopCountries)->width('1/3'),
             (new \App\Nova\Metrics\DeviceBreakdown)->width('1/2'),
+            (new \App\Nova\Metrics\TopProgrammaticPages)->width('1/2'),
         ];
     }
 

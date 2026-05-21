@@ -3,16 +3,22 @@
 namespace App\Nova\Dashboards;
 
 use App\Nova\Metrics\DeviceBreakdown;
+use App\Nova\Metrics\EngagementRate;
 use App\Nova\Metrics\ExperimentConversionRate;
 use App\Nova\Metrics\ExperimentParticipantsPerDay;
 use App\Nova\Metrics\FailedJobsCount;
 use App\Nova\Metrics\NewUsersPerDay;
+use App\Nova\Metrics\PageViewsByType;
 use App\Nova\Metrics\PageViewsPerDay;
 use App\Nova\Metrics\PayingCustomers;
 use App\Nova\Metrics\PendingJobsCount;
 use App\Nova\Metrics\ScansPerDay;
+use App\Nova\Metrics\SeoPageViewsPerDay;
 use App\Nova\Metrics\TopBlogPosts;
 use App\Nova\Metrics\TopCountries;
+use App\Nova\Metrics\TopEntryPages;
+use App\Nova\Metrics\TopPages;
+use App\Nova\Metrics\TopProgrammaticPages;
 use App\Nova\Metrics\TopReferrers;
 use App\Nova\Metrics\TotalScans;
 use App\Nova\Metrics\TotalUsers;
@@ -41,12 +47,20 @@ class Main extends Dashboard
             (new ScansPerDay)->width('1/2'),
             (new TopBlogPosts)->width('1/2'),
 
-            // Analytics
-            (new PageViewsPerDay)->width('1/2'),
-            (new UniqueVisitorsPerDay)->width('1/2'),
+            // Traffic Analytics
+            (new PageViewsPerDay)->width('1/3'),
+            (new UniqueVisitorsPerDay)->width('1/3'),
+            (new EngagementRate)->width('1/3'),
+            (new TopPages)->width('1/2'),
+            (new TopEntryPages)->width('1/2'),
+            (new PageViewsByType)->width('1/3'),
             (new TopReferrers)->width('1/3'),
             (new TopCountries)->width('1/3'),
             (new DeviceBreakdown)->width('1/3'),
+
+            // Content Performance
+            (new SeoPageViewsPerDay)->width('1/3'),
+            (new TopProgrammaticPages)->width('1/3'),
 
             // Experiments
             (new ExperimentConversionRate)->width('1/2'),

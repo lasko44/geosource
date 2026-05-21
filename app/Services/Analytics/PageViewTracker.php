@@ -261,6 +261,37 @@ class PageViewTracker
             return ['scan', $scan?->id, $scan?->title ?? 'Scan Result'];
         }
 
+        // Programmatic SEO pages
+        if (preg_match('/^geo-for-([^\/]+)$/', $path, $matches)) {
+            return ['industry_geo', null, 'GEO for '.ucfirst(str_replace('-', ' ', $matches[1]))];
+        }
+
+        if (preg_match('/^optimize-for-([^\/]+)$/', $path, $matches)) {
+            return ['platform_optimize', null, 'Optimize for '.ucfirst(str_replace('-', ' ', $matches[1]))];
+        }
+
+        if (preg_match('/^compare\/([^\/]+)$/', $path, $matches)) {
+            return ['comparison', null, str_replace('-', ' ', ucwords($matches[1], '-'))];
+        }
+
+        if (preg_match('/^how-to\/([^\/]+)$/', $path, $matches)) {
+            return ['how_to', null, str_replace('-', ' ', ucwords($matches[1], '-'))];
+        }
+
+        // Resource articles
+        if (preg_match('/^resources\/([^\/]+)$/', $path, $matches)) {
+            return ['resource_article', null, str_replace('-', ' ', ucwords($matches[1], '-'))];
+        }
+
+        if ($path === 'resources') {
+            return ['resource_hub', null, 'Resources Hub'];
+        }
+
+        // Static GEO pages
+        if (in_array($path, ['definitions', 'geo-score-explained', 'geo-optimization-checklist', 'ai-search-visibility-guide'])) {
+            return ['geo_page', null, str_replace('-', ' ', ucwords($path, '-'))];
+        }
+
         // Map common paths to page types
         $pageTypeMap = [
             '/' => 'home',
