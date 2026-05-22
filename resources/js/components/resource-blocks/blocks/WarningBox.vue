@@ -13,7 +13,7 @@ const props = withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-    <div class="bg-amber-500/5 border border-amber-500/50 rounded-lg p-4 my-6">
+    <div class="bg-amber-500/5 border border-amber-500/50 rounded-lg p-4 my-6 dark:bg-amber-500/10 dark:border-amber-500/30">
         <div class="flex items-start gap-3">
             <AlertTriangle v-if="icon === 'warning'" class="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
             <Lightbulb v-else class="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />

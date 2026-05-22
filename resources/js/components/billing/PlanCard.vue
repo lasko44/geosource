@@ -37,7 +37,7 @@ defineProps<Props>();
             v-if="isCurrent"
             class="absolute -top-3 left-1/2 -translate-x-1/2"
         >
-            <span class="rounded-full bg-green-500 px-4 py-1 text-xs font-semibold text-white">
+            <span class="rounded-full bg-green-600 px-4 py-1 text-xs font-semibold text-white dark:bg-green-500">
                 Current Plan
             </span>
         </div>

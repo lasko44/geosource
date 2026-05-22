@@ -41,8 +41,10 @@ const formatDateLabel = (dateStr: string) => {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 };
 
-const textColor = computed(() => props.darkMode ? '#94a3b8' : '#64748b');
-const gridColor = computed(() => props.darkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(100, 116, 139, 0.1)');
+const textColor = computed(() => props.darkMode ? '#b0bec5' : '#64748b');
+const gridColor = computed(() => props.darkMode ? 'rgba(148, 163, 184, 0.12)' : 'rgba(100, 116, 139, 0.1)');
+const citedColor = computed(() => props.darkMode ? '#4ade80' : '#22c55e');
+const notCitedColor = computed(() => props.darkMode ? '#f87171' : '#ef4444');
 
 // Citation count per platform over time
 const citationsByPlatformData = computed(() => {
@@ -81,26 +83,26 @@ const overallTrendData = computed(() => {
             {
                 label: 'Cited',
                 data: props.trendData.totals.cited,
-                borderColor: '#22c55e',
-                backgroundColor: 'rgba(34, 197, 94, 0.15)',
+                borderColor: citedColor.value,
+                backgroundColor: props.darkMode ? 'rgba(74, 222, 128, 0.15)' : 'rgba(34, 197, 94, 0.15)',
                 borderWidth: 2,
                 pointStyle: 'rectRounded',
                 pointRadius: 5,
                 pointHoverRadius: 7,
-                pointBackgroundColor: '#22c55e',
+                pointBackgroundColor: citedColor.value,
                 tension: 0.3,
                 fill: true,
             },
             {
                 label: 'Not Cited',
                 data: props.trendData.totals.checks.map((total, i) => total - props.trendData.totals.cited[i]),
-                borderColor: '#ef4444',
-                backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                borderColor: notCitedColor.value,
+                backgroundColor: props.darkMode ? 'rgba(248, 113, 113, 0.15)' : 'rgba(239, 68, 68, 0.15)',
                 borderWidth: 2,
                 pointStyle: 'rectRounded',
                 pointRadius: 5,
                 pointHoverRadius: 7,
-                pointBackgroundColor: '#ef4444',
+                pointBackgroundColor: notCitedColor.value,
                 tension: 0.3,
                 fill: true,
             },
@@ -108,10 +110,10 @@ const overallTrendData = computed(() => {
     };
 });
 
-const overallLegendItems = [
-    { name: 'Cited', color: '#22c55e' },
-    { name: 'Not Cited', color: '#ef4444' },
-];
+const overallLegendItems = computed(() => [
+    { name: 'Cited', color: citedColor.value },
+    { name: 'Not Cited', color: notCitedColor.value },
+]);
 
 const chartOptions = computed(() => ({
     responsive: true,

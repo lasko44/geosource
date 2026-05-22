@@ -1039,7 +1039,7 @@ const getPillarExplanations = (pillar: any): Array<{ label: string; achieved: bo
 
                         <div class="mt-6 grid gap-4 md:grid-cols-2">
                             <div>
-                                <h4 class="flex items-center gap-2 text-sm font-medium text-green-600">
+                                <h4 class="flex items-center gap-2 text-sm font-medium text-green-600 dark:text-green-400">
                                     <CheckCircle2 class="h-4 w-4" />
                                     Strengths
                                 </h4>
@@ -1098,8 +1098,8 @@ const getPillarExplanations = (pillar: any): Array<{ label: string; achieved: bo
                                     citationReadiness.score >= 50 ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-950' :
                                     'border-red-500 bg-red-50 dark:bg-red-950'">
                             <span class="text-2xl font-bold"
-                                :class="citationReadiness.score >= 70 ? 'text-green-600' :
-                                        citationReadiness.score >= 50 ? 'text-yellow-600' : 'text-red-600'">
+                                :class="citationReadiness.score >= 70 ? 'text-green-600 dark:text-green-400' :
+                                        citationReadiness.score >= 50 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'">
                                 {{ citationReadiness.score }}
                             </span>
                         </div>
@@ -1115,8 +1115,8 @@ const getPillarExplanations = (pillar: any): Array<{ label: string; achieved: bo
                             <div class="flex items-center justify-between mb-1">
                                 <span class="text-xs font-medium capitalize">{{ key.replace('_', ' ') }}</span>
                                 <span class="text-sm font-bold"
-                                    :class="factor.score >= 70 ? 'text-green-600' :
-                                            factor.score >= 50 ? 'text-yellow-600' : 'text-red-600'">
+                                    :class="factor.score >= 70 ? 'text-green-600 dark:text-green-400' :
+                                            factor.score >= 50 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'">
                                     {{ factor.score }}
                                 </span>
                             </div>

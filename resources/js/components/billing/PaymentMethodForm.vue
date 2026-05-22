@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { loadStripe, type Stripe, type StripeCardElement } from '@stripe/stripe-js';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -25,6 +25,8 @@ const cardElement = ref<StripeCardElement | null>(null);
 const cardErrors = ref<string>('');
 const processing = ref(false);
 
+const isDark = computed(() => document.documentElement.classList.contains('dark'));
+
 onMounted(async () => {
     stripe.value = await loadStripe(props.stripeKey);
     if (stripe.value) {
@@ -33,14 +35,15 @@ onMounted(async () => {
             style: {
                 base: {
                     fontSize: '16px',
-                    color: '#32325d',
+                    color: isDark.value ? '#e2e8f0' : '#32325d',
+                    iconColor: isDark.value ? '#94a3b8' : '#6b7280',
                     '::placeholder': {
-                        color: '#aab7c4',
+                        color: isDark.value ? '#64748b' : '#aab7c4',
                     },
                 },
                 invalid: {
-                    color: '#fa755a',
-                    iconColor: '#fa755a',
+                    color: '#ef4444',
+                    iconColor: '#ef4444',
                 },
             },
         });

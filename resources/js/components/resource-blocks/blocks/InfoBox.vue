@@ -10,7 +10,7 @@ const props = defineProps<Props>();
 </script>
 
 <template>
-    <div class="bg-blue-500/5 border border-blue-500/50 rounded-lg p-4 my-6">
+    <div class="bg-blue-500/5 border border-blue-500/50 rounded-lg p-4 my-6 dark:bg-blue-500/10 dark:border-blue-500/30">
         <div class="flex items-start gap-3">
             <Info class="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
             <div>
