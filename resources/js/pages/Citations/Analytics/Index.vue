@@ -257,7 +257,7 @@ const totalAITraffic = computed(() => {
             </div>
 
             <!-- Success message (hide if it's just the sync started message) -->
-            <Alert v-if="flashSuccess && !flashSuccess.includes('sync has been started')" variant="default" class="border-green-500 bg-green-50 dark:bg-green-950">
+            <Alert v-if="flashSuccess && !flashSuccess.includes('sync has been started')" variant="default" class="border-green-500 bg-green-50 dark:bg-green-500/10">
                 <CheckCircle2 class="h-4 w-4 text-green-600" />
                 <AlertDescription class="text-green-800 dark:text-green-200">
                     {{ flashSuccess }}

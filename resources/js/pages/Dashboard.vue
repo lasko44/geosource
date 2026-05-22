@@ -457,11 +457,11 @@ const viewExistingScan = () => {
 };
 
 const getGradeColor = (grade: string) => {
-    if (grade.startsWith('A')) return 'text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-950';
-    if (grade.startsWith('B')) return 'text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-950';
-    if (grade.startsWith('C')) return 'text-yellow-600 bg-yellow-100 dark:text-yellow-400 dark:bg-yellow-950';
-    if (grade.startsWith('D')) return 'text-orange-600 bg-orange-100 dark:text-orange-400 dark:bg-orange-950';
-    return 'text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-950';
+    if (grade.startsWith('A')) return 'text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-500/10';
+    if (grade.startsWith('B')) return 'text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-500/10';
+    if (grade.startsWith('C')) return 'text-yellow-600 bg-yellow-100 dark:text-yellow-400 dark:bg-yellow-500/10';
+    if (grade.startsWith('D')) return 'text-orange-600 bg-orange-100 dark:text-orange-400 dark:bg-orange-500/10';
+    return 'text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-500/10';
 };
 
 const getScoreColorByGrade = (grade: string) => {
@@ -843,17 +843,17 @@ const getProgressColor = () => {
                                     <Link href="/tokens" class="ml-1 underline">Buy more tokens</Link>
                                 </AlertDescription>
                             </Alert>
-                            <Alert v-if="!canAffordScan && (form.tier !== 'basic' || form.auto_find_competitors)" class="mt-3 border-amber-500/50 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-950/50 dark:text-amber-200">
+                            <Alert v-if="!canAffordScan && (form.tier !== 'basic' || form.auto_find_competitors)" class="mt-3 border-amber-500/50 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
                                 <AlertDescription>
                                     You need {{ totalTokensForScan }} tokens for this scan but only have {{ tokenBalance }}.
                                     <Link href="/tokens" class="ml-1 underline">Buy more tokens</Link>
                                 </AlertDescription>
                             </Alert>
-                            <Alert v-if="form.errors.cooldown" class="mt-3 border-yellow-500/50 bg-yellow-50 text-yellow-800 dark:border-yellow-500/30 dark:bg-yellow-950/50 dark:text-yellow-200">
+                            <Alert v-if="form.errors.cooldown" class="mt-3 border-yellow-500/50 bg-yellow-50 text-yellow-800 dark:border-yellow-500/30 dark:bg-yellow-500/10 dark:text-yellow-200">
                                 <Clock class="h-4 w-4" />
                                 <AlertDescription>{{ form.errors.cooldown }}</AlertDescription>
                             </Alert>
-                            <Alert v-else-if="isOnCooldown" class="mt-3 border-amber-500/50 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-950/50 dark:text-amber-200">
+                            <Alert v-else-if="isOnCooldown" class="mt-3 border-amber-500/50 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
                                 <Clock class="h-4 w-4 text-amber-600 dark:text-amber-400" />
                                 <AlertDescription class="flex items-center justify-between gap-4">
                                     <span>This URL was scanned recently. Please wait {{ cooldownMinutes }} {{ cooldownMinutes === 1 ? 'minute' : 'minutes' }} before scanning again.</span>
@@ -868,11 +868,11 @@ const getProgressColor = () => {
                                     <Link href="/billing/plans" class="ml-2 underline">Upgrade now</Link>
                                 </AlertDescription>
                             </Alert>
-                            <Alert v-if="form.errors.is_competitor" class="mt-3 border-amber-500/50 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-950/50 dark:text-amber-200">
+                            <Alert v-if="form.errors.is_competitor" class="mt-3 border-amber-500/50 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
                                 <Users class="h-4 w-4 text-amber-600 dark:text-amber-400" />
                                 <AlertDescription>{{ form.errors.is_competitor }}</AlertDescription>
                             </Alert>
-                            <Alert v-if="form.errors.auto_find_competitors" class="mt-3 border-amber-500/50 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-950/50 dark:text-amber-200">
+                            <Alert v-if="form.errors.auto_find_competitors" class="mt-3 border-amber-500/50 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
                                 <Zap class="h-4 w-4 text-amber-600 dark:text-amber-400" />
                                 <AlertDescription>{{ form.errors.auto_find_competitors }}</AlertDescription>
                             </Alert>
@@ -929,7 +929,7 @@ const getProgressColor = () => {
                                         v-for="scan in bulkScans"
                                         :key="scan.uuid"
                                         class="flex items-center gap-3 rounded-lg border p-3"
-                                        :class="scan.status === 'completed' ? 'bg-background' : scan.status === 'failed' ? 'bg-red-50 dark:bg-red-950/20' : 'bg-muted/50'"
+                                        :class="scan.status === 'completed' ? 'bg-background' : scan.status === 'failed' ? 'bg-red-50 dark:bg-red-500/5' : 'bg-muted/50'"
                                     >
                                         <!-- Status Icon -->
                                         <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full" :class="getGradeColorBulk(scan.grade)">
@@ -1136,7 +1136,7 @@ https://example.com/page3"
                                     {{ stats.avg_score.toFixed(1) }}
                                 </p>
                             </div>
-                            <div class="rounded-full bg-blue-100 p-3 dark:bg-blue-950">
+                            <div class="rounded-full bg-blue-100 p-3 dark:bg-blue-500/10">
                                 <TrendingUp class="h-6 w-6 text-blue-600 dark:text-blue-400" />
                             </div>
                         </div>
@@ -1152,7 +1152,7 @@ https://example.com/page3"
                                     {{ stats.best_score.toFixed(1) }}
                                 </p>
                             </div>
-                            <div class="rounded-full bg-green-100 p-3 dark:bg-green-950">
+                            <div class="rounded-full bg-green-100 p-3 dark:bg-green-500/10">
                                 <Target class="h-6 w-6 text-green-600 dark:text-green-400" />
                             </div>
                         </div>
@@ -1166,7 +1166,7 @@ https://example.com/page3"
                                 <p class="text-sm font-medium text-muted-foreground">This Week</p>
                                 <p class="text-3xl font-bold">{{ stats.scans_this_week }}</p>
                             </div>
-                            <div class="rounded-full bg-purple-100 p-3 dark:bg-purple-950">
+                            <div class="rounded-full bg-purple-100 p-3 dark:bg-purple-500/10">
                                 <Calendar class="h-6 w-6 text-purple-600 dark:text-purple-400" />
                             </div>
                         </div>
@@ -1233,7 +1233,7 @@ https://example.com/page3"
                                 </div>
                                 <div
                                     v-else-if="scan.status === 'failed'"
-                                    class="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-950 dark:text-red-400"
+                                    class="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-400"
                                 >
                                     <XCircle class="h-6 w-6" />
                                 </div>

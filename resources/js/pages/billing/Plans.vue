@@ -140,7 +140,7 @@ const hasTeamPlan = () => {
                     </div>
                     <CardHeader class="pb-4">
                         <div class="flex items-center gap-2">
-                            <div class="rounded-lg bg-blue-100 p-2 dark:bg-blue-950">
+                            <div class="rounded-lg bg-blue-100 p-2 dark:bg-blue-500/10">
                                 <Coins class="h-5 w-5 text-blue-600 dark:text-blue-400" />
                             </div>
                             <CardTitle class="text-xl">Pay As You Go</CardTitle>
@@ -157,31 +157,31 @@ const hasTeamPlan = () => {
                         </div>
                         <ul class="mb-8 flex-1 space-y-3">
                             <li class="flex items-start gap-3">
-                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-950">
+                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-500/10">
                                     <Check class="h-3 w-3 text-blue-600 dark:text-blue-400" />
                                 </div>
                                 <span class="text-sm text-muted-foreground">Pro scans (8 pillars) - 5 tokens</span>
                             </li>
                             <li class="flex items-start gap-3">
-                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-950">
+                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-500/10">
                                     <Check class="h-3 w-3 text-blue-600 dark:text-blue-400" />
                                 </div>
                                 <span class="text-sm text-muted-foreground">Full scans (12 pillars) - 10 tokens</span>
                             </li>
                             <li class="flex items-start gap-3">
-                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-950">
+                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-500/10">
                                     <Check class="h-3 w-3 text-blue-600 dark:text-blue-400" />
                                 </div>
                                 <span class="text-sm text-muted-foreground">AI citation tracking (1-5 tokens)</span>
                             </li>
                             <li class="flex items-start gap-3">
-                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-950">
+                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-500/10">
                                     <Check class="h-3 w-3 text-blue-600 dark:text-blue-400" />
                                 </div>
                                 <span class="text-sm text-muted-foreground">Tokens never expire</span>
                             </li>
                             <li class="flex items-start gap-3">
-                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-950">
+                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-500/10">
                                     <Check class="h-3 w-3 text-blue-600 dark:text-blue-400" />
                                 </div>
                                 <span class="text-sm text-muted-foreground">Bulk discounts up to 50% off</span>
@@ -220,7 +220,7 @@ const hasTeamPlan = () => {
                     </div>
                     <CardHeader class="pb-4">
                         <div class="flex items-center gap-2">
-                            <div class="rounded-lg bg-purple-100 p-2 dark:bg-purple-950">
+                            <div class="rounded-lg bg-purple-100 p-2 dark:bg-purple-500/10">
                                 <Building2 class="h-5 w-5 text-purple-600 dark:text-purple-400" />
                             </div>
                             <CardTitle class="text-xl">Team</CardTitle>
@@ -237,37 +237,37 @@ const hasTeamPlan = () => {
                         </div>
                         <ul class="mb-8 flex-1 space-y-3">
                             <li class="flex items-start gap-3">
-                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-950">
+                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-500/10">
                                     <Check class="h-3 w-3 text-purple-600 dark:text-purple-400" />
                                 </div>
                                 <span class="text-sm text-muted-foreground">Everything in Pay As You Go</span>
                             </li>
                             <li class="flex items-start gap-3">
-                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-950">
+                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-500/10">
                                     <Check class="h-3 w-3 text-purple-600 dark:text-purple-400" />
                                 </div>
                                 <span class="text-sm text-muted-foreground">1,000 tokens included monthly</span>
                             </li>
                             <li class="flex items-start gap-3">
-                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-950">
+                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-500/10">
                                     <Check class="h-3 w-3 text-purple-600 dark:text-purple-400" />
                                 </div>
                                 <span class="text-sm text-muted-foreground">3 teams with 5 members each</span>
                             </li>
                             <li class="flex items-start gap-3">
-                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-950">
+                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-500/10">
                                     <Check class="h-3 w-3 text-purple-600 dark:text-purple-400" />
                                 </div>
                                 <span class="text-sm text-muted-foreground">White-label reports</span>
                             </li>
                             <li class="flex items-start gap-3">
-                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-950">
+                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-500/10">
                                     <Check class="h-3 w-3 text-purple-600 dark:text-purple-400" />
                                 </div>
                                 <span class="text-sm text-muted-foreground">GA4 AI Traffic Analytics</span>
                             </li>
                             <li class="flex items-start gap-3">
-                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-950">
+                                <div class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-500/10">
                                     <Check class="h-3 w-3 text-purple-600 dark:text-purple-400" />
                                 </div>
                                 <span class="text-sm text-muted-foreground">Priority support</span>

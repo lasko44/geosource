@@ -579,8 +579,8 @@ const isCheckInProgress = (platform: string) => {
                         v-for="alert in query.alerts.slice(0, 5)"
                         :key="alert.id"
                         :class="{
-                            'border-green-300 bg-green-50 dark:border-green-800 dark:bg-green-950': alert.type === 'new_citation',
-                            'border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-950': alert.type === 'lost_citation',
+                            'border-green-300 bg-green-50 dark:border-green-800 dark:bg-green-500/10': alert.type === 'new_citation',
+                            'border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-500/10': alert.type === 'lost_citation',
                         }"
                     >
                         <AlertTitle>
@@ -683,8 +683,8 @@ const isCheckInProgress = (platform: string) => {
                     <!-- Citation Status -->
                     <Alert
                         :class="{
-                            'border-green-300 bg-green-50 dark:border-green-800 dark:bg-green-950': selectedCheck.is_cited,
-                            'border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-950': !selectedCheck.is_cited,
+                            'border-green-300 bg-green-50 dark:border-green-800 dark:bg-green-500/10': selectedCheck.is_cited,
+                            'border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-500/10': !selectedCheck.is_cited,
                         }"
                     >
                         <component

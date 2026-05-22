@@ -134,7 +134,7 @@ const redeemCode = () => {
 
             <!-- Error Message -->
             <div v-if="error" class="mx-auto max-w-md">
-                <div class="rounded-lg border border-red-200 bg-red-50 p-4 text-center text-sm text-red-600 dark:border-red-800 dark:bg-red-950 dark:text-red-400">
+                <div class="rounded-lg border border-red-200 bg-red-50 p-4 text-center text-sm text-red-600 dark:border-red-800 dark:bg-red-500/10 dark:text-red-400">
                     {{ error }}
                 </div>
             </div>
@@ -167,9 +167,9 @@ const redeemCode = () => {
                     <CardHeader class="pb-4 text-center">
                         <div class="mx-auto mb-2 rounded-full p-3"
                             :class="{
-                                'bg-purple-100 dark:bg-purple-950': getPackageColor(pkg.tokens) === 'purple',
-                                'bg-blue-100 dark:bg-blue-950': getPackageColor(pkg.tokens) === 'blue',
-                                'bg-green-100 dark:bg-green-950': getPackageColor(pkg.tokens) === 'green',
+                                'bg-purple-100 dark:bg-purple-500/10': getPackageColor(pkg.tokens) === 'purple',
+                                'bg-blue-100 dark:bg-blue-500/10': getPackageColor(pkg.tokens) === 'blue',
+                                'bg-green-100 dark:bg-green-500/10': getPackageColor(pkg.tokens) === 'green',
                                 'bg-gray-100 dark:bg-gray-800': getPackageColor(pkg.tokens) === 'gray',
                             }"
                         >
@@ -257,7 +257,7 @@ const redeemCode = () => {
                     </CardHeader>
                     <CardContent>
                         <!-- Success Message -->
-                        <Alert v-if="successMessage" class="mb-4 border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950">
+                        <Alert v-if="successMessage" class="mb-4 border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-500/10">
                             <Gift class="h-4 w-4 text-green-600" />
                             <AlertDescription class="text-green-700 dark:text-green-300">
                                 {{ successMessage }}

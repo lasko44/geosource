@@ -245,8 +245,8 @@ const markAlertRead = (alertId: number) => {
                     v-for="alert in alerts.slice(0, 3)"
                     :key="alert.id"
                     :class="{
-                        'border-green-300 bg-green-50 dark:border-green-800 dark:bg-green-950': alert.type === 'new_citation',
-                        'border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-950': alert.type === 'lost_citation',
+                        'border-green-300 bg-green-50 dark:border-green-800 dark:bg-green-500/10': alert.type === 'new_citation',
+                        'border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-500/10': alert.type === 'lost_citation',
                     }"
                 >
                     <Bell class="h-4 w-4" />

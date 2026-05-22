@@ -461,11 +461,11 @@ const deleteScan = (scan: Scan) => {
 };
 
 const getGradeColor = (grade: string) => {
-    if (grade.startsWith('A')) return 'text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-950';
-    if (grade.startsWith('B')) return 'text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-950';
-    if (grade.startsWith('C')) return 'text-yellow-600 bg-yellow-100 dark:text-yellow-400 dark:bg-yellow-950';
-    if (grade.startsWith('D')) return 'text-orange-600 bg-orange-100 dark:text-orange-400 dark:bg-orange-950';
-    return 'text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-950';
+    if (grade.startsWith('A')) return 'text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-500/10';
+    if (grade.startsWith('B')) return 'text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-500/10';
+    if (grade.startsWith('C')) return 'text-yellow-600 bg-yellow-100 dark:text-yellow-400 dark:bg-yellow-500/10';
+    if (grade.startsWith('D')) return 'text-orange-600 bg-orange-100 dark:text-orange-400 dark:bg-orange-500/10';
+    return 'text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-500/10';
 };
 
 const getScoreColorByGrade = (grade: string) => {
@@ -691,17 +691,17 @@ const truncateUrl = (url: string, maxLength = 60) => {
                                         <Link href="/tokens" class="ml-1 underline">Buy more tokens</Link>
                                     </AlertDescription>
                                 </Alert>
-                                <Alert v-if="!canAffordScan && (scanForm.tier !== 'basic' || scanForm.auto_find_competitors)" class="border-amber-500/50 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-950/50 dark:text-amber-200">
+                                <Alert v-if="!canAffordScan && (scanForm.tier !== 'basic' || scanForm.auto_find_competitors)" class="border-amber-500/50 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
                                     <AlertDescription>
                                         You need {{ totalTokensForScan }} tokens for this scan but only have {{ tokenBalance }}.
                                         <Link href="/tokens" class="ml-1 underline">Buy more tokens</Link>
                                     </AlertDescription>
                                 </Alert>
-                                <Alert v-if="scanForm.errors.cooldown" class="border-amber-500/50 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-950/50 dark:text-amber-200">
+                                <Alert v-if="scanForm.errors.cooldown" class="border-amber-500/50 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
                                     <Clock class="h-4 w-4 text-amber-600 dark:text-amber-400" />
                                     <AlertDescription>{{ scanForm.errors.cooldown }}</AlertDescription>
                                 </Alert>
-                                <Alert v-else-if="isOnCooldown" class="border-amber-500/50 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-950/50 dark:text-amber-200">
+                                <Alert v-else-if="isOnCooldown" class="border-amber-500/50 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
                                     <Clock class="h-4 w-4 text-amber-600 dark:text-amber-400" />
                                     <AlertDescription class="flex items-center justify-between gap-4">
                                         <span>This URL was scanned recently. Please wait {{ cooldownMinutes }} {{ cooldownMinutes === 1 ? 'minute' : 'minutes' }} before scanning again.</span>
@@ -716,11 +716,11 @@ const truncateUrl = (url: string, maxLength = 60) => {
                                         <Link href="/billing/plans" class="ml-2 underline">Upgrade now</Link>
                                     </AlertDescription>
                                 </Alert>
-                                <Alert v-if="scanForm.errors.is_competitor" class="border-amber-500/50 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-950/50 dark:text-amber-200">
+                                <Alert v-if="scanForm.errors.is_competitor" class="border-amber-500/50 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
                                     <Users class="h-4 w-4 text-amber-600 dark:text-amber-400" />
                                     <AlertDescription>{{ scanForm.errors.is_competitor }}</AlertDescription>
                                 </Alert>
-                                <Alert v-if="scanForm.errors.auto_find_competitors" class="border-amber-500/50 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-950/50 dark:text-amber-200">
+                                <Alert v-if="scanForm.errors.auto_find_competitors" class="border-amber-500/50 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
                                     <Zap class="h-4 w-4 text-amber-600 dark:text-amber-400" />
                                     <AlertDescription>{{ scanForm.errors.auto_find_competitors }}</AlertDescription>
                                 </Alert>
@@ -778,7 +778,7 @@ const truncateUrl = (url: string, maxLength = 60) => {
                                         v-for="scan in bulkScans"
                                         :key="scan.uuid"
                                         class="flex items-center gap-3 rounded-lg border p-3"
-                                        :class="scan.status === 'completed' ? 'bg-background' : scan.status === 'failed' ? 'bg-red-50 dark:bg-red-950/20' : 'bg-muted/50'"
+                                        :class="scan.status === 'completed' ? 'bg-background' : scan.status === 'failed' ? 'bg-red-50 dark:bg-red-500/5' : 'bg-muted/50'"
                                     >
                                         <!-- Status Icon -->
                                         <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full" :class="getGradeColorBulk(scan.grade)">
@@ -1075,7 +1075,7 @@ https://example.com/page3"
                                 </div>
                                 <div
                                     v-else-if="scan.status === 'failed'"
-                                    class="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-950 dark:text-red-400"
+                                    class="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-400"
                                 >
                                     <XCircle class="h-6 w-6" />
                                 </div>

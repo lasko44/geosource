@@ -104,11 +104,11 @@ const getFrequencyBadgeColor = (frequency: string) => {
 };
 
 const getGradeColor = (grade: string) => {
-    if (grade.startsWith('A')) return 'text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-950';
-    if (grade.startsWith('B')) return 'text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-950';
-    if (grade.startsWith('C')) return 'text-yellow-600 bg-yellow-100 dark:text-yellow-400 dark:bg-yellow-950';
-    if (grade.startsWith('D')) return 'text-orange-600 bg-orange-100 dark:text-orange-400 dark:bg-orange-950';
-    return 'text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-950';
+    if (grade.startsWith('A')) return 'text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-500/10';
+    if (grade.startsWith('B')) return 'text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-500/10';
+    if (grade.startsWith('C')) return 'text-yellow-600 bg-yellow-100 dark:text-yellow-400 dark:bg-yellow-500/10';
+    if (grade.startsWith('D')) return 'text-orange-600 bg-orange-100 dark:text-orange-400 dark:bg-orange-500/10';
+    return 'text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-500/10';
 };
 
 const getScoreColor = (grade: string) => {
@@ -301,7 +301,7 @@ const getScoreColor = (grade: string) => {
                                 </div>
                                 <div
                                     v-else-if="scan.status === 'failed'"
-                                    class="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-950 dark:text-red-400"
+                                    class="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-400"
                                 >
                                     <span class="text-xs font-medium">FAIL</span>
                                 </div>

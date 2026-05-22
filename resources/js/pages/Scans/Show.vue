@@ -609,11 +609,11 @@ const deleteScan = () => {
 };
 
 const getGradeColor = (grade: string) => {
-    if (grade.startsWith('A')) return 'text-green-600 bg-green-100 border-green-200 dark:text-green-400 dark:bg-green-950 dark:border-green-800';
-    if (grade.startsWith('B')) return 'text-blue-600 bg-blue-100 border-blue-200 dark:text-blue-400 dark:bg-blue-950 dark:border-blue-800';
-    if (grade.startsWith('C')) return 'text-yellow-600 bg-yellow-100 border-yellow-200 dark:text-yellow-400 dark:bg-yellow-950 dark:border-yellow-800';
-    if (grade.startsWith('D')) return 'text-orange-600 bg-orange-100 border-orange-200 dark:text-orange-400 dark:bg-orange-950 dark:border-orange-800';
-    return 'text-red-600 bg-red-100 border-red-200 dark:text-red-400 dark:bg-red-950 dark:border-red-800';
+    if (grade.startsWith('A')) return 'text-green-600 bg-green-100 border-green-200 dark:text-green-400 dark:bg-green-500/10 dark:border-green-800';
+    if (grade.startsWith('B')) return 'text-blue-600 bg-blue-100 border-blue-200 dark:text-blue-400 dark:bg-blue-500/10 dark:border-blue-800';
+    if (grade.startsWith('C')) return 'text-yellow-600 bg-yellow-100 border-yellow-200 dark:text-yellow-400 dark:bg-yellow-500/10 dark:border-yellow-800';
+    if (grade.startsWith('D')) return 'text-orange-600 bg-orange-100 border-orange-200 dark:text-orange-400 dark:bg-orange-500/10 dark:border-orange-800';
+    return 'text-red-600 bg-red-100 border-red-200 dark:text-red-400 dark:bg-red-500/10 dark:border-red-800';
 };
 
 const getScoreColor = (percentage: number) => {
@@ -986,7 +986,7 @@ const getPillarExplanations = (pillar: any): Array<{ label: string; achieved: bo
             </Card>
 
             <!-- Failed State -->
-            <Alert v-else-if="isFailed" variant="destructive" class="border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-950">
+            <Alert v-else-if="isFailed" variant="destructive" class="border-destructive/30 bg-destructive/5 dark:border-destructive/30 dark:bg-destructive/10">
                 <AlertCircle class="h-5 w-5" />
                 <AlertTitle>Scan Failed</AlertTitle>
                 <AlertDescription>
@@ -1094,9 +1094,9 @@ const getPillarExplanations = (pillar: any): Array<{ label: string; achieved: bo
                     <!-- Main Score -->
                     <div class="flex items-center gap-6 mb-6">
                         <div class="flex items-center justify-center w-20 h-20 rounded-full border-4"
-                            :class="citationReadiness.score >= 70 ? 'border-green-500 bg-green-50 dark:bg-green-950' :
-                                    citationReadiness.score >= 50 ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-950' :
-                                    'border-red-500 bg-red-50 dark:bg-red-950'">
+                            :class="citationReadiness.score >= 70 ? 'border-green-500 bg-green-50 dark:bg-green-500/10' :
+                                    citationReadiness.score >= 50 ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-500/10' :
+                                    'border-red-500 bg-red-50 dark:bg-red-500/10'">
                             <span class="text-2xl font-bold"
                                 :class="citationReadiness.score >= 70 ? 'text-green-600 dark:text-green-400' :
                                         citationReadiness.score >= 50 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'">
@@ -1334,7 +1334,7 @@ const getPillarExplanations = (pillar: any): Array<{ label: string; achieved: bo
             </div>
 
             <!-- Parent Scan Notice (for auto-discovered competitor scans) -->
-            <Alert v-if="parentScan" class="border-purple-500/50 bg-purple-50 dark:bg-purple-950/20">
+            <Alert v-if="parentScan" class="border-purple-500/50 bg-purple-50 dark:bg-purple-500/10/20">
                 <Users class="h-4 w-4 text-purple-600" />
                 <AlertTitle>Auto-Discovered Competitor</AlertTitle>
                 <AlertDescription>
@@ -1408,7 +1408,7 @@ const getPillarExplanations = (pillar: any): Array<{ label: string; achieved: bo
                                         </div>
                                         <div
                                             v-else-if="competitor.status === 'failed'"
-                                            class="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-950"
+                                            class="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-500/10"
                                         >
                                             <XCircle class="h-6 w-6" />
                                         </div>
@@ -1697,7 +1697,7 @@ const getPillarExplanations = (pillar: any): Array<{ label: string; achieved: bo
                     </Alert>
 
                     <!-- Success message -->
-                    <Alert v-if="emailSuccess" class="border-green-500 bg-green-50 dark:bg-green-950">
+                    <Alert v-if="emailSuccess" class="border-green-500 bg-green-50 dark:bg-green-500/10">
                         <CheckCircle2 class="h-4 w-4 text-green-600" />
                         <AlertDescription class="text-green-600">{{ emailSuccess }}</AlertDescription>
                     </Alert>
@@ -1755,7 +1755,7 @@ const getPillarExplanations = (pillar: any): Array<{ label: string; achieved: bo
                         v-for="(item, index) in getPillarExplanations(selectedPillar)"
                         :key="index"
                         class="rounded-lg border p-3"
-                        :class="item.achieved ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/50' : 'border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/50'"
+                        :class="item.achieved ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-500/10' : 'border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-500/10'"
                     >
                         <div class="flex items-start justify-between gap-3">
                             <div class="flex items-start gap-2">
