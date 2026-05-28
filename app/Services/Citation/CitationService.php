@@ -477,6 +477,11 @@ class CitationService
      */
     public function processCheckCompletion(CitationCheck $check): void
     {
+        // Skip alerts for guest checks (no user)
+        if (! $check->user_id) {
+            return;
+        }
+
         $query = $check->citationQuery;
 
         // Get the previous check for comparison
