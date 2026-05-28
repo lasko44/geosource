@@ -101,13 +101,18 @@ class CheckCitationJob implements ShouldQueue
             // Step 4: Extract citations
             $this->updateProgress('extracting_citations');
 
+            // Sanitize UTF-8 in results to prevent JSON encoding failures
+            $aiResponse = mb_convert_encoding($result['ai_response'] ?? '', 'UTF-8', 'UTF-8');
+            $citations = json_decode(json_encode($result['citations'] ?? [], JSON_INVALID_UTF8_SUBSTITUTE), true);
+            $metadata = json_decode(json_encode($result['metadata'] ?? [], JSON_INVALID_UTF8_SUBSTITUTE), true);
+
             // Update check with results
             $this->check->update([
                 'status' => CitationCheck::STATUS_COMPLETED,
                 'is_cited' => $result['is_cited'],
-                'ai_response' => $result['ai_response'],
-                'citations' => $result['citations'],
-                'metadata' => $result['metadata'],
+                'ai_response' => $aiResponse,
+                'citations' => $citations,
+                'metadata' => $metadata,
                 'progress_step' => 'Completed',
                 'progress_percent' => 100,
                 'completed_at' => now(),
@@ -171,6 +176,10 @@ class CheckCitationJob implements ShouldQueue
 
         if (str_contains($e->getMessage(), 'SQLSTATE') || str_contains($e->getMessage(), 'Connection')) {
             return 'An internal error occurred. Please try again later.';
+        }
+
+        if (str_contains($e->getMessage(), 'UTF-8') || str_contains($e->getMessage(), 'JSON') || str_contains($e->getMessage(), 'encode')) {
+            return 'The AI response contained unexpected characters. Please try again.';
         }
 
         if (str_contains($e->getMessage(), 'timed out') || str_contains($e->getMessage(), 'timeout')) {
