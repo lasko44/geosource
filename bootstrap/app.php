@@ -6,6 +6,7 @@ use App\Http\Middleware\HandleTeamContext;
 use App\Http\Middleware\StoreIntendedUrl;
 use App\Http\Middleware\TrackPageViews;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -61,6 +62,24 @@ return Application::configure(basePath: dirname(__DIR__))
             return Inertia::render('Error/NotFound')
                 ->toResponse($request)
                 ->setStatusCode(404);
+        });
+
+        // Never expose database errors to users
+        $exceptions->render(function (QueryException $e, $request) {
+            Log::error('Database error', [
+                'url' => $request->fullUrl(),
+                'method' => $request->method(),
+                'user_id' => $request->user()?->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            if ($request->wantsJson()) {
+                return response()->json(['message' => 'Something went wrong. Please try again later.'], 500);
+            }
+
+            return Inertia::render('Error/ServerError')
+                ->toResponse($request)
+                ->setStatusCode(500);
         });
 
         $exceptions->render(function (ThrottleRequestsException $e, $request) {

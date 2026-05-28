@@ -17,9 +17,11 @@ use App\Services\SubscriptionService;
 use App\Services\TokenService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Performs a citation check on an AI platform for a given query.
@@ -118,7 +120,13 @@ class CheckCitationJob implements ShouldQueue
             $query->update(['last_checked_at' => now()]);
 
         } catch (\Exception $e) {
-            $this->markFailed($e->getMessage(), $tokenService);
+            Log::error('Citation check failed', [
+                'check_id' => $this->check->id,
+                'platform' => $this->check->platform,
+                'error' => $e->getMessage(),
+            ]);
+
+            $this->markFailed($this->sanitizeErrorMessage($e), $tokenService);
         }
     }
 
@@ -146,6 +154,34 @@ class CheckCitationJob implements ShouldQueue
 
         // Refund tokens for the failed check
         $this->refundTokens($tokenService);
+    }
+
+    /**
+     * Sanitize exception messages to never expose internal details to users.
+     */
+    private function sanitizeErrorMessage(\Exception $e): string
+    {
+        if ($e instanceof QueryException) {
+            return 'An internal error occurred. Please try again later.';
+        }
+
+        if ($e instanceof \RuntimeException && str_contains($e->getMessage(), 'API request failed')) {
+            return 'The AI platform is temporarily unavailable. Please try again in a few minutes.';
+        }
+
+        if (str_contains($e->getMessage(), 'SQLSTATE') || str_contains($e->getMessage(), 'Connection')) {
+            return 'An internal error occurred. Please try again later.';
+        }
+
+        if (str_contains($e->getMessage(), 'timed out') || str_contains($e->getMessage(), 'timeout')) {
+            return 'The request timed out. Please try again.';
+        }
+
+        if (str_contains($e->getMessage(), 'rate limit') || str_contains($e->getMessage(), '429')) {
+            return 'Rate limited by AI platform. Please try again in a few minutes.';
+        }
+
+        return 'Check failed. Please try again later.';
     }
 
     /**
