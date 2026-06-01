@@ -20,6 +20,7 @@ class RunGeoStudy extends Command
     protected $signature = 'study:run
                             {phase=seed : Phase to run: seed, scan, cite, collect, report}
                             {--study=v2 : Study version identifier}
+                            {--user= : Email of user to attribute scans to (defaults to first admin)}
                             {--limit=0 : Max entries to process (0 = all)}
                             {--delay=10 : Seconds between dispatched jobs}
                             {--tier=basic : Scan tier to use (basic, pro, full)}
@@ -44,6 +45,25 @@ class RunGeoStudy extends Command
     }
 
     private string $version = 'v2';
+
+    /**
+     * Resolve the user to attribute scans and citations to.
+     */
+    private function resolveUser(): ?User
+    {
+        $email = $this->option('user');
+
+        if ($email) {
+            $user = User::where('email', $email)->first();
+            if (! $user) {
+                $this->error("User not found: {$email}");
+                return null;
+            }
+            return $user;
+        }
+
+        return User::where('is_admin', true)->first();
+    }
 
     /**
      * Seed the study table from the config file.
@@ -96,12 +116,13 @@ class RunGeoStudy extends Command
      */
     private function scan(): int
     {
-        $admin = User::where('is_admin', true)->first();
+        $admin = $this->resolveUser();
         if (! $admin) {
-            $this->error('No admin user found. Need an admin to run scans without tokens.');
+            $this->error('No user found. Use --user=email@example.com to specify.');
 
             return Command::FAILURE;
         }
+        $this->info("Running as: {$admin->name} ({$admin->email})");
 
         $tier = $this->option('tier');
         $limit = (int) $this->option('limit');
@@ -170,12 +191,13 @@ class RunGeoStudy extends Command
      */
     private function cite(): int
     {
-        $admin = User::where('is_admin', true)->first();
+        $admin = $this->resolveUser();
         if (! $admin) {
-            $this->error('No admin user found.');
+            $this->error('No user found. Use --user=email@example.com to specify.');
 
             return Command::FAILURE;
         }
+        $this->info("Running as: {$admin->name} ({$admin->email})");
 
         $platforms = explode(',', $this->option('platforms'));
         $limit = (int) $this->option('limit');
