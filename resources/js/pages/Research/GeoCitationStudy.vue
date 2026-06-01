@@ -426,6 +426,11 @@ const articleJsonLd = computed(() =>
         <meta property="og:url" :content="canonicalUrl" />
         <meta property="og:type" content="article" />
         <meta property="og:site_name" content="GeoSource.ai" />
+        <meta property="og:image" content="https://geosource.ai/images/og-citation-study.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content="https://geosource.ai/images/og-citation-study.png" />
         <component :is="'script'" type="application/ld+json">{{ articleJsonLd }}</component>
         <component :is="'script'" type="application/ld+json">{{ faqJsonLd }}</component>
     </Head>

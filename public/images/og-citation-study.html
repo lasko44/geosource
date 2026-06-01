@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Outfit:wght@300;500;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 1200px;
+    height: 630px;
+    overflow: hidden;
+    font-family: 'Outfit', sans-serif;
+    background: #0a0a0f;
+    color: #f0f0f5;
+    position: relative;
+  }
+
+  /* ── Atmospheric background ── */
+  .bg-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(139,92,246,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(139,92,246,0.06) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  .bg-glow-1 {
+    position: absolute;
+    width: 500px; height: 500px;
+    top: -120px; right: -80px;
+    background: radial-gradient(circle, rgba(139,92,246,0.18) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  .bg-glow-2 {
+    position: absolute;
+    width: 400px; height: 400px;
+    bottom: -100px; left: 80px;
+    background: radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  .bg-line {
+    position: absolute;
+    top: 0; left: 240px;
+    width: 1px; height: 100%;
+    background: linear-gradient(to bottom, transparent, rgba(139,92,246,0.15) 30%, rgba(139,92,246,0.15) 70%, transparent);
+  }
+
+  .bg-line-2 {
+    position: absolute;
+    top: 0; left: 800px;
+    width: 1px; height: 100%;
+    background: linear-gradient(to bottom, transparent, rgba(16,185,129,0.1) 40%, rgba(16,185,129,0.1) 60%, transparent);
+  }
+
+  /* ── Layout ── */
+  .container {
+    position: relative;
+    z-index: 1;
+    width: 100%; height: 100%;
+    padding: 48px 56px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  /* ── Top row ── */
+  .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .brand-dot {
+    width: 14px; height: 14px;
+    background: #8b5cf6;
+    border-radius: 3px;
+    box-shadow: 0 0 16px rgba(139,92,246,0.6);
+  }
+
+  .brand-name {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: rgba(240,240,245,0.7);
+  }
+
+  .tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #10b981;
+    background: rgba(16,185,129,0.1);
+    border: 1px solid rgba(16,185,129,0.25);
+    padding: 6px 14px;
+    border-radius: 4px;
+  }
+
+  /* ── Headline ── */
+  .headline-area {
+    margin-top: -8px;
+  }
+
+  .headline {
+    font-size: 44px;
+    font-weight: 900;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    max-width: 680px;
+  }
+
+  .headline em {
+    font-style: normal;
+    color: #8b5cf6;
+  }
+
+  .sub {
+    margin-top: 14px;
+    font-size: 16px;
+    font-weight: 300;
+    color: rgba(240,240,245,0.45);
+    letter-spacing: 0.01em;
+  }
+
+  .sub strong {
+    color: rgba(240,240,245,0.7);
+    font-weight: 500;
+  }
+
+  /* ── Stats row ── */
+  .stats {
+    display: flex;
+    gap: 0;
+    align-items: stretch;
+  }
+
+  .stat {
+    flex: 1;
+    padding: 20px 24px;
+    border-left: 1px solid rgba(255,255,255,0.06);
+    position: relative;
+  }
+
+  .stat:first-child {
+    border-left: none;
+    padding-left: 0;
+  }
+
+  .stat-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 42px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.04em;
+  }
+
+  .stat-value.purple { color: #8b5cf6; }
+  .stat-value.green { color: #10b981; }
+  .stat-value.white { color: #f0f0f5; }
+
+  .stat-label {
+    margin-top: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(240,240,245,0.4);
+    letter-spacing: 0.01em;
+    line-height: 1.3;
+  }
+
+  .stat-label strong {
+    color: rgba(240,240,245,0.65);
+  }
+
+  /* ── Decorative accent bar ── */
+  .accent-bar {
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 100%; height: 3px;
+    background: linear-gradient(90deg, #8b5cf6 0%, #10b981 50%, #8b5cf6 100%);
+    opacity: 0.8;
+  }
+
+  /* ── Corner badge ── */
+  .corner-data {
+    position: absolute;
+    top: 48px; right: 56px;
+    text-align: right;
+  }
+
+  .corner-big {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 64px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.05em;
+    color: rgba(139,92,246,0.12);
+  }
+
+  .corner-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(240,240,245,0.2);
+    margin-top: 2px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* ── Floating data chips ── */
+  .chips {
+    position: absolute;
+    top: 160px; right: 56px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-end;
+  }
+
+  .chip {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 400;
+    color: rgba(240,240,245,0.35);
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    padding: 5px 12px;
+    border-radius: 3px;
+  }
+
+  .chip b { color: rgba(240,240,245,0.6); font-weight: 700; }
+  .chip .g { color: #10b981; }
+  .chip .p { color: #8b5cf6; }
+</style>
+</head>
+<body>
+  <!-- Background layers -->
+  <div class="bg-grid"></div>
+  <div class="bg-glow-1"></div>
+  <div class="bg-glow-2"></div>
+  <div class="bg-line"></div>
+  <div class="bg-line-2"></div>
+
+  <!-- Corner watermark -->
+  <div class="corner-data">
+    <div class="corner-big">540+</div>
+    <div class="corner-label">Citation Checks</div>
+  </div>
+
+  <!-- Floating data chips -->
+  <div class="chips">
+    <div class="chip"><b>ChatGPT</b> &middot; <b>Perplexity</b> &middot; <b>Claude</b></div>
+    <div class="chip"><b>61</b> sites &middot; <b>17</b> industries &middot; <b>3</b> phases</div>
+    <div class="chip">Answerability <span class="p">+109%</span> &middot; Citations <span class="g">+65%</span></div>
+  </div>
+
+  <div class="container">
+    <!-- Top -->
+    <div class="top">
+      <div class="brand">
+        <div class="brand-dot"></div>
+        <span class="brand-name">GeoSource.ai</span>
+      </div>
+      <div class="tag">Original Research</div>
+    </div>
+
+    <!-- Headline -->
+    <div class="headline-area">
+      <h1 class="headline">We studied 61 websites to find out what makes <em>AI cite your content.</em></h1>
+      <p class="sub"><strong>Three-phase study</strong> &mdash; the first empirical GEO citation research with real data from real AI platforms.</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-value purple">+109%</div>
+        <div class="stat-label"><strong>Answerability</strong><br>#1 citation predictor</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value green">55.6%</div>
+        <div class="stat-label"><strong>High CR</strong> citation rate<br>vs 33.3% for low CR</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value purple">+67%</div>
+        <div class="stat-label"><strong>Citation lift</strong><br>CR Score high vs low</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value white">17</div>
+        <div class="stat-label"><strong>Industries</strong> analyzed<br>across 3 AI platforms</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="accent-bar"></div>
+</body>
+</html>
