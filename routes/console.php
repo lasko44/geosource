@@ -37,6 +37,9 @@ Schedule::command('citations:sync-ga4')->dailyAt('02:00');
 // Cleanup old data daily at 3 AM
 Schedule::command('citations:cleanup')->dailyAt('03:00');
 
+// Refresh industry benchmarks weekly on Sundays at 4 AM
+Schedule::command('benchmarks:refresh')->weeklyOn(0, '04:00');
+
 /*
 |--------------------------------------------------------------------------
 | Citation Console Commands
