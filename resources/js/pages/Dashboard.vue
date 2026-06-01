@@ -1281,11 +1281,21 @@ https://example.com/page3"
 
                             <div class="flex items-center gap-4">
                                 <!-- Score -->
-                                <div v-if="scan.status === 'completed' && scan.score !== null" class="text-right">
-                                    <p class="text-2xl font-bold" :class="getScoreColorByGrade(scan.grade)">
-                                        {{ scan.score.toFixed(1) }}
-                                    </p>
-                                    <p class="text-xs text-muted-foreground">/ {{ scan.results?.max_score ?? 100 }}</p>
+                                <div v-if="scan.status === 'completed' && scan.score !== null" class="text-right flex items-center gap-4">
+                                    <div v-if="scan.results?.citation_readiness?.grade" class="text-right">
+                                        <p class="text-lg font-bold"
+                                            :class="scan.results.citation_readiness.grade === 'High' ? 'text-green-600 dark:text-green-400' :
+                                                    scan.results.citation_readiness.grade === 'Moderate' ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'">
+                                            {{ Math.round(scan.results.citation_readiness.score) }}
+                                        </p>
+                                        <p class="text-xs text-muted-foreground">CR Score</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-lg font-bold" :class="getScoreColorByGrade(scan.grade)">
+                                            {{ scan.score.toFixed(1) }}
+                                        </p>
+                                        <p class="text-xs text-muted-foreground">GEO</p>
+                                    </div>
                                 </div>
                                 <div v-else-if="scan.status === 'failed'" class="text-right">
                                     <p class="text-sm font-medium text-red-600 dark:text-red-400">Failed</p>

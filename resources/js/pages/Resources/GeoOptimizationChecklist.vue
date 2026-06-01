@@ -42,14 +42,14 @@ const breadcrumbItems = [
     { label: 'GEO Optimization Checklist' },
 ];
 
-// Free Tier Pillars (100 points)
+// Free Tier Pillars (94 points) — ordered by citation impact
 const freePillars = [
     {
         id: 'clear-definitions',
         title: 'Clear Definitions',
         icon: BookOpen,
         points: 20,
-        description: 'Explicit definitions that AI can quote directly',
+        description: 'Explicit definitions that AI can quote directly (+33% citation lift)',
         link: '/definitions',
         items: [
             { task: 'Start with a clear "X is..." definition in the first paragraph', priority: 'High' },
@@ -63,8 +63,8 @@ const freePillars = [
         id: 'structured-knowledge',
         title: 'Structured Knowledge',
         icon: Layers,
-        points: 20,
-        description: 'Organized content hierarchy for machine comprehension',
+        points: 12,
+        description: 'Organized content hierarchy — a baseline requirement for AI access',
         items: [
             { task: 'Use exactly one H1 heading per page', priority: 'High' },
             { task: 'Add multiple H2 subheadings to break up content', priority: 'High' },
@@ -78,8 +78,8 @@ const freePillars = [
         id: 'topic-authority',
         title: 'Topic Authority',
         icon: Award,
-        points: 25,
-        description: 'Depth of coverage and expertise indicators',
+        points: 22,
+        description: 'Depth of coverage and expertise indicators (+19% citation lift)',
         items: [
             { task: 'Write comprehensive content (800-1500+ words for key topics)', priority: 'High' },
             { task: 'Include examples, explanations, and evidence', priority: 'High' },
@@ -93,8 +93,8 @@ const freePillars = [
         id: 'machine-readable',
         title: 'Machine-Readable Formatting',
         icon: Code,
-        points: 15,
-        description: 'Technical markup for AI understanding',
+        points: 10,
+        description: 'Technical markup — a baseline requirement, not a citation driver',
         link: '/resources/why-llms-txt-matters',
         items: [
             { task: 'Add JSON-LD Article schema to content pages', priority: 'High' },
@@ -109,8 +109,8 @@ const freePillars = [
         id: 'answerability',
         title: 'High-Confidence Answerability',
         icon: MessageSquare,
-        points: 20,
-        description: 'Declarative statements AI can confidently cite',
+        points: 30,
+        description: 'The #1 citation predictor (+109% lift) — direct, declarative answers',
         items: [
             { task: 'Use declarative sentences: "X is Y" instead of questions', priority: 'High' },
             { task: 'Start with the answer, not preamble ("In this article...")', priority: 'High' },
@@ -285,7 +285,7 @@ const faqJsonLd = {
             name: 'How do I optimize my website for AI search?',
             acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'To optimize for AI search, focus on the 5 core GEO pillars: 1) Clear Definitions - start with "X is..." patterns, 2) Structured Knowledge - use proper heading hierarchy, 3) Topic Authority - write comprehensive content with internal links, 4) Machine-Readable Formatting - add JSON-LD schema and llms.txt, 5) High-Confidence Answerability - use declarative statements AI can quote.',
+                text: 'Based on our three-phase citation study, prioritize these in order of proven impact: 1) Answerability — write direct, answer-first content (+109% citation lift), 2) Citation Quality — reference authoritative external sources (+65% lift), 3) Clear Definitions — use explicit "X is Y" patterns (+33% lift). Structure and schema markup are important baselines but not the primary drivers of AI citations.',
             },
         },
         {
@@ -293,7 +293,7 @@ const faqJsonLd = {
             name: 'What are the GEO scoring pillars?',
             acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'GEO scores are based on 12 pillars across 3 tiers. Free tier (100 pts): Clear Definitions, Structured Knowledge, Topic Authority, Machine-Readable Formatting, Answerability. Pro tier (+35 pts): E-E-A-T Signals, Citations & Sources, AI Crawler Access. Agency tier (+40 pts): Content Freshness, Readability, Question Coverage, Multimedia Content.',
+                text: 'GEO scores are based on 12 evidence-weighted pillars across 3 tiers. Free tier (94 pts): Answerability (30 pts — strongest predictor), Topic Authority (22), Clear Definitions (20), Structured Knowledge (12), Machine-Readable (10). Pro tier (+35 pts): Citations & Sources (20 — second strongest), E-E-A-T (10), AI Access (5). Full tier (+41 pts): Readability (18), Freshness (10), Question Coverage (8), Multimedia (5). Weights are calibrated from our empirical citation study.',
             },
         },
         {
@@ -301,7 +301,7 @@ const faqJsonLd = {
             name: 'What is the most important GEO optimization?',
             acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'The highest-weighted pillar is Topic Authority (25 points), followed by Clear Definitions, Structured Knowledge, and Answerability (20 points each). Focus on comprehensive content with clear definitions at the start, proper heading structure, and declarative statements that AI can confidently cite.',
+                text: 'The highest-weighted pillar is Answerability (30 points), the strongest empirical predictor of AI citations (+109% citation lift in our v3 study). This is followed by Topic Authority (22 points), Citations & Sources (20 points — +65% lift), and Clear Definitions (20 points — +33% lift). Focus on writing direct, answer-first content that cites authoritative sources.',
             },
         },
         {
@@ -309,7 +309,7 @@ const faqJsonLd = {
             name: 'What is the maximum GEO Score?',
             acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'The maximum GEO Score depends on your plan tier: Free tier = 100 points (5 pillars), Pro tier = 135 points (8 pillars), Agency tier = 175 points (12 pillars). Your score is shown as a percentage of the maximum possible for your tier.',
+                text: 'The maximum GEO Score depends on your plan tier: Free tier = 94 points (5 pillars), Pro tier = 129 points (8 pillars), Full tier = 170 points (12 pillars). Your score is shown as a percentage of the maximum possible for your tier. Pillar weights are calibrated from our empirical citation research.',
             },
         },
     ],
@@ -433,7 +433,7 @@ const faqJsonLd = {
                     <section class="mb-12" aria-labelledby="free-tier-heading">
                         <div class="flex items-center gap-3 mb-6">
                             <h2 id="free-tier-heading" class="text-2xl font-bold">Free Tier Pillars</h2>
-                            <Badge variant="secondary">100 points</Badge>
+                            <Badge variant="secondary">94 points</Badge>
                         </div>
                         <p class="text-muted-foreground mb-6">Core pillars available to all users. These fundamentals are essential for AI visibility.</p>
 

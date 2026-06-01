@@ -9,6 +9,8 @@ use App\Http\Controllers\Experiments\GuestCitationStatusController;
 use App\Http\Controllers\Experiments\GuestScanController;
 use App\Http\Controllers\Experiments\GuestScanShowController;
 use App\Http\Controllers\Experiments\GuestScanStatusController;
+use App\Http\Controllers\BenchmarkController;
+use App\Http\Controllers\GeoStudyController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\SuggestedContentController;
 use App\Http\Controllers\Marketing\ProcessUnsubscribeController;
@@ -34,6 +36,11 @@ Route::get('/pricing', function () {
         'canRegister' => Features::enabled(Features::registration()),
     ]);
 })->name('pricing');
+
+// Research & Benchmarks
+Route::get('/research/geo-citation-study', fn () => redirect('/blog/geo-citation-study', 301));
+Route::get('/blog/geo-citation-study', GeoStudyController::class)->name('blog.geo-citation-study');
+Route::get('/benchmarks', BenchmarkController::class)->name('benchmarks');
 
 // Sitemap
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');

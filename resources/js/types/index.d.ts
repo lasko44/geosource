@@ -150,19 +150,38 @@ export interface Scan {
 
 export interface CitationReadinessFactor {
     score: number;
-    reason: string;
+    reason?: string;
+    label?: string;
+    weight?: number;
+    status?: string;
+}
+
+export interface CitationReadinessBenchmark {
+    expected_citation_rate: string;
+    comparison: string;
+    study_basis: string;
 }
 
 export interface CitationReadiness {
     score: number;
-    factors: {
-        quotability: CitationReadinessFactor;
-        authority: CitationReadinessFactor;
-        uniqueness: CitationReadinessFactor;
-        structure: CitationReadinessFactor;
-        factual_density: CitationReadinessFactor;
-    };
+    grade?: string;
+    factors: Record<string, CitationReadinessFactor>;
     summary: string;
+    benchmark?: CitationReadinessBenchmark;
+}
+
+export interface ContentTypeInsight {
+    citation_context: string;
+    avg_citation_rate: string;
+    recommendation: string;
+    top_industries: string;
+}
+
+export interface ContentType {
+    primary_type: string;
+    confidence: string;
+    signals: Record<string, number>;
+    insight?: ContentTypeInsight;
 }
 
 export interface ScanResults {
@@ -181,6 +200,8 @@ export interface ScanResults {
     has_sufficient_data?: boolean;
     ai_suggestions?: AISuggestion[];
     citation_readiness?: CitationReadiness;
+    citation_readiness_ai?: CitationReadiness;
+    content_type?: ContentType;
     rag_analysis?: Record<string, unknown>;
     scored_at: string;
 }

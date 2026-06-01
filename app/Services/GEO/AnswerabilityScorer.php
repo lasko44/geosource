@@ -15,7 +15,7 @@ use App\Services\GEO\Contracts\ScorerInterface;
  */
 class AnswerabilityScorer implements ScorerInterface
 {
-    private const MAX_SCORE = 20;
+    private const MAX_SCORE = 30;
 
     private const DECLARATIVE_PATTERNS = [
         '/\bis\b/i',
@@ -272,20 +272,20 @@ class AnswerabilityScorer implements ScorerInterface
 
     private function calculateDeclarativeScore(array $declarative): float
     {
-        // Up to 5 points
+        // Up to 7.5 points
         $ratio = $declarative['declarative_ratio'];
 
         if ($ratio >= 0.7) {
-            return 5;
+            return 7.5;
         }
         if ($ratio >= 0.5) {
-            return 4;
+            return 6;
         }
         if ($ratio >= 0.3) {
-            return 2.5;
+            return 3.75;
         }
         if ($ratio >= 0.1) {
-            return 1;
+            return 1.5;
         }
 
         return 0;
@@ -293,20 +293,20 @@ class AnswerabilityScorer implements ScorerInterface
 
     private function calculateUncertaintyScore(array $uncertainty): float
     {
-        // Up to 4 points (higher score = less uncertainty)
+        // Up to 6 points (higher score = less uncertainty)
         $density = $uncertainty['hedging_density'];
 
         if ($density <= 0.1) {
-            return 4;
+            return 6;
         }
         if ($density <= 0.3) {
-            return 3;
+            return 4.5;
         }
         if ($density <= 0.5) {
-            return 2;
+            return 3;
         }
         if ($density <= 1.0) {
-            return 1;
+            return 1.5;
         }
 
         return 0;
@@ -314,20 +314,20 @@ class AnswerabilityScorer implements ScorerInterface
 
     private function calculateConfidenceScore(array $confidence): float
     {
-        // Up to 4 points
+        // Up to 6 points
         $count = $confidence['confidence_count'];
 
         if ($count >= 10) {
-            return 4;
+            return 6;
         }
         if ($count >= 5) {
-            return 3;
+            return 4.5;
         }
         if ($count >= 3) {
-            return 2;
+            return 3;
         }
         if ($count >= 1) {
-            return 1;
+            return 1.5;
         }
 
         return 0;
@@ -335,17 +335,17 @@ class AnswerabilityScorer implements ScorerInterface
 
     private function calculateSnippetScore(array $snippets): float
     {
-        // Up to 4 points
+        // Up to 6 points
         $count = $snippets['count'];
 
         if ($count >= 3) {
-            return 4;
+            return 6;
         }
         if ($count >= 2) {
-            return 3;
+            return 4.5;
         }
         if ($count >= 1) {
-            return 2;
+            return 3;
         }
 
         return 0;
@@ -353,20 +353,20 @@ class AnswerabilityScorer implements ScorerInterface
 
     private function calculateDirectnessScore(array $directness): float
     {
-        // Up to 3 points
+        // Up to 4.5 points
         $score = 0;
 
         if ($directness['starts_with_answer']) {
-            $score += 1.5;
+            $score += 2.25;
         }
 
         if ($directness['total_direct_elements'] >= 5) {
-            $score += 1.5;
+            $score += 2.25;
         } elseif ($directness['total_direct_elements'] >= 2) {
-            $score += 0.75;
+            $score += 1.125;
         }
 
-        return min(3, $score);
+        return min(4.5, $score);
     }
 
     private function getUncertaintyLevel(float $density): string

@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Http;
  */
 class AIAccessibilityScorer implements ScorerInterface
 {
-    private const MAX_SCORE = 8;
+    private const MAX_SCORE = 5;
 
     private const AI_BOTS = [
         'GPTBot' => 'OpenAI (ChatGPT)',
@@ -44,10 +44,10 @@ class AIAccessibilityScorer implements ScorerInterface
             'ai_meta_tags' => $this->analyzeAIMetaTags($content),
         ];
 
-        // Calculate scores (total: 8 points)
-        $robotsTxtScore = $this->calculateRobotsTxtScore($details['robots_txt']);   // Up to 5 pts
-        $metaScore = $this->calculateMetaScore($details['meta_robots']);             // Up to 2 pts
-        $aiMetaScore = $this->calculateAIMetaScore($details['ai_meta_tags']);        // Up to 1 pt
+        // Calculate scores (total: 5 points)
+        $robotsTxtScore = $this->calculateRobotsTxtScore($details['robots_txt']);   // Up to 3 pts
+        $metaScore = $this->calculateMetaScore($details['meta_robots']);             // Up to 1.5 pts
+        $aiMetaScore = $this->calculateAIMetaScore($details['ai_meta_tags']);        // Up to 0.5 pt
 
         $totalScore = $robotsTxtScore + $metaScore + $aiMetaScore;
 
@@ -295,12 +295,12 @@ class AIAccessibilityScorer implements ScorerInterface
 
         // robots.txt exists and is parseable
         if ($robots['exists']) {
-            $score += 1;
+            $score += 0.625;
         }
 
         // AI bots are allowed
         if ($robots['allows_all_ai']) {
-            $score += 3;
+            $score += 1.875;
         } elseif ($robots['partially_blocked']) {
             // Partial access - count allowed major bots
             $majorBots = ['GPTBot', 'Google-Extended', 'anthropic-ai', 'PerplexityBot'];
@@ -310,33 +310,33 @@ class AIAccessibilityScorer implements ScorerInterface
                     $allowedMajor++;
                 }
             }
-            $score += ($allowedMajor / count($majorBots)) * 2;
+            $score += ($allowedMajor / count($majorBots)) * 1.25;
         }
         // blocks_all_ai = 0 points
 
         // Has sitemap reference
         if ($robots['has_sitemap']) {
-            $score += 1;
+            $score += 0.625;
         }
 
-        return min(5, $score);
+        return min(3, $score);
     }
 
     private function calculateMetaScore(array $meta): float
     {
-        $score = 2; // Start with full points
+        $score = 1.5; // Start with full points
 
         // Deduct for restrictive directives
         if ($meta['noindex']) {
-            $score -= 1;
+            $score -= 0.75;
         }
 
         if ($meta['nosnippet']) {
-            $score -= 0.5;
+            $score -= 0.375;
         }
 
         if ($meta['noarchive']) {
-            $score -= 0.25;
+            $score -= 0.1875;
         }
 
         return max(0, $score);
@@ -346,9 +346,9 @@ class AIAccessibilityScorer implements ScorerInterface
     {
         // Bonus for having AI-specific meta tags (forward-thinking)
         if ($aiMeta['has_ai_specific_tags']) {
-            return 1;
+            return 0.5;
         }
 
-        return 0.5; // Base score for not blocking
+        return 0.25; // Base score for not blocking
     }
 }

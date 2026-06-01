@@ -8,8 +8,10 @@ use App\Http\Requests\Citations\RunCitationCheckRequest;
 use App\Models\CitationCheck;
 use App\Models\CitationQuery;
 use App\Services\Citation\CitationService;
+use App\Support\ErrorSanitizer;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Handles citation check operations for platforms.
@@ -31,7 +33,9 @@ class CitationCheckController extends Controller
             return redirect()->route('citations.queries.show', $query)
                 ->with('activeCheck', $check->uuid);
         } catch (\RuntimeException $e) {
-            return back()->withErrors(['tokens' => $e->getMessage()]);
+            Log::error('Citation check failed', ['error' => $e->getMessage()]);
+
+            return back()->withErrors(['tokens' => ErrorSanitizer::sanitize($e)]);
         }
     }
 
@@ -50,7 +54,9 @@ class CitationCheckController extends Controller
             return redirect()->route('citations.queries.show', $query)
                 ->with('success', count($checks).' checks started (staggered to avoid rate limits).');
         } catch (\RuntimeException $e) {
-            return back()->withErrors(['tokens' => $e->getMessage()]);
+            Log::error('Bulk citation check failed', ['error' => $e->getMessage()]);
+
+            return back()->withErrors(['tokens' => ErrorSanitizer::sanitize($e)]);
         }
     }
 

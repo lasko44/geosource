@@ -17,7 +17,7 @@ use App\Services\GEO\Contracts\ScorerInterface;
  */
 class ReadabilityScorer implements ScorerInterface
 {
-    private const MAX_SCORE = 10;
+    private const MAX_SCORE = 18;
 
     public function score(string $content, array $context = []): array
     {
@@ -31,11 +31,11 @@ class ReadabilityScorer implements ScorerInterface
             'word_analysis' => $this->analyzeWords($text),
         ];
 
-        // Calculate scores (total: 10 points)
-        $fkScore = $this->calculateFKScore($details['flesch_kincaid']);           // Up to 4 pts
-        $sentenceScore = $this->calculateSentenceScore($details['sentence_analysis']); // Up to 3 pts
-        $paragraphScore = $this->calculateParagraphScore($details['paragraph_analysis']); // Up to 2 pts
-        $wordScore = $this->calculateWordScore($details['word_analysis']);        // Up to 1 pt
+        // Calculate scores (total: 18 points)
+        $fkScore = $this->calculateFKScore($details['flesch_kincaid']);           // Up to 7 pts
+        $sentenceScore = $this->calculateSentenceScore($details['sentence_analysis']); // Up to 5.5 pts
+        $paragraphScore = $this->calculateParagraphScore($details['paragraph_analysis']); // Up to 3.5 pts
+        $wordScore = $this->calculateWordScore($details['word_analysis']);        // Up to 2 pts
 
         $totalScore = $fkScore + $sentenceScore + $paragraphScore + $wordScore;
 
@@ -342,19 +342,19 @@ class ReadabilityScorer implements ScorerInterface
         $readingEase = $fk['reading_ease'];
 
         if ($readingEase >= 60 && $readingEase <= 80) {
-            $score += 4; // Optimal range
+            $score += 7; // Optimal range
         } elseif ($readingEase >= 50 && $readingEase < 60) {
-            $score += 3; // Acceptable
+            $score += 5.5; // Acceptable
         } elseif ($readingEase >= 80) {
-            $score += 3; // Very easy (might be too simple)
+            $score += 5.5; // Very easy (might be too simple)
         } elseif ($readingEase >= 40) {
-            $score += 2; // Getting difficult
+            $score += 3.5; // Getting difficult
         } elseif ($readingEase >= 30) {
-            $score += 1; // Hard
+            $score += 2; // Hard
         }
         // Below 30 = 0 points
 
-        return min(4, $score);
+        return min(7, $score);
     }
 
     private function calculateSentenceScore(array $sentences): float
@@ -364,29 +364,29 @@ class ReadabilityScorer implements ScorerInterface
         // Average sentence length (15-20 words is ideal)
         $avgLength = $sentences['avg_length'];
         if ($avgLength >= 12 && $avgLength <= 22) {
-            $score += 1.5;
+            $score += 2.5;
         } elseif ($avgLength >= 8 && $avgLength <= 28) {
-            $score += 1;
+            $score += 2;
         } else {
-            $score += 0.5;
+            $score += 1;
         }
 
         // Sentence variety
         if ($sentences['variety_score'] >= 60) {
-            $score += 1;
+            $score += 2;
         } elseif ($sentences['variety_score'] >= 40) {
-            $score += 0.5;
+            $score += 1;
         }
 
         // Penalty for too many very long sentences
         if ($sentences['total'] > 0) {
             $veryLongRatio = $sentences['very_long_sentences'] / $sentences['total'];
             if ($veryLongRatio < 0.1) {
-                $score += 0.5;
+                $score += 1;
             }
         }
 
-        return min(3, $score);
+        return min(5.5, $score);
     }
 
     private function calculateParagraphScore(array $paragraphs): float
@@ -395,20 +395,20 @@ class ReadabilityScorer implements ScorerInterface
 
         // Optimal paragraph ratio
         if ($paragraphs['optimal_ratio'] >= 80) {
-            $score += 1.5;
+            $score += 2.5;
         } elseif ($paragraphs['optimal_ratio'] >= 60) {
-            $score += 1;
+            $score += 2;
         } elseif ($paragraphs['optimal_ratio'] >= 40) {
-            $score += 0.5;
+            $score += 1;
         }
 
         // Average paragraph length (50-100 words is ideal for web)
         $avgLength = $paragraphs['avg_length'];
         if ($avgLength >= 40 && $avgLength <= 120) {
-            $score += 0.5;
+            $score += 1;
         }
 
-        return min(2, $score);
+        return min(3.5, $score);
     }
 
     private function calculateWordScore(array $words): float
@@ -418,14 +418,14 @@ class ReadabilityScorer implements ScorerInterface
         // Complex word ratio (lower is better for readability, but some complexity shows expertise)
         $complexRatio = $words['complex_ratio'];
         if ($complexRatio >= 10 && $complexRatio <= 25) {
-            $score += 1; // Good balance
+            $score += 2; // Good balance
         } elseif ($complexRatio < 10) {
-            $score += 0.75; // Very simple
+            $score += 1.5; // Very simple
         } elseif ($complexRatio <= 35) {
-            $score += 0.5; // Somewhat complex
+            $score += 1; // Somewhat complex
         }
         // Over 35% = 0 points
 
-        return min(1, $score);
+        return min(2, $score);
     }
 }

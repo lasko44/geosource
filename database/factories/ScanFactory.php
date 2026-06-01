@@ -25,14 +25,14 @@ class ScanFactory extends Factory
             'url' => $this->faker->url(),
             'title' => $this->faker->sentence(3),
             'status' => 'completed',
-            'score' => $this->faker->randomFloat(1, 0, 100),
+            'score' => $this->faker->randomFloat(1, 0, 94),
             'grade' => $this->faker->randomElement(['A+', 'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D', 'F']),
             'requested_tier' => 'basic',
             'results' => [
                 'pillars' => [],
                 'recommendations' => [],
                 'summary' => [],
-                'max_score' => 100,
+                'max_score' => 94,
             ],
             'started_at' => now()->subMinutes(5),
             'completed_at' => now(),
@@ -90,9 +90,9 @@ class ScanFactory extends Factory
     public function tier(string $tier): static
     {
         $maxScores = [
-            'basic' => 100,
-            'pro' => 135,
-            'full' => 175,
+            'basic' => 94,
+            'pro' => 129,
+            'full' => 170,
         ];
 
         return $this->state(fn (array $attributes) => [

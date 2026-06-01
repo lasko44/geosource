@@ -17,7 +17,7 @@ use App\Services\GEO\Contracts\ScorerInterface;
  */
 class MultimediaScorer implements ScorerInterface
 {
-    private const MAX_SCORE = 10;
+    private const MAX_SCORE = 5;
 
     public function score(string $content, array $context = []): array
     {
@@ -28,11 +28,11 @@ class MultimediaScorer implements ScorerInterface
             'visual_elements' => $this->analyzeVisualElements($content),
         ];
 
-        // Calculate scores (total: 10 points)
-        $imageScore = $this->calculateImageScore($details['images']);          // Up to 4 pts
-        $videoScore = $this->calculateVideoScore($details['videos']);          // Up to 2 pts
-        $tableScore = $this->calculateTableScore($details['tables']);          // Up to 2 pts
-        $visualScore = $this->calculateVisualScore($details['visual_elements']); // Up to 2 pts
+        // Calculate scores (total: 5 points)
+        $imageScore = $this->calculateImageScore($details['images']);          // Up to 2 pts
+        $videoScore = $this->calculateVideoScore($details['videos']);          // Up to 1 pt
+        $tableScore = $this->calculateTableScore($details['tables']);          // Up to 1 pt
+        $visualScore = $this->calculateVisualScore($details['visual_elements']); // Up to 1 pt
 
         $totalScore = $imageScore + $videoScore + $tableScore + $visualScore;
 
@@ -300,30 +300,30 @@ class MultimediaScorer implements ScorerInterface
 
         // Has images
         if ($images['total_images'] >= 3) {
-            $score += 1.5;
+            $score += 0.75;
         } elseif ($images['total_images'] >= 1) {
-            $score += 1;
+            $score += 0.5;
         }
 
         // Alt text quality
         $score += match ($images['alt_quality']) {
-            'excellent' => 1.5,
-            'good' => 1,
-            'fair' => 0.5,
+            'excellent' => 0.75,
+            'good' => 0.5,
+            'fair' => 0.25,
             default => 0,
         };
 
         // Proper captioning
         if ($images['images_with_caption'] > 0) {
-            $score += 0.5;
+            $score += 0.25;
         }
 
         // Schema/featured image
         if ($images['has_featured_image'] || $images['has_schema_images']) {
-            $score += 0.5;
+            $score += 0.25;
         }
 
-        return min(4, $score);
+        return min(2, $score);
     }
 
     private function calculateVideoScore(array $videos): float
@@ -331,14 +331,14 @@ class MultimediaScorer implements ScorerInterface
         $score = 0;
 
         if ($videos['has_video']) {
-            $score += 1.5;
+            $score += 0.75;
 
             if ($videos['has_video_schema']) {
-                $score += 0.5;
+                $score += 0.25;
             }
         }
 
-        return min(2, $score);
+        return min(1, $score);
     }
 
     private function calculateTableScore(array $tables): float
@@ -346,20 +346,20 @@ class MultimediaScorer implements ScorerInterface
         $score = 0;
 
         if ($tables['has_tables']) {
-            $score += 1;
+            $score += 0.5;
 
             // Well-structured tables
             if ($tables['tables_with_headers'] > 0) {
-                $score += 0.5;
+                $score += 0.25;
             }
 
             // Comparison table (high value for AI)
             if ($tables['has_comparison_table']) {
-                $score += 0.5;
+                $score += 0.25;
             }
         }
 
-        return min(2, $score);
+        return min(1, $score);
     }
 
     private function calculateVisualScore(array $visuals): float
@@ -368,13 +368,13 @@ class MultimediaScorer implements ScorerInterface
 
         // Reward visual variety
         if ($visuals['visual_variety'] >= 4) {
-            $score += 2;
-        } elseif ($visuals['visual_variety'] >= 2) {
-            $score += 1.5;
-        } elseif ($visuals['visual_variety'] >= 1) {
             $score += 1;
+        } elseif ($visuals['visual_variety'] >= 2) {
+            $score += 0.75;
+        } elseif ($visuals['visual_variety'] >= 1) {
+            $score += 0.5;
         }
 
-        return min(2, $score);
+        return min(1, $score);
     }
 }

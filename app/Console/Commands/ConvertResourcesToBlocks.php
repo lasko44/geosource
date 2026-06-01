@@ -562,7 +562,7 @@ class ConvertResourcesToBlocks extends Command
             ],
             [
                 'type' => 'heading',
-                'props' => ['level' => 3, 'content' => 'Free Tier (100 points max)', 'id' => 'free-tier'],
+                'props' => ['level' => 3, 'content' => 'Free Tier (94 points max)', 'id' => 'free-tier'],
             ],
             [
                 'type' => 'step-list',

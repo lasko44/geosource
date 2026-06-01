@@ -36,6 +36,7 @@ import {
     Lightbulb,
     Target,
     Sparkles,
+    Globe,
 } from 'lucide-vue-next';
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
 
@@ -630,21 +631,64 @@ const getPriorityColor = (priority: string) => {
 };
 
 const pillarIcons: Record<string, any> = {
-    // Base pillars (Free)
     definitions: FileText,
     structure: Layers,
     authority: Award,
     machine_readable: Code,
     answerability: MessageSquare,
-    // Pro pillars
     eeat: UserCheck,
     citations: Quote,
     ai_accessibility: Bot,
-    // Agency pillars
     freshness: Clock,
     readability: BookOpen,
     question_coverage: HelpCircle,
     multimedia: Image,
+};
+
+// Tooltip descriptions for citation drivers and other metrics
+const citationDriverTooltips: Record<string, string> = {
+    answerability: 'Does your content directly answer questions? Our research found this is the #1 predictor of AI citations — sites with high answerability are cited 109% more often. Lead with clear answers, use declarative statements, and avoid burying answers under preamble.',
+    citations: 'Does your content reference authoritative external sources? Sites that cite reputable sources earn 65% more AI citations. Link to research, studies, and authoritative publications. AI trusts content that shows its work.',
+    definitions: 'Does your content include explicit "X is Y" definitions? Clear definitions give AI confidence to cite you. Our research shows a 33% citation lift. Use patterns like "[Term] is [definition]" for every key concept.',
+};
+
+const metricTooltips: Record<string, string> = {
+    weight: 'How much this pillar contributes to your Citation Readiness Score. Weights are based on each pillar\'s empirically-measured correlation with actual AI citations across our study of 61 websites.',
+    status_strong: 'This pillar scores well. AI platforms can confidently extract and cite information based on this factor.',
+    status_moderate: 'Room for improvement. Strengthening this pillar would increase your citation likelihood.',
+    status_weak: 'This pillar needs attention. It\'s currently limiting your AI citation potential. See recommendations below for specific fixes.',
+    research_insight: 'This benchmark is based on our three-phase study of 61 websites across 17 industries with 540+ citation checks on ChatGPT, Perplexity, and Claude.',
+    citation_readiness: 'The Citation Readiness Score measures how likely AI platforms are to cite your content. It uses only the 3 pillars our research proved predict citations: Answerability (40% weight), Citation Quality (35%), and Definitions (25%). High CR sites are cited 55.6% of the time vs 33.3% for low CR.',
+    content_ai_readiness: 'The GEO Score measures overall content quality for AI comprehension across all 12 pillars. It tells you how well-structured your content is — but citation also depends on industry, brand, and query type.',
+    content_type: 'Content type significantly affects citation rates. Our research shows informational content (guides, how-tos) gets cited at dramatically higher rates than transactional content (product pages, pricing).',
+    citation_drivers: 'These three pillars showed the strongest correlation with AI citations in our three-phase study. Focus optimization efforts here for the biggest impact on citation likelihood.',
+    supporting_factors: 'These pillars show moderate positive correlation with citations. They help but aren\'t the primary drivers.',
+    baseline_requirements: 'These pillars are important for content quality and AI access, but our research showed they don\'t independently predict whether AI cites you. Most sites already score well on these.',
+};
+
+// Pillar grouping based on empirical citation research
+const pillarGroups = {
+    drivers: {
+        label: 'Citation Drivers',
+        description: 'These pillars have the strongest proven correlation with AI citations. Focus here first.',
+        keys: ['answerability', 'citations', 'definitions'],
+        color: 'border-green-500/50 bg-green-500/5',
+        badgeClass: 'bg-green-500/10 text-green-600 dark:text-green-400',
+    },
+    supporting: {
+        label: 'Supporting Factors',
+        description: 'These pillars show moderate positive correlation with citations.',
+        keys: ['authority', 'freshness', 'readability'],
+        color: 'border-blue-500/50 bg-blue-500/5',
+        badgeClass: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
+    },
+    baseline: {
+        label: 'Baseline Requirements',
+        description: 'Important for content quality but not independent citation predictors.',
+        keys: ['structure', 'machine_readable', 'eeat', 'ai_accessibility', 'question_coverage', 'multimedia'],
+        color: 'border-border bg-muted/30',
+        badgeClass: 'bg-muted text-muted-foreground',
+    },
 };
 
 const pillarResources: Record<string, Array<{ title: string; url: string }>> = {
@@ -714,6 +758,17 @@ const pillars = computed(() => {
             tierBadge: getTierBadge(pillarData.tier || 'free'),
         };
     });
+});
+
+const groupedPillars = computed(() => {
+    const allPillars = pillars.value;
+    return Object.entries(pillarGroups).map(([groupKey, group]) => ({
+        key: groupKey,
+        ...group,
+        pillars: group.keys
+            .map(key => allPillars.find(p => p.key === key))
+            .filter((p): p is NonNullable<typeof p> => p != null),
+    }));
 });
 
 const recommendations = computed(() => {
@@ -1017,27 +1072,109 @@ const getPillarExplanations = (pillar: any): Array<{ label: string; achieved: bo
                 </AlertDescription>
             </Alert>
 
-            <!-- Main Score Card (only show when completed) -->
-            <Card v-else class="overflow-hidden">
-                <div class="flex flex-col md:flex-row">
-                    <!-- Score Display -->
-                    <div class="flex flex-col items-center justify-center border-b bg-muted/30 p-8 md:border-b-0 md:border-r md:px-16">
+            <!-- Main Score Cards (only show when completed) -->
+            <div v-else class="grid gap-4 md:grid-cols-2">
+                <!-- Citation Readiness Score — Primary Metric -->
+                <Card v-if="citationReadiness" class="overflow-hidden border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
+                    <div class="flex flex-col items-center justify-center p-8">
+                        <div class="flex items-center gap-2 mb-4 text-sm text-primary font-medium">
+                            <Sparkles class="h-4 w-4" />
+                            Citation Readiness
+                            <TooltipProvider :delay-duration="0">
+                                <Tooltip>
+                                    <TooltipTrigger>
+                                        <HelpCircle class="h-3.5 w-3.5 text-muted-foreground" />
+                                    </TooltipTrigger>
+                                    <TooltipContent side="right" class="max-w-xs">
+                                        <p class="text-sm">{{ metricTooltips.citation_readiness }}</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        </div>
                         <div
-                            class="flex h-32 w-32 items-center justify-center rounded-full border-4 text-5xl font-bold"
+                            class="flex h-28 w-28 items-center justify-center rounded-full border-4 text-4xl font-bold"
+                            :class="citationReadiness.score >= 70 ? 'border-green-500 text-green-600 dark:text-green-400' :
+                                    citationReadiness.score >= 50 ? 'border-yellow-500 text-yellow-600 dark:text-yellow-400' :
+                                    'border-red-500 text-red-600 dark:text-red-400'"
+                        >
+                            {{ Math.round(citationReadiness.score) }}
+                        </div>
+                        <p class="mt-3 text-lg font-semibold"
+                            :class="citationReadiness.grade === 'High' ? 'text-green-600 dark:text-green-400' :
+                                    citationReadiness.grade === 'Moderate' ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'">
+                            {{ citationReadiness.grade }} Citation Potential
+                        </p>
+                        <p v-if="citationReadiness.benchmark" class="mt-1 text-xs text-muted-foreground">
+                            Expected rate: {{ citationReadiness.benchmark.expected_citation_rate }}
+                        </p>
+                        <p class="mt-3 text-sm text-muted-foreground text-center max-w-xs">{{ citationReadiness.summary }}</p>
+                    </div>
+                </Card>
+
+                <!-- GEO Score — Content Quality -->
+                <Card class="overflow-hidden">
+                    <div class="flex flex-col items-center justify-center p-8">
+                        <div class="flex items-center gap-2 mb-4 text-sm text-muted-foreground font-medium">
+                            <BarChart3 class="h-4 w-4" />
+                            Content AI-Readiness
+                            <TooltipProvider :delay-duration="0">
+                                <Tooltip>
+                                    <TooltipTrigger>
+                                        <HelpCircle class="h-3.5 w-3.5 text-muted-foreground" />
+                                    </TooltipTrigger>
+                                    <TooltipContent side="left" class="max-w-xs">
+                                        <p class="text-sm">{{ metricTooltips.content_ai_readiness }}</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        </div>
+                        <div
+                            class="flex h-28 w-28 items-center justify-center rounded-full border-4 text-4xl font-bold"
                             :class="getGradeColor(scan.grade)"
                         >
                             {{ scan.grade }}
                         </div>
-                        <p class="mt-4 text-4xl font-bold">{{ scan.score.toFixed(1) }}</p>
-                        <p class="text-sm text-muted-foreground">out of {{ scan.results?.max_score || 100 }}</p>
+                        <p class="mt-3 text-2xl font-bold">{{ scan.score.toFixed(1) }}</p>
+                        <p class="text-xs text-muted-foreground">out of {{ scan.results?.max_score || 170 }}</p>
+                        <p class="mt-3 text-sm text-muted-foreground text-center max-w-xs">{{ summary?.overall }}</p>
                     </div>
+                </Card>
+            </div>
 
-                    <!-- Summary -->
-                    <div class="flex-1 p-6">
-                        <h3 class="text-lg font-semibold">Summary</h3>
-                        <p class="mt-2 text-muted-foreground">{{ summary?.overall }}</p>
+            <!-- Content Type + Strengths/Weaknesses -->
+            <div v-if="isCompleted" class="grid gap-4 md:grid-cols-2">
+                <!-- Content Type Insight -->
+                <Card v-if="scan.results?.content_type" class="overflow-hidden">
+                    <CardHeader class="pb-2">
+                        <CardTitle class="flex items-center gap-2 text-base">
+                            <Globe class="h-5 w-5 text-muted-foreground" />
+                            Content Type
+                            <Badge variant="outline" class="text-xs capitalize">{{ scan.results.content_type.primary_type }}</Badge>
+                            <TooltipProvider :delay-duration="0">
+                                <Tooltip>
+                                    <TooltipTrigger>
+                                        <HelpCircle class="h-3.5 w-3.5 text-muted-foreground" />
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top" class="max-w-xs">
+                                        <p class="text-sm">{{ metricTooltips.content_type }}</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p class="text-sm text-muted-foreground">{{ scan.results.content_type.insight?.citation_context }}</p>
+                        <p class="text-sm text-muted-foreground mt-2">{{ scan.results.content_type.insight?.recommendation }}</p>
+                        <p v-if="scan.results.content_type.insight?.avg_citation_rate" class="mt-2 text-xs text-muted-foreground">
+                            Industry avg citation rate: <strong class="text-foreground">{{ scan.results.content_type.insight.avg_citation_rate }}</strong>
+                        </p>
+                    </CardContent>
+                </Card>
 
-                        <div class="mt-6 grid gap-4 md:grid-cols-2">
+                <!-- Strengths & Weaknesses -->
+                <Card class="overflow-hidden">
+                    <CardContent class="p-6">
+                        <div class="grid gap-4 grid-cols-2">
                             <div>
                                 <h4 class="flex items-center gap-2 text-sm font-medium text-green-600 dark:text-green-400">
                                     <CheckCircle2 class="h-4 w-4" />
@@ -1050,7 +1187,7 @@ const getPillarExplanations = (pillar: any): Array<{ label: string; achieved: bo
                                 </ul>
                             </div>
                             <div>
-                                <h4 class="flex items-center gap-2 text-sm font-medium text-orange-600">
+                                <h4 class="flex items-center gap-2 text-sm font-medium text-orange-600 dark:text-orange-400">
                                     <AlertCircle class="h-4 w-4" />
                                     Areas to Improve
                                 </h4>
@@ -1061,74 +1198,97 @@ const getPillarExplanations = (pillar: any): Array<{ label: string; achieved: bo
                                 </ul>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </Card>
+                    </CardContent>
+                </Card>
+            </div>
 
-            <!-- AI Citation Readiness (separate metric for LLM citation potential) -->
-            <Card v-if="isCompleted && citationReadiness" class="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
-                <CardHeader class="pb-3">
-                    <CardTitle class="flex items-center gap-2">
+            <!-- Citation Readiness Factor Breakdown -->
+            <Card v-if="isCompleted && citationReadiness?.factors" class="overflow-hidden">
+                <CardHeader class="pb-2">
+                    <CardTitle class="flex items-center gap-2 text-base">
                         <Sparkles class="h-5 w-5 text-primary" />
-                        AI Citation Readiness
+                        Citation Driver Breakdown
                         <TooltipProvider :delay-duration="0">
                             <Tooltip>
                                 <TooltipTrigger>
                                     <HelpCircle class="h-4 w-4 text-muted-foreground" />
                                 </TooltipTrigger>
-                                <TooltipContent class="max-w-xs">
-                                    <p class="text-sm">
-                                        This score measures how likely AI assistants (ChatGPT, Claude, Perplexity, etc.)
-                                        are to cite your content when answering user questions. Higher scores indicate
-                                        content that is more "quotable" and authoritative for AI systems.
-                                    </p>
+                                <TooltipContent side="top" class="max-w-xs">
+                                    <p class="text-sm">{{ metricTooltips.citation_drivers }}</p>
                                 </TooltipContent>
                             </Tooltip>
                         </TooltipProvider>
                     </CardTitle>
-                    <CardDescription>
-                        How likely AI assistants are to cite this content
-                    </CardDescription>
+                    <CardDescription>The three pillars that most strongly predict AI citations</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <!-- Main Score -->
-                    <div class="flex items-center gap-6 mb-6">
-                        <div class="flex items-center justify-center w-20 h-20 rounded-full border-4"
-                            :class="citationReadiness.score >= 70 ? 'border-green-500 bg-green-50 dark:bg-green-500/10' :
-                                    citationReadiness.score >= 50 ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-500/10' :
-                                    'border-red-500 bg-red-50 dark:bg-red-500/10'">
-                            <span class="text-2xl font-bold"
-                                :class="citationReadiness.score >= 70 ? 'text-green-600 dark:text-green-400' :
-                                        citationReadiness.score >= 50 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'">
-                                {{ citationReadiness.score }}
-                            </span>
-                        </div>
-                        <div class="flex-1">
-                            <p class="text-sm text-muted-foreground">{{ citationReadiness.summary }}</p>
-                        </div>
-                    </div>
-
-                    <!-- Factor Breakdown -->
-                    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+                    <div class="grid gap-3 sm:grid-cols-3">
                         <div v-for="(factor, key) in citationReadiness.factors" :key="key"
-                            class="bg-background/50 rounded-lg p-3 border">
-                            <div class="flex items-center justify-between mb-1">
-                                <span class="text-xs font-medium capitalize">{{ key.replace('_', ' ') }}</span>
-                                <span class="text-sm font-bold"
-                                    :class="factor.score >= 70 ? 'text-green-600 dark:text-green-400' :
-                                            factor.score >= 50 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'">
-                                    {{ factor.score }}
+                            class="rounded-lg border bg-background/50 p-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <TooltipProvider :delay-duration="0">
+                                    <Tooltip>
+                                        <TooltipTrigger class="flex items-center gap-1 text-sm font-medium cursor-help">
+                                            {{ factor.label || key }}
+                                            <HelpCircle class="h-3 w-3 text-muted-foreground" />
+                                        </TooltipTrigger>
+                                        <TooltipContent side="top" class="max-w-xs">
+                                            <p class="text-sm">{{ citationDriverTooltips[String(key)] || 'This pillar contributes to your Citation Readiness Score.' }}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                                <span class="text-lg font-bold"
+                                    :class="factor.score >= 60 ? 'text-green-600 dark:text-green-400' :
+                                            factor.score >= 40 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'">
+                                    {{ factor.score }}%
                                 </span>
                             </div>
-                            <div class="h-1.5 bg-muted rounded-full overflow-hidden mb-2">
+                            <div class="h-2 bg-muted rounded-full overflow-hidden">
                                 <div class="h-full rounded-full transition-all"
-                                    :class="factor.score >= 70 ? 'bg-green-500' :
-                                            factor.score >= 50 ? 'bg-yellow-500' : 'bg-red-500'"
-                                    :style="{ width: `${factor.score}%` }">
+                                    :class="factor.score >= 60 ? 'bg-green-500' :
+                                            factor.score >= 40 ? 'bg-yellow-500' : 'bg-red-500'"
+                                    :style="{ width: `${Math.min(factor.score, 100)}%` }">
                                 </div>
                             </div>
-                            <p class="text-xs text-muted-foreground line-clamp-2">{{ factor.reason }}</p>
+                            <div class="mt-2 flex items-center justify-between text-xs text-muted-foreground">
+                                <TooltipProvider :delay-duration="0">
+                                    <Tooltip>
+                                        <TooltipTrigger class="cursor-help"
+                                            :class="factor.status === 'strong' ? 'text-green-600 dark:text-green-400' :
+                                                      factor.status === 'moderate' ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'">
+                                            {{ factor.status === 'strong' ? 'Strong' : factor.status === 'moderate' ? 'Moderate' : 'Needs work' }}
+                                        </TooltipTrigger>
+                                        <TooltipContent side="bottom" class="max-w-xs">
+                                            <p class="text-sm">{{ factor.status === 'strong' ? metricTooltips.status_strong : factor.status === 'moderate' ? metricTooltips.status_moderate : metricTooltips.status_weak }}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                                <TooltipProvider :delay-duration="0">
+                                    <Tooltip>
+                                        <TooltipTrigger class="cursor-help">
+                                            Weight: {{ Math.round((factor.weight || 0) * 100) }}%
+                                        </TooltipTrigger>
+                                        <TooltipContent side="bottom" class="max-w-xs">
+                                            <p class="text-sm">{{ metricTooltips.weight }}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            </div>
                         </div>
+                    </div>
+                    <div v-if="citationReadiness.benchmark" class="mt-4 rounded-lg border-l-4 border-l-primary/50 bg-primary/5 p-3">
+                        <TooltipProvider :delay-duration="0">
+                            <Tooltip>
+                                <TooltipTrigger class="cursor-help text-left">
+                                    <p class="text-xs text-muted-foreground">
+                                        <strong class="text-foreground">Research insight:</strong> {{ citationReadiness.benchmark.comparison }}
+                                    </p>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" class="max-w-xs">
+                                    <p class="text-sm">{{ metricTooltips.research_insight }}</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
                     </div>
                 </CardContent>
             </Card>
@@ -1608,47 +1768,68 @@ const getPillarExplanations = (pillar: any): Array<{ label: string; achieved: bo
 
             <!-- Pillar Scores (only show when completed) -->
             <div v-if="isCompleted">
-                <h2 class="mb-4 text-xl font-semibold">Score Breakdown</h2>
-                <p class="mb-4 text-sm text-muted-foreground">Click any card to see why you didn't score 100%</p>
-                <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    <Card
-                        v-for="pillar in pillars"
-                        :key="pillar.key"
-                        class="cursor-pointer transition-all hover:border-primary/50 hover:shadow-md"
-                        @click="openPillarDetails(pillar)"
-                    >
-                        <CardHeader class="pb-2">
-                            <div class="flex items-center justify-between">
-                                <CardTitle class="flex items-center gap-2 text-base">
-                                    <component :is="pillar.icon" class="h-5 w-5 text-muted-foreground" />
-                                    {{ pillar.name }}
-                                    <span
-                                        v-if="pillar.tierBadge"
-                                        class="rounded-full px-2 py-0.5 text-xs font-medium"
-                                        :class="pillar.tierBadge.class"
-                                    >
-                                        {{ pillar.tierBadge.label }}
+                <h2 class="mb-2 text-xl font-semibold">Score Breakdown</h2>
+                <p class="mb-6 text-sm text-muted-foreground">Pillars grouped by their proven impact on AI citations. Click any card for details.</p>
+
+                <div v-for="group in groupedPillars" :key="group.key" class="mb-8">
+                    <!-- Group Header -->
+                    <div class="flex items-center gap-3 mb-3">
+                        <TooltipProvider :delay-duration="0">
+                            <Tooltip>
+                                <TooltipTrigger class="cursor-help">
+                                    <span class="rounded-full px-3 py-1 text-xs font-semibold" :class="group.badgeClass">
+                                        {{ group.label }}
                                     </span>
-                                </CardTitle>
-                                <div class="flex items-center gap-2">
-                                    <span class="text-2xl font-bold">{{ pillar.score.toFixed(1) }}</span>
-                                    <ChevronRight class="h-5 w-5 text-muted-foreground" />
+                                </TooltipTrigger>
+                                <TooltipContent side="right" class="max-w-xs">
+                                    <p class="text-sm">{{ metricTooltips[group.key === 'drivers' ? 'citation_drivers' : group.key === 'supporting' ? 'supporting_factors' : 'baseline_requirements'] }}</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                        <span class="text-xs text-muted-foreground">{{ group.description }}</span>
+                    </div>
+
+                    <!-- Pillar Cards -->
+                    <div class="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+                        <Card
+                            v-for="pillar in group.pillars"
+                            :key="pillar.key"
+                            class="cursor-pointer transition-all hover:border-primary/50 hover:shadow-md"
+                            :class="group.color"
+                            @click="openPillarDetails(pillar)"
+                        >
+                            <CardHeader class="pb-2">
+                                <div class="flex items-center justify-between">
+                                    <CardTitle class="flex items-center gap-2 text-base">
+                                        <component :is="pillar.icon" class="h-5 w-5 text-muted-foreground" />
+                                        {{ pillar.name }}
+                                        <span
+                                            v-if="pillar.tierBadge"
+                                            class="rounded-full px-2 py-0.5 text-xs font-medium"
+                                            :class="pillar.tierBadge.class"
+                                        >
+                                            {{ pillar.tierBadge.label }}
+                                        </span>
+                                    </CardTitle>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-2xl font-bold">{{ pillar.score.toFixed(1) }}</span>
+                                        <ChevronRight class="h-5 w-5 text-muted-foreground" />
+                                    </div>
                                 </div>
-                            </div>
-                            <CardDescription>out of {{ pillar.max_score }}</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <!-- Progress Bar -->
-                            <div class="mt-2 h-3 w-full overflow-hidden rounded-full bg-muted">
-                                <div
-                                    class="h-full rounded-full transition-all"
-                                    :class="getScoreColor(pillar.percentage)"
-                                    :style="{ width: `${pillar.percentage}%` }"
-                                />
-                            </div>
-                            <p class="mt-2 text-right text-sm font-medium">{{ pillar.percentage.toFixed(0) }}%</p>
-                        </CardContent>
-                    </Card>
+                                <CardDescription>out of {{ pillar.max_score }}</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div class="mt-2 h-3 w-full overflow-hidden rounded-full bg-muted">
+                                    <div
+                                        class="h-full rounded-full transition-all"
+                                        :class="getScoreColor(pillar.percentage)"
+                                        :style="{ width: `${pillar.percentage}%` }"
+                                    />
+                                </div>
+                                <p class="mt-2 text-right text-sm font-medium">{{ pillar.percentage.toFixed(0) }}%</p>
+                            </CardContent>
+                        </Card>
+                    </div>
                 </div>
             </div>
 

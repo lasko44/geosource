@@ -7,6 +7,7 @@ use App\Http\Requests\Scans\EmailScanReportRequest;
 use App\Mail\ScanReportMail;
 use App\Models\Scan;
 use App\Services\ScanService;
+use App\Support\ErrorSanitizer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -45,7 +46,7 @@ class EmailReportController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return back()->withErrors(['email' => 'Failed to send email: '.$e->getMessage()]);
+            return back()->withErrors(['email' => ErrorSanitizer::sanitize($e)]);
         }
     }
 }

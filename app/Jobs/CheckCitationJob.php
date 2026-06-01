@@ -121,6 +121,13 @@ class CheckCitationJob implements ShouldQueue
             // Process completion and create alerts if needed
             $citationService->processCheckCompletion($this->check);
 
+            // Record correlation data for continuous algorithm improvement
+            try {
+                app(\App\Services\Analytics\CorrelationService::class)->recordFromCitation($query);
+            } catch (\Exception $e) {
+                Log::warning('Failed to record citation correlation', ['query_id' => $query->id, 'error' => $e->getMessage()]);
+            }
+
             // Update the query's last checked timestamp
             $query->update(['last_checked_at' => now()]);
 

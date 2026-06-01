@@ -61,6 +61,19 @@ class SitemapController extends Controller
                 'changefreq' => 'monthly',
                 'priority' => '0.8',
             ],
+            // Research
+            [
+                'url' => '/blog/geo-citation-study',
+                'lastmod' => '2026-06-01',
+                'changefreq' => 'monthly',
+                'priority' => '0.9',
+            ],
+            [
+                'url' => '/benchmarks',
+                'lastmod' => now()->format('Y-m-d'),
+                'changefreq' => 'weekly',
+                'priority' => '0.8',
+            ],
             // Foundation articles
             [
                 'url' => '/resources/what-is-geo',

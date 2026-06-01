@@ -135,7 +135,7 @@ class ScanTest extends DuskTestCase
                 ],
                 'recommendations' => [],
                 'summary' => [],
-                'max_score' => 100,
+                'max_score' => 94,
             ],
         ]);
 

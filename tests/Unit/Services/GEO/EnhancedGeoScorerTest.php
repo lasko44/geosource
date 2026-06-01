@@ -26,8 +26,8 @@ class EnhancedGeoScorerTest extends TestCase
         $baseScorer = $this->createMock(GeoScorer::class);
         $baseScorer->method('forTier')->willReturnSelf();
         $baseScorer->method('score')->willReturn([
-            'score' => 75,
-            'max_score' => 100,
+            'score' => 70.5,
+            'max_score' => 94,
             'percentage' => 75,
             'grade' => 'B+',
             'pillars' => [

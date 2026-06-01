@@ -6,6 +6,7 @@ use App\Models\CitationResearch;
 use App\Models\Scan;
 use App\Models\User;
 use App\Services\TokenService;
+use App\Support\ErrorSanitizer;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -119,7 +120,11 @@ class RunCitationResearchJob implements ShouldQueue
             ]);
 
         } catch (\Exception $e) {
-            $this->markFailed($e->getMessage());
+            Log::error('Citation research failed', [
+                'research_id' => $this->research->id,
+                'error' => $e->getMessage(),
+            ]);
+            $this->markFailed(ErrorSanitizer::sanitize($e));
         }
     }
 

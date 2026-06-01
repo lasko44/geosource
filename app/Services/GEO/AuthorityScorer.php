@@ -18,7 +18,7 @@ use App\Services\GEO\Contracts\ScorerInterface;
  */
 class AuthorityScorer implements ScorerInterface
 {
-    private const MAX_SCORE = 25;
+    private const MAX_SCORE = 22;
 
     public function score(string $content, array $context = []): array
     {
@@ -276,17 +276,17 @@ class AuthorityScorer implements ScorerInterface
 
     private function calculateCoherenceScore(array $coherence): float
     {
-        // Up to 6 points
+        // Up to 5 points
         $ratio = $coherence['coherence_ratio'] ?? 0;
 
         if ($ratio >= 0.15) {
-            return 6;
+            return 5;
         }
         if ($ratio >= 0.10) {
-            return 4;
+            return 3.5;
         }
         if ($ratio >= 0.05) {
-            return 2;
+            return 1.5;
         }
 
         return 0;
@@ -294,13 +294,13 @@ class AuthorityScorer implements ScorerInterface
 
     private function calculateKeywordScore(array $keyword): float
     {
-        // Up to 5 points
+        // Up to 4.5 points
         $score = 0;
 
         // Density between 1-3% is optimal
         $density = $keyword['density_percent'] ?? 0;
         if ($density >= 1 && $density <= 3) {
-            $score += 3;
+            $score += 2.5;
         } elseif ($density > 0 && $density < 5) {
             $score += 1.5;
         }
@@ -312,12 +312,12 @@ class AuthorityScorer implements ScorerInterface
             $score += 1;
         }
 
-        return min(5, $score);
+        return min(4.5, $score);
     }
 
     private function calculateDepthScore(array $depth): float
     {
-        // Up to 6 points
+        // Up to 5.5 points
         $score = 0;
 
         // Word count (comprehensive content)
@@ -331,36 +331,36 @@ class AuthorityScorer implements ScorerInterface
         // Depth indicators
         $indicators = $depth['total_indicators'] ?? 0;
         if ($indicators >= 10) {
-            $score += 4;
+            $score += 3.5;
         } elseif ($indicators >= 5) {
             $score += 2;
         } elseif ($indicators >= 2) {
             $score += 1;
         }
 
-        return min(6, $score);
+        return min(5.5, $score);
     }
 
     private function calculateLinkScore(array $links): float
     {
-        // Up to 4 points
+        // Up to 3.5 points
         $score = 0;
         $internalCount = $links['internal_count'] ?? 0;
 
         if ($internalCount >= 5) {
-            $score += 4;
+            $score += 3.5;
         } elseif ($internalCount >= 3) {
-            $score += 2.5;
+            $score += 2;
         } elseif ($internalCount >= 1) {
             $score += 1;
         }
 
-        return min(4, $score);
+        return min(3.5, $score);
     }
 
     private function calculateSimilarityScore(?array $similarity): float
     {
-        // Up to 4 points
+        // Up to 3.5 points
         if ($similarity === null || isset($similarity['error'])) {
             return 0;
         }
@@ -368,13 +368,13 @@ class AuthorityScorer implements ScorerInterface
         $avg = $similarity['average_similarity'] ?? 0;
 
         if ($avg >= 0.8) {
-            return 4;
+            return 3.5;
         }
         if ($avg >= 0.6) {
-            return 3;
+            return 2.5;
         }
         if ($avg >= 0.4) {
-            return 2;
+            return 1.5;
         }
         if ($avg >= 0.2) {
             return 1;

@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Http;
  */
 class MachineReadableScorer implements ScorerInterface
 {
-    private const MAX_SCORE = 15;
+    private const MAX_SCORE = 10;
 
     public function score(string $content, array $context = []): array
     {
@@ -29,12 +29,12 @@ class MachineReadableScorer implements ScorerInterface
             'llms_txt' => $this->analyzeLlmsTxt($context['url'] ?? null),
         ];
 
-        // Calculate scores (total: 15 points)
-        $schemaScore = $this->calculateSchemaScore($details['schema']);           // Up to 5 pts
-        $semanticScore = $this->calculateSemanticScore($details['semantic_html']); // Up to 3 pts
-        $faqScore = $this->calculateFaqScore($details['faq']);                     // Up to 3 pts
-        $metaScore = $this->calculateMetaScore($details['meta']);                  // Up to 2 pts
-        $llmsTxtScore = $this->calculateLlmsTxtScore($details['llms_txt']);        // Up to 2 pts
+        // Calculate scores (total: 10 points)
+        $schemaScore = $this->calculateSchemaScore($details['schema']);           // Up to 3.5 pts
+        $semanticScore = $this->calculateSemanticScore($details['semantic_html']); // Up to 2 pts
+        $faqScore = $this->calculateFaqScore($details['faq']);                     // Up to 2 pts
+        $metaScore = $this->calculateMetaScore($details['meta']);                  // Up to 1.5 pts
+        $llmsTxtScore = $this->calculateLlmsTxtScore($details['llms_txt']);        // Up to 1 pts
 
         $totalScore = $schemaScore + $semanticScore + $faqScore + $metaScore + $llmsTxtScore;
 
@@ -281,86 +281,86 @@ class MachineReadableScorer implements ScorerInterface
 
     private function calculateSchemaScore(array $schema): float
     {
-        // Up to 5 points
+        // Up to 3.5 points
         $score = 0;
 
         if ($schema['found'] > 0) {
-            $score += 2;
+            $score += 1.5;
         }
 
         if ($schema['has_json_ld']) {
-            $score += 1;
+            $score += 0.5;
         }
 
         if ($schema['has_valuable_schema']) {
-            $score += 2;
+            $score += 1.5;
         }
 
-        return min(5, $score);
+        return min(3.5, $score);
     }
 
     private function calculateSemanticScore(array $semantic): float
     {
-        // Up to 3 points
+        // Up to 2 points
         $score = 0;
 
         // Uses semantic elements
         if ($semantic['unique_elements_used'] >= 3) {
-            $score += 1.5;
+            $score += 1;
         } elseif ($semantic['unique_elements_used'] >= 1) {
-            $score += 0.5;
+            $score += 0.33;
         }
 
         // Good image alt coverage
         if ($semantic['images']['alt_coverage'] >= 90) {
-            $score += 0.75;
+            $score += 0.5;
         }
 
         // Meaningful link text
         $linkTotal = $semantic['links']['total'];
         if ($linkTotal > 0 && $semantic['links']['meaningful'] / $linkTotal >= 0.8) {
-            $score += 0.75;
+            $score += 0.5;
         }
 
-        return min(3, $score);
+        return min(2, $score);
     }
 
     private function calculateFaqScore(array $faq): float
     {
-        // Up to 3 points
+        // Up to 2 points
         $score = 0;
 
         if ($faq['has_faq_schema']) {
-            $score += 1.5;
+            $score += 1;
         }
 
         if ($faq['has_faq_section']) {
-            $score += 0.75;
+            $score += 0.5;
         }
 
         if ($faq['question_count'] >= 3) {
-            $score += 0.75;
+            $score += 0.5;
         }
 
-        return min(3, $score);
+        return min(2, $score);
     }
 
     private function calculateMetaScore(array $meta): float
     {
-        // Up to 2 points
+        // Up to 1.5 points
         $score = 0;
 
         // Has essential meta
         if ($meta['has_title'] && $meta['has_description']) {
-            $score += 1;
+            $score += 0.75;
         }
 
         // Has social meta
         if ($meta['has_og'] || $meta['has_twitter']) {
-            $score += 1;
+            $score += 0.75;
         }
 
-        return min(2, $score);
+        return min(1.5, $score);
     }
 
     private function countTag(string $content, string $tag): int
@@ -506,21 +506,21 @@ class MachineReadableScorer implements ScorerInterface
      */
     private function calculateLlmsTxtScore(array $llmsTxt): float
     {
-        // Up to 2 points
+        // Up to 1 point
         $score = 0;
 
         // File exists
         if ($llmsTxt['exists']) {
-            $score += 1;
+            $score += 0.5;
 
             // Quality bonus based on content
             if ($llmsTxt['quality_score'] >= 60) {
-                $score += 1;
-            } elseif ($llmsTxt['quality_score'] >= 40) {
                 $score += 0.5;
+            } elseif ($llmsTxt['quality_score'] >= 40) {
+                $score += 0.25;
             }
         }
 
-        return min(2, $score);
+        return min(1, $score);
     }
 }

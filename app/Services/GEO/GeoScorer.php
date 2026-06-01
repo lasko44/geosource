@@ -10,23 +10,26 @@ use App\Services\GEO\Contracts\ScorerInterface;
  * Orchestrates all scoring pillars to produce a comprehensive
  * GEO score with explainable, actionable insights.
  *
- * Base Pillars (Free tier):
- * - Clear Definitions (20 points)
- * - Structured Knowledge (20 points)
- * - Topic Authority (25 points)
- * - Machine-Readable Formatting (15 points)
- * - High-Confidence Answerability (20 points)
+ * Base Pillars (Free tier, 94 points):
+ * - High-Confidence Answerability (30 points) — strongest citation predictor
+ * - Topic Authority (22 points)
+ * - Clear Definitions (20 points) — third strongest predictor
+ * - Structured Knowledge (12 points)
+ * - Machine-Readable Formatting (10 points)
  *
- * Pro Pillars (+35 points):
- * - E-E-A-T Signals (15 points)
- * - Citations & Sources (12 points)
- * - AI Crawler Access (8 points)
+ * Pro Pillars (+35 points = 129 total):
+ * - Citations & Sources (20 points) — second strongest predictor
+ * - E-E-A-T Signals (10 points)
+ * - AI Crawler Access (5 points)
  *
- * Agency Pillars (+40 points):
+ * Full Pillars (+41 points = 170 total):
+ * - Readability (18 points)
  * - Content Freshness (10 points)
- * - Readability (10 points)
- * - Question Coverage (10 points)
- * - Multimedia Content (10 points)
+ * - Question Coverage (8 points)
+ * - Multimedia Content (5 points)
+ *
+ * Weights are calibrated from a two-phase empirical study of 60 websites
+ * across 17 industries, measuring actual AI citation rates.
  */
 class GeoScorer
 {
@@ -194,6 +197,8 @@ class GeoScorer
             'max_score' => $maxPossible,
             'percentage' => $overallPercentage,
             'grade' => $this->getGrade($overallPercentage),
+            'citation_readiness' => $this->calculateCitationReadiness($pillarResults),
+            'content_type' => $this->detectContentType($content, $context),
             'pillars' => $pillarResults,
             'recommendations' => $this->generateRecommendations($pillarResults),
             'summary' => $this->generateSummary($overallPercentage, $pillarResults),
@@ -252,6 +257,201 @@ class GeoScorer
             'grade' => $this->getGrade(($totalScore / $maxPossible) * 100),
             'pillars' => $pillarScores,
         ];
+    }
+
+    /**
+     * Calculate Citation Readiness Score from the three empirically-proven predictive pillars.
+     *
+     * Based on GeoSource.ai research: Answerability (+69% lift), Citations Quality (+56% lift),
+     * and Definitions (+40% lift) are the strongest predictors of AI citation.
+     * Sites scoring high on all three have a 51.6% citation rate vs 24.2% for sites scoring low.
+     */
+    private function calculateCitationReadiness(array $pillarResults): array
+    {
+        $predictivePillars = [
+            'answerability' => ['weight' => 0.40, 'label' => 'Answerability'],
+            'citations' => ['weight' => 0.35, 'label' => 'Citation Quality'],
+            'definitions' => ['weight' => 0.25, 'label' => 'Definitions'],
+        ];
+
+        $weightedScore = 0;
+        $totalWeight = 0;
+        $factors = [];
+
+        foreach ($predictivePillars as $key => $config) {
+            if (isset($pillarResults[$key])) {
+                $pct = $pillarResults[$key]['percentage'];
+                $weightedScore += $pct * $config['weight'];
+                $totalWeight += $config['weight'];
+                $factors[$key] = [
+                    'label' => $config['label'],
+                    'score' => $pct,
+                    'weight' => $config['weight'],
+                    'status' => $pct >= 60 ? 'strong' : ($pct >= 40 ? 'moderate' : 'weak'),
+                ];
+            }
+        }
+
+        $score = $totalWeight > 0 ? round($weightedScore / $totalWeight, 1) : 0;
+
+        return [
+            'score' => $score,
+            'grade' => $this->getCitationReadinessGrade($score),
+            'factors' => $factors,
+            'summary' => $this->getCitationReadinessSummary($score, $factors),
+            'benchmark' => $this->getCitationBenchmark($score),
+        ];
+    }
+
+    /**
+     * Grade citation readiness on a simpler scale.
+     */
+    private function getCitationReadinessGrade(float $score): string
+    {
+        return match (true) {
+            $score >= 70 => 'High',
+            $score >= 50 => 'Moderate',
+            $score >= 30 => 'Low',
+            default => 'Very Low',
+        };
+    }
+
+    /**
+     * Generate a summary for citation readiness.
+     */
+    private function getCitationReadinessSummary(float $score, array $factors): string
+    {
+        $weakFactors = array_filter($factors, fn ($f) => $f['status'] === 'weak');
+
+        if ($score >= 70) {
+            return 'Your content has strong citation potential. AI platforms can confidently extract and cite this content.';
+        }
+
+        if ($score >= 50) {
+            $weakNames = implode(' and ', array_map(fn ($f) => $f['label'], $weakFactors));
+
+            return $weakNames
+                ? "Moderate citation potential. Improving {$weakNames} would increase AI citation likelihood."
+                : 'Moderate citation potential. Your content is citable but not optimally structured for AI extraction.';
+        }
+
+        if ($score >= 30) {
+            return 'Low citation potential. AI platforms may struggle to extract confident, citable information from this content. Focus on direct answers, explicit definitions, and citing authoritative sources.';
+        }
+
+        return 'Very low citation potential. This content lacks the clarity, definitions, and source citations that AI platforms need to cite with confidence.';
+    }
+
+    /**
+     * Provide citation rate benchmarks from the GeoSource.ai study.
+     */
+    private function getCitationBenchmark(float $score): array
+    {
+        // Based on our two-phase study of 60 websites across 17 industries
+        if ($score >= 60) {
+            return [
+                'expected_citation_rate' => '49%',
+                'comparison' => 'Top third — sites in this range are cited nearly 2x more than average',
+                'study_basis' => 'Based on 60-site study across 17 industries',
+            ];
+        }
+
+        if ($score >= 40) {
+            return [
+                'expected_citation_rate' => '38%',
+                'comparison' => 'Middle third — citation rate close to average',
+                'study_basis' => 'Based on 60-site study across 17 industries',
+            ];
+        }
+
+        return [
+            'expected_citation_rate' => '24%',
+            'comparison' => 'Bottom third — focus on Answerability and Definitions to improve',
+            'study_basis' => 'Based on 60-site study across 17 industries',
+        ];
+    }
+
+    /**
+     * Detect content type to provide industry context and query-type recommendations.
+     */
+    private function detectContentType(string $content, array $context): array
+    {
+        $plainText = strtolower(strip_tags($content));
+        $url = $context['url'] ?? '';
+        $domain = parse_url($url, PHP_URL_HOST) ?? '';
+
+        // Detect content type from signals in the content and URL
+        $signals = [
+            'informational' => 0,
+            'transactional' => 0,
+            'educational' => 0,
+        ];
+
+        // Informational signals
+        $infoPatterns = ['how to', 'what is', 'guide', 'learn', 'understand', 'explained', 'definition', 'overview', 'introduction', 'tutorial', 'step by step', 'tips for', 'best practices'];
+        foreach ($infoPatterns as $pattern) {
+            $signals['informational'] += substr_count($plainText, $pattern);
+        }
+
+        // Transactional signals
+        $transPatterns = ['buy now', 'add to cart', 'pricing', 'free trial', 'sign up', 'get started', 'request demo', 'subscribe', 'order now', 'shop', 'purchase', 'starting at', 'per month', '/mo'];
+        foreach ($transPatterns as $pattern) {
+            $signals['transactional'] += substr_count($plainText, $pattern);
+        }
+
+        // Educational signals
+        $eduPatterns = ['research', 'study', 'findings', 'methodology', 'data shows', 'according to', 'evidence', 'published', 'peer-reviewed', 'citation', 'reference'];
+        foreach ($eduPatterns as $pattern) {
+            $signals['educational'] += substr_count($plainText, $pattern);
+        }
+
+        // Determine primary type
+        arsort($signals);
+        $primaryType = array_key_first($signals);
+        $confidence = max($signals) > 5 ? 'high' : (max($signals) > 2 ? 'medium' : 'low');
+
+        // Industry benchmark data from our study
+        $industryInsight = $this->getIndustryInsight($primaryType);
+
+        return [
+            'primary_type' => $primaryType,
+            'confidence' => $confidence,
+            'signals' => $signals,
+            'insight' => $industryInsight,
+        ];
+    }
+
+    /**
+     * Provide industry-level citation context based on content type.
+     */
+    private function getIndustryInsight(string $contentType): array
+    {
+        return match ($contentType) {
+            'informational' => [
+                'citation_context' => 'Informational content has the highest citation potential.',
+                'avg_citation_rate' => '77.8%',
+                'recommendation' => 'AI platforms confidently cite factual, educational content. Focus on clear definitions, authoritative sources, and direct answers to common questions.',
+                'top_industries' => 'Healthcare (80%), Travel (83%), Finance (67%)',
+            ],
+            'educational' => [
+                'citation_context' => 'Educational and research content is highly citable.',
+                'avg_citation_rate' => '65%',
+                'recommendation' => 'Educational content performs well in AI search. Strengthen this by adding explicit definitions, citing primary sources, and structuring content as step-by-step guides.',
+                'top_industries' => 'Education (25-58%), Finance (67%), Legal (50%)',
+            ],
+            'transactional' => [
+                'citation_context' => 'Product and transactional pages have lower citation rates.',
+                'avg_citation_rate' => '13.3%',
+                'recommendation' => 'AI platforms are less confident recommending specific products. To increase citation likelihood: create educational content alongside product pages, publish comparison guides, and target informational queries ("how to choose X") rather than just product pages.',
+                'top_industries' => 'SaaS (17%), Ecommerce (7%), Recruitment (0%)',
+            ],
+            default => [
+                'citation_context' => 'Mixed content type detected.',
+                'avg_citation_rate' => '40%',
+                'recommendation' => 'Ensure your most important content clearly serves informational queries with direct answers and explicit definitions.',
+                'top_industries' => 'Varies by industry',
+            ],
+        };
     }
 
     /**

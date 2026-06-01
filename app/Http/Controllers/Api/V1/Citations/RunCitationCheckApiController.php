@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\RunCitationCheckApiRequest;
 use App\Models\CitationQuery;
 use App\Services\Citation\CitationService;
+use App\Support\ErrorSanitizer;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Runs a citation check on a specific platform via the API.
@@ -31,7 +33,9 @@ class RunCitationCheckApiController extends Controller
                 'status' => $check->status,
             ], 201);
         } catch (\RuntimeException $e) {
-            return response()->json(['error' => $e->getMessage()], 422);
+            Log::error('API citation check failed', ['error' => $e->getMessage()]);
+
+            return response()->json(['error' => ErrorSanitizer::sanitize($e)], 422);
         }
     }
 }

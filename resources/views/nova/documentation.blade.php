@@ -202,18 +202,18 @@
                         <div class="grid grid-cols-3 gap-4 my-4">
                             <div class="bg-gray-50 rounded-lg p-4 border">
                                 <h4 class="font-semibold text-gray-900">Free Tier</h4>
-                                <p class="text-3xl font-bold text-gray-700">0-100 pts</p>
+                                <p class="text-3xl font-bold text-gray-700">0-94 pts</p>
                                 <p class="text-sm text-gray-500">5 pillars</p>
                             </div>
                             <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
                                 <h4 class="font-semibold text-blue-900">Pro Tier</h4>
-                                <p class="text-3xl font-bold text-blue-700">0-135 pts</p>
+                                <p class="text-3xl font-bold text-blue-700">0-129 pts</p>
                                 <p class="text-sm text-blue-500">+3 pillars (+35 pts)</p>
                             </div>
                             <div class="bg-purple-50 rounded-lg p-4 border border-purple-200">
-                                <h4 class="font-semibold text-purple-900">Agency Tier</h4>
-                                <p class="text-3xl font-bold text-purple-700">0-175 pts</p>
-                                <p class="text-sm text-purple-500">+4 pillars (+40 pts)</p>
+                                <h4 class="font-semibold text-purple-900">Full Tier</h4>
+                                <p class="text-3xl font-bold text-purple-700">0-170 pts</p>
+                                <p class="text-sm text-purple-500">+4 pillars (+41 pts)</p>
                             </div>
                         </div>
 
@@ -245,7 +245,7 @@
                         <!-- Scoring Pillars -->
                         <h2 id="scoring-pillars" class="text-2xl font-bold text-gray-900 border-b pb-4 mt-12">Scoring Pillars</h2>
 
-                        <h3 class="text-lg font-semibold mt-6 text-gray-700">FREE TIER PILLARS (100 points total)</h3>
+                        <h3 class="text-lg font-semibold mt-6 text-gray-700">FREE TIER PILLARS (94 points total)</h3>
 
                         <div class="space-y-4 mt-4">
                             <div class="border rounded-lg p-4">
@@ -329,7 +329,7 @@
                             </div>
                         </div>
 
-                        <h3 class="text-lg font-semibold mt-8 text-blue-700">PRO TIER PILLARS (+35 points)</h3>
+                        <h3 class="text-lg font-semibold mt-8 text-blue-700">PRO TIER PILLARS (+35 points = 129 total)</h3>
 
                         <div class="space-y-4 mt-4">
                             <div class="border border-blue-200 rounded-lg p-4 bg-blue-50/50">
@@ -374,7 +374,7 @@
                             </div>
                         </div>
 
-                        <h3 class="text-lg font-semibold mt-8 text-purple-700">AGENCY TIER PILLARS (+40 points)</h3>
+                        <h3 class="text-lg font-semibold mt-8 text-purple-700">FULL TIER PILLARS (+41 points = 170 total)</h3>
 
                         <div class="space-y-4 mt-4">
                             <div class="border border-purple-200 rounded-lg p-4 bg-purple-50/50">

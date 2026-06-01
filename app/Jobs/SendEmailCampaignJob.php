@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Mail\MarketingEmail;
 use App\Models\EmailCampaign;
 use App\Models\EmailCampaignSend;
+use App\Support\ErrorSanitizer;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -122,7 +123,7 @@ class SendEmailCampaignJob implements ShouldBeUnique, ShouldQueue
                 // Update send record with error
                 $send->update([
                     'status' => 'failed',
-                    'error_message' => substr($e->getMessage(), 0, 255),
+                    'error_message' => substr(ErrorSanitizer::sanitize($e), 0, 255),
                 ]);
 
                 // Increment failed count

@@ -215,7 +215,7 @@ When all competitor scans complete, the parent scan receives a benchmark:
 | status | enum | pending, processing, completed, failed, cancelled |
 | requested_tier | string | basic, pro, full |
 | actual_tier | string | Tier used for scoring |
-| score | decimal | Overall GEO score (0-100) |
+| score | decimal | Overall GEO score (0-170 depending on tier) |
 | grade | string | A+, A, B+, B, C, D, F |
 | results | json | Full pillar scores and analysis |
 | is_competitor | boolean | Competitor scan flag |
@@ -233,7 +233,7 @@ When all competitor scans complete, the parent scan receives a benchmark:
 ```json
 {
   "score": 85.5,
-  "max_score": 100,
+  "max_score": 94,
   "percentage": 85.5,
   "grade": "A-",
   "pillars": {...},

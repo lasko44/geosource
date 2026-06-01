@@ -8,7 +8,7 @@
 
         <section>
             <h2>What Is GEO (Generative Engine Optimization)?</h2>
-            <p><dfn><strong>Generative Engine Optimization (GEO)</strong></dfn> is the practice of structuring website content so it can be accurately retrieved, understood, and cited by AI-powered search engines.</p>
+            <p><dfn><strong>GeoSource.ai is a Generative Engine Optimization (GEO) platform</strong></dfn> that helps websites become visible and citable by AI-powered search engines including <a href="https://openai.com/index/searchgpt-prototype/">ChatGPT</a>, <a href="https://www.perplexity.ai/">Perplexity AI</a>, <a href="https://www.anthropic.com/claude">Claude</a>, and <a href="https://blog.google/products/search/generative-ai-google-search-may-2024/">Google AI Overviews</a>. GEO is the practice of structuring website content so it can be accurately retrieved, understood, and cited by these AI systems.</p>
             <p>Unlike traditional SEO, GEO focuses on:</p>
             <ul>
                 <li>Clear definitions</li>
@@ -63,7 +63,7 @@
                 <li>Use it as a trusted source</li>
                 <li>Cite or reference your site in generated answers</li>
             </ul>
-            <p>A higher GEO score means your site communicates knowledge clearly — not just keywords.</p>
+            <p>A higher GEO score means your content is structured for AI comprehension. Within your industry, higher scores correlate with better citation rates — backed by our <a href="/blog/geo-citation-study">empirical citation study</a> of 61 websites across 17 industries. Our research, consistent with <a href="https://arxiv.org/abs/2311.09735">academic GEO research</a>, found that answerability, citation quality, and clear definitions are the strongest predictors of AI citations. According to our data, sites with high Citation Readiness Scores are cited 55.6% of the time by AI platforms like <a href="https://openai.com/index/searchgpt-prototype/">ChatGPT</a> and <a href="https://www.perplexity.ai/">Perplexity</a>.</p>
         </section>
 
         <section>
@@ -134,11 +134,16 @@
                 <dd>GeoSource.ai analyzes your website the same way AI systems do. We scan your pages, extract structured knowledge, and evaluate how easily AI models can retrieve and trust your content. You receive a clear GEO Score (0-100) with actionable insights.</dd>
 
                 <dt>What is a GEO Score?</dt>
-                <dd>Your GEO Score represents how likely an AI system is to understand your content, retrieve it accurately, use it as a trusted source, and cite or reference your site in generated answers. A higher GEO score means your site communicates knowledge clearly — not just keywords.</dd>
+                <dd>Your GEO Score measures how well your content is optimized for AI comprehension across 12 evidence-weighted pillars. Your Citation Readiness Score — based on the three pillars our research proved predict citations — shows how likely AI platforms are to cite your content within your competitive category.</dd>
 
                 <dt>How does GEO relate to SEO?</dt>
                 <dd>GeoSource.ai does not replace SEO — it complements it. SEO optimizes for rankings, while GEO optimizes for answers. Sites that combine both gain traditional search traffic, AI visibility, long-term discoverability, and authority across platforms.</dd>
             </dl>
+        </section>
+
+        <section>
+            <h2>About GeoSource.ai</h2>
+            <p>GeoSource.ai was built by Matt Laszkiewicz. Our scoring algorithm is calibrated from a <a href="/blog/geo-citation-study">three-phase empirical citation study</a> of 61 websites across 17 industries with 540+ citation checks on <a href="https://openai.com/index/searchgpt-prototype/">ChatGPT</a>, <a href="https://www.perplexity.ai/">Perplexity AI</a>, and <a href="https://www.anthropic.com/claude">Claude</a>. Our approach is informed by <a href="https://arxiv.org/abs/2311.09735">emerging academic research on Generative Engine Optimization</a>.</p>
         </section>
 
         <footer>

@@ -44,8 +44,22 @@ const breadcrumbItems = [
     { label: 'GEO Score Explained' },
 ];
 
-// Free Tier Pillars (100 points max)
+// Free Tier Pillars (94 points max)
 const freePillars = [
+    {
+        name: 'High-Confidence Answerability',
+        points: 30,
+        icon: MessageSquare,
+        description: 'Declarative statements that AI can confidently quote and cite. The strongest predictor of AI citation likelihood.',
+        examples: ['Declarative sentences', 'Quotable snippets (50-150 chars)', 'Direct answers without preamble'],
+    },
+    {
+        name: 'Topic Authority',
+        points: 22,
+        icon: Award,
+        description: 'Depth of coverage and expertise indicators in your content.',
+        examples: ['800-1500+ word count', 'Internal links', 'Examples and evidence'],
+    },
     {
         name: 'Clear Definitions',
         points: 20,
@@ -55,61 +69,54 @@ const freePillars = [
     },
     {
         name: 'Structured Knowledge',
-        points: 20,
+        points: 12,
         icon: Layers,
-        description: 'How well your content is organized with proper heading hierarchy and lists.',
+        description: 'How well your content is organized with proper heading hierarchy and lists. A baseline requirement for AI comprehension.',
         examples: ['Single H1 heading', 'Multiple H2 subheadings', 'Bullet/numbered lists'],
     },
     {
-        name: 'Topic Authority',
-        points: 25,
-        icon: Award,
-        description: 'Depth of coverage and expertise indicators in your content.',
-        examples: ['800-1500+ word count', 'Internal links', 'Examples and evidence'],
-    },
-    {
         name: 'Machine-Readable Formatting',
-        points: 15,
+        points: 10,
         icon: Code,
-        description: 'Technical optimization including schema markup and semantic HTML.',
+        description: 'Technical optimization including schema markup and semantic HTML. A foundation for AI access.',
         examples: ['JSON-LD structured data', 'Semantic HTML elements', 'Alt text on images', 'llms.txt file'],
-    },
-    {
-        name: 'High-Confidence Answerability',
-        points: 20,
-        icon: MessageSquare,
-        description: 'Declarative statements that AI can confidently quote and cite.',
-        examples: ['Declarative sentences', 'Quotable snippets (50-150 chars)', 'Direct answers without preamble'],
     },
 ];
 
 // Pro Tier Pillars (+35 points)
 const proPillars = [
     {
+        name: 'Citations & Sources',
+        points: 20,
+        icon: Quote,
+        description: 'External authoritative links and proper citation practices. The second strongest predictor of AI citations.',
+        examples: ['Links to .gov/.edu sources', 'Inline citations', 'Statistics with sources', 'Reference sections'],
+    },
+    {
         name: 'E-E-A-T Signals',
-        points: 15,
+        points: 10,
         icon: UserCheck,
         description: 'Experience, Expertise, Authoritativeness, and Trustworthiness indicators.',
         examples: ['Author attribution', 'Author bio with credentials', 'Reviews/testimonials', 'Contact information'],
     },
     {
-        name: 'Citations & Sources',
-        points: 12,
-        icon: Quote,
-        description: 'External authoritative links and proper citation practices.',
-        examples: ['Links to .gov/.edu sources', 'Inline citations', 'Statistics with sources', 'Reference sections'],
-    },
-    {
         name: 'AI Crawler Access',
-        points: 8,
+        points: 5,
         icon: Bot,
-        description: 'Technical accessibility for AI crawlers and systems.',
+        description: 'Technical accessibility for AI crawlers and systems. A baseline requirement — nearly all sites pass.',
         examples: ['robots.txt allows AI bots', 'No noindex/nosnippet', 'Sitemap reference'],
     },
 ];
 
-// Agency Tier Pillars (+40 points)
+// Full Tier Pillars (+41 points)
 const agencyPillars = [
+    {
+        name: 'Readability',
+        points: 18,
+        icon: Type,
+        description: 'Clear, accessible writing that AI can easily parse. The third strongest predictor of AI citations.',
+        examples: ['8th-9th grade reading level', '15-20 word sentences', '50-100 word paragraphs', 'Simple vocabulary'],
+    },
     {
         name: 'Content Freshness',
         points: 10,
@@ -118,22 +125,15 @@ const agencyPillars = [
         examples: ['Visible publish date', 'Last updated date', 'Current year references', 'datePublished in schema'],
     },
     {
-        name: 'Readability',
-        points: 10,
-        icon: Type,
-        description: 'Clear, accessible writing that AI can easily parse.',
-        examples: ['8th-9th grade reading level', '15-20 word sentences', '50-100 word paragraphs', 'Simple vocabulary'],
-    },
-    {
         name: 'Question Coverage',
-        points: 10,
+        points: 8,
         icon: HelpCircle,
         description: 'Direct answers to common questions users ask AI.',
         examples: ['FAQ sections', 'Question-format headings', 'FAQPage schema', 'What/How/Why coverage'],
     },
     {
         name: 'Multimedia Content',
-        points: 10,
+        points: 5,
         icon: Image,
         description: 'Visual elements that enhance content understanding.',
         examples: ['Images with alt text', 'Figure captions', 'Tables for data', 'Visual variety'],
@@ -201,7 +201,7 @@ const faqJsonLd = {
             name: 'What is a GEO Score?',
             acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'A GEO Score is a quantitative measurement of how well a website or webpage is optimized for generative AI understanding and citation. Unlike SEO scores, it measures citation readiness rather than search rankings. The maximum score depends on your plan tier: Free (100 points), Pro (135 points), Agency (175 points).',
+                text: 'A GEO Score is a quantitative measurement of how well a website or webpage is optimized for generative AI understanding and citation. Unlike SEO scores, it measures citation readiness rather than search rankings. The maximum score depends on your plan tier: Free (94 points), Pro (129 points), Full (170 points). Pillar weights are calibrated based on empirical research into which content signals predict AI citations.',
             },
         },
         {
@@ -209,7 +209,7 @@ const faqJsonLd = {
             name: 'What factors determine a GEO Score?',
             acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'GEO Scores are determined by up to 12 pillars across three tiers. Free tier includes: Clear Definitions (20 pts), Structured Knowledge (20 pts), Topic Authority (25 pts), Machine-Readable Formatting (15 pts), and High-Confidence Answerability (20 pts). Pro adds E-E-A-T, Citations, and AI Accessibility. Agency adds Freshness, Readability, Question Coverage, and Multimedia.',
+                text: 'GEO Scores are determined by 12 evidence-weighted pillars across three tiers. Free tier (94 pts): Answerability (30 pts — strongest predictor), Topic Authority (22), Clear Definitions (20), Structured Knowledge (12), Machine-Readable (10). Pro tier adds Citations & Sources (20 — second strongest), E-E-A-T (10), AI Access (5). Full tier adds Readability (18), Freshness (10), Question Coverage (8), Multimedia (5). Weights are calibrated from our empirical citation study.',
             },
         },
         {
@@ -298,7 +298,7 @@ const faqJsonLd = {
                                     Unlike SEO scores, a GEO Score does not measure rankings or traffic. It measures <strong class="text-foreground">citation readiness</strong> — how likely AI systems like ChatGPT, Claude, and Perplexity are to understand, trust, and reference your content.
                                 </p>
                                 <p class="mt-4 text-muted-foreground">
-                                    The <Link href="/" class="text-primary hover:underline">GeoSource.ai platform</Link> calculates your GEO Score across up to 12 pillars, with the maximum score depending on your plan tier: <strong class="text-foreground">Free (100 pts)</strong>, <strong class="text-foreground">Pro (135 pts)</strong>, or <strong class="text-foreground">Agency (175 pts)</strong>.
+                                    The <Link href="/" class="text-primary hover:underline">GeoSource.ai platform</Link> calculates your GEO Score across up to 12 pillars, with the maximum score depending on your plan tier: <strong class="text-foreground">Free (94 pts)</strong>, <strong class="text-foreground">Pro (129 pts)</strong>, or <strong class="text-foreground">Full (170 pts)</strong>. Weights are calibrated based on our <Link href="/blog/geo-citation-study" class="text-primary hover:underline">empirical citation study</Link>.
                                 </p>
                             </CardContent>
                         </Card>
@@ -317,7 +317,7 @@ const faqJsonLd = {
                         <section class="mb-10" aria-labelledby="free-tier-heading">
                             <div class="flex items-center gap-3 mb-4">
                                 <h3 id="free-tier-heading" class="text-xl font-semibold">Free Tier</h3>
-                                <Badge variant="secondary">100 points max</Badge>
+                                <Badge variant="secondary">94 points max</Badge>
                             </div>
                             <p class="text-muted-foreground mb-4 text-sm">Core pillars available to all users.</p>
                             <div class="space-y-4">
@@ -354,7 +354,7 @@ const faqJsonLd = {
                                 <h3 id="pro-tier-heading" class="text-xl font-semibold">Pro Tier</h3>
                                 <Badge class="bg-blue-500 hover:bg-blue-600">+35 points</Badge>
                             </div>
-                            <p class="text-muted-foreground mb-4 text-sm">Advanced pillars for Pro subscribers (135 points max total).</p>
+                            <p class="text-muted-foreground mb-4 text-sm">Advanced pillars for Pro subscribers (129 points max total).</p>
                             <div class="space-y-4">
                                 <Card v-for="pillar in proPillars" :key="pillar.name" class="border-blue-500/30">
                                     <CardHeader class="pb-2">
@@ -389,7 +389,7 @@ const faqJsonLd = {
                                 <h3 id="agency-tier-heading" class="text-xl font-semibold">Agency Tier</h3>
                                 <Badge class="bg-purple-500 hover:bg-purple-600">+40 points</Badge>
                             </div>
-                            <p class="text-muted-foreground mb-4 text-sm">Enterprise pillars for Agency subscribers (175 points max total).</p>
+                            <p class="text-muted-foreground mb-4 text-sm">Expert pillars for Full-tier subscribers (170 points max total).</p>
                             <div class="space-y-4">
                                 <Card v-for="pillar in agencyPillars" :key="pillar.name" class="border-purple-500/30">
                                     <CardHeader class="pb-2">
@@ -437,18 +437,18 @@ const faqJsonLd = {
                                         <tbody>
                                             <tr class="border-b">
                                                 <th scope="row" class="py-2 px-3"><Badge variant="secondary">Free</Badge></th>
-                                                <td class="py-2 px-3">5 pillars (Definitions, Structure, Authority, Machine-Readable, Answerability)</td>
-                                                <td class="py-2 px-3 font-mono font-bold">100 pts</td>
+                                                <td class="py-2 px-3">5 pillars (Answerability, Authority, Definitions, Structure, Machine-Readable)</td>
+                                                <td class="py-2 px-3 font-mono font-bold">94 pts</td>
                                             </tr>
                                             <tr class="border-b">
                                                 <th scope="row" class="py-2 px-3"><Badge class="bg-blue-500">Pro</Badge></th>
-                                                <td class="py-2 px-3">8 pillars (+E-E-A-T, Citations, AI Accessibility)</td>
-                                                <td class="py-2 px-3 font-mono font-bold">135 pts</td>
+                                                <td class="py-2 px-3">8 pillars (+Citations, E-E-A-T, AI Accessibility)</td>
+                                                <td class="py-2 px-3 font-mono font-bold">129 pts</td>
                                             </tr>
                                             <tr>
-                                                <th scope="row" class="py-2 px-3"><Badge class="bg-purple-500">Agency</Badge></th>
-                                                <td class="py-2 px-3">12 pillars (+Freshness, Readability, Question Coverage, Multimedia)</td>
-                                                <td class="py-2 px-3 font-mono font-bold">175 pts</td>
+                                                <th scope="row" class="py-2 px-3"><Badge class="bg-purple-500">Full</Badge></th>
+                                                <td class="py-2 px-3">12 pillars (+Readability, Freshness, Question Coverage, Multimedia)</td>
+                                                <td class="py-2 px-3 font-mono font-bold">170 pts</td>
                                             </tr>
                                         </tbody>
                                     </table>

@@ -17,7 +17,7 @@ use App\Services\GEO\Contracts\ScorerInterface;
  */
 class QuestionCoverageScorer implements ScorerInterface
 {
-    private const MAX_SCORE = 10;
+    private const MAX_SCORE = 8;
 
     public function score(string $content, array $context = []): array
     {
@@ -30,11 +30,11 @@ class QuestionCoverageScorer implements ScorerInterface
             'anticipation' => $this->analyzeQuestionAnticipation($text),
         ];
 
-        // Calculate scores (total: 10 points)
-        $questionScore = $this->calculateQuestionScore($details['questions']);    // Up to 3 pts
-        $answerScore = $this->calculateAnswerScore($details['answers']);          // Up to 3 pts
-        $patternScore = $this->calculatePatternScore($details['qa_patterns']);    // Up to 2 pts
-        $anticipationScore = $this->calculateAnticipationScore($details['anticipation']); // Up to 2 pts
+        // Calculate scores (total: 8 points)
+        $questionScore = $this->calculateQuestionScore($details['questions']);    // Up to 2.5 pts
+        $answerScore = $this->calculateAnswerScore($details['answers']);          // Up to 2.5 pts
+        $patternScore = $this->calculatePatternScore($details['qa_patterns']);    // Up to 1.5 pts
+        $anticipationScore = $this->calculateAnticipationScore($details['anticipation']); // Up to 1.5 pts
 
         $totalScore = $questionScore + $answerScore + $patternScore + $anticipationScore;
 
@@ -280,22 +280,22 @@ class QuestionCoverageScorer implements ScorerInterface
         // Questions in headings (most valuable)
         $headingCount = count($questions['heading_questions']);
         if ($headingCount >= 5) {
-            $score += 2;
+            $score += 1.6;
         } elseif ($headingCount >= 3) {
-            $score += 1.5;
+            $score += 1.2;
         } elseif ($headingCount >= 1) {
-            $score += 1;
+            $score += 0.8;
         }
 
         // Variety of question types
         $typeCount = count($questions['question_types']);
         if ($typeCount >= 4) {
-            $score += 1;
+            $score += 0.8;
         } elseif ($typeCount >= 2) {
-            $score += 0.5;
+            $score += 0.4;
         }
 
-        return min(3, $score);
+        return min(2.5, $score);
     }
 
     private function calculateAnswerScore(array $answers): float
@@ -304,26 +304,26 @@ class QuestionCoverageScorer implements ScorerInterface
 
         // Has answers
         if ($answers['total_answers'] >= 5) {
-            $score += 1.5;
+            $score += 1.2;
         } elseif ($answers['total_answers'] >= 2) {
-            $score += 1;
+            $score += 0.8;
         } elseif ($answers['total_answers'] >= 1) {
-            $score += 0.5;
+            $score += 0.4;
         }
 
         // Answer variety
         if (count($answers['answer_patterns']) >= 2) {
-            $score += 1;
+            $score += 0.8;
         } elseif (count($answers['answer_patterns']) >= 1) {
-            $score += 0.5;
+            $score += 0.4;
         }
 
         // Immediate answers
         if ($answers['has_immediate_answers']) {
-            $score += 0.5;
+            $score += 0.4;
         }
 
-        return min(3, $score);
+        return min(2.5, $score);
     }
 
     private function calculatePatternScore(array $patterns): float
@@ -331,22 +331,22 @@ class QuestionCoverageScorer implements ScorerInterface
         $score = 0;
 
         if ($patterns['has_faq_section']) {
-            $score += 0.75;
+            $score += 0.5625;
         }
 
         if ($patterns['has_qa_schema']) {
-            $score += 0.5;
+            $score += 0.375;
         }
 
         if ($patterns['has_accordion']) {
-            $score += 0.25;
+            $score += 0.1875;
         }
 
         if ($patterns['has_question_headings']) {
-            $score += 0.5;
+            $score += 0.375;
         }
 
-        return min(2, $score);
+        return min(1.5, $score);
     }
 
     private function calculateAnticipationScore(array $anticipation): float
@@ -355,18 +355,18 @@ class QuestionCoverageScorer implements ScorerInterface
 
         // Coverage of question types
         if ($anticipation['coverage_score'] >= 75) {
-            $score += 1.5;
+            $score += 1.125;
         } elseif ($anticipation['coverage_score'] >= 50) {
-            $score += 1;
+            $score += 0.75;
         } elseif ($anticipation['coverage_score'] >= 25) {
-            $score += 0.5;
+            $score += 0.375;
         }
 
         // Anticipation phrases
         if (count($anticipation['anticipation_phrases']) >= 2) {
-            $score += 0.5;
+            $score += 0.375;
         }
 
-        return min(2, $score);
+        return min(1.5, $score);
     }
 }

@@ -224,9 +224,25 @@ $isWhiteLabeled = $wl['enabled'] ?? false;
                 </div>
             </div>
 
+            @php
+                $cr = $scan->results['citation_readiness'] ?? null;
+                $ct = $scan->results['content_type'] ?? null;
+            @endphp
+
+            @if($cr && isset($cr['grade']))
+            <div class="score-card" style="border: 2px solid {{ $primaryColor }}; margin-bottom: 15px;">
+                <div class="score-value" style="color: {{ $primaryColor }};">{{ round($cr['score']) }}</div>
+                <div class="score-label">Citation Readiness Score</div>
+                <div class="grade" style="font-size: 16px; color: {{ $cr['grade'] === 'High' ? '#16a34a' : ($cr['grade'] === 'Moderate' ? '#ca8a04' : '#dc2626') }};">{{ $cr['grade'] }} Citation Potential</div>
+                @if(isset($cr['benchmark']['expected_citation_rate']))
+                <div style="font-size: 12px; color: #6b7280; margin-top: 5px;">Expected citation rate: {{ $cr['benchmark']['expected_citation_rate'] }}</div>
+                @endif
+            </div>
+            @endif
+
             <div class="score-card">
                 <div class="score-value">{{ number_format($scan->score, 1) }}</div>
-                <div class="score-label">out of {{ $scan->results['max_score'] ?? 100 }}</div>
+                <div class="score-label">Content AI-Readiness (out of {{ $scan->results['max_score'] ?? 170 }})</div>
                 <div class="grade">{{ $scan->grade }}</div>
             </div>
 

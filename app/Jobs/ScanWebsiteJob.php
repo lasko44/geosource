@@ -20,6 +20,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
+use App\Support\ErrorSanitizer;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Spatie\Browsershot\Browsershot;
@@ -158,6 +159,13 @@ class ScanWebsiteJob implements ShouldQueue
             // Note: Tokens are now deducted upfront in the controller
             // No deduction needed here
 
+            // Record correlation data for continuous algorithm improvement
+            try {
+                app(\App\Services\Analytics\CorrelationService::class)->recordFromScan($this->scan);
+            } catch (\Exception $e) {
+                Log::warning('Failed to record scan correlation', ['scan_id' => $this->scan->id, 'error' => $e->getMessage()]);
+            }
+
             // Send email notification if this is a scheduled scan
             $this->sendScheduledScanNotification();
 
@@ -197,7 +205,7 @@ class ScanWebsiteJob implements ShouldQueue
             // Check if this is a competitor scan and update parent status
             $this->checkAndUpdateParentCompetitorStatus();
         } catch (\Exception $e) {
-            $this->markFailed('Exception during scan: '.$e->getMessage());
+            $this->markFailed('Exception during scan: '.$e->getMessage(), ErrorSanitizer::sanitizeScan($e));
         }
     }
 
@@ -541,7 +549,7 @@ class ScanWebsiteJob implements ShouldQueue
             return $html;
         } catch (\Exception $e) {
             Log::error("Browsershot failed for {$url}: ".$e->getMessage());
-            $this->markFailed('Browsershot exception: '.$e->getMessage());
+            $this->markFailed('Browsershot exception: '.$e->getMessage(), ErrorSanitizer::sanitizeScan($e));
 
             return null;
         }
@@ -596,7 +604,7 @@ class ScanWebsiteJob implements ShouldQueue
             return $html;
         } catch (\Exception $e) {
             Log::error("Stealth browser exception for {$url}: ".$e->getMessage());
-            $this->markFailed('Stealth browser exception: '.$e->getMessage());
+            $this->markFailed('Stealth browser exception: '.$e->getMessage(), ErrorSanitizer::sanitizeScan($e));
 
             return null;
         }

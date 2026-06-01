@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Billing;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Billing\SubscribeRequest;
 use App\Mail\AdminNewSubscriptionNotification;
+use App\Support\ErrorSanitizer;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Laravel\Cashier\Exceptions\IncompletePayment;
 
 /**
  * Processes subscription creation with Stripe.
@@ -37,8 +40,12 @@ class SubscribeController extends Controller
             );
 
             return redirect()->route('billing.thank-you');
-        } catch (\Exception $e) {
+        } catch (IncompletePayment $e) {
             return back()->withErrors(['error' => $e->getMessage()]);
+        } catch (\Exception $e) {
+            Log::error('Subscription creation failed', ['error' => $e->getMessage()]);
+
+            return back()->withErrors(['error' => ErrorSanitizer::sanitize($e)]);
         }
     }
 }

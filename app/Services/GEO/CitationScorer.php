@@ -17,7 +17,7 @@ use App\Services\GEO\Contracts\ScorerInterface;
  */
 class CitationScorer implements ScorerInterface
 {
-    private const MAX_SCORE = 12;
+    private const MAX_SCORE = 20;
 
     private const AUTHORITATIVE_DOMAINS = [
         // Government
@@ -61,11 +61,11 @@ class CitationScorer implements ScorerInterface
             'references' => $this->analyzeReferences($content),
         ];
 
-        // Calculate scores (total: 12 points)
-        $linkScore = $this->calculateLinkScore($details['external_links']);      // Up to 5 pts
-        $citationScore = $this->calculateCitationScore($details['citations']);   // Up to 3 pts
-        $statsScore = $this->calculateStatsScore($details['statistics']);        // Up to 2 pts
-        $refScore = $this->calculateReferenceScore($details['references']);      // Up to 2 pts
+        // Calculate scores (total: 20 points)
+        $linkScore = $this->calculateLinkScore($details['external_links']);      // Up to 8.5 pts
+        $citationScore = $this->calculateCitationScore($details['citations']);   // Up to 5 pts
+        $statsScore = $this->calculateStatsScore($details['statistics']);        // Up to 3.5 pts
+        $refScore = $this->calculateReferenceScore($details['references']);      // Up to 3 pts
 
         $totalScore = $linkScore + $citationScore + $statsScore + $refScore;
 
@@ -294,27 +294,27 @@ class CitationScorer implements ScorerInterface
 
         // Base score for having external links
         if ($links['total_external'] >= 3) {
-            $score += 1;
+            $score += 1.5;
         }
 
         // Authoritative sources (main scoring)
         if ($links['authoritative_count'] >= 3) {
-            $score += 2.5;
+            $score += 4;
         } elseif ($links['authoritative_count'] >= 1) {
-            $score += 1.5;
+            $score += 2.5;
         }
 
         // Reputable sources
         if ($links['reputable_count'] >= 2) {
-            $score += 1;
+            $score += 2;
         }
 
         // Diversity of sources
         if ($links['unique_domains'] >= 5) {
-            $score += 0.5;
+            $score += 1;
         }
 
-        return min(5, $score);
+        return min(8.5, $score);
     }
 
     private function calculateCitationScore(array $citations): float
@@ -322,18 +322,18 @@ class CitationScorer implements ScorerInterface
         $score = 0;
 
         if ($citations['has_inline_citations']) {
-            $score += 1.5;
+            $score += 2.5;
         }
 
         if ($citations['citation_count'] >= 3) {
-            $score += 1;
+            $score += 1.5;
         }
 
         if ($citations['has_blockquotes']) {
-            $score += 0.5;
+            $score += 1;
         }
 
-        return min(3, $score);
+        return min(5, $score);
     }
 
     private function calculateStatsScore(array $stats): float
@@ -341,18 +341,18 @@ class CitationScorer implements ScorerInterface
         $score = 0;
 
         if ($stats['has_statistics']) {
-            $score += 1;
+            $score += 1.5;
         }
 
         if ($stats['statistic_count'] >= 3) {
-            $score += 0.5;
+            $score += 1;
         }
 
         if ($stats['has_numbers_with_context']) {
-            $score += 0.5;
+            $score += 1;
         }
 
-        return min(2, $score);
+        return min(3.5, $score);
     }
 
     private function calculateReferenceScore(array $refs): float
@@ -360,17 +360,17 @@ class CitationScorer implements ScorerInterface
         $score = 0;
 
         if ($refs['has_reference_section']) {
-            $score += 1;
+            $score += 1.5;
         }
 
         if ($refs['has_footnotes'] || $refs['has_bibliography']) {
-            $score += 0.5;
+            $score += 1;
         }
 
         if ($refs['reference_links_count'] >= 3) {
             $score += 0.5;
         }
 
-        return min(2, $score);
+        return min(3, $score);
     }
 }

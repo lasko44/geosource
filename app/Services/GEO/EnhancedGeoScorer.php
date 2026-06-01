@@ -195,7 +195,9 @@ class EnhancedGeoScorer
             'has_sufficient_data' => $hasSufficientData,
             'rag_analysis' => $ragAnalysis,
             'ai_suggestions' => $aiSuggestions,
-            'citation_readiness' => $citationReadiness,
+            'citation_readiness' => Arr::get($baseScore, 'citation_readiness', $citationReadiness),
+            'citation_readiness_ai' => $citationReadiness,
+            'content_type' => Arr::get($baseScore, 'content_type'),
             'embedding_generated' => true,
             'scored_at' => now()->toISOString(),
         ];
@@ -515,7 +517,7 @@ class EnhancedGeoScorer
                 ])->timeout(45)->post('https://api.openai.com/v1/chat/completions', [
                     'model' => $model,
                     'messages' => [
-                        ['role' => 'system', 'content' => 'You are a GEO expert providing actionable content improvement suggestions.'],
+                        ['role' => 'system', 'content' => 'You are a GEO expert providing research-backed content improvement suggestions. Prioritize answerability, citation quality, and definitions — the three pillars empirically proven to predict AI citations. Structure and schema are baselines, not differentiators.'],
                         ['role' => 'user', 'content' => $this->buildSuggestionsPrompt($truncatedContent, $overallScore, $lowestPillars, $scoreBreakdown)],
                     ],
                     'temperature' => 0.3,
@@ -529,7 +531,7 @@ class EnhancedGeoScorer
                 ])->timeout(45)->post('https://api.openai.com/v1/chat/completions', [
                     'model' => $model,
                     'messages' => [
-                        ['role' => 'system', 'content' => 'You are an expert at evaluating content for AI citation potential. Return JSON only.'],
+                        ['role' => 'system', 'content' => 'You are an expert at evaluating content for AI citation potential based on empirical research. Score using the research-backed factors. Return JSON only.'],
                         ['role' => 'user', 'content' => $this->buildCitationReadinessPrompt($truncatedContent)],
                     ],
                     'temperature' => 0.3,
@@ -607,7 +609,14 @@ PROMPT;
     private function buildSuggestionsPrompt(string $content, float $score, string $weakestAreas, string $scoreBreakdown): string
     {
         return <<<PROMPT
-Analyze this content and provide specific, actionable improvements to help it rank better in AI search engines.
+Analyze this content and provide specific, actionable improvements to increase AI citation likelihood.
+
+Our empirical research (61 websites, 17 industries, 540+ citation checks on ChatGPT/Perplexity/Claude) found these are the strongest citation predictors:
+1. ANSWERABILITY (+109% citation lift) — direct, declarative answers to questions
+2. CITATION QUALITY (+65% lift) — referencing authoritative external sources
+3. DEFINITIONS (+33% lift) — explicit "X is Y" statements
+
+Structure, schema markup, and multimedia are baseline requirements but do NOT independently predict citations.
 
 <content>
 {$content}
@@ -616,19 +625,24 @@ Analyze this content and provide specific, actionable improvements to help it ra
 CURRENT GEO ANALYSIS:
 - Overall Score: {$score}%
 - Weakest Areas: {$weakestAreas}
+- Score Breakdown: {$scoreBreakdown}
 
 Provide 5-8 specific improvements in JSON format:
 [
     {
-        "category": "definitions|citations|structure|clarity|authority|examples",
+        "category": "answerability|citations|definitions|authority|readability|freshness|structure|eeat",
         "priority": "critical|high|medium|low",
         "suggestion": "specific actionable improvement",
-        "reasoning": "why this helps with AI citations",
+        "reasoning": "why this helps with AI citations based on research data",
         "example": "example implementation if helpful"
     }
 ]
 
-Focus on the weakest areas first. Be specific and actionable.
+PRIORITIZATION RULES:
+- Answerability, citations, and definitions suggestions should be "critical" or "high" priority
+- Structure, schema, and multimedia suggestions should be "medium" or "low" — they're baselines, not differentiators
+- Always lead with what the user can change to improve citation likelihood
+- Reference the research data when explaining why something matters
 PROMPT;
     }
 
@@ -638,14 +652,14 @@ PROMPT;
     private function buildCitationReadinessPrompt(string $content): string
     {
         return <<<PROMPT
-Evaluate this content for AI Citation Readiness. Score each factor from 0-100:
+Evaluate this content for AI Citation Readiness based on empirical research (61 websites, 540+ citation checks).
 
-**Factors:**
-1. **Quotability** - Clear, quotable statements? Definitive answers? Memorable phrases?
-2. **Authority** - Demonstrates expertise? Credentials, data sources, authoritative voice?
-3. **Uniqueness** - Original insights, unique data, perspectives not found elsewhere?
-4. **Structure** - Well-organized, easy to extract? Clear headings, lists, definitions?
-5. **Factual Density** - Rich in verifiable facts, statistics, specific data points?
+**Research-backed factors (score each 0-100):**
+1. **Answerability** - Does it directly answer questions? Declarative statements? Answer-first structure? (+109% citation lift in our research)
+2. **Citation Quality** - Does it reference authoritative external sources? In-text citations? Statistics with sources? (+65% lift)
+3. **Definitions** - Explicit "X is Y" definitions? Clear terms? Entity names in definitions? (+33% lift)
+4. **Authority** - Topic depth? Internal links? Comprehensive coverage? (+19% lift)
+5. **Freshness** - Publication dates? Update dates? Current year references? (+19% lift)
 
 <content>
 {$content}
@@ -655,11 +669,11 @@ Return JSON only:
 {
   "score": <overall 0-100>,
   "factors": {
-    "quotability": {"score": <0-100>, "reason": "<brief>"},
+    "answerability": {"score": <0-100>, "reason": "<brief>"},
+    "citation_quality": {"score": <0-100>, "reason": "<brief>"},
+    "definitions": {"score": <0-100>, "reason": "<brief>"},
     "authority": {"score": <0-100>, "reason": "<brief>"},
-    "uniqueness": {"score": <0-100>, "reason": "<brief>"},
-    "structure": {"score": <0-100>, "reason": "<brief>"},
-    "factual_density": {"score": <0-100>, "reason": "<brief>"}
+    "freshness": {"score": <0-100>, "reason": "<brief>"}
   },
   "summary": "<1-2 sentence summary>"
 }

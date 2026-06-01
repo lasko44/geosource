@@ -15,7 +15,7 @@ use App\Services\GEO\Contracts\ScorerInterface;
  */
 class StructureScorer implements ScorerInterface
 {
-    private const MAX_SCORE = 20;
+    private const MAX_SCORE = 12;
 
     public function score(string $content, array $context = []): array
     {
@@ -176,73 +176,73 @@ class StructureScorer implements ScorerInterface
 
     private function calculateHeadingScore(array $headings): float
     {
-        // Up to 6 points for headings
+        // Up to 3.5 points for headings
         $score = 0;
 
         // Has h1
         if ($headings['h1']['count'] === 1) {
-            $score += 2;
+            $score += 1;
         }
 
         // Has subheadings
         $subheadingCount = $headings['h2']['count'] + $headings['h3']['count'];
-        $score += min(4, $subheadingCount);
+        $score += min(2.5, $subheadingCount);
 
         return $score;
     }
 
     private function calculateListScore(array $lists): float
     {
-        // Up to 5 points for lists
+        // Up to 3 points for lists
         $score = 0;
 
         // Has lists
         if ($lists['total_lists'] > 0) {
-            $score += 2;
+            $score += 1;
         }
 
         // Has multiple items
         if ($lists['total_items'] >= 3) {
-            $score += 1.5;
+            $score += 1;
         }
         if ($lists['total_items'] >= 6) {
-            $score += 1.5;
+            $score += 1;
         }
 
-        return min(5, $score);
+        return min(3, $score);
     }
 
     private function calculateSectionScore(array $sections): float
     {
-        // Up to 4 points for sections
+        // Up to 2.5 points for sections
         $score = 0;
 
         // Uses semantic HTML
         if ($sections['semantic_sections'] > 0) {
-            $score += 2;
+            $score += 1.5;
         }
 
         // Has good content density (3-8 paragraphs per section)
         if ($sections['content_density'] >= 2 && $sections['content_density'] <= 10) {
-            $score += 2;
+            $score += 1;
         }
 
-        return min(4, $score);
+        return min(2.5, $score);
     }
 
     private function calculateHierarchyScore(array $hierarchy): float
     {
-        // Up to 5 points for hierarchy
+        // Up to 3 points for hierarchy
         $score = 0;
 
         // Has proper h1
         if ($hierarchy['has_proper_h1']) {
-            $score += 2;
+            $score += 1;
         }
 
         // Properly nested
         if ($hierarchy['properly_nested']) {
-            $score += 2;
+            $score += 1;
         }
 
         // Good depth (2-4 levels)
@@ -250,7 +250,7 @@ class StructureScorer implements ScorerInterface
             $score += 1;
         }
 
-        return min(5, $score);
+        return min(3, $score);
     }
 
     private function truncate(string $text, int $length): string

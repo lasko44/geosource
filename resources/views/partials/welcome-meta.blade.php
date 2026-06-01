@@ -107,7 +107,7 @@ $schemaData = [
                     'name' => 'What is a GEO score?',
                     'acceptedAnswer' => [
                         '@type' => 'Answer',
-                        'text' => 'A GEO score is a numerical rating from 0 to 100 that measures how optimized a webpage is for AI search engines. GeoSource.ai calculates this score using 12 AI evaluation pillars, including definition clarity, topic authority, citation quality, and answerability.'
+                        'text' => 'A GEO score measures how optimized a webpage is for AI search engines. GeoSource.ai calculates this using 12 evidence-weighted pillars calibrated from empirical citation research. Answerability, citation quality, and definitions are weighted most heavily because they are the strongest predictors of actual AI citations.'
                     ]
                 ],
                 [

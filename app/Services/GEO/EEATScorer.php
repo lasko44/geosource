@@ -18,7 +18,7 @@ use App\Services\GEO\Contracts\ScorerInterface;
  */
 class EEATScorer implements ScorerInterface
 {
-    private const MAX_SCORE = 15;
+    private const MAX_SCORE = 10;
 
     public function score(string $content, array $context = []): array
     {
@@ -29,11 +29,11 @@ class EEATScorer implements ScorerInterface
             'credentials' => $this->analyzeCredentials($content),
         ];
 
-        // Calculate scores (total: 15 points)
-        $authorScore = $this->calculateAuthorScore($details['author']);           // Up to 5 pts
-        $trustScore = $this->calculateTrustScore($details['trust_signals']);      // Up to 4 pts
-        $contactScore = $this->calculateContactScore($details['contact']);        // Up to 3 pts
-        $credentialScore = $this->calculateCredentialScore($details['credentials']); // Up to 3 pts
+        // Calculate scores (total: 10 points)
+        $authorScore = $this->calculateAuthorScore($details['author']);           // Up to 3.5 pts
+        $trustScore = $this->calculateTrustScore($details['trust_signals']);      // Up to 2.5 pts
+        $contactScore = $this->calculateContactScore($details['contact']);        // Up to 2 pts
+        $credentialScore = $this->calculateCredentialScore($details['credentials']); // Up to 2 pts
 
         $totalScore = $authorScore + $trustScore + $contactScore + $credentialScore;
 
@@ -297,22 +297,22 @@ class EEATScorer implements ScorerInterface
         $score = 0;
 
         if ($author['has_author']) {
-            $score += 2;
-        }
-
-        if ($author['has_author_bio']) {
             $score += 1.5;
         }
 
+        if ($author['has_author_bio']) {
+            $score += 1;
+        }
+
         if ($author['has_author_image']) {
-            $score += 0.75;
+            $score += 0.5;
         }
 
         if ($author['has_author_link']) {
-            $score += 0.75;
+            $score += 0.5;
         }
 
-        return min(5, $score);
+        return min(3.5, $score);
     }
 
     private function calculateTrustScore(array $trust): float
@@ -320,18 +320,18 @@ class EEATScorer implements ScorerInterface
         $score = 0;
 
         if ($trust['has_reviews'] || $trust['has_testimonials']) {
-            $score += 2;
+            $score += 1.25;
         }
 
         if ($trust['has_ratings']) {
-            $score += 1;
+            $score += 0.75;
         }
 
         if ($trust['has_certifications'] || $trust['has_awards']) {
-            $score += 1;
+            $score += 0.5;
         }
 
-        return min(4, $score);
+        return min(2.5, $score);
     }
 
     private function calculateContactScore(array $contact): float
@@ -339,18 +339,18 @@ class EEATScorer implements ScorerInterface
         $score = 0;
 
         if ($contact['has_contact_page_link']) {
-            $score += 1;
+            $score += 0.75;
         }
 
         if ($contact['has_email'] || $contact['has_phone']) {
-            $score += 1;
+            $score += 0.75;
         }
 
         if ($contact['has_social_links']) {
-            $score += 1;
+            $score += 0.5;
         }
 
-        return min(3, $score);
+        return min(2, $score);
     }
 
     private function calculateCredentialScore(array $credentials): float
@@ -358,17 +358,17 @@ class EEATScorer implements ScorerInterface
         $score = 0;
 
         if ($credentials['has_expertise_claims']) {
-            $score += 1;
+            $score += 0.75;
         }
 
         if ($credentials['has_experience_mentions']) {
-            $score += 1;
+            $score += 0.75;
         }
 
         if ($credentials['has_qualifications']) {
-            $score += 1;
+            $score += 0.5;
         }
 
-        return min(3, $score);
+        return min(2, $score);
     }
 }

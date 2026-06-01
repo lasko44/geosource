@@ -22,26 +22,26 @@ const props = withDefaults(defineProps<Props>(), {
     canRegister: true,
 });
 
-// GEO Score Pillars by tier
+// GEO Score Pillars by tier — weights calibrated from empirical citation research
 const freePillars = [
-    { name: 'Clear Definitions', points: 20, icon: BookOpen },
-    { name: 'Structured Knowledge', points: 20, icon: Layers },
-    { name: 'Topic Authority', points: 25, icon: Award },
-    { name: 'Machine-Readable', points: 15, icon: Code },
-    { name: 'Answerability', points: 20, icon: MessageSquare },
+    { name: 'Answerability', points: 30, icon: MessageSquare, tag: '#1 citation predictor' },
+    { name: 'Topic Authority', points: 22, icon: Award },
+    { name: 'Clear Definitions', points: 20, icon: BookOpen, tag: '#3 citation predictor' },
+    { name: 'Structured Knowledge', points: 12, icon: Layers },
+    { name: 'Machine-Readable', points: 10, icon: Code },
 ];
 
 const proPillars = [
-    { name: 'E-E-A-T Signals', points: 15, icon: UserCheck },
-    { name: 'Citations & Sources', points: 12, icon: Quote },
-    { name: 'AI Crawler Access', points: 8, icon: Bot },
+    { name: 'Citations & Sources', points: 20, icon: Quote, tag: '#2 citation predictor' },
+    { name: 'E-E-A-T Signals', points: 10, icon: UserCheck },
+    { name: 'AI Crawler Access', points: 5, icon: Bot },
 ];
 
 const fullPillars = [
+    { name: 'Readability', points: 18, icon: Type, tag: 'Strong predictor' },
     { name: 'Content Freshness', points: 10, icon: Clock },
-    { name: 'Readability', points: 10, icon: Type },
-    { name: 'Question Coverage', points: 10, icon: HelpCircle },
-    { name: 'Multimedia', points: 10, icon: Image },
+    { name: 'Question Coverage', points: 8, icon: HelpCircle },
+    { name: 'Multimedia', points: 5, icon: Image },
 ];
 
 // Token packages
@@ -55,9 +55,9 @@ const tokenPackages = [
 // Token costs
 const tokenCosts = {
     scans: [
-        { name: 'Basic Scan (5 pillars)', tokens: 'FREE', highlight: true },
-        { name: 'Pro Scan (8 pillars)', tokens: 5 },
-        { name: 'Full Scan (12 pillars)', tokens: 10 },
+        { name: 'Basic Scan (5 pillars — includes top 3 predictors)', tokens: 'FREE', highlight: true },
+        { name: 'Pro Scan (8 pillars + Citation Readiness Score)', tokens: 5 },
+        { name: 'Full Scan (12 pillars + industry benchmarks)', tokens: 10 },
     ],
     citations: [
         { name: 'DeepSeek', tokens: 1 },

@@ -257,7 +257,7 @@ return [
             'faq' => [
                 ['question' => 'How does GEO benefit travel businesses?', 'answer' => 'Travelers ask AI for trip planning recommendations daily. When ChatGPT recommends your destination, hotel, or tour, it drives high-intent bookings. GEO ensures your travel content is the source AI systems trust and cite.'],
                 ['question' => 'What travel content gets cited by AI most?', 'answer' => 'Destination guides, hotel comparisons, and itinerary content are most frequently cited. AI prefers comprehensive, well-structured content with clear recommendations, practical details, and structured data over generic travel writing.'],
-                ['question' => 'Can small travel businesses compete with OTAs in AI search?', 'answer' => 'Yes. AI values authoritative, niche expertise over domain authority alone. A local tour operator with deep destination knowledge and well-structured content can get cited alongside or instead of major OTAs for specific queries.'],
+                ['question' => 'Can small travel businesses compete with OTAs in AI search?', 'answer' => 'For specific, informational queries — yes. Our research shows travel content has an 83% citation rate, the highest of any industry we tested. A local tour operator answering "what to do in Tulum for 3 days" with expert, firsthand knowledge can get cited. For broader queries like "best hotel booking site," established brands dominate. Focus on niche expertise queries where your depth beats their breadth.'],
             ],
             'related_industries' => ['restaurants', 'fitness', 'fashion'],
         ],
@@ -362,7 +362,7 @@ return [
             'title' => 'GEO for Startups: AI Search Visibility from Day One',
             'meta_description' => 'Optimize startup content for AI search engines from launch. Get your product discovered by ChatGPT, Perplexity, and Claude with startup-specific GEO strategies.',
             'hero_headline' => 'Early-stage startups can win AI search before incumbents',
-            'hero_description' => 'AI search rewards content quality over domain authority. Startups with well-structured content can get cited by AI before established competitors. GEO for startups shows you how to build AI visibility into your content strategy from day one.',
+            'hero_description' => 'Startups can earn AI citations by creating expert educational content that directly answers user questions. Our research shows answerability and citation quality are the strongest predictors — not brand size. GEO for startups shows you how to build AI visibility by targeting informational queries where expertise outweighs brand recognition.',
             'challenges' => [
                 'Limited content means fewer pages for AI to discover and cite',
                 'New domains lack the authority signals AI systems prefer',
@@ -379,7 +379,7 @@ return [
                 ['title' => 'Monitor competitor AI visibility', 'description' => 'Track what competitors get cited for. Use citation tracking to identify gaps and opportunities in AI recommendations.'],
             ],
             'faq' => [
-                ['question' => 'Can startups really compete in AI search?', 'answer' => 'Yes. AI search is more meritocratic than traditional SEO. A startup with clear, well-structured content on a specific topic can get cited over incumbents with broader but less focused content. GEO rewards depth and clarity over domain age and backlinks.'],
+                ['question' => 'Can startups really compete in AI search?', 'answer' => 'It depends on the query type. For informational queries ("how to choose a CRM"), startups with clear, direct answers can absolutely compete — our research shows content quality matters more than brand size for factual content. For recommendation queries ("what is the best CRM"), brand recognition plays a larger role. The strategy: create educational content that answers questions in your niche, where expertise outweighs brand.'],
                 ['question' => 'When should startups start GEO?', 'answer' => 'From day one. Every page you publish should be GEO-optimized. It\'s dramatically cheaper to build GEO into your content workflow from the start than to retrofit hundreds of pages later. Start with your core pages and expand from there.'],
                 ['question' => 'What\'s the minimum GEO investment for a startup?', 'answer' => 'You can start free with GeoSource.ai\'s unlimited basic scans. Scan every page before publishing and follow the recommendations. As you grow, invest in Pro/Full scans for deeper analysis and citation tracking to measure your AI visibility.'],
             ],
@@ -442,7 +442,7 @@ return [
             ],
             'faq' => [
                 ['question' => 'Why should non-profits invest in GEO?', 'answer' => 'Donors, volunteers, and beneficiaries increasingly ask AI for recommendations. When ChatGPT recommends your organization for a specific cause, it drives donations and volunteer sign-ups. GEO ensures your non-profit is the one AI recommends.'],
-                ['question' => 'Can small non-profits benefit from GEO?', 'answer' => 'Yes. AI search is more democratic than traditional SEO. A small non-profit with well-structured content about a specific cause can get cited over larger organizations with less focused content. GEO rewards mission clarity and impact data.'],
+                ['question' => 'Can small non-profits benefit from GEO?', 'answer' => 'Yes, especially for informational queries. Non-profit content tends to be educational and cause-focused — exactly the type AI platforms cite most frequently. Our research shows informational content gets cited 77.8% of the time. Focus on clear definitions of your mission, direct answers to cause-related questions, and citing authoritative sources to build trust.'],
                 ['question' => 'What non-profit content should be GEO-optimized first?', 'answer' => 'Start with your mission page, program descriptions, and impact data. These are what AI cites when recommending organizations. Then optimize your donation page, volunteer opportunities, and educational content about your cause.'],
             ],
             'related_industries' => ['education', 'healthcare', 'news-media'],
@@ -598,7 +598,7 @@ return [
             'faq' => [
                 ['question' => 'How does GEO help fitness businesses?', 'answer' => 'When people ask AI for gym recommendations, workout plans, or fitness advice, GEO-optimized businesses get cited. This drives memberships and client sign-ups from high-intent users who already trust the AI recommendation.'],
                 ['question' => 'What fitness content should be optimized for AI?', 'answer' => 'Program descriptions, trainer profiles, and facility information are most important for local fitness businesses. For online fitness, workout guides, nutrition content, and progression plans are the highest-value citation targets.'],
-                ['question' => 'Can personal trainers benefit from GEO?', 'answer' => 'Yes. Personal trainers who publish structured workout content, showcase credentials, and create educational fitness guides can get cited by AI independently. AI often recommends individual experts for specific fitness queries.'],
+                ['question' => 'Can personal trainers benefit from GEO?', 'answer' => 'Yes — fitness has a 33% citation rate in our research, and the key is educational content. Personal trainers who publish "how to" workout guides, answer common fitness questions directly, and cite sports science research earn more AI citations than those with only service pages. Focus on being an informational resource, not just a service provider.'],
             ],
             'related_industries' => ['healthcare', 'beauty', 'restaurants'],
         ],
@@ -815,7 +815,7 @@ return [
             'faq' => [
                 ['question' => 'How does GEO help game studios?', 'answer' => 'Gamers ask AI for recommendations daily: "best RPGs in 2024," "games like Zelda," etc. Studios with GEO-optimized game pages get cited in these answers. This drives discovery and downloads from highly engaged gaming audiences.'],
                 ['question' => 'What gaming content gets cited by AI?', 'answer' => 'Game descriptions, comparison content, and curated recommendation lists are most frequently cited. AI prefers structured information about genres, platforms, and gameplay features over marketing trailers or hype content.'],
-                ['question' => 'Can indie game developers benefit from GEO?', 'answer' => 'Yes. AI often recommends niche games for specific preferences. An indie studio with well-structured content about their game\'s unique mechanics and target audience can get cited alongside AAA titles for relevant queries.'],
+                ['question' => 'Can indie game developers benefit from GEO?', 'answer' => 'For niche queries, yes. AI cites indie games when users ask about specific genres or mechanics. However, gaming has a 22% average citation rate in our research — lower than informational industries. The strategy: create educational content about your game\'s genre and mechanics, not just product pages. "How to build a city in a strategy game" gets cited more than "buy our strategy game."'],
             ],
             'related_industries' => ['saas', 'ecommerce', 'education'],
         ],
@@ -1113,7 +1113,7 @@ return [
             ],
             'faq' => [
                 ['question' => 'How does ChatGPT decide what content to cite?', 'answer' => 'ChatGPT uses two methods: its training data (for general knowledge) and real-time web browsing via Bing (for current information). For browsing, it searches, reads pages, and cites content that best answers the user\'s question. Well-structured, authoritative content with clear definitions is most likely to be cited.'],
-                ['question' => 'Does ChatGPT prefer certain types of websites?', 'answer' => 'ChatGPT prioritizes authoritative, well-structured content regardless of domain size. A small site with clear, expert content on a specific topic can be cited over a major publication with generic coverage. Authority on the specific topic matters more than overall domain authority.'],
+                ['question' => 'Does ChatGPT prefer certain types of websites?', 'answer' => 'ChatGPT cites based on a combination of factors: brand recognition from training data, content clarity, and query type. For informational queries, smaller sites with expert content can compete. For recommendation queries, well-known brands have an advantage. The strongest content signals are answerability (direct answers to questions) and citation quality (referencing authoritative sources).'],
                 ['question' => 'How quickly can ChatGPT discover new content?', 'answer' => 'ChatGPT\'s browsing feature discovers content as soon as it\'s indexed by Bing. For training data inclusion, timelines are longer and depend on OpenAI\'s training cycles. Focus on Bing indexation for immediate discoverability and strong content structure for long-term training data inclusion.'],
             ],
         ],
@@ -1134,7 +1134,7 @@ return [
                 ['factor' => 'Factual Accuracy', 'description' => 'Perplexity cross-references sources. Content consistent with other authoritative sources is cited more.'],
                 ['factor' => 'Citation and References', 'description' => 'Content that cites its own sources is trusted more. Perplexity values well-referenced content.'],
                 ['factor' => 'Crawler Accessibility', 'description' => 'Perplexity has its own crawler (PerplexityBot). Ensure your robots.txt allows it access.'],
-                ['factor' => 'Structured Data', 'description' => 'Schema markup and structured content help Perplexity understand and attribute specific claims accurately.'],
+                ['factor' => 'Structured Data', 'description' => 'Schema markup helps Perplexity parse content, but our research shows it\'s a baseline requirement. The stronger citation signals are answerability and citing authoritative external sources.'],
             ],
             'checklist' => [
                 'Allow PerplexityBot in your robots.txt file',
@@ -1225,7 +1225,7 @@ return [
             'faq' => [
                 ['question' => 'How are Gemini and AI Overviews related?', 'answer' => 'AI Overviews in Google Search are powered by Gemini. When you search on Google and see an AI-generated answer at the top, that\'s Gemini synthesizing information from web pages and citing sources. Optimizing for one optimizes for both.'],
                 ['question' => 'Does Google Search ranking affect Gemini citations?', 'answer' => 'Yes. AI Overviews primarily cite content from top Google search results. Strong traditional SEO gives you an advantage for Gemini citations. However, GEO optimizations like structured definitions and FAQ sections increase the likelihood that your ranked content gets specifically cited.'],
-                ['question' => 'Is schema markup more important for Gemini than other AI platforms?', 'answer' => 'Yes. Google has the most sophisticated understanding of structured data. Comprehensive schema markup (Article, FAQ, HowTo, Product, etc.) directly helps Gemini understand and cite your content more accurately. This is the biggest differentiator for Gemini optimization.'],
+                ['question' => 'Is schema markup more important for Gemini than other AI platforms?', 'answer' => 'Schema markup helps Gemini parse your content, and Google does have the most sophisticated understanding of structured data. However, our research shows schema is a baseline requirement, not the primary differentiator. Answerability — how directly your content answers questions — and citation quality are stronger predictors of whether any AI platform cites you, including Gemini.'],
             ],
         ],
         [
@@ -1441,7 +1441,7 @@ return [
             'when_to_use_b' => 'Use MarketMuse when you need to plan a comprehensive content strategy, identify topic gaps, and build topical authority over time.',
             'why_both' => 'MarketMuse helps you plan what content to create for topical authority. GeoSource ensures each piece is optimized for AI citation. Strategy (MarketMuse) plus execution (GeoSource) builds authority that both Google and AI systems recognize.',
             'faq' => [
-                ['question' => 'Does topical authority help with AI citations?', 'answer' => 'Yes. AI systems trust content from topically authoritative sources. MarketMuse helps build that authority through strategic content planning. GeoSource then ensures each page is structured so AI can actually cite it. Authority without structure means AI trusts but can\'t extract your content.'],
+                ['question' => 'Does topical authority help with AI citations?', 'answer' => 'Authority helps, but our research shows it\'s the third most important factor (+25% citation lift), behind answerability (+69%) and citation quality (+56%). MarketMuse helps build topical depth. GeoSource ensures your content directly answers questions and cites authoritative sources — the two strongest predictors of AI citations.'],
                 ['question' => 'Can GeoSource help with content strategy?', 'answer' => 'GeoSource focuses on optimizing existing content for AI, not content strategy planning. For strategy, MarketMuse or similar tools are better suited. Use MarketMuse to decide what to write, then GeoSource to optimize each piece for AI citation.'],
                 ['question' => 'Which tool delivers faster results?', 'answer' => 'GeoSource delivers faster tactical results — optimize a page today, improve AI citation likelihood tomorrow. MarketMuse delivers strategic results over months as your topical authority grows. Both timelines are valuable for different goals.'],
             ],
@@ -1467,7 +1467,7 @@ return [
             ],
             'when_to_use_a' => 'Use GeoSource.ai to analyze and optimize content specifically for AI search engine citations. GeoSource measures what AI needs: definitions, structure, authority, and answerability.',
             'when_to_use_b' => 'Use Frase when you want AI assistance creating and optimizing content for Google rankings, including SERP analysis and AI-powered writing.',
-            'why_both' => 'Frase helps you create SEO-optimized content quickly. GeoSource ensures that content is also structured for AI citations. Write with Frase, optimize with GeoSource — your content ranks on Google and gets cited by AI.',
+            'why_both' => 'Frase helps you create SEO-optimized content quickly. GeoSource ensures that content is also optimized for the signals AI platforms actually use for citations — answerability, citation quality, and clear definitions. Write with Frase, optimize with GeoSource — backed by empirical citation research no other tool has.',
             'faq' => [
                 ['question' => 'Both use AI — what\'s the difference?', 'answer' => 'Frase uses AI to help you write content optimized for Google SEO. GeoSource uses AI to analyze whether your content is optimized for AI search engines to cite. One uses AI as a writing tool, the other optimizes content for AI consumption.'],
                 ['question' => 'Can Frase content pass a GeoSource scan?', 'answer' => 'Frase-generated content may score well on some GEO pillars (like structure), but typically needs additional optimization for definitions, machine readability, and E-E-A-T signals. Running a GeoSource scan after Frase optimization identifies the remaining gaps.'],
@@ -1526,7 +1526,7 @@ return [
             'why_both' => 'Modern search requires both approaches. Google still drives the majority of web traffic, but AI search is growing rapidly. Content optimized only for SEO misses AI citations. Content optimized only for GEO misses Google traffic. The most effective content strategy optimizes for both.',
             'faq' => [
                 ['question' => 'Will GEO replace SEO?', 'answer' => 'No. GEO complements SEO. Google search still drives massive traffic, and SEO remains essential. But as AI search grows (ChatGPT has hundreds of millions of users), GEO becomes an increasingly important parallel strategy. Think of it as SEO + GEO, not SEO vs GEO.'],
-                ['question' => 'Can SEO-optimized content get cited by AI?', 'answer' => 'Sometimes, but not reliably. SEO optimizes for keywords and backlinks. AI systems need structured definitions, clear answers, and authority signals. A page can rank #1 on Google but score poorly on GEO metrics, meaning AI can\'t confidently cite it.'],
+                ['question' => 'Can SEO-optimized content get cited by AI?', 'answer' => 'Sometimes, but the signals are different. Our research found that the content factors that predict AI citations are answerability (direct answers to questions, +69% citation lift), citation quality (referencing authoritative sources, +56% lift), and clear definitions (+40% lift). Structure and schema markup — often the focus of SEO — are baseline requirements, not differentiators. A page can rank #1 on Google but lack the directness and definitions AI needs to cite it.'],
                 ['question' => 'How is AI search different from Google search?', 'answer' => 'Google search returns a list of links for you to click. AI search synthesizes information from multiple sources into a direct answer, citing specific content. The fundamental difference is: Google ranks pages, AI cites content. This requires different optimization strategies.'],
             ],
         ],
@@ -1917,7 +1917,7 @@ return [
             'mistakes' => [
                 ['title' => 'Writing for keywords instead of questions', 'description' => 'AI users ask questions in natural language, not keyword phrases. "Best CRM for small business" works for Google. AI users ask "I run a 10-person company, what CRM should I use?" Optimize for the conversational query.'],
                 ['title' => 'Burying answers under introductions', 'description' => 'AI extracts the first clear answer it finds. If your page starts with 200 words of context before the actual answer, AI may skip your page or cite a competitor who answers immediately.'],
-                ['title' => 'Missing schema markup', 'description' => 'Without schema, AI has to infer what your content is about from raw text. With schema, you tell it explicitly. Pages with schema markup are cited more consistently because AI can attribute with higher confidence.'],
+                ['title' => 'Missing schema markup', 'description' => 'Schema markup helps AI parse your content, but our research shows it\'s a baseline requirement — not a citation driver on its own. Add schema for proper content identification, but focus your optimization energy on answerability, definitions, and citing authoritative sources.'],
                 ['title' => 'Having no third-party validation', 'description' => 'AI cross-references claims across sources. If only your own website says your product is great, AI has low confidence citing that claim. Third-party reviews, mentions, and endorsements increase citation confidence.'],
             ],
             'faq' => [

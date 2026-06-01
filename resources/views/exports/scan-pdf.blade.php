@@ -492,11 +492,42 @@ $isWhiteLabeled = $wl['enabled'] ?? false;
         </table>
     </div>
 
-    <!-- Score Overview -->
+    <!-- Citation Readiness Score -->
+    @php
+        $citationReadiness = $scan->results['citation_readiness'] ?? null;
+        $contentType = $scan->results['content_type'] ?? null;
+    @endphp
+    @if($citationReadiness && isset($citationReadiness['grade']))
+    <div class="score-section" style="margin-bottom: 15px;">
+        <div class="score-card" style="border-left: 4px solid #8b5cf6;">
+            <div class="score-value" style="color: #8b5cf6;">{{ round($citationReadiness['score']) }}</div>
+            <div class="score-label">Citation Readiness</div>
+            <div class="grade" style="font-size: 14px; color: {{ $citationReadiness['grade'] === 'High' ? '#16a34a' : ($citationReadiness['grade'] === 'Moderate' ? '#ca8a04' : '#dc2626') }};">
+                {{ $citationReadiness['grade'] }} Citation Potential
+            </div>
+            @if(isset($citationReadiness['benchmark']['expected_citation_rate']))
+            <div style="font-size: 11px; color: #6b7280; margin-top: 4px;">Expected rate: {{ $citationReadiness['benchmark']['expected_citation_rate'] }}</div>
+            @endif
+        </div>
+        <div class="summary-card">
+            <p class="summary-text">{{ $citationReadiness['summary'] ?? '' }}</p>
+            @if($contentType && isset($contentType['primary_type']))
+            <div style="margin-top: 10px; padding: 8px; background: #f8fafc; border-radius: 4px;">
+                <strong>Content Type:</strong> {{ ucfirst($contentType['primary_type']) }}
+                @if(isset($contentType['insight']['avg_citation_rate']))
+                · Industry avg: {{ $contentType['insight']['avg_citation_rate'] }}
+                @endif
+            </div>
+            @endif
+        </div>
+    </div>
+    @endif
+
+    <!-- GEO Score Overview -->
     <div class="score-section">
         <div class="score-card">
             <div class="score-value">{{ number_format($scan->score, 1) }}</div>
-            <div class="score-label">out of {{ $scan->results['max_score'] ?? 100 }}</div>
+            <div class="score-label">Content AI-Readiness (out of {{ $scan->results['max_score'] ?? 170 }})</div>
             <div class="grade">{{ $scan->grade }}</div>
         </div>
         <div class="summary-card">
@@ -531,6 +562,7 @@ $isWhiteLabeled = $wl['enabled'] ?? false;
 
     <!-- Pillar Overview Table -->
     <h2>Score Breakdown</h2>
+    <p style="font-size: 12px; color: #6b7280; margin-bottom: 10px;">Pillars grouped by proven impact on AI citations. Citation Drivers have the strongest correlation with being cited.</p>
     <table class="pillar-overview">
         <thead>
             <tr>
