@@ -329,11 +329,11 @@ const faqItems = [
                     <Link href="/pricing">
                         <Button variant="ghost">Pricing</Button>
                     </Link>
-                    <Link href="/blog">
-                        <Button variant="ghost">Blog</Button>
+                    <Link href="/research">
+                        <Button variant="ghost">Research</Button>
                     </Link>
                     <Link href="/resources">
-                        <Button variant="ghost">Resources</Button>
+                        <Button variant="ghost">Learn</Button>
                     </Link>
                     <Link
                         v-if="$page.props.auth.user"
@@ -361,8 +361,8 @@ const faqItems = [
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" class="w-48">
                             <DropdownMenuItem as-child><Link href="/pricing" class="w-full">Pricing</Link></DropdownMenuItem>
-                            <DropdownMenuItem as-child><Link href="/blog" class="w-full">Blog</Link></DropdownMenuItem>
-                            <DropdownMenuItem as-child><Link href="/resources" class="w-full">Resources</Link></DropdownMenuItem>
+                            <DropdownMenuItem as-child><Link href="/research" class="w-full">Research</Link></DropdownMenuItem>
+                            <DropdownMenuItem as-child><Link href="/resources" class="w-full">Learn</Link></DropdownMenuItem>
                             <DropdownMenuItem v-if="$page.props.auth.user" as-child><Link :href="dashboard()" class="w-full">Dashboard</Link></DropdownMenuItem>
                             <template v-else>
                                 <DropdownMenuItem as-child><Link :href="login()" class="w-full">Log in</Link></DropdownMenuItem>

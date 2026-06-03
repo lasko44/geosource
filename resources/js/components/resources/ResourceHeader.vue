@@ -23,11 +23,11 @@ import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
                 <Link href="/pricing">
                     <Button variant="ghost">Pricing</Button>
                 </Link>
-                <Link href="/blog">
-                    <Button variant="ghost">Blog</Button>
+                <Link href="/research">
+                    <Button variant="ghost">Research</Button>
                 </Link>
                 <Link href="/resources">
-                    <Button variant="ghost">Resources</Button>
+                    <Button variant="ghost">Learn</Button>
                 </Link>
                 <Link v-if="$page.props.auth.user" href="/dashboard">
                     <Button variant="outline">Dashboard</Button>
@@ -59,13 +59,13 @@ import ThemeSwitcher from '@/components/ThemeSwitcher.vue';
                             </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem as-child role="menuitem">
-                            <Link href="/blog" class="w-full">
-                                Blog
+                            <Link href="/research" class="w-full">
+                                Research
                             </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem as-child role="menuitem">
                             <Link href="/resources" class="w-full">
-                                Resources
+                                Learn
                             </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem v-if="$page.props.auth.user" as-child role="menuitem">

@@ -15,6 +15,7 @@ use App\Http\Controllers\EcommerceJourneyController;
 use App\Http\Controllers\EeatStudyController;
 use App\Http\Controllers\GeoStudyController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ResearchIndexController;
 use App\Http\Controllers\SuggestedContentController;
 use App\Http\Controllers\Marketing\ProcessUnsubscribeController;
 use App\Http\Controllers\Marketing\ShowUnsubscribeController;
@@ -41,6 +42,7 @@ Route::get('/pricing', function () {
 })->name('pricing');
 
 // Research & Benchmarks
+Route::get('/research', ResearchIndexController::class)->name('research.index');
 Route::get('/research/geo-citation-study', fn () => redirect('/blog/geo-citation-study', 301));
 Route::get('/blog/geo-citation-study', GeoStudyController::class)->name('blog.geo-citation-study');
 Route::get('/blog/eeat-content-type-study', EeatStudyController::class)->name('blog.eeat-content-type-study');

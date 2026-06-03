@@ -105,8 +105,11 @@ const tokenCosts = {
                     <Link href="/pricing">
                         <Button variant="ghost">Pricing</Button>
                     </Link>
+                    <Link href="/research">
+                        <Button variant="ghost">Research</Button>
+                    </Link>
                     <Link href="/resources">
-                        <Button variant="ghost">Resources</Button>
+                        <Button variant="ghost">Learn</Button>
                     </Link>
                     <Link
                         v-if="$page.props.auth.user"
@@ -142,8 +145,13 @@ const tokenCosts = {
                                 </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem as-child>
+                                <Link href="/research" class="w-full">
+                                    Research
+                                </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem as-child>
                                 <Link href="/resources" class="w-full">
-                                    Resources
+                                    Learn
                                 </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem v-if="$page.props.auth.user" as-child>

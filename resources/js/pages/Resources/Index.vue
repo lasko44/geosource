@@ -29,6 +29,9 @@ import {
     Layers,
     Monitor,
     Sparkles,
+    Compass,
+    Microscope,
+    AlertCircle,
 } from 'lucide-vue-next';
 
 const props = defineProps<{
@@ -43,199 +46,187 @@ const formatDate = (dateStr: string): string => {
     return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 };
 
-const articles = [
-    {
-        slug: 'what-is-geo',
-        title: 'What Is Generative Engine Optimization (GEO)?',
-        description: 'Learn the definition, core principles, and goals of GEO — the practice of optimizing content for AI systems.',
-        icon: Brain,
-        badge: 'Foundation',
-        date: 'January 2026',
-    },
+// The single recommended starting point — featured prominently above
+// everything else. New visitors should land here.
+const startHere = {
+    href: '/resources/what-is-geo',
+    title: 'What is Generative Engine Optimization?',
+    description: 'The definition, the core principles, and what changes about content strategy when AI assistants become the discovery layer. Start here if you are new to GEO.',
+};
+
+// Foundational reads — every GEO practitioner should read these before
+// diving into pillar-specific or platform-specific material.
+const foundations = [
     {
         slug: 'geo-vs-seo',
-        title: 'GEO vs SEO: What\'s the Difference?',
-        description: 'Understand the key differences between traditional SEO and Generative Engine Optimization.',
+        title: 'GEO vs SEO',
+        description: 'What changes when the optimization target is an AI assistant instead of a search ranking algorithm.',
         icon: Scale,
-        badge: 'Comparison',
-        date: 'January 2026',
     },
     {
         slug: 'how-ai-search-works',
-        title: 'How AI Search Engines Actually Work',
-        description: 'Explore the mechanics of generative AI search including RAG, vector embeddings, and source selection.',
+        title: 'How AI search engines work',
+        description: 'The mechanics — RAG, vector embeddings, source selection — explained at a strategist level.',
         icon: Search,
-        badge: 'Technical',
-        date: 'January 2026',
     },
     {
         slug: 'how-llms-cite-sources',
-        title: 'How Large Language Models Choose Which Sources to Cite',
-        description: 'Discover the signals LLMs use to select high-confidence sources for citations.',
+        title: 'How LLMs choose sources to cite',
+        description: 'What signals AI platforms actually use when deciding which pages to quote.',
         icon: Quote,
-        badge: 'Deep Dive',
-        date: 'January 2026',
     },
     {
         slug: 'what-is-a-geo-score',
-        title: 'What Is a GEO Score?',
-        description: 'Learn how GEO Scores measure AI comprehension readiness and what factors are evaluated.',
+        title: 'What is a GEO Score?',
+        description: 'The composite metric GeoSource uses to measure how citation-ready a page is.',
         icon: BarChart3,
-        badge: 'Metrics',
-        date: 'January 2026',
-    },
-    {
-        slug: 'geo-content-framework',
-        title: 'The GeoSource.ai GEO Content Framework',
-        description: 'A structured framework designed specifically for generative AI systems.',
-        icon: FileText,
-        badge: 'Framework',
-        date: 'January 2026',
-    },
-    {
-        slug: 'why-llms-txt-matters',
-        title: 'Why llms.txt Matters for GEO',
-        description: 'Learn how llms.txt files help AI systems understand, discover, and cite your website content.',
-        icon: FileText,
-        badge: 'Technical',
-        date: 'January 2026',
-    },
-    {
-        slug: 'why-ssr-matters-for-geo',
-        title: 'Why Server-Side Rendering (SSR) Matters for GEO',
-        description: 'Understand why SSR is essential for AI visibility and how LLMs access your content.',
-        icon: Server,
-        badge: 'Technical',
-        date: 'January 2026',
-    },
-    {
-        slug: 'e-e-a-t-and-geo',
-        title: 'E-E-A-T and GEO: Building Trust for AI Visibility',
-        description: 'Learn how Experience, Expertise, Authoritativeness, and Trustworthiness influence AI citation decisions.',
-        icon: UserCheck,
-        badge: 'Trust Signals',
-        date: 'January 2026',
-    },
-    {
-        slug: 'ai-citations-and-geo',
-        title: 'AI Citations and GEO: Getting Cited by LLMs',
-        description: 'Discover how to optimize your content structure to become a preferred citation source for AI systems.',
-        icon: Quote,
-        badge: 'Citations',
-        date: 'January 2026',
-    },
-    {
-        slug: 'ai-accessibility-for-geo',
-        title: 'AI Accessibility for GEO: Making Content Machine-Readable',
-        description: 'Ensure your content is technically accessible and easily consumable by AI crawlers and LLMs.',
-        icon: Bot,
-        badge: 'Technical',
-        date: 'January 2026',
-    },
-    {
-        slug: 'content-freshness-for-geo',
-        title: 'Content Freshness for GEO: Why Recency Matters',
-        description: 'Understand how content freshness and regular updates impact your visibility in AI-generated responses.',
-        icon: Clock,
-        badge: 'Content Strategy',
-        date: 'January 2026',
-    },
-    {
-        slug: 'readability-and-geo',
-        title: 'Readability and GEO: Writing for AI Comprehension',
-        description: 'Learn how clear, structured writing helps LLMs understand and accurately represent your content.',
-        icon: Type,
-        badge: 'Content Quality',
-        date: 'January 2026',
-    },
-    {
-        slug: 'question-coverage-for-geo',
-        title: 'Question Coverage for GEO: Answering User Intent',
-        description: 'Optimize your content to directly answer the questions users ask AI search engines.',
-        icon: HelpCircle,
-        badge: 'Content Strategy',
-        date: 'January 2026',
-    },
-    {
-        slug: 'multimedia-and-geo',
-        title: 'Multimedia and GEO: Beyond Text Content',
-        description: 'Learn how images, videos, and other media can enhance your GEO through proper optimization.',
-        icon: Image,
-        badge: 'Media',
-        date: 'January 2026',
     },
 ];
 
-const featuredResources = [
+// Practical artifacts — checklists, frameworks, and the glossary. These
+// are what most people are looking for when they say "show me what to do."
+type ToolItem = {
+    href: string;
+    title: string;
+    description: string;
+    icon: any;
+    underReview?: boolean;
+    reviewNote?: string;
+};
+
+const tools: ToolItem[] = [
     {
         href: '/definitions',
         title: 'GEO Definitions',
-        description: 'Official glossary of GEO terminology. The authoritative source for GEO definitions.',
+        description: 'Authoritative glossary of GEO terminology.',
         icon: Library,
-        badge: 'Glossary',
-        highlight: true,
     },
     {
         href: '/geo-score-explained',
         title: 'GEO Score Explained',
-        description: 'Deep dive into how GEO scoring works and what factors determine your score.',
+        description: 'A deep dive on how the scoring engine evaluates a page.',
         icon: BarChart3,
-        badge: 'Deep Dive',
+        underReview: true,
+        reviewNote: 'Some pillar weights described here predate our recent research and are being revised.',
     },
     {
         href: '/geo-optimization-checklist',
-        title: 'GEO Optimization Checklist',
-        description: 'Step-by-step checklist for optimizing your content for AI citation.',
+        title: 'Optimization Checklist',
+        description: 'Page-by-page checklist for getting your content cite-ready.',
         icon: CheckSquare,
-        badge: 'Checklist',
+        underReview: true,
+        reviewNote: 'Several recommendations here predate our recent research and are being revised.',
     },
     {
         href: '/ai-search-visibility-guide',
         title: 'AI Search Visibility Guide',
-        description: 'Comprehensive guide to understanding and improving your AI visibility.',
+        description: 'End-to-end guide on what makes content visible to AI assistants.',
         icon: Eye,
-        badge: 'Pillar Guide',
+    },
+];
+
+// Pillar-by-pillar deep-dives, split into two tracks: ones our research
+// validated as drivers of AI citation, and ones our research found are
+// either flat predictors or actively misleading in some contexts. The
+// "under review" pages are kept for SEO continuity until rewritten.
+type PillarItem = {
+    slug: string;
+    title: string;
+    description: string;
+    icon: any;
+    underReview?: boolean;
+    reviewNote?: string;
+};
+
+const drivingPillars: PillarItem[] = [
+    {
+        slug: 'ai-citations-and-geo',
+        title: 'Citations and GEO',
+        description: 'How citing authoritative external sources in your own content raises your citation rate. A proven positive predictor in our research.',
+        icon: Quote,
+    },
+    {
+        slug: 'readability-and-geo',
+        title: 'Readability and GEO',
+        description: 'Clear, structured writing for AI comprehension. Neutral-to-positive direction in our studies.',
+        icon: Type,
+    },
+    {
+        slug: 'ai-accessibility-for-geo',
+        title: 'AI Accessibility for GEO',
+        description: 'Make sure crawlers and LLMs can actually reach and parse your content. A baseline requirement.',
+        icon: Bot,
+    },
+    {
+        slug: 'content-freshness-for-geo',
+        title: 'Content Freshness',
+        description: 'How recency affects AI visibility. A mild positive in our data.',
+        icon: Clock,
+    },
+];
+
+const technicalPillars: PillarItem[] = [
+    {
+        slug: 'why-llms-txt-matters',
+        title: 'Why llms.txt matters',
+        description: 'How an llms.txt file helps AI assistants discover and parse your site.',
+        icon: FileText,
+    },
+    {
+        slug: 'why-ssr-matters-for-geo',
+        title: 'Why SSR matters for GEO',
+        description: 'Server-side rendering and AI visibility — what LLMs actually crawl.',
+        icon: Server,
+    },
+];
+
+const underReviewPillars: PillarItem[] = [
+    {
+        slug: 'e-e-a-t-and-geo',
+        title: 'E-E-A-T and GEO',
+        description: 'How experience and expertise signals interact with AI citation behaviour.',
+        icon: UserCheck,
+        underReview: true,
+        reviewNote: 'Three of our studies found E-E-A-T signals do not positively predict citation; in ecommerce they were inversely correlated. This page is being rewritten.',
+    },
+    {
+        slug: 'multimedia-and-geo',
+        title: 'Multimedia and GEO',
+        description: 'How images, video, and rich media relate to AI visibility.',
+        icon: Image,
+        underReview: true,
+        reviewNote: 'Our ecommerce study found Multimedia was inversely correlated with recommendation survival. This page is being rewritten.',
+    },
+    {
+        slug: 'question-coverage-for-geo',
+        title: 'Question coverage for GEO',
+        description: 'Answering user questions directly within your content.',
+        icon: HelpCircle,
+        underReview: true,
+        reviewNote: 'Question Coverage was a weak/flat predictor in our studies — Answerability is the stronger signal. This page is being rewritten.',
+    },
+    {
+        slug: 'geo-content-framework',
+        title: 'GEO Content Framework',
+        description: 'A four-pillar content framework for AI-ready pages.',
+        icon: FileText,
+        underReview: true,
+        reviewNote: 'The original framework treats Topic Authority as a primary pillar; our research showed it is a weak/negative predictor. This page is being revised.',
     },
 ];
 
 const allItemListElements = [
-    ...articles.map((article, index) => ({
-        '@type': 'ListItem' as const,
-        position: index + 1,
-        url: `https://geosource.ai/resources/${article.slug}`,
-        name: article.title,
-    })),
-    ...props.industries.map((industry, index) => ({
-        '@type': 'ListItem' as const,
-        position: articles.length + index + 1,
-        url: `https://geosource.ai/geo-for-${industry.slug}`,
-        name: industry.title,
-    })),
-    ...props.platforms.map((platform, index) => ({
-        '@type': 'ListItem' as const,
-        position: articles.length + props.industries.length + index + 1,
-        url: `https://geosource.ai/optimize-for-${platform.slug}`,
-        name: platform.title,
-    })),
-    ...props.comparisons.map((comparison, index) => ({
-        '@type': 'ListItem' as const,
-        position: articles.length + props.industries.length + props.platforms.length + index + 1,
-        url: `https://geosource.ai/compare/${comparison.slug}`,
-        name: comparison.title,
-    })),
-    ...props.useCases.map((useCase, index) => ({
-        '@type': 'ListItem' as const,
-        position: articles.length + props.industries.length + props.platforms.length + props.comparisons.length + index + 1,
-        url: `https://geosource.ai/how-to/${useCase.slug}`,
-        name: useCase.title,
-    })),
+    { '@type': 'ListItem' as const, position: 1, name: startHere.title, url: `https://geosource.ai${startHere.href}` },
+    ...foundations.map((a, i) => ({ '@type': 'ListItem' as const, position: 2 + i, name: a.title, url: `https://geosource.ai/resources/${a.slug}` })),
+    ...tools.map((a, i) => ({ '@type': 'ListItem' as const, position: 6 + i, name: a.title, url: `https://geosource.ai${a.href}` })),
+    ...drivingPillars.map((a, i) => ({ '@type': 'ListItem' as const, position: 10 + i, name: a.title, url: `https://geosource.ai/resources/${a.slug}` })),
 ];
 
 const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
-    name: 'GEO Resources & Guides',
-    description: 'Comprehensive GEO resources, industry guides, and platform-specific strategies for optimizing content for AI search engines.',
+    name: 'Learn GEO',
+    description: 'Foundational guides, pillar deep-dives, and platform-specific strategies for Generative Engine Optimization.',
     url: 'https://geosource.ai/resources',
     publisher: {
         '@type': 'Organization',
@@ -250,16 +241,16 @@ const jsonLd = {
 </script>
 
 <template>
-    <Head title="GEO Resources & Guides - GeoSource.ai">
-        <meta name="description" content="GEO resources, industry guides, and platform-specific strategies for optimizing content for AI search engines like ChatGPT, Perplexity, and Claude." />
-        <meta property="og:title" content="GEO Resources & Guides - GeoSource.ai" />
-        <meta property="og:description" content="GEO resources, industry guides, and platform-specific strategies for optimizing content for AI search engines." />
+    <Head title="Learn GEO - GeoSource.ai">
+        <meta name="description" content="Foundational guides, pillar deep-dives, and platform-specific strategies for optimizing content for AI search engines like ChatGPT, Perplexity, and Claude." />
+        <meta property="og:title" content="Learn GEO - GeoSource.ai" />
+        <meta property="og:description" content="Foundational guides, pillar deep-dives, and platform-specific strategies for optimizing content for AI search engines." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://geosource.ai/resources" />
         <meta property="og:site_name" content="GeoSource.ai" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="GEO Resources & Guides - GeoSource.ai" />
-        <meta name="twitter:description" content="GEO resources, industry guides, and platform-specific strategies for optimizing content for AI search engines." />
+        <meta name="twitter:title" content="Learn GEO - GeoSource.ai" />
+        <meta name="twitter:description" content="Foundational guides, pillar deep-dives, and platform-specific strategies for optimizing content for AI search engines." />
         <meta name="twitter:site" content="@geosourceai" />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href="https://geosource.ai/resources" />
@@ -271,100 +262,73 @@ const jsonLd = {
         <ResourceHeader />
 
         <main id="main-content" role="main">
-            <!-- Hero Section -->
-            <section aria-labelledby="hero-heading" class="relative overflow-hidden py-16 sm:py-24">
-                <div class="absolute inset-0 -z-10 bg-[radial-gradient(45%_40%_at_50%_60%,hsl(var(--primary)/0.12),transparent)]" aria-hidden="true" />
-                <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <div class="mx-auto max-w-3xl text-center">
-                        <Badge variant="secondary" class="mb-6">
-                            <BookOpen class="mr-1 h-3 w-3" aria-hidden="true" />
-                            Learning Hub
-                        </Badge>
-                        <h1 id="hero-heading" class="text-4xl font-bold tracking-tight sm:text-5xl">
-                            GEO Resources & Guides
-                        </h1>
-                        <p class="mt-6 text-lg leading-8 text-muted-foreground">
-                            Learning resources, industry-specific guides, and platform strategies to understand <strong class="text-foreground">Generative Engine Optimization</strong> and make your content visible to AI search systems.
-                        </p>
+            <!-- Hero -->
+            <section class="border-b bg-gradient-to-b from-primary/5 to-background py-14 sm:py-20">
+                <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+                    <Badge variant="secondary" class="mb-4">
+                        <BookOpen class="mr-1.5 h-3 w-3" aria-hidden="true" />
+                        Learn GEO
+                    </Badge>
+                    <h1 class="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
+                        Learn how to make content AI assistants will cite
+                    </h1>
+                    <p class="mt-4 max-w-3xl text-base text-muted-foreground sm:text-lg leading-relaxed">
+                        Foundational guides, frameworks, and pillar deep-dives. For original studies and data from our research line, see <Link href="/research" class="text-primary font-medium hover:underline">Research</Link>.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Start here -->
+            <section aria-labelledby="start-here-heading" class="py-12 sm:py-16">
+                <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+                    <div class="mb-6 flex items-center gap-2">
+                        <Compass class="h-5 w-5 text-primary" aria-hidden="true" />
+                        <h2 id="start-here-heading" class="text-sm font-semibold uppercase tracking-wide text-primary">Start here</h2>
                     </div>
+                    <Link
+                        :href="startHere.href"
+                        class="block group focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg"
+                        :aria-label="`${startHere.title}: ${startHere.description}`"
+                    >
+                        <Card class="border-2 border-primary/40 bg-gradient-to-br from-primary/5 to-transparent transition-shadow hover:shadow-lg">
+                            <CardContent class="p-6 sm:p-8">
+                                <Badge variant="secondary" class="mb-3">Foundation</Badge>
+                                <h3 class="text-2xl font-bold leading-tight group-hover:text-primary transition-colors">
+                                    {{ startHere.title }}
+                                </h3>
+                                <p class="mt-3 text-muted-foreground leading-relaxed">
+                                    {{ startHere.description }}
+                                </p>
+                                <span class="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary">
+                                    Read the introduction <ArrowRight class="h-3.5 w-3.5" aria-hidden="true" />
+                                </span>
+                            </CardContent>
+                        </Card>
+                    </Link>
                 </div>
             </section>
 
-            <!-- Featured Resources -->
-            <section aria-labelledby="featured-heading" class="border-t py-16">
-                <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <h2 id="featured-heading" class="text-2xl font-bold mb-8 text-center">Essential GEO Resources</h2>
-                    <ul class="grid gap-6 md:grid-cols-2 lg:grid-cols-4" role="list">
-                        <li v-for="resource in featuredResources" :key="resource.href">
+            <!-- Foundations -->
+            <section aria-labelledby="foundations-heading" class="border-t py-12 sm:py-16">
+                <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+                    <div class="mb-6 flex items-center justify-between gap-4">
+                        <h2 id="foundations-heading" class="text-2xl font-bold tracking-tight sm:text-3xl">
+                            Foundations
+                        </h2>
+                        <p class="hidden sm:block text-sm text-muted-foreground">Read these before the pillar deep-dives.</p>
+                    </div>
+                    <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" role="list">
+                        <li v-for="a in foundations" :key="a.slug">
                             <Link
-                                :href="resource.href"
-                                class="group block h-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg"
-                                :aria-label="`${resource.title}: ${resource.description}`"
-                            >
-                                <Card
-                                    class="h-full transition-colors hover:border-primary/50"
-                                    :class="{ 'border-primary/50 bg-primary/5': resource.highlight }"
-                                >
-                                    <CardHeader>
-                                        <div class="flex items-center justify-between">
-                                            <component :is="resource.icon" class="h-8 w-8 text-primary" aria-hidden="true" />
-                                            <Badge :variant="resource.highlight ? 'default' : 'outline'">{{ resource.badge }}</Badge>
-                                        </div>
-                                        <CardTitle class="mt-4 text-lg group-hover:text-primary transition-colors">
-                                            {{ resource.title }}
-                                        </CardTitle>
-                                        <CardDescription>
-                                            {{ resource.description }}
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <span class="inline-flex items-center text-sm font-medium text-primary" aria-hidden="true">
-                                            Explore
-                                            <ArrowRight class="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                                        </span>
-                                    </CardContent>
-                                </Card>
-                            </Link>
-                        </li>
-                    </ul>
-                </div>
-            </section>
-
-            <!-- Articles Grid -->
-            <section aria-labelledby="articles-heading" class="border-t bg-muted/30 py-16">
-                <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <h2 id="articles-heading" class="text-2xl font-bold mb-8 text-center">Learn the Fundamentals</h2>
-                    <ul class="grid gap-6 md:grid-cols-2 lg:grid-cols-3" role="list">
-                        <li v-for="article in articles" :key="article.slug">
-                            <Link
-                                :href="`/resources/${article.slug}`"
-                                class="group block h-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg"
-                                :aria-label="`${article.title}: ${article.description}`"
+                                :href="`/resources/${a.slug}`"
+                                class="block group h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg"
+                                :aria-label="`${a.title}: ${a.description}`"
                             >
                                 <Card class="h-full transition-colors hover:border-primary/50">
-                                    <CardHeader>
-                                        <div class="flex items-center justify-between">
-                                            <component :is="article.icon" class="h-8 w-8 text-primary" aria-hidden="true" />
-                                            <Badge variant="outline">{{ article.badge }}</Badge>
-                                        </div>
-                                        <CardTitle class="mt-4 text-xl group-hover:text-primary transition-colors">
-                                            {{ article.title }}
-                                        </CardTitle>
-                                        <CardDescription class="text-base">
-                                            {{ article.description }}
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div class="flex items-center justify-between">
-                                            <span class="inline-flex items-center text-sm font-medium text-primary" aria-hidden="true">
-                                                Read article
-                                                <ArrowRight class="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                                            </span>
-                                            <span class="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                                                <Calendar class="h-3 w-3" aria-hidden="true" />
-                                                <time :datetime="'2026-01'">{{ article.date }}</time>
-                                            </span>
-                                        </div>
+                                    <CardContent class="p-5">
+                                        <component :is="a.icon" class="h-6 w-6 text-primary mb-3" aria-hidden="true" />
+                                        <h3 class="font-semibold leading-snug group-hover:text-primary transition-colors">{{ a.title }}</h3>
+                                        <p class="mt-2 text-sm text-muted-foreground leading-relaxed">{{ a.description }}</p>
                                     </CardContent>
                                 </Card>
                             </Link>
@@ -373,44 +337,160 @@ const jsonLd = {
                 </div>
             </section>
 
-            <!-- Industry GEO Guides -->
-            <section v-if="industries.length" aria-labelledby="industries-heading" class="border-t py-16">
-                <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <div class="mx-auto max-w-2xl text-center mb-8">
-                        <h2 id="industries-heading" class="text-2xl font-bold">GEO by Industry</h2>
-                        <p class="mt-2 text-muted-foreground">Industry-specific guides to optimizing content for AI search visibility.</p>
+            <!-- Frameworks & tools -->
+            <section aria-labelledby="tools-heading" class="border-t bg-muted/30 py-12 sm:py-16">
+                <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+                    <div class="mb-6">
+                        <h2 id="tools-heading" class="text-2xl font-bold tracking-tight sm:text-3xl">
+                            Frameworks &amp; tools
+                        </h2>
+                        <p class="mt-2 text-sm text-muted-foreground">Practical artifacts — the glossary, the scoring deep-dive, and our optimization checklist.</p>
                     </div>
-                    <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" role="list">
+                    <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" role="list">
+                        <li v-for="t in tools" :key="t.href">
+                            <Link
+                                :href="t.href"
+                                class="block group h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg"
+                                :aria-label="`${t.title}: ${t.description}`"
+                            >
+                                <Card class="h-full transition-colors hover:border-primary/50">
+                                    <CardContent class="p-5">
+                                        <div class="flex items-start justify-between gap-2 mb-3">
+                                            <component :is="t.icon" class="h-6 w-6 text-primary" aria-hidden="true" />
+                                            <Badge v-if="t.underReview" variant="outline" class="border-amber-500/50 text-amber-600 dark:text-amber-400 text-[10px]">
+                                                <AlertCircle class="h-3 w-3 mr-1" aria-hidden="true" />
+                                                Under review
+                                            </Badge>
+                                        </div>
+                                        <h3 class="font-semibold leading-snug group-hover:text-primary transition-colors">{{ t.title }}</h3>
+                                        <p class="mt-2 text-sm text-muted-foreground leading-relaxed">{{ t.description }}</p>
+                                        <p v-if="t.underReview && t.reviewNote" class="mt-2 text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
+                                            {{ t.reviewNote }}
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            </Link>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Pillar deep-dives -->
+            <section aria-labelledby="pillars-heading" class="border-t py-12 sm:py-16">
+                <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+                    <div class="mb-6">
+                        <h2 id="pillars-heading" class="text-2xl font-bold tracking-tight sm:text-3xl">
+                            Pillar deep-dives
+                        </h2>
+                        <p class="mt-2 text-sm text-muted-foreground max-w-3xl leading-relaxed">
+                            Detailed guides on each pillar in the GEO model. Pillars are grouped by what our research validated. Pages marked "Under review" are being rewritten to reflect findings from our recent studies.
+                        </p>
+                    </div>
+
+                    <!-- Validated drivers -->
+                    <div class="mb-10">
+                        <h3 class="text-sm font-semibold uppercase tracking-wide text-green-600 dark:text-green-400 mb-3">Validated drivers</h3>
+                        <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" role="list">
+                            <li v-for="p in drivingPillars" :key="p.slug">
+                                <Link
+                                    :href="`/resources/${p.slug}`"
+                                    class="block group h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg"
+                                    :aria-label="`${p.title}: ${p.description}`"
+                                >
+                                    <Card class="h-full border-l-2 border-l-green-500/40 transition-colors hover:border-primary/50">
+                                        <CardContent class="p-5">
+                                            <component :is="p.icon" class="h-5 w-5 text-primary mb-3" aria-hidden="true" />
+                                            <h4 class="font-semibold leading-snug group-hover:text-primary transition-colors">{{ p.title }}</h4>
+                                            <p class="mt-2 text-sm text-muted-foreground leading-relaxed">{{ p.description }}</p>
+                                        </CardContent>
+                                    </Card>
+                                </Link>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Technical baseline -->
+                    <div class="mb-10">
+                        <h3 class="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">Technical baseline</h3>
+                        <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" role="list">
+                            <li v-for="p in technicalPillars" :key="p.slug">
+                                <Link
+                                    :href="`/resources/${p.slug}`"
+                                    class="block group h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg"
+                                    :aria-label="`${p.title}: ${p.description}`"
+                                >
+                                    <Card class="h-full transition-colors hover:border-primary/50">
+                                        <CardContent class="p-5">
+                                            <component :is="p.icon" class="h-5 w-5 text-primary mb-3" aria-hidden="true" />
+                                            <h4 class="font-semibold leading-snug group-hover:text-primary transition-colors">{{ p.title }}</h4>
+                                            <p class="mt-2 text-sm text-muted-foreground leading-relaxed">{{ p.description }}</p>
+                                        </CardContent>
+                                    </Card>
+                                </Link>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Under review -->
+                    <div>
+                        <h3 class="text-sm font-semibold uppercase tracking-wide text-amber-600 dark:text-amber-400 mb-3 flex items-center gap-2">
+                            <AlertCircle class="h-3.5 w-3.5" aria-hidden="true" />
+                            Under review — being rewritten
+                        </h3>
+                        <p class="text-sm text-muted-foreground mb-4 max-w-3xl">
+                            These guides predate our recent research and contain claims we have not been able to validate. They remain accessible while we revise them. See our <Link href="/research" class="text-primary hover:underline">research</Link> for the current findings.
+                        </p>
+                        <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" role="list">
+                            <li v-for="p in underReviewPillars" :key="p.slug">
+                                <Link
+                                    :href="`/resources/${p.slug}`"
+                                    class="block group h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg"
+                                    :aria-label="`${p.title}: ${p.description}`"
+                                >
+                                    <Card class="h-full border-l-2 border-l-amber-500/40 bg-amber-50/30 dark:bg-amber-950/10 transition-colors hover:border-primary/50">
+                                        <CardContent class="p-5">
+                                            <div class="flex items-start justify-between gap-2 mb-3">
+                                                <component :is="p.icon" class="h-5 w-5 text-primary" aria-hidden="true" />
+                                                <Badge variant="outline" class="border-amber-500/50 text-amber-600 dark:text-amber-400 text-[10px]">
+                                                    Under review
+                                                </Badge>
+                                            </div>
+                                            <h4 class="font-semibold leading-snug group-hover:text-primary transition-colors">{{ p.title }}</h4>
+                                            <p class="mt-2 text-sm text-muted-foreground leading-relaxed">{{ p.description }}</p>
+                                            <p v-if="p.reviewNote" class="mt-2 text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
+                                                {{ p.reviewNote }}
+                                            </p>
+                                        </CardContent>
+                                    </Card>
+                                </Link>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Industry guides (dynamic) -->
+            <section v-if="industries.length" aria-labelledby="industries-heading" class="border-t bg-muted/30 py-12 sm:py-16">
+                <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+                    <div class="mb-6">
+                        <h2 id="industries-heading" class="text-2xl font-bold tracking-tight sm:text-3xl">GEO by industry</h2>
+                        <p class="mt-2 text-sm text-muted-foreground">Industry-specific guides to GEO. Pick the one that matches your business.</p>
+                    </div>
+                    <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" role="list">
                         <li v-for="industry in industries" :key="industry.slug">
                             <Link
                                 :href="`/geo-for-${industry.slug}`"
-                                class="group block h-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg"
+                                class="block group h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg"
                                 :aria-label="`${industry.name}: ${industry.meta_description}`"
                             >
                                 <Card class="h-full transition-colors hover:border-primary/50">
-                                    <CardHeader>
-                                        <div class="flex items-center justify-between">
-                                            <Layers class="h-8 w-8 text-primary" aria-hidden="true" />
-                                            <Badge variant="outline">Industry</Badge>
+                                    <CardContent class="p-5">
+                                        <div class="flex items-start justify-between gap-2 mb-3">
+                                            <Layers class="h-6 w-6 text-primary" aria-hidden="true" />
+                                            <Badge variant="outline" class="text-[10px]">Industry</Badge>
                                         </div>
-                                        <CardTitle class="mt-4 text-xl group-hover:text-primary transition-colors">
-                                            {{ industry.name }}
-                                        </CardTitle>
-                                        <CardDescription class="text-base">
-                                            {{ industry.meta_description }}
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div class="flex items-center justify-between">
-                                            <span class="inline-flex items-center text-sm font-medium text-primary" aria-hidden="true">
-                                                Read guide
-                                                <ArrowRight class="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                                            </span>
-                                            <span class="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                                                <Calendar class="h-3 w-3" aria-hidden="true" />
-                                                <time :datetime="industry.updated_at">{{ formatDate(industry.updated_at) }}</time>
-                                            </span>
-                                        </div>
+                                        <h3 class="font-semibold leading-snug group-hover:text-primary transition-colors">{{ industry.name }}</h3>
+                                        <p class="mt-2 text-sm text-muted-foreground leading-relaxed">{{ industry.meta_description }}</p>
                                     </CardContent>
                                 </Card>
                             </Link>
@@ -419,44 +499,28 @@ const jsonLd = {
                 </div>
             </section>
 
-            <!-- Platform Optimization -->
-            <section v-if="platforms.length" aria-labelledby="platforms-heading" class="border-t bg-muted/30 py-16">
-                <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <div class="mx-auto max-w-2xl text-center mb-8">
-                        <h2 id="platforms-heading" class="text-2xl font-bold">Optimize for AI Platforms</h2>
-                        <p class="mt-2 text-muted-foreground">Platform-specific strategies for getting cited by each AI search engine.</p>
+            <!-- Platform guides (dynamic) -->
+            <section v-if="platforms.length" aria-labelledby="platforms-heading" class="border-t py-12 sm:py-16">
+                <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+                    <div class="mb-6">
+                        <h2 id="platforms-heading" class="text-2xl font-bold tracking-tight sm:text-3xl">Optimize for each AI platform</h2>
+                        <p class="mt-2 text-sm text-muted-foreground">Per-platform notes — though our research showed all major platforms behave more similarly than not.</p>
                     </div>
-                    <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" role="list">
+                    <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" role="list">
                         <li v-for="platform in platforms" :key="platform.slug">
                             <Link
                                 :href="`/optimize-for-${platform.slug}`"
-                                class="group block h-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg"
+                                class="block group h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg"
                                 :aria-label="`${platform.name}: ${platform.meta_description}`"
                             >
                                 <Card class="h-full transition-colors hover:border-primary/50">
-                                    <CardHeader>
-                                        <div class="flex items-center justify-between">
-                                            <Monitor class="h-8 w-8 text-primary" aria-hidden="true" />
-                                            <Badge variant="outline">Platform</Badge>
+                                    <CardContent class="p-5">
+                                        <div class="flex items-start justify-between gap-2 mb-3">
+                                            <Monitor class="h-6 w-6 text-primary" aria-hidden="true" />
+                                            <Badge variant="outline" class="text-[10px]">Platform</Badge>
                                         </div>
-                                        <CardTitle class="mt-4 text-xl group-hover:text-primary transition-colors">
-                                            {{ platform.name }}
-                                        </CardTitle>
-                                        <CardDescription class="text-base">
-                                            {{ platform.meta_description }}
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div class="flex items-center justify-between">
-                                            <span class="inline-flex items-center text-sm font-medium text-primary" aria-hidden="true">
-                                                Read guide
-                                                <ArrowRight class="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                                            </span>
-                                            <span class="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                                                <Calendar class="h-3 w-3" aria-hidden="true" />
-                                                <time :datetime="platform.updated_at">{{ formatDate(platform.updated_at) }}</time>
-                                            </span>
-                                        </div>
+                                        <h3 class="font-semibold leading-snug group-hover:text-primary transition-colors">{{ platform.name }}</h3>
+                                        <p class="mt-2 text-sm text-muted-foreground leading-relaxed">{{ platform.meta_description }}</p>
                                     </CardContent>
                                 </Card>
                             </Link>
@@ -465,44 +529,28 @@ const jsonLd = {
                 </div>
             </section>
 
-            <!-- Tool Comparisons -->
-            <section v-if="comparisons.length" aria-labelledby="comparisons-heading" class="border-t py-16">
-                <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <div class="mx-auto max-w-2xl text-center mb-8">
-                        <h2 id="comparisons-heading" class="text-2xl font-bold">GEO vs SEO Tool Comparisons</h2>
-                        <p class="mt-2 text-muted-foreground">See how GEO optimization compares to traditional SEO tools.</p>
+            <!-- Comparisons (dynamic) -->
+            <section v-if="comparisons.length" aria-labelledby="comparisons-heading" class="border-t bg-muted/30 py-12 sm:py-16">
+                <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+                    <div class="mb-6">
+                        <h2 id="comparisons-heading" class="text-2xl font-bold tracking-tight sm:text-3xl">Tool comparisons</h2>
+                        <p class="mt-2 text-sm text-muted-foreground">How GEO compares to traditional SEO tools.</p>
                     </div>
-                    <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" role="list">
+                    <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" role="list">
                         <li v-for="comparison in comparisons" :key="comparison.slug">
                             <Link
                                 :href="`/compare/${comparison.slug}`"
-                                class="group block h-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg"
+                                class="block group h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg"
                                 :aria-label="`${comparison.title}: ${comparison.meta_description}`"
                             >
                                 <Card class="h-full transition-colors hover:border-primary/50">
-                                    <CardHeader>
-                                        <div class="flex items-center justify-between">
-                                            <Scale class="h-8 w-8 text-primary" aria-hidden="true" />
-                                            <Badge variant="outline">Comparison</Badge>
+                                    <CardContent class="p-5">
+                                        <div class="flex items-start justify-between gap-2 mb-3">
+                                            <Scale class="h-6 w-6 text-primary" aria-hidden="true" />
+                                            <Badge variant="outline" class="text-[10px]">Comparison</Badge>
                                         </div>
-                                        <CardTitle class="mt-4 text-xl group-hover:text-primary transition-colors">
-                                            {{ comparison.title }}
-                                        </CardTitle>
-                                        <CardDescription class="text-base">
-                                            {{ comparison.meta_description }}
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div class="flex items-center justify-between">
-                                            <span class="inline-flex items-center text-sm font-medium text-primary" aria-hidden="true">
-                                                Read comparison
-                                                <ArrowRight class="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                                            </span>
-                                            <span class="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                                                <Calendar class="h-3 w-3" aria-hidden="true" />
-                                                <time :datetime="comparison.updated_at">{{ formatDate(comparison.updated_at) }}</time>
-                                            </span>
-                                        </div>
+                                        <h3 class="font-semibold leading-snug group-hover:text-primary transition-colors">{{ comparison.title }}</h3>
+                                        <p class="mt-2 text-sm text-muted-foreground leading-relaxed">{{ comparison.meta_description }}</p>
                                     </CardContent>
                                 </Card>
                             </Link>
@@ -511,44 +559,28 @@ const jsonLd = {
                 </div>
             </section>
 
-            <!-- How-To Guides -->
-            <section v-if="useCases.length" aria-labelledby="use-cases-heading" class="border-t bg-muted/30 py-16">
-                <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <div class="mx-auto max-w-2xl text-center mb-8">
-                        <h2 id="use-cases-heading" class="text-2xl font-bold">How-To Guides</h2>
-                        <p class="mt-2 text-muted-foreground">Step-by-step guides for AI search optimization tasks.</p>
+            <!-- How-To Guides (dynamic) -->
+            <section v-if="useCases.length" aria-labelledby="use-cases-heading" class="border-t py-12 sm:py-16">
+                <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+                    <div class="mb-6">
+                        <h2 id="use-cases-heading" class="text-2xl font-bold tracking-tight sm:text-3xl">How-to guides</h2>
+                        <p class="mt-2 text-sm text-muted-foreground">Step-by-step walkthroughs for common GEO tasks.</p>
                     </div>
-                    <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" role="list">
+                    <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" role="list">
                         <li v-for="useCase in useCases" :key="useCase.slug">
                             <Link
                                 :href="`/how-to/${useCase.slug}`"
-                                class="group block h-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg"
+                                class="block group h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg"
                                 :aria-label="`${useCase.title}: ${useCase.meta_description}`"
                             >
                                 <Card class="h-full transition-colors hover:border-primary/50">
-                                    <CardHeader>
-                                        <div class="flex items-center justify-between">
-                                            <Sparkles class="h-8 w-8 text-primary" aria-hidden="true" />
-                                            <Badge variant="outline">How-To</Badge>
+                                    <CardContent class="p-5">
+                                        <div class="flex items-start justify-between gap-2 mb-3">
+                                            <Sparkles class="h-6 w-6 text-primary" aria-hidden="true" />
+                                            <Badge variant="outline" class="text-[10px]">How-to</Badge>
                                         </div>
-                                        <CardTitle class="mt-4 text-xl group-hover:text-primary transition-colors">
-                                            {{ useCase.title }}
-                                        </CardTitle>
-                                        <CardDescription class="text-base">
-                                            {{ useCase.meta_description }}
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div class="flex items-center justify-between">
-                                            <span class="inline-flex items-center text-sm font-medium text-primary" aria-hidden="true">
-                                                Read guide
-                                                <ArrowRight class="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                                            </span>
-                                            <span class="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                                                <Calendar class="h-3 w-3" aria-hidden="true" />
-                                                <time :datetime="useCase.updated_at">{{ formatDate(useCase.updated_at) }}</time>
-                                            </span>
-                                        </div>
+                                        <h3 class="font-semibold leading-snug group-hover:text-primary transition-colors">{{ useCase.title }}</h3>
+                                        <p class="mt-2 text-sm text-muted-foreground leading-relaxed">{{ useCase.meta_description }}</p>
                                     </CardContent>
                                 </Card>
                             </Link>
@@ -557,18 +589,40 @@ const jsonLd = {
                 </div>
             </section>
 
-            <!-- CTA Section -->
-            <section aria-labelledby="cta-heading" class="border-t py-16">
-                <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <!-- Research pointer -->
+            <section aria-labelledby="research-pointer-heading" class="border-t py-12 sm:py-16">
+                <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+                    <Card class="border-l-4 border-l-primary">
+                        <CardContent class="p-6 sm:p-8">
+                            <div class="flex items-start gap-4">
+                                <Microscope class="h-6 w-6 text-primary mt-1 shrink-0" aria-hidden="true" />
+                                <div>
+                                    <h2 id="research-pointer-heading" class="text-xl font-semibold">Looking for the underlying research?</h2>
+                                    <p class="mt-2 text-muted-foreground leading-relaxed">
+                                        Most of these guides reference findings from our four-study research line. The studies themselves — methodology, raw data, and what each finding means in practice — live on our Research page.
+                                    </p>
+                                    <Link href="/research" class="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+                                        Browse research <ArrowRight class="h-3.5 w-3.5" aria-hidden="true" />
+                                    </Link>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            </section>
+
+            <!-- CTA -->
+            <section aria-labelledby="cta-heading" class="border-t py-12 sm:py-16">
+                <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
                     <div class="mx-auto max-w-2xl text-center">
                         <h2 id="cta-heading" class="text-2xl font-bold tracking-tight sm:text-3xl">
                             Ready to measure your GEO readiness?
                         </h2>
                         <p class="mt-4 text-lg text-muted-foreground">
-                            Get your GEO Score and actionable recommendations.
+                            Scan any URL and get your Citation Readiness Score plus actionable next steps.
                         </p>
                         <div class="mt-8">
-                            <Link href="/register" class="inline-block focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-md">
+                            <Link href="/register" class="inline-block focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md">
                                 <Button size="lg" class="gap-2">
                                     Start Free Analysis
                                     <ArrowRight class="h-4 w-4" aria-hidden="true" />

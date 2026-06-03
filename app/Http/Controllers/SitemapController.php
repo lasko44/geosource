@@ -186,12 +186,12 @@ class SitemapController extends Controller
                 'changefreq' => 'monthly',
                 'priority' => '0.7',
             ],
-            // Blog index
+            // Research index
             [
-                'url' => '/blog',
+                'url' => '/research',
                 'lastmod' => now()->format('Y-m-d'),
-                'changefreq' => 'daily',
-                'priority' => '0.8',
+                'changefreq' => 'weekly',
+                'priority' => '0.9',
             ],
         ];
 
