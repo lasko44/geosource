@@ -104,50 +104,48 @@ const copyConfig = () => {
 const mounted = ref(false);
 onMounted(() => { mounted.value = true; });
 
+// Demo mockup pillars — illustrative only. Shows the validated drivers
+// of AI citation from our research line, not the full scoring breakdown.
 const pillars = [
-    { name: 'Clear Definitions', score: 18, max: 20, description: 'AI needs explicit "X is Y" definitions to cite confidently' },
-    { name: 'Structured Knowledge', score: 16, max: 20, description: 'Headings, lists, and tables that AI can parse and extract' },
-    { name: 'Topic Authority', score: 22, max: 25, description: 'Depth and expertise signals that establish credibility' },
-    { name: 'Machine Readability', score: 13, max: 15, description: 'Schema markup, semantic HTML, and crawlability' },
-    { name: 'Answerability', score: 15, max: 20, description: 'Content that directly answers questions AI users ask' },
+    { name: 'Answerability', score: 17, max: 20, description: 'Direct, declarative answers near the top of the page.' },
+    { name: 'Citation Quality', score: 15, max: 20, description: 'Linking to authoritative external sources.' },
+    { name: 'Clear Definitions', score: 18, max: 20, description: 'Explicit "X is Y" statements early on.' },
+    { name: 'Readability', score: 14, max: 20, description: 'Short sentences, clean structure, scannable prose.' },
+    { name: 'AI Accessibility', score: 13, max: 20, description: 'Crawlers and LLMs can actually reach and parse the page.' },
 ];
 
 const faqItems = [
     {
         question: 'What is Generative Engine Optimization (GEO)?',
-        answer: 'Generative Engine Optimization (GEO) is the process of optimizing website content so AI systems like ChatGPT, Perplexity, Claude, and Gemini can clearly understand, trust, and reference it when generating answers. Unlike SEO, GEO focuses on structure, definitions, answerability, authority, and machine readability.',
+        answer: 'Generative Engine Optimization (GEO) is the practice of structuring content so AI assistants like ChatGPT, Perplexity, Claude, and Gemini can confidently cite it when answering user questions. Unlike SEO, GEO focuses on whether AI assistants can extract and quote your content, not on ranking in a search results page.',
     },
     {
-        question: 'What are the GEO vs SEO differences?',
-        answer: 'The key GEO vs SEO differences: SEO focuses on ranking pages in search engine results while GEO focuses on AI citation vs traditional ranking. SEO helps users find your page; GEO helps AI systems use your page. A page can rank well in Google but still be invisible to AI systems. Modern search strategies require both AI search vs SEO approaches.',
+        question: 'What are the differences between GEO and SEO?',
+        answer: 'SEO optimizes for ranking links. GEO optimizes for being quoted. A page can rank well in Google and still be invisible to AI assistants — they pick sources based on whether the page contains a clear, citable answer, not on backlinks or keyword density. Most teams need both, but they are different problems.',
     },
     {
-        question: 'How do I get my GEO score explained?',
-        answer: 'A GEO score measures how optimized a webpage is for AI search engines. GeoSource.ai calculates this using 12 evidence-weighted pillars, with answerability, citation quality, and definitions carrying the most weight — because our research proved these are the strongest predictors of actual AI citations. Your scan also includes a Citation Readiness Score focused specifically on citation likelihood.',
+        question: 'How is the GEO Score calculated?',
+        answer: 'GeoSource.ai analyzes pages across multiple research-grounded pillars and returns a composite GEO Score plus a Citation Readiness Score. The Citation Readiness Score focuses specifically on the signals our research line validated as predictors of AI citation — Answerability, Citation Quality, and Definitions. For ecommerce pages we also produce a Recommendation Readiness Score, which weights signals differently because our research showed AI assistants behave differently on commercial queries.',
     },
     {
-        question: 'How to optimize for AI search engines?',
-        answer: 'Based on our research, the most impactful optimizations are: 1) Write direct, answer-first content (strongest citation predictor, +69% lift), 2) Cite authoritative external sources (+56% lift), 3) Add clear "X is Y" definitions (+40% lift), 4) Target informational queries over product queries (5x higher citation rates), 5) Build brand recognition through third-party mentions. Structure and schema markup are important baselines but not differentiators.',
+        question: 'How do I optimize a page for AI search?',
+        answer: 'Based on our research line: put the direct answer in the first sentence of each major section. Cite authoritative external sources from inside your content. Use explicit "X is Y" definitions for key terms near the top. Make sure AI crawlers can actually reach the page (server-side rendering, no aggressive bot blocking). Brand recognition and how the user phrases the question matter at least as much as anything on the page itself.',
     },
     {
-        question: 'What is a GEO score tool?',
-        answer: 'A GEO score tool analyzes webpages for AI search visibility. GeoSource.ai is the only GEO tool backed by empirical citation research — we studied 60 websites across 17 industries to identify which content signals actually predict AI citations. Our tool scores 12 pillars weighted by their proven impact, and includes a Citation Readiness Score that predicts citation likelihood with 67% more accuracy than an unweighted score.',
+        question: 'What makes GeoSource.ai different?',
+        answer: 'GeoSource.ai is backed by an original research line — four studies of how AI assistants actually cite and recommend content. Our scoring reflects what those studies validated as drivers of citation, not generic SEO checklists adapted for AI. We also track real citations across ChatGPT, Perplexity, Claude, and Gemini so you can see what is actually happening, not just predicted scores.',
     },
     {
-        question: 'What are AI content optimization best practices?',
-        answer: 'AI content optimization best practices include: clear definitions, structured headings (H1-H3), answer-first paragraphs, FAQ sections, comparison tables, bullet lists, schema markup, and strong E-E-A-T signals. Our AI-friendly content structure guide in each scan shows exactly what to fix.',
-    },
-    {
-        question: 'What are generative search visibility strategies?',
-        answer: 'Generative search visibility strategies focus on making content extractable by AI systems. Key strategies include: explicit definitions, answering questions directly, using structured data, building topic authority through depth, and ensuring AI crawlers can access your content. GeoSource.ai tracks your progress with AI content scoring metrics.',
+        question: 'Are FAQ sections, E-E-A-T signals, or topical authority useful for AI search?',
+        answer: 'Less than the conventional advice suggests. In our research, visible E-E-A-T signals (author bylines, "expert reviewed by" badges) did not positively predict AI citation, and topical-authority depth was a weak or negative predictor. FAQ sections still help with accessibility and traditional SEO, but they are not the citation lever. The signals our studies validated are direct answers, citation quality, and clear definitions.',
     },
     {
         question: 'Which AI platforms does GeoSource.ai support?',
-        answer: 'GeoSource.ai analyzes content for visibility in major AI platforms including ChatGPT (OpenAI), Perplexity, Claude, and Google Gemini. Our AI citation tracker monitors actual citations across these platforms, and our AI search visibility tool simulates how LLMs evaluate content.',
+        answer: 'GeoSource.ai analyzes and tracks citations across ChatGPT (OpenAI), Perplexity, Claude (Anthropic), and Google Gemini. Our research found these platforms agree more than they disagree on which sources to cite, so the same optimizations tend to work across all of them.',
     },
     {
         question: 'Does GEO replace SEO?',
-        answer: 'No. GEO complements SEO. Understanding AI search vs SEO differences is key: SEO helps users find your page while GEO helps AI systems use your page. The AI citation vs traditional ranking difference means you need both strategies for modern visibility.',
+        answer: 'No. GEO complements SEO. SEO helps users find your page; GEO helps AI assistants quote it. You need both — and they reward different things, which is why an SEO-strong page can still be invisible to AI search.',
     },
 ];
 </script>
@@ -200,7 +198,7 @@ const faqItems = [
                     "name": "GeoSource.ai GEO Score Tool",
                     "applicationCategory": "BusinessApplication",
                     "operatingSystem": "Web",
-                    "description": "Research-backed GEO score tool that measures AI search optimization across 12 evidence-weighted pillars. The only tool with empirical citation data proving which content signals predict AI citations.",
+                    "description": "Research-backed GEO score tool that measures AI search optimization across multiple research-grounded pillars. Backed by an original four-study research line on what actually predicts AI citation.",
                     "offers": {
                         "@type": "AggregateOffer",
                         "lowPrice": "0",
@@ -210,10 +208,10 @@ const faqItems = [
                     },
                     "featureList": [
                         "GEO Score Analysis (0-100)",
-                        "AI Content Performance Scanner",
-                        "AI-Ready Content Checker",
-                        "AI Citation Tracker",
-                        "12 GEO Evaluation Pillars",
+                        "Citation Readiness Score",
+                        "Recommendation Readiness Score for ecommerce",
+                        "AI Citation Tracker across ChatGPT, Perplexity, Claude, Gemini",
+                        "Research-grounded pillar scoring",
                         "AI Visibility Optimization Recommendations",
                         "MCP Server for Claude Desktop Integration"
                     ]
@@ -243,7 +241,7 @@ const faqItems = [
                             "name": "What is a GEO score?",
                             "acceptedAnswer": {
                                 "@type": "Answer",
-                                "text": "A GEO score measures how optimized a webpage is for AI search engines. GeoSource.ai calculates this using 12 evidence-weighted pillars calibrated from empirical citation research. Answerability, citation quality, and definitions are weighted most heavily because our study of 60 websites proved they predict actual AI citations."
+                                "text": "A GEO score measures how optimized a webpage is for AI search engines. GeoSource.ai analyzes pages across research-grounded pillars and returns a composite GEO Score plus a Citation Readiness Score that focuses on the signals our research line validated as drivers of AI citation."
                             }
                         },
                         {
@@ -251,7 +249,7 @@ const faqItems = [
                             "name": "How to optimize for AI search engines?",
                             "acceptedAnswer": {
                                 "@type": "Answer",
-                                "text": "To optimize for AI search engines: 1) Use clear definitions and structured headings, 2) Write answer-first content blocks, 3) Include FAQ sections, 4) Use tables and lists for structured data, 5) Build E-E-A-T signals, 6) Ensure content is machine-readable with proper HTML semantics and schema markup."
+                                "text": "Put the direct answer in the first sentence of each section. Cite authoritative external sources from inside your content. Use explicit definitions for key terms near the top. Make sure AI crawlers can reach the page. Brand recognition and how the user phrases the question matter at least as much as on-page signals."
                             }
                         },
                         {
@@ -497,7 +495,7 @@ const faqItems = [
                                 </span>
                                 <span class="flex items-center gap-1.5">
                                     <CheckCircle class="h-4 w-4 text-emerald-500" aria-hidden="true" />
-                                    12 research-weighted pillars
+                                    Research-grounded scoring
                                 </span>
                                 <span class="flex items-center gap-1.5">
                                     <CheckCircle class="h-4 w-4 text-emerald-500" aria-hidden="true" />
@@ -705,9 +703,9 @@ const faqItems = [
 
                         <div class="mt-10 grid gap-4 sm:grid-cols-3">
                             <Card v-for="point in [
-                                { icon: Brain, title: 'Understandable', desc: 'AI can parse and comprehend your content structure' },
-                                { icon: Shield, title: 'Trustworthy', desc: 'Your content signals authority and credibility to AI' },
-                                { icon: FileText, title: 'Citable', desc: 'Formatted for easy extraction and reference by AI' },
+                                { icon: Brain, title: 'Answerable', desc: 'A direct, declarative answer to the question, near the top of the page' },
+                                { icon: LinkIcon, title: 'Well-sourced', desc: 'Citing authoritative external sources so AI can verify the claim' },
+                                { icon: FileText, title: 'Citable', desc: 'Clean text the model can lift as a self-contained quote' },
                             ]" :key="point.title" class="text-center">
                                 <CardContent class="flex flex-col items-center pt-6">
                                     <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10">
@@ -741,32 +739,37 @@ const faqItems = [
                             Backed by data, not assumptions
                         </h2>
                         <p class="mt-4 text-muted-foreground text-lg">
-                            We ran a <a href="/blog/geo-citation-study" class="text-primary hover:underline">three-phase study</a> of 61 websites across 17 industries with 540+ citation checks on <a href="https://openai.com/index/searchgpt-prototype/" class="text-primary hover:underline" target="_blank" rel="noopener">ChatGPT</a>, <a href="https://www.perplexity.ai/" class="text-primary hover:underline" target="_blank" rel="noopener">Perplexity</a>, and <a href="https://www.anthropic.com/claude" class="text-primary hover:underline" target="_blank" rel="noopener">Claude</a>. No other GEO tool has done this.
+                            Our four-study research line tested which content signals actually predict whether AI assistants cite a website — and which signals don't, even when conventional wisdom says they should. The scoring engine reflects what the studies validated, not generic SEO checklists adapted for AI.
                         </p>
                     </div>
 
                     <div class="mx-auto max-w-4xl">
                         <div class="grid gap-6 sm:grid-cols-3 mb-8">
-                            <div class="rounded-xl border bg-card p-6 text-center">
-                                <div class="text-4xl font-bold text-primary">+109%</div>
-                                <div class="text-sm font-semibold mt-2">Answerability Lift</div>
-                                <div class="text-xs text-muted-foreground mt-1">The #1 predictor of AI citations. Direct answers get cited 109% more often.</div>
+                            <div class="rounded-xl border bg-card p-6">
+                                <MessageSquare class="h-6 w-6 text-primary mb-3" aria-hidden="true" />
+                                <div class="text-sm font-semibold">Answerability is the lever</div>
+                                <div class="text-sm text-muted-foreground mt-2 leading-relaxed">Pages that put the direct answer near the top are cited far more often than pages that bury it under preamble.</div>
                             </div>
-                            <div class="rounded-xl border bg-card p-6 text-center">
-                                <div class="text-4xl font-bold text-green-500 dark:text-green-400">55.6%</div>
-                                <div class="text-sm font-semibold mt-2">High CR Citation Rate</div>
-                                <div class="text-xs text-muted-foreground mt-1">Sites with high Citation Readiness Scores are cited 55.6% of the time.</div>
+                            <div class="rounded-xl border bg-card p-6">
+                                <LinkIcon class="h-6 w-6 text-primary mb-3" aria-hidden="true" />
+                                <div class="text-sm font-semibold">Citation quality matters</div>
+                                <div class="text-sm text-muted-foreground mt-2 leading-relaxed">Pages that themselves cite authoritative external sources are more likely to be cited by AI assistants.</div>
                             </div>
-                            <div class="rounded-xl border bg-card p-6 text-center">
-                                <div class="text-4xl font-bold text-primary">+67%</div>
-                                <div class="text-sm font-semibold mt-2">Citation Lift</div>
-                                <div class="text-xs text-muted-foreground mt-1">High CR sites vs low CR sites — a 67% improvement in citation likelihood.</div>
+                            <div class="rounded-xl border bg-card p-6">
+                                <XCircle class="h-6 w-6 text-amber-500 mb-3" aria-hidden="true" />
+                                <div class="text-sm font-semibold">E-E-A-T didn't move the needle</div>
+                                <div class="text-sm text-muted-foreground mt-2 leading-relaxed">Visible E-E-A-T signals — author bylines, "expert reviewed by" labels — did not positively predict citation in our studies.</div>
                             </div>
                         </div>
 
-                        <div class="text-center">
-                            <Link href="/blog/geo-citation-study" class="inline-flex items-center gap-2 text-primary font-medium hover:underline">
-                                Read the full three-phase study
+                        <div class="text-center flex flex-col sm:flex-row sm:justify-center gap-3">
+                            <Link href="/research" class="inline-flex items-center justify-center gap-2 text-primary font-medium hover:underline">
+                                Browse the research line
+                                <ArrowRight class="h-4 w-4" aria-hidden="true" />
+                            </Link>
+                            <span class="hidden sm:inline text-muted-foreground">·</span>
+                            <Link href="/blog/what-predicts-ai-citations" class="inline-flex items-center justify-center gap-2 text-primary font-medium hover:underline">
+                                Read the cross-study synthesis
                                 <ArrowRight class="h-4 w-4" aria-hidden="true" />
                             </Link>
                         </div>
@@ -797,7 +800,7 @@ const faqItems = [
                                 {
                                     num: '02',
                                     title: 'Get your GEO score',
-                                    desc: 'Receive a GEO score plus a Citation Readiness Score — our research-backed predictor of AI citation likelihood. Each of 12 evidence-weighted pillars shows what to fix, with letter grades from A+ to F.',
+                                    desc: 'Receive a composite GEO Score plus a Citation Readiness Score — our research-grounded predictor of AI citation likelihood. Ecommerce pages also get a Recommendation Readiness Score. Each pillar shows what to fix, with letter grades from A+ to F.',
                                 },
                                 {
                                     num: '03',
@@ -834,65 +837,59 @@ const faqItems = [
                 <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div class="mx-auto max-w-3xl">
                         <h2 id="score-heading" class="text-center text-3xl font-bold tracking-tight sm:text-4xl">
-                            GEO score explained: 12 research-weighted scoring pillars
+                            How the GEO Score is built
                         </h2>
 
                         <div class="mt-8 rounded-xl border-l-4 border-primary bg-primary/5 p-6">
-                            <p class="text-lg font-semibold">What is a GEO Score?</p>
+                            <p class="text-lg font-semibold">Two scores, not one</p>
                             <p class="mt-2 text-muted-foreground">
-                                A <strong>GEO score</strong> measures how optimized a webpage is for AI search engines like <a href="https://openai.com/index/searchgpt-prototype/" class="text-primary hover:underline" target="_blank" rel="noopener">ChatGPT</a>, <a href="https://www.perplexity.ai/" class="text-primary hover:underline" target="_blank" rel="noopener">Perplexity AI</a>, and <a href="https://www.anthropic.com/claude" class="text-primary hover:underline" target="_blank" rel="noopener">Claude</a>. GeoSource.ai calculates this using 12 evidence-weighted pillars calibrated from our <a href="/blog/geo-citation-study" class="text-primary hover:underline">empirical citation study</a> of 61 websites across 17 industries. According to our research, answerability, citation quality, and definitions carry the most weight because they most reliably predict citations — consistent with emerging <a href="https://arxiv.org/abs/2311.09735" class="text-primary hover:underline" target="_blank" rel="noopener">academic research on GEO</a>.
+                                Every scan returns a composite <strong>GEO Score</strong> plus a <strong>Citation Readiness Score</strong> tuned to the signals our research validated as drivers of AI citation. Ecommerce pages also receive a <strong>Recommendation Readiness Score</strong>, weighted differently because our research showed AI assistants behave differently on shopping queries — the same signals that help informational content can actively hurt commercial content.
                             </p>
                         </div>
 
-                        <!-- Top 3 predictors -->
+                        <!-- Validated drivers -->
                         <div class="mt-10">
-                            <p class="text-center text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">Proven citation predictors (from our research)</p>
+                            <p class="text-center text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">What our research validated as drivers</p>
                             <div class="grid gap-3 sm:grid-cols-3">
-                                <div class="rounded-xl border-2 border-primary/30 bg-primary/5 p-4 text-center">
-                                    <div class="text-2xl font-bold text-primary">+109%</div>
-                                    <div class="text-sm font-semibold mt-1">Answerability</div>
-                                    <div class="text-xs text-muted-foreground mt-1">Direct, declarative answers</div>
+                                <div class="rounded-xl border-2 border-primary/30 bg-primary/5 p-5">
+                                    <MessageSquare class="h-5 w-5 text-primary mb-2" aria-hidden="true" />
+                                    <div class="text-sm font-semibold">Answerability</div>
+                                    <div class="text-xs text-muted-foreground mt-1.5 leading-relaxed">Direct, declarative answers near the top of the page.</div>
                                 </div>
-                                <div class="rounded-xl border-2 border-primary/30 bg-primary/5 p-4 text-center">
-                                    <div class="text-2xl font-bold text-primary">+65%</div>
-                                    <div class="text-sm font-semibold mt-1">Citation Quality</div>
-                                    <div class="text-xs text-muted-foreground mt-1">Referencing authoritative sources</div>
+                                <div class="rounded-xl border-2 border-primary/30 bg-primary/5 p-5">
+                                    <LinkIcon class="h-5 w-5 text-primary mb-2" aria-hidden="true" />
+                                    <div class="text-sm font-semibold">Citation Quality</div>
+                                    <div class="text-xs text-muted-foreground mt-1.5 leading-relaxed">Citing authoritative external sources from inside your content.</div>
                                 </div>
-                                <div class="rounded-xl border-2 border-primary/30 bg-primary/5 p-4 text-center">
-                                    <div class="text-2xl font-bold text-primary">+33%</div>
-                                    <div class="text-sm font-semibold mt-1">Definitions</div>
-                                    <div class="text-xs text-muted-foreground mt-1">Explicit "X is Y" statements</div>
+                                <div class="rounded-xl border-2 border-primary/30 bg-primary/5 p-5">
+                                    <BookOpen class="h-5 w-5 text-primary mb-2" aria-hidden="true" />
+                                    <div class="text-sm font-semibold">Definitions</div>
+                                    <div class="text-xs text-muted-foreground mt-1.5 leading-relaxed">Explicit "X is Y" statements early on so the model can lift them.</div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- All 12 pillars -->
-                        <div class="mt-8 grid gap-2 sm:grid-cols-3 lg:grid-cols-4">
-                            <div
-                                v-for="(p, i) in [
-                                    { icon: MessageSquare, name: 'Answerability', tag: '30 pts' },
-                                    { icon: Target, name: 'Topic Authority', tag: '22 pts' },
-                                    { icon: BookOpen, name: 'Definition Clarity', tag: '20 pts' },
-                                    { icon: LinkIcon, name: 'Citations & Sources', tag: '20 pts' },
-                                    { icon: Eye, name: 'Readability', tag: '18 pts' },
-                                    { icon: FileText, name: 'Structured Knowledge', tag: '12 pts' },
-                                    { icon: Database, name: 'Machine Readability', tag: '10 pts' },
-                                    { icon: Shield, name: 'E-E-A-T Signals', tag: '10 pts' },
-                                    { icon: TrendingUp, name: 'Content Freshness', tag: '10 pts' },
-                                    { icon: Search, name: 'Question Coverage', tag: '8 pts' },
-                                    { icon: Globe, name: 'AI Crawler Access', tag: '5 pts' },
-                                    { icon: BarChart3, name: 'Multimedia', tag: '5 pts' },
-                                ]" :key="i"
-                                class="flex items-center gap-3 rounded-lg border p-3"
-                            >
-                                <component :is="p.icon" class="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
-                                <span class="text-sm font-medium flex-1">{{ p.name }}</span>
-                                <span class="text-xs text-muted-foreground">{{ p.tag }}</span>
+                        <!-- Supporting pillars -->
+                        <div class="mt-8">
+                            <p class="text-center text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">Plus supporting pillars</p>
+                            <div class="grid gap-2 sm:grid-cols-3">
+                                <div class="flex items-center gap-3 rounded-lg border p-3">
+                                    <Eye class="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                                    <span class="text-sm font-medium">Readability</span>
+                                </div>
+                                <div class="flex items-center gap-3 rounded-lg border p-3">
+                                    <Globe class="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                                    <span class="text-sm font-medium">AI Accessibility</span>
+                                </div>
+                                <div class="flex items-center gap-3 rounded-lg border p-3">
+                                    <TrendingUp class="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                                    <span class="text-sm font-medium">Content Freshness</span>
+                                </div>
                             </div>
                         </div>
 
-                        <p class="mt-6 text-center text-sm text-muted-foreground">
-                            Pillar weights calibrated from our <a href="/blog/geo-citation-study" class="text-primary hover:underline">three-phase citation study</a> of 61 websites across 17 industries.
+                        <p class="mt-8 text-center text-sm text-muted-foreground">
+                            See the underlying <Link href="/research" class="text-primary hover:underline">research line</Link> or the <Link href="/blog/what-predicts-ai-citations" class="text-primary hover:underline">cross-study synthesis</Link> for how each pillar was validated.
                         </p>
                     </div>
                 </div>
@@ -953,13 +950,13 @@ const faqItems = [
                             Start free. Pay only when you need more.
                         </h2>
                         <p class="mx-auto mt-4 max-w-2xl text-center text-lg text-muted-foreground">
-                            Run unlimited basic scans with the free tier — includes the 3 most citation-predictive pillars. Upgrade to tokens for Pro and Full analysis with all 12 research-weighted pillars.
+                            Run unlimited basic scans on the free tier. Upgrade to tokens for Pro and Full analysis with the complete research-grounded scoring breakdown.
                         </p>
 
                         <div class="mt-10 grid gap-5 sm:grid-cols-3">
                             <Card v-for="plan in [
-                                { name: 'Free', price: '$0', unit: 'forever', desc: '5 scoring pillars, unlimited basic scans', cta: 'Get Started', highlight: false },
-                                { name: 'Tokens', price: '$5', unit: 'starting', desc: 'Pro (8 pillars) and Full (12 pillars) scans', cta: 'Buy Tokens', highlight: true },
+                                { name: 'Free', price: '$0', unit: 'forever', desc: 'Unlimited basic scans with the core citation pillars', cta: 'Get Started', highlight: false },
+                                { name: 'Tokens', price: '$5', unit: 'starting', desc: 'Pro and Full scans with the complete pillar breakdown', cta: 'Buy Tokens', highlight: true },
                                 { name: 'Team', price: '$99', unit: '/month', desc: 'White-label, GA4, teams, 1000 tokens included', cta: 'Contact Us', highlight: false },
                             ]" :key="plan.name" :class="plan.highlight ? 'border-primary ring-1 ring-primary' : ''">
                                 <CardContent class="flex flex-col items-center pt-6 text-center">
@@ -1039,7 +1036,7 @@ const faqItems = [
                 <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div class="mx-auto max-w-3xl text-center">
                         <p class="text-sm text-muted-foreground">
-                            Built by <strong class="text-foreground">Matt Laszkiewicz</strong> · Research-backed by a <a href="/blog/geo-citation-study" class="text-primary hover:underline">three-phase citation study</a> · Scoring calibrated from <a href="https://arxiv.org/abs/2311.09735" class="text-primary hover:underline" target="_blank" rel="noopener">emerging GEO research</a> · Trusted by teams optimizing for <a href="https://openai.com/index/searchgpt-prototype/" class="text-primary hover:underline" target="_blank" rel="noopener">ChatGPT</a>, <a href="https://www.perplexity.ai/" class="text-primary hover:underline" target="_blank" rel="noopener">Perplexity</a>, <a href="https://www.anthropic.com/claude" class="text-primary hover:underline" target="_blank" rel="noopener">Claude</a>, and <a href="https://blog.google/products/search/generative-ai-google-search-may-2024/" class="text-primary hover:underline" target="_blank" rel="noopener">Google AI Overviews</a>
+                            Built by <strong class="text-foreground">Matt Laszkiewicz</strong> · Backed by an original <a href="/research" class="text-primary hover:underline">four-study research line</a> on what predicts AI citation · Trusted by teams optimizing for <a href="https://openai.com/index/searchgpt-prototype/" class="text-primary hover:underline" target="_blank" rel="noopener">ChatGPT</a>, <a href="https://www.perplexity.ai/" class="text-primary hover:underline" target="_blank" rel="noopener">Perplexity</a>, <a href="https://www.anthropic.com/claude" class="text-primary hover:underline" target="_blank" rel="noopener">Claude</a>, and <a href="https://blog.google/products/search/generative-ai-google-search-may-2024/" class="text-primary hover:underline" target="_blank" rel="noopener">Google AI Overviews</a>
                         </p>
                     </div>
                 </div>
