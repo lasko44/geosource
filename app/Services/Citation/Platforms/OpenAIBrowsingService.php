@@ -19,8 +19,12 @@ class OpenAIBrowsingService
 
     /**
      * Perform a citation check using OpenAI with Tavily web search.
+     *
+     * @param  array  $messageHistory  Optional prior conversation turns as
+     *                                  [{role: 'user'|'assistant', content: string}, ...].
+     *                                  Pass to run a multi-turn conversation.
      */
-    public function check(CitationQuery $query, CitationCheck $check): array
+    public function check(CitationQuery $query, CitationCheck $check, array $messageHistory = []): array
     {
         $openaiApiKey = config('citations.openai.api_key');
         $tavilyApiKey = config('citations.tavily.api_key');
@@ -46,7 +50,12 @@ class OpenAIBrowsingService
             // Step 2: Build prompt with search results as context
             $prompt = $this->buildPrompt($query, $searchResults);
 
-            // Step 3: Ask GPT to answer using the search results
+            // Step 3: Combine prior conversation history with the new user turn
+            $messages = array_merge($messageHistory, [
+                ['role' => 'user', 'content' => $prompt],
+            ]);
+
+            // Step 4: Ask GPT to answer using the search results
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer '.$openaiApiKey,
                 'Content-Type' => 'application/json',
@@ -54,12 +63,7 @@ class OpenAIBrowsingService
                 ->timeout($timeout)
                 ->post('https://api.openai.com/v1/chat/completions', [
                     'model' => $model,
-                    'messages' => [
-                        [
-                            'role' => 'user',
-                            'content' => $prompt,
-                        ],
-                    ],
+                    'messages' => $messages,
                     'temperature' => 0.2,
                     'max_tokens' => 2048,
                 ]);
@@ -86,7 +90,7 @@ class OpenAIBrowsingService
                 $aiResponse,
                 $sourceUrls,
                 $query->domain,
-                $query->brand
+                $query->getBrandIdentifiers()
             );
 
             return [

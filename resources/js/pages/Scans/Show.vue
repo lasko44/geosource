@@ -37,6 +37,8 @@ import {
     Target,
     Sparkles,
     Globe,
+    ShoppingCart,
+    Search,
 } from 'lucide-vue-next';
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
 
@@ -659,11 +661,12 @@ const metricTooltips: Record<string, string> = {
     status_weak: 'This pillar needs attention. It\'s currently limiting your AI citation potential. See recommendations below for specific fixes.',
     research_insight: 'This benchmark is based on our three-phase study of 61 websites across 17 industries with 540+ citation checks on ChatGPT, Perplexity, and Claude.',
     citation_readiness: 'The Citation Readiness Score measures how likely AI platforms are to cite your content. It uses only the 3 pillars our research proved predict citations: Answerability (40% weight), Citation Quality (35%), and Definitions (25%). High CR sites are cited 55.6% of the time vs 33.3% for low CR.',
+    recommendation_readiness: 'The Recommendation Readiness Score predicts how likely your page is to be recommended in AI shopping flows. Calibrated against our 40-brand × 12-category ecommerce study, the strongest predictors are inverse: pages high on Authority, Answerability, and Multimedia tend to get recommended LESS than clean utility/product pages. Use this score for transactional/ecommerce content.',
     content_ai_readiness: 'The GEO Score measures overall content quality for AI comprehension across all 12 pillars. It tells you how well-structured your content is — but citation also depends on industry, brand, and query type.',
     content_type: 'Content type significantly affects citation rates. Our research shows informational content (guides, how-tos) gets cited at dramatically higher rates than transactional content (product pages, pricing).',
     citation_drivers: 'These three pillars showed the strongest correlation with AI citations in our three-phase study. Focus optimization efforts here for the biggest impact on citation likelihood.',
-    supporting_factors: 'These pillars show moderate positive correlation with citations. They help but aren\'t the primary drivers.',
-    baseline_requirements: 'These pillars are important for content quality and AI access, but our research showed they don\'t independently predict whether AI cites you. Most sites already score well on these.',
+    supporting_factors: 'Pillars where we saw a positive direction with citation rate, though not as strongly as the primary drivers.',
+    baseline_requirements: 'Important for general content quality and AI access, but our research did not find these to independently predict citation rate. Topic Authority and E-E-A-T were negatively correlated with recommendation survival in our ecommerce study — focus your improvement effort elsewhere.',
 };
 
 // Pillar grouping based on empirical citation research
@@ -677,15 +680,15 @@ const pillarGroups = {
     },
     supporting: {
         label: 'Supporting Factors',
-        description: 'These pillars show moderate positive correlation with citations.',
-        keys: ['authority', 'freshness', 'readability'],
+        description: 'Pillars that show a positive direction with citations in our research.',
+        keys: ['freshness', 'readability'],
         color: 'border-blue-500/50 bg-blue-500/5',
         badgeClass: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
     },
     baseline: {
-        label: 'Baseline Requirements',
-        description: 'Important for content quality but not independent citation predictors.',
-        keys: ['structure', 'machine_readable', 'eeat', 'ai_accessibility', 'question_coverage', 'multimedia'],
+        label: 'Baseline / Not Predictive',
+        description: 'Important for content quality but our research did not find these to be positive predictors of AI citations. Topic Authority and E-E-A-T were negatively correlated with recommendation survival in our ecommerce study.',
+        keys: ['structure', 'machine_readable', 'authority', 'eeat', 'ai_accessibility', 'question_coverage', 'multimedia'],
         color: 'border-border bg-muted/30',
         badgeClass: 'bg-muted text-muted-foreground',
     },
@@ -806,6 +809,16 @@ const hasSufficientData = computed(() => props.scan.results?.has_sufficient_data
 
 // AI Citation Readiness (separate metric from main score)
 const citationReadiness = computed(() => props.scan.results?.citation_readiness ?? null);
+const recommendationReadiness = computed(() => props.scan.results?.recommendation_readiness ?? null);
+const queryIntent = computed(() => props.scan.results?.query_intent ?? null);
+
+// Pick the primary score based on detected content type. Transactional /
+// ecommerce pages are best evaluated by Recommendation Readiness (v6 study);
+// informational pages by Citation Readiness (v3 study).
+const primaryScoreKind = computed<'citation' | 'recommendation'>(() => {
+    const type = props.scan.results?.content_type?.primary_type;
+    return type === 'transactional' ? 'recommendation' : 'citation';
+});
 
 // Priority color mapping for AI suggestions
 const getPriorityBadgeClass = (priority: string) => {
@@ -1073,13 +1086,19 @@ const getPillarExplanations = (pillar: any): Array<{ label: string; achieved: bo
             </Alert>
 
             <!-- Main Score Cards (only show when completed) -->
-            <div v-else class="grid gap-4 md:grid-cols-2">
-                <!-- Citation Readiness Score — Primary Metric -->
-                <Card v-if="citationReadiness" class="overflow-hidden border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
+            <div v-else class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <!-- Citation Readiness Score -->
+                <Card
+                    v-if="citationReadiness"
+                    class="overflow-hidden"
+                    :class="primaryScoreKind === 'citation' ? 'border-primary/30 bg-gradient-to-br from-primary/5 to-transparent' : ''"
+                >
                     <div class="flex flex-col items-center justify-center p-8">
-                        <div class="flex items-center gap-2 mb-4 text-sm text-primary font-medium">
+                        <div class="flex items-center gap-2 mb-4 text-sm font-medium"
+                            :class="primaryScoreKind === 'citation' ? 'text-primary' : 'text-muted-foreground'">
                             <Sparkles class="h-4 w-4" />
                             Citation Readiness
+                            <Badge v-if="primaryScoreKind === 'citation'" variant="secondary" class="text-[10px] px-1.5 py-0">Primary</Badge>
                             <TooltipProvider :delay-duration="0">
                                 <Tooltip>
                                     <TooltipTrigger>
@@ -1108,6 +1127,46 @@ const getPillarExplanations = (pillar: any): Array<{ label: string; achieved: bo
                             Expected rate: {{ citationReadiness.benchmark.expected_citation_rate }}
                         </p>
                         <p class="mt-3 text-sm text-muted-foreground text-center max-w-xs">{{ citationReadiness.summary }}</p>
+                    </div>
+                </Card>
+
+                <!-- Recommendation Readiness Score -->
+                <Card
+                    v-if="recommendationReadiness"
+                    class="overflow-hidden"
+                    :class="primaryScoreKind === 'recommendation' ? 'border-primary/30 bg-gradient-to-br from-primary/5 to-transparent' : ''"
+                >
+                    <div class="flex flex-col items-center justify-center p-8">
+                        <div class="flex items-center gap-2 mb-4 text-sm font-medium"
+                            :class="primaryScoreKind === 'recommendation' ? 'text-primary' : 'text-muted-foreground'">
+                            <ShoppingCart class="h-4 w-4" />
+                            Recommendation Readiness
+                            <Badge v-if="primaryScoreKind === 'recommendation'" variant="secondary" class="text-[10px] px-1.5 py-0">Primary</Badge>
+                            <TooltipProvider :delay-duration="0">
+                                <Tooltip>
+                                    <TooltipTrigger>
+                                        <HelpCircle class="h-3.5 w-3.5 text-muted-foreground" />
+                                    </TooltipTrigger>
+                                    <TooltipContent side="right" class="max-w-xs">
+                                        <p class="text-sm">{{ metricTooltips.recommendation_readiness }}</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        </div>
+                        <div
+                            class="flex h-28 w-28 items-center justify-center rounded-full border-4 text-4xl font-bold"
+                            :class="recommendationReadiness.score >= 70 ? 'border-green-500 text-green-600 dark:text-green-400' :
+                                    recommendationReadiness.score >= 50 ? 'border-yellow-500 text-yellow-600 dark:text-yellow-400' :
+                                    'border-red-500 text-red-600 dark:text-red-400'"
+                        >
+                            {{ Math.round(recommendationReadiness.score) }}
+                        </div>
+                        <p class="mt-3 text-lg font-semibold"
+                            :class="recommendationReadiness.grade === 'High' ? 'text-green-600 dark:text-green-400' :
+                                    recommendationReadiness.grade === 'Moderate' ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'">
+                            {{ recommendationReadiness.grade }} Recommendation Potential
+                        </p>
+                        <p class="mt-3 text-sm text-muted-foreground text-center max-w-xs">{{ recommendationReadiness.summary }}</p>
                     </div>
                 </Card>
 
@@ -1201,6 +1260,62 @@ const getPillarExplanations = (pillar: any): Array<{ label: string; achieved: bo
                     </CardContent>
                 </Card>
             </div>
+
+            <!-- Query Intent: which queries this page can compete for -->
+            <Card v-if="isCompleted && queryIntent?.queries?.length" class="overflow-hidden">
+                <CardHeader class="pb-2">
+                    <CardTitle class="flex items-center gap-2 text-base">
+                        <Search class="h-5 w-5 text-primary" />
+                        Queries this page can compete for
+                        <TooltipProvider :delay-duration="0">
+                            <Tooltip>
+                                <TooltipTrigger>
+                                    <HelpCircle class="h-4 w-4 text-muted-foreground" />
+                                </TooltipTrigger>
+                                <TooltipContent side="top" class="max-w-sm">
+                                    <p class="text-sm">Whether a query names your brand is the biggest lever for whether AI cites you. This list infers the queries your page is positioned to answer and flags which type each is.</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p v-if="queryIntent.summary" class="text-sm text-muted-foreground mb-4">{{ queryIntent.summary }}</p>
+                    <div class="space-y-2">
+                        <div
+                            v-for="(q, i) in queryIntent.queries"
+                            :key="i"
+                            class="rounded-md border p-3"
+                        >
+                            <div class="flex items-start gap-3">
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium leading-snug">{{ q.text }}</p>
+                                    <p class="text-xs text-muted-foreground mt-1">{{ q.rationale }}</p>
+                                </div>
+                                <div class="flex shrink-0 gap-1.5">
+                                    <Badge
+                                        variant="outline"
+                                        class="text-[10px]"
+                                        :class="q.type === 'brand_named' ? 'border-blue-500/40 text-blue-700 dark:text-blue-300' : 'border-amber-500/40 text-amber-700 dark:text-amber-300'"
+                                    >
+                                        {{ q.type === 'brand_named' ? 'Brand-named' : 'Concept' }}
+                                    </Badge>
+                                    <Badge
+                                        variant="outline"
+                                        class="text-[10px]"
+                                        :class="q.predicted_likelihood === 'high' ? 'border-green-500/40 text-green-700 dark:text-green-300' : q.predicted_likelihood === 'medium' ? 'border-yellow-500/40 text-yellow-700 dark:text-yellow-300' : 'border-red-500/40 text-red-700 dark:text-red-300'"
+                                    >
+                                        {{ q.predicted_likelihood }} chance
+                                    </Badge>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="mt-4 text-xs text-muted-foreground">
+                        Based on our research, queries that name your brand are far more likely to cite your page than concept queries. Mix of both in this list = healthy. Mostly low-likelihood concept queries = consider whether the page is the right answer for the audience you want.
+                    </p>
+                </CardContent>
+            </Card>
 
             <!-- Citation Readiness Factor Breakdown -->
             <Card v-if="isCompleted && citationReadiness?.factors" class="overflow-hidden">

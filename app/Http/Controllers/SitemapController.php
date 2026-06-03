@@ -69,6 +69,24 @@ class SitemapController extends Controller
                 'priority' => '0.9',
             ],
             [
+                'url' => '/blog/eeat-content-type-study',
+                'lastmod' => now()->format('Y-m-d'),
+                'changefreq' => 'monthly',
+                'priority' => '0.9',
+            ],
+            [
+                'url' => '/blog/ecommerce-recommendation-survival',
+                'lastmod' => now()->format('Y-m-d'),
+                'changefreq' => 'monthly',
+                'priority' => '0.9',
+            ],
+            [
+                'url' => '/blog/what-predicts-ai-citations',
+                'lastmod' => now()->format('Y-m-d'),
+                'changefreq' => 'monthly',
+                'priority' => '0.95',
+            ],
+            [
                 'url' => '/benchmarks',
                 'lastmod' => now()->format('Y-m-d'),
                 'changefreq' => 'weekly',

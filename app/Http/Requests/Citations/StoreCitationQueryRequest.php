@@ -28,6 +28,7 @@ class StoreCitationQueryRequest extends FormRequest
                 'regex:/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*\.[a-z]{2,}$/i',
             ],
             'brand' => 'nullable|string|max:255',
+            'brand_aliases' => 'nullable|string|max:500',
             'frequency' => 'required|string|in:manual,daily,weekly',
             'scheduled_platforms' => 'nullable|array',
             'scheduled_platforms.*' => 'string|in:perplexity,openai,claude,gemini,deepseek,google,youtube,facebook',

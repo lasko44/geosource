@@ -233,7 +233,8 @@ class CitationService
         string $frequency = CitationQuery::FREQUENCY_MANUAL,
         ?Team $team = null,
         array $scheduledPlatforms = [],
-        ?int $monthlyTokenBudget = null
+        ?int $monthlyTokenBudget = null,
+        ?string $brandAliasesCsv = null,
     ): CitationQuery {
         $nextCheck = match ($frequency) {
             CitationQuery::FREQUENCY_DAILY => now()->addDay(),
@@ -247,12 +248,27 @@ class CitationService
             'query' => $query,
             'domain' => $domain,
             'brand' => $brand,
+            'brand_aliases' => $this->parseBrandAliases($brandAliasesCsv),
             'frequency' => $frequency,
             'scheduled_platforms' => ! empty($scheduledPlatforms) ? $scheduledPlatforms : null,
             'monthly_token_budget' => $monthlyTokenBudget,
             'next_check_at' => $nextCheck,
             'is_active' => true,
         ]);
+    }
+
+    /**
+     * Parse a comma-separated brand-aliases string into a clean array.
+     * Returns null when the input is empty so we don't store [] in the DB.
+     */
+    private function parseBrandAliases(?string $csv): ?array
+    {
+        if ($csv === null || trim($csv) === '') {
+            return null;
+        }
+        $aliases = array_map('trim', explode(',', $csv));
+        $aliases = array_filter($aliases, fn ($a) => $a !== '');
+        return empty($aliases) ? null : array_values(array_unique($aliases));
     }
 
     /**

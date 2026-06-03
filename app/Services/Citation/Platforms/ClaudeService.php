@@ -24,9 +24,12 @@ class ClaudeService
      * Check if a domain is cited by Claude for a given query.
      * Uses Tavily Search for web results, then Claude analyzes and cites sources.
      *
+     * @param  array  $messageHistory  Optional prior conversation turns as
+     *                                  [{role: 'user'|'assistant', content: string}, ...].
+     *                                  Pass to run a multi-turn conversation; the new query becomes the latest user message.
      * @throws ConnectionException
      */
-    public function check(CitationQuery $query, CitationCheck $check): array
+    public function check(CitationQuery $query, CitationCheck $check, array $messageHistory = []): array
     {
         $claudeApiKey = config('citations.claude.api_key');
         $tavilyApiKey = config('citations.tavily.api_key');
@@ -50,7 +53,12 @@ class ClaudeService
             // Step 2: Build prompt with search results as context
             $prompt = $this->buildPrompt($query, $searchResults);
 
-            // Step 3: Ask Claude to answer using the search results
+            // Step 3: Combine prior conversation history with the new user turn
+            $messages = array_merge($messageHistory, [
+                ['role' => 'user', 'content' => $prompt],
+            ]);
+
+            // Step 4: Ask Claude to answer using the search results
             $response = Http::withHeaders([
                 'x-api-key' => $claudeApiKey,
                 'anthropic-version' => '2023-06-01',
@@ -60,12 +68,7 @@ class ClaudeService
                 ->post('https://api.anthropic.com/v1/messages', [
                     'model' => config('citations.claude.model', 'claude-3-5-haiku-20241022'),
                     'max_tokens' => 2048,
-                    'messages' => [
-                        [
-                            'role' => 'user',
-                            'content' => $prompt,
-                        ],
-                    ],
+                    'messages' => $messages,
                 ]);
 
             if (! $response->successful()) {
@@ -90,7 +93,7 @@ class ClaudeService
                 $aiResponse,
                 $sourceUrls,
                 $query->domain,
-                $query->brand
+                $query->getBrandIdentifiers()
             );
 
             return [

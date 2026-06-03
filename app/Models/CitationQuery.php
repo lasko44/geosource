@@ -23,6 +23,7 @@ class CitationQuery extends Model
         'query',
         'domain',
         'brand',
+        'brand_aliases',
         'is_active',
         'frequency',
         'scheduled_platforms',
@@ -64,6 +65,7 @@ class CitationQuery extends Model
     {
         return [
             'is_active' => 'boolean',
+            'brand_aliases' => 'array',
             'scheduled_platforms' => 'array',
             'monthly_token_budget' => 'integer',
             'tokens_spent_this_month' => 'integer',
@@ -71,6 +73,26 @@ class CitationQuery extends Model
             'last_checked_at' => 'datetime',
             'next_check_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Combined list of brand identifiers for citation analysis: the primary
+     * `brand` field followed by any `brand_aliases`. Empty-string values
+     * are filtered out. Returns an array suitable for passing directly to
+     * CitationAnalyzerService::analyze().
+     */
+    public function getBrandIdentifiers(): array
+    {
+        $identifiers = [];
+        if (! empty($this->brand)) {
+            $identifiers[] = $this->brand;
+        }
+        foreach ((array) ($this->brand_aliases ?? []) as $alias) {
+            if (is_string($alias) && trim($alias) !== '' && ! in_array($alias, $identifiers, true)) {
+                $identifiers[] = trim($alias);
+            }
+        }
+        return $identifiers;
     }
 
     public function user(): BelongsTo

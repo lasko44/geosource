@@ -72,7 +72,7 @@ class GeminiService
                 $aiResponse,
                 $groundingSources,
                 $query->domain,
-                $query->brand
+                $query->getBrandIdentifiers()
             );
 
             return [

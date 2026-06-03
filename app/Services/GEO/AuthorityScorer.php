@@ -18,7 +18,16 @@ use App\Services\GEO\Contracts\ScorerInterface;
  */
 class AuthorityScorer implements ScorerInterface
 {
-    private const MAX_SCORE = 22;
+    private const MAX_SCORE = 12;
+
+    /**
+     * Internal raw cap before the proportional rescale.
+     * The sub-scorers were originally tuned against a 22-point ceiling; we keep
+     * their internal logic intact and rescale the total so the pillar
+     * contributes less to the overall GEO score. See v6-ecommerce study for
+     * the empirical reason this pillar was down-weighted.
+     */
+    private const RAW_CAP = 22.0;
 
     public function score(string $content, array $context = []): array
     {
@@ -50,7 +59,10 @@ class AuthorityScorer implements ScorerInterface
         $linkScore = $this->calculateLinkScore($details['internal_links']);
         $similarityScore = $this->calculateSimilarityScore($details['semantic_similarity']);
 
-        $totalScore = $coherenceScore + $keywordScore + $depthScore + $linkScore + $similarityScore;
+        $rawTotal = $coherenceScore + $keywordScore + $depthScore + $linkScore + $similarityScore;
+        // Rescale into the new ceiling so percentages remain accurate while the
+        // pillar contributes less in absolute terms to the overall GEO score.
+        $totalScore = ($rawTotal / self::RAW_CAP) * self::MAX_SCORE;
 
         return [
             'score' => min(self::MAX_SCORE, $totalScore),

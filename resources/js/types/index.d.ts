@@ -170,6 +170,22 @@ export interface CitationReadiness {
     benchmark?: CitationReadinessBenchmark;
 }
 
+export interface RecommendationReadinessFactor {
+    label: string;
+    score: number;
+    weight: number;
+    direction: 'direct' | 'inverse';
+    contribution: number;
+}
+
+export interface RecommendationReadiness {
+    score: number;
+    grade?: string;
+    factors: Record<string, RecommendationReadinessFactor>;
+    summary: string;
+    study_basis?: string;
+}
+
 export interface ContentTypeInsight {
     citation_context: string;
     avg_citation_rate: string;
@@ -182,6 +198,19 @@ export interface ContentType {
     confidence: string;
     signals: Record<string, number>;
     insight?: ContentTypeInsight;
+}
+
+export interface QueryIntentItem {
+    text: string;
+    type: 'brand_named' | 'concept';
+    predicted_likelihood: 'high' | 'medium' | 'low';
+    rationale: string;
+}
+
+export interface QueryIntent {
+    queries: QueryIntentItem[];
+    primary_brand: string | null;
+    summary: string;
 }
 
 export interface ScanResults {
@@ -201,6 +230,8 @@ export interface ScanResults {
     ai_suggestions?: AISuggestion[];
     citation_readiness?: CitationReadiness;
     citation_readiness_ai?: CitationReadiness;
+    recommendation_readiness?: RecommendationReadiness;
+    query_intent?: QueryIntent;
     content_type?: ContentType;
     rag_analysis?: Record<string, unknown>;
     scored_at: string;

@@ -1,0 +1,484 @@
+{
+    "entries": [
+        {
+            "domain": "nhlbi.nih.gov",
+            "industry": "healthcare",
+            "content_type": "educational",
+            "query": "what are the warning signs of a heart attack",
+            "citation_rate": 0,
+            "platforms_cited": []
+        },
+        {
+            "domain": "nimh.nih.gov",
+            "industry": "healthcare",
+            "content_type": "educational",
+            "query": "what are anxiety disorders",
+            "citation_rate": 100,
+            "platforms_cited": [
+                "claude",
+                "openai",
+                "perplexity"
+            ]
+        },
+        {
+            "domain": "medlineplus.gov",
+            "industry": "healthcare",
+            "content_type": "authority",
+            "query": "who publishes free reliable consumer health information online",
+            "citation_rate": 100,
+            "platforms_cited": [
+                "claude",
+                "openai",
+                "perplexity"
+            ]
+        },
+        {
+            "domain": "cdc.gov",
+            "industry": "healthcare",
+            "content_type": "authority",
+            "query": "what is the role of national public health agencies",
+            "citation_rate": 100,
+            "platforms_cited": [
+                "claude",
+                "openai",
+                "perplexity"
+            ]
+        },
+        {
+            "domain": "harvard.edu",
+            "industry": "healthcare",
+            "content_type": "authority",
+            "query": "what universities publish consumer health information",
+            "citation_rate": 0,
+            "platforms_cited": []
+        },
+        {
+            "domain": "amazon.com",
+            "industry": "saas",
+            "content_type": "educational",
+            "query": "what is software as a service",
+            "citation_rate": 100,
+            "platforms_cited": [
+                "claude",
+                "openai",
+                "perplexity"
+            ]
+        },
+        {
+            "domain": "clevelandclinic.org",
+            "industry": "healthcare",
+            "content_type": "educational",
+            "query": "what causes migraines",
+            "citation_rate": 100,
+            "platforms_cited": [
+                "claude",
+                "openai",
+                "perplexity"
+            ]
+        },
+        {
+            "domain": "healthline.com",
+            "industry": "healthcare",
+            "content_type": "educational",
+            "query": "what is high blood pressure",
+            "citation_rate": 0,
+            "platforms_cited": []
+        },
+        {
+            "domain": "medicalnewstoday.com",
+            "industry": "healthcare",
+            "content_type": "educational",
+            "query": "what is depression and what are its symptoms",
+            "citation_rate": 0,
+            "platforms_cited": []
+        },
+        {
+            "domain": "nhs.uk",
+            "industry": "healthcare",
+            "content_type": "educational",
+            "query": "what is asthma",
+            "citation_rate": 0,
+            "platforms_cited": []
+        },
+        {
+            "domain": "clevelandclinic.org",
+            "industry": "healthcare",
+            "content_type": "authority",
+            "query": "what defines a top-tier american hospital system",
+            "citation_rate": 0,
+            "platforms_cited": []
+        },
+        {
+            "domain": "healthline.com",
+            "industry": "healthcare",
+            "content_type": "authority",
+            "query": "what should you look for in a credible health and wellness website",
+            "citation_rate": 33.33,
+            "platforms_cited": [
+                "claude"
+            ]
+        },
+        {
+            "domain": "medicalnewstoday.com",
+            "industry": "healthcare",
+            "content_type": "authority",
+            "query": "what makes a medical news source reliable",
+            "citation_rate": 100,
+            "platforms_cited": [
+                "claude",
+                "openai",
+                "perplexity"
+            ]
+        },
+        {
+            "domain": "nhs.uk",
+            "industry": "healthcare",
+            "content_type": "authority",
+            "query": "how is public health information governed in the united kingdom",
+            "citation_rate": 33.33,
+            "platforms_cited": [
+                "perplexity"
+            ]
+        },
+        {
+            "domain": "salesforce.com",
+            "industry": "saas",
+            "content_type": "educational",
+            "query": "what is crm software",
+            "citation_rate": 100,
+            "platforms_cited": [
+                "claude",
+                "openai",
+                "perplexity"
+            ]
+        },
+        {
+            "domain": "hubspot.com",
+            "industry": "saas",
+            "content_type": "educational",
+            "query": "what are the latest marketing statistics",
+            "citation_rate": 100,
+            "platforms_cited": [
+                "claude",
+                "openai",
+                "perplexity"
+            ]
+        },
+        {
+            "domain": "atlassian.com",
+            "industry": "saas",
+            "content_type": "educational",
+            "query": "what is scrum methodology",
+            "citation_rate": 100,
+            "platforms_cited": [
+                "claude",
+                "openai",
+                "perplexity"
+            ]
+        },
+        {
+            "domain": "cloudflare.com",
+            "industry": "saas",
+            "content_type": "educational",
+            "query": "what is a ddos attack",
+            "citation_rate": 100,
+            "platforms_cited": [
+                "claude",
+                "openai",
+                "perplexity"
+            ]
+        },
+        {
+            "domain": "zapier.com",
+            "industry": "saas",
+            "content_type": "educational",
+            "query": "what is an api",
+            "citation_rate": 0,
+            "platforms_cited": []
+        },
+        {
+            "domain": "niams.nih.gov",
+            "industry": "healthcare",
+            "content_type": "educational",
+            "query": "what is arthritis",
+            "citation_rate": 100,
+            "platforms_cited": [
+                "claude",
+                "openai",
+                "perplexity"
+            ]
+        },
+        {
+            "domain": "medlineplus.gov",
+            "industry": "healthcare",
+            "content_type": "educational",
+            "query": "what are the symptoms of lung cancer",
+            "citation_rate": 0,
+            "platforms_cited": []
+        },
+        {
+            "domain": "mailchimp.com",
+            "industry": "saas",
+            "content_type": "educational",
+            "query": "what is email marketing",
+            "citation_rate": 100,
+            "platforms_cited": [
+                "claude",
+                "openai",
+                "perplexity"
+            ]
+        },
+        {
+            "domain": "mayoclinic.org",
+            "industry": "healthcare",
+            "content_type": "authority",
+            "query": "how should you choose a hospital for serious illness",
+            "citation_rate": 0,
+            "platforms_cited": []
+        },
+        {
+            "domain": "shopify.com",
+            "industry": "saas",
+            "content_type": "educational",
+            "query": "what is ecommerce",
+            "citation_rate": 0,
+            "platforms_cited": []
+        },
+        {
+            "domain": "asana.com",
+            "industry": "saas",
+            "content_type": "educational",
+            "query": "what is agile project management methodology",
+            "citation_rate": 100,
+            "platforms_cited": [
+                "claude",
+                "openai",
+                "perplexity"
+            ]
+        },
+        {
+            "domain": "notion.so",
+            "industry": "saas",
+            "content_type": "authority",
+            "query": "what are the most popular productivity and note-taking software companies",
+            "citation_rate": 0,
+            "platforms_cited": []
+        },
+        {
+            "domain": "shopify.com",
+            "industry": "saas",
+            "content_type": "authority",
+            "query": "what are the major ecommerce platform companies",
+            "citation_rate": 66.67,
+            "platforms_cited": [
+                "claude",
+                "openai"
+            ]
+        },
+        {
+            "domain": "asana.com",
+            "industry": "saas",
+            "content_type": "authority",
+            "query": "what are the leading project management software providers",
+            "citation_rate": 0,
+            "platforms_cited": []
+        },
+        {
+            "domain": "mailchimp.com",
+            "industry": "saas",
+            "content_type": "authority",
+            "query": "what are the largest email marketing software companies",
+            "citation_rate": 33.33,
+            "platforms_cited": [
+                "perplexity"
+            ]
+        },
+        {
+            "domain": "segment.com",
+            "industry": "saas",
+            "content_type": "authority",
+            "query": "what companies provide customer data platforms",
+            "citation_rate": 0,
+            "platforms_cited": []
+        },
+        {
+            "domain": "fda.gov",
+            "industry": "healthcare",
+            "content_type": "authority",
+            "query": "what us federal agency regulates food and medicine",
+            "citation_rate": 100,
+            "platforms_cited": [
+                "claude",
+                "openai",
+                "perplexity"
+            ]
+        },
+        {
+            "domain": "mayoclinic.org",
+            "industry": "healthcare",
+            "content_type": "educational",
+            "query": "what are the symptoms of type 2 diabetes",
+            "citation_rate": 100,
+            "platforms_cited": [
+                "claude",
+                "openai",
+                "perplexity"
+            ]
+        },
+        {
+            "domain": "webmd.com",
+            "industry": "healthcare",
+            "content_type": "educational",
+            "query": "what are the symptoms of heart disease",
+            "citation_rate": 0,
+            "platforms_cited": []
+        },
+        {
+            "domain": "webmd.com",
+            "industry": "healthcare",
+            "content_type": "authority",
+            "query": "what is the editorial standard for online health content",
+            "citation_rate": 66.67,
+            "platforms_cited": [
+                "openai",
+                "perplexity"
+            ]
+        },
+        {
+            "domain": "notion.so",
+            "industry": "saas",
+            "content_type": "educational",
+            "query": "what is a database in productivity software",
+            "citation_rate": 0,
+            "platforms_cited": []
+        },
+        {
+            "domain": "stripe.com",
+            "industry": "saas",
+            "content_type": "authority",
+            "query": "what are the largest payment processing companies",
+            "citation_rate": 0,
+            "platforms_cited": []
+        },
+        {
+            "domain": "hubspot.com",
+            "industry": "saas",
+            "content_type": "authority",
+            "query": "what are the leading marketing software platforms",
+            "citation_rate": 66.67,
+            "platforms_cited": [
+                "openai",
+                "perplexity"
+            ]
+        },
+        {
+            "domain": "atlassian.com",
+            "industry": "saas",
+            "content_type": "authority",
+            "query": "what companies make developer collaboration tools",
+            "citation_rate": 100,
+            "platforms_cited": [
+                "claude",
+                "openai",
+                "perplexity"
+            ]
+        },
+        {
+            "domain": "cloudflare.com",
+            "industry": "saas",
+            "content_type": "authority",
+            "query": "what companies provide internet infrastructure and ddos protection",
+            "citation_rate": 100,
+            "platforms_cited": [
+                "claude",
+                "openai",
+                "perplexity"
+            ]
+        },
+        {
+            "domain": "zapier.com",
+            "industry": "saas",
+            "content_type": "authority",
+            "query": "what are the leading workflow automation platforms",
+            "citation_rate": 0,
+            "platforms_cited": []
+        }
+    ],
+    "cellSummaries": [
+        {
+            "industry": "healthcare",
+            "content_type": "educational",
+            "n": 10,
+            "avg_citation_rate": 40
+        },
+        {
+            "industry": "healthcare",
+            "content_type": "authority",
+            "n": 10,
+            "avg_citation_rate": 53.3
+        },
+        {
+            "industry": "saas",
+            "content_type": "educational",
+            "n": 10,
+            "avg_citation_rate": 70
+        },
+        {
+            "industry": "saas",
+            "content_type": "authority",
+            "n": 10,
+            "avg_citation_rate": 36.7
+        }
+    ],
+    "byContentType": [
+        {
+            "content_type": "educational",
+            "n": 20,
+            "avg_citation_rate": 55
+        },
+        {
+            "content_type": "authority",
+            "n": 20,
+            "avg_citation_rate": 45
+        }
+    ],
+    "byIndustryPublic": [
+        {
+            "industry": "healthcare",
+            "n": 20,
+            "avg_citation_rate": 46.7
+        },
+        {
+            "industry": "saas",
+            "n": 20,
+            "avg_citation_rate": 53.3
+        }
+    ],
+    "citationDistribution": {
+        "all_cited": 17,
+        "none_cited": 17,
+        "partial": 6,
+        "total": 40
+    },
+    "headline": {
+        "n": 40,
+        "industries": 2,
+        "content_types": 2,
+        "avg_citation_rate": 50
+    },
+    "v1Summary": {
+        "byContentType": [
+            {
+                "content_type": "authority",
+                "n": 12,
+                "avg_citation_rate": 91.7
+            },
+            {
+                "content_type": "educational",
+                "n": 12,
+                "avg_citation_rate": 50
+            }
+        ],
+        "n": 24
+    }
+}

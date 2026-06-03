@@ -16,6 +16,8 @@ class GeoStudyEntry extends Model
         'domain',
         'industry',
         'site_size',
+        'content_type',
+        'category',
         'query',
         'scan_id',
         'geo_score',

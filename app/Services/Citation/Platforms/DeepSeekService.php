@@ -76,7 +76,7 @@ class DeepSeekService
             $extractedUrls = $this->extractUrlsFromResponse($content);
 
             // Analyze the response for domain/brand mentions
-            $analysis = $this->analyzer->analyze($content, $extractedUrls, $query->domain, $query->brand);
+            $analysis = $this->analyzer->analyze($content, $extractedUrls, $query->domain, $query->getBrandIdentifiers());
 
             return [
                 'ai_response' => $content,

@@ -69,6 +69,15 @@ interface CitationCheck {
     error_message: string | null;
     created_at: string;
     completed_at: string | null;
+    recommendation_strength: number | string | null;
+    mention_analysis: {
+        mention_type?: string;
+        position_rank?: number | null;
+        is_top_pick?: boolean;
+        top_pick_rank?: number | null;
+        has_buy_link?: boolean;
+        reasoning?: string;
+    } | null;
 }
 
 interface CitationAlert {
@@ -542,8 +551,27 @@ const isCheckInProgress = (platform: string) => {
                                         </p>
                                     </div>
                                 </div>
-                                <div class="flex items-center gap-2">
+                                <div class="flex items-center gap-3">
                                     <template v-if="check.status === 'completed'">
+                                        <div v-if="check.is_cited && check.recommendation_strength !== null" class="flex items-center gap-1.5">
+                                            <span class="text-xs text-muted-foreground">Strength</span>
+                                            <span
+                                                class="rounded px-1.5 py-0.5 text-xs font-mono font-medium"
+                                                :class="Number(check.recommendation_strength) >= 60
+                                                    ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
+                                                    : Number(check.recommendation_strength) >= 30
+                                                        ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300'
+                                                        : 'bg-gray-100 text-gray-700 dark:bg-gray-900 dark:text-gray-300'"
+                                            >
+                                                {{ Math.round(Number(check.recommendation_strength)) }}
+                                            </span>
+                                        </div>
+                                        <span
+                                            v-if="check.mention_analysis?.is_top_pick"
+                                            class="rounded bg-primary/10 px-1.5 py-0.5 text-xs font-medium text-primary"
+                                        >
+                                            Top-{{ check.mention_analysis.top_pick_rank }}
+                                        </span>
                                         <component
                                             :is="check.is_cited ? CheckCircle2 : XCircle"
                                             class="h-5 w-5"

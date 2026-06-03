@@ -57,18 +57,20 @@ const studyData = {
         { name: 'Ecommerce', count: 5, avgScore: 83.2, citationRate: 6.7 },
     ],
     pillarAnalysis: {
+        // Direction-only summary; magnitudes are not published.
+        // lift > 0 → positive direction; lift < 0 → negative; lift === 0 → neutral.
         highVsLow: [
-            { pillar: 'Answerability', highRate: 46.4, lowRate: 22.2, lift: 109, insight: 'Strongest predictor by far — direct, declarative content gets cited 109% more often' },
-            { pillar: 'Citations Quality', highRate: 48.6, lowRate: 29.5, lift: 65, insight: 'Sites that cite external sources earn 65% more AI citations themselves' },
-            { pillar: 'Definitions', highRate: 47.8, lowRate: 36.0, lift: 33, insight: 'Explicit "X is Y" definitions lift citation rates 33%' },
-            { pillar: 'Authority', highRate: 0, lowRate: 0, lift: 19, insight: 'Topic depth and internal linking provide a moderate 19% edge' },
-            { pillar: 'Freshness', highRate: 0, lowRate: 0, lift: 19, insight: 'Content recency provides a meaningful 19% edge' },
-            { pillar: 'Machine Readable', highRate: 0, lowRate: 0, lift: 8, insight: 'Modest positive signal — helpful but not a differentiator' },
-            { pillar: 'Structure', highRate: 0, lowRate: 0, lift: -7, insight: 'Necessary but not sufficient — most sites already score well' },
-            { pillar: 'Readability', highRate: 0, lowRate: 0, lift: -7, insight: 'Neutral effect at this threshold — quality may be binary' },
-            { pillar: 'E-E-A-T', highRate: 0, lowRate: 0, lift: -24, insight: 'Counter-intuitive negative — likely confounded by site type (blogs vs SaaS)' },
-            { pillar: 'Question Coverage', highRate: 0, lowRate: 0, lift: -20, insight: 'Small sample — most sites lack FAQ content' },
-            { pillar: 'Multimedia', highRate: 0, lowRate: 0, lift: -35, insight: 'Heavy multimedia may indicate less text for AI to parse' },
+            { pillar: 'Answerability', lift: 1, insight: 'Strongest positive predictor — direct, declarative content gets cited more often' },
+            { pillar: 'Citations Quality', lift: 1, insight: 'Sites that cite external sources earn more AI citations themselves' },
+            { pillar: 'Definitions', lift: 1, insight: 'Explicit "X is Y" definitions lift citation rates' },
+            { pillar: 'Authority', lift: 1, insight: 'Topic depth and internal linking provide a moderate positive edge' },
+            { pillar: 'Freshness', lift: 1, insight: 'Content recency provides a meaningful edge' },
+            { pillar: 'Machine Readable', lift: 1, insight: 'Modest positive signal — helpful but not a differentiator' },
+            { pillar: 'Structure', lift: -1, insight: 'Necessary but not sufficient — most sites already score well' },
+            { pillar: 'Readability', lift: -1, insight: 'Neutral-to-slightly-negative at this threshold — quality may be binary' },
+            { pillar: 'E-E-A-T', lift: -1, insight: 'Counter-intuitive negative — explored further in our E-E-A-T follow-up study' },
+            { pillar: 'Question Coverage', lift: -1, insight: 'Small sample — most sites lack FAQ content' },
+            { pillar: 'Multimedia', lift: -1, insight: 'Heavy multimedia may indicate less text for AI to parse' },
         ],
     },
     topCited: [
@@ -120,27 +122,30 @@ const pillarCombos = {
     tripleLow: { rate: 24.2, n: 11 },
 };
 
+// Direction-only summary of how pillar weights moved between v1 and v2 of
+// the GEO scoring algorithm. Specific weight values are not published.
+// v2Weight > v1Weight → Increased; v2Weight < v1Weight → Decreased.
 const v1VsV2Pillars = [
-    { pillar: 'Answerability', v1Weight: 20, v2Weight: 30, v1Lift: '+71%', v2Lift: '+109%' },
-    { pillar: 'Citations Quality', v1Weight: 12, v2Weight: 20, v1Lift: '+47%', v2Lift: '+65%' },
-    { pillar: 'Readability', v1Weight: 10, v2Weight: 18, v1Lift: '+36%', v2Lift: '-7%' },
-    { pillar: 'Definitions', v1Weight: 15, v2Weight: 15, v1Lift: '+24%', v2Lift: '+33%' },
-    { pillar: 'Structure', v1Weight: 20, v2Weight: 12, v1Lift: '-22%', v2Lift: '-7%' },
-    { pillar: 'Machine Readable', v1Weight: 15, v2Weight: 10, v1Lift: '-2%', v2Lift: '+8%' },
-    { pillar: 'Authority', v1Weight: 10, v2Weight: 10, v1Lift: '+22%', v2Lift: '+19%' },
+    { pillar: 'Answerability', v1Weight: 0, v2Weight: 1 },
+    { pillar: 'Citations Quality', v1Weight: 0, v2Weight: 1 },
+    { pillar: 'Readability', v1Weight: 0, v2Weight: 1 },
+    { pillar: 'Definitions', v1Weight: 0, v2Weight: 0 },
+    { pillar: 'Structure', v1Weight: 1, v2Weight: 0 },
+    { pillar: 'Machine Readable', v1Weight: 1, v2Weight: 0 },
+    { pillar: 'Authority', v1Weight: 0, v2Weight: 0 },
 ];
 
 const faqItems = [
     { question: 'What is Generative Engine Optimization (GEO)?', answer: 'Generative Engine Optimization (GEO) is the practice of optimizing web content so that AI search engines like ChatGPT, Perplexity, Claude, and Gemini can understand, trust, and cite it. While traditional SEO optimizes for Google\'s ranking algorithm, GEO optimizes for the content signals AI platforms use to select sources for their generated answers.' },
     { question: 'What is a GEO score?', answer: 'A GEO score measures how well a web page is optimized for AI search engines across 12 evidence-weighted pillars. It evaluates definition clarity, answerability, citation quality, content structure, readability, and more. The GEO score gives you a comprehensive view of content quality. For a focused prediction of citation likelihood, we also provide the Citation Readiness Score — built from the three pillars our research proved most strongly predict citations.' },
-    { question: 'What is the Citation Readiness Score?', answer: 'The Citation Readiness Score (CR Score) is a focused metric built from our three-phase study. It uses only the three pillars proven to predict AI citations: Answerability (40% weight), Citation Quality (35%), and Definitions (25%). Sites with a high CR Score (>=50) are cited 55.6% of the time vs 33.3% for low CR sites — a +67% lift. Unlike the overall GEO score, the CR Score gap points in the right direction (+4.6 vs -3.1).' },
-    { question: 'Which GEO pillars matter most for AI citations?', answer: 'Based on our three-phase study of 61 websites, the three most predictive pillars are: Answerability (+109% citation lift), Citation Quality (+65% lift), and Definitions (+33% lift). These three pillars form the basis of our Citation Readiness Score. Other pillars like Structure, E-E-A-T, and Multimedia showed no positive correlation or even negative correlation with citation rates.' },
-    { question: 'Does a high GEO score guarantee AI citations?', answer: 'No single score can guarantee citations — AI citation depends on content quality, industry context, query type, and brand recognition working together. What we can say from our data: the Citation Readiness Score (built from the three most predictive pillars) shows a +67% citation lift for high scorers. The GEO score measures overall content quality for AI comprehension, while the CR Score focuses specifically on citation likelihood. Both are useful for different purposes.' },
+    { question: 'What is the Citation Readiness Score?', answer: 'The Citation Readiness Score (CR Score) is a focused metric built from our three-phase study. It uses only the three pillars proven to predict AI citations: Answerability, Citation Quality, and Definitions. Sites with a high CR Score (>=50) are cited substantially more often than sites with a low CR Score, and unlike the overall GEO score, the CR Score gap points in the right direction.' },
+    { question: 'Which GEO pillars matter most for AI citations?', answer: 'Based on our three-phase study of 61 websites, the three most predictive pillars are Answerability, Citation Quality, and Definitions. These three pillars form the basis of our Citation Readiness Score. Other pillars like Structure, E-E-A-T, and Multimedia showed no positive correlation or even negative correlation with citation rates.' },
+    { question: 'Does a high GEO score guarantee AI citations?', answer: 'No single score can guarantee citations — AI citation depends on content quality, industry context, query type, and brand recognition working together. What we can say from our data: the Citation Readiness Score (built from the three most predictive pillars) materially predicts whether AI cites a site. The GEO score measures overall content quality for AI comprehension, while the CR Score focuses specifically on citation likelihood. Both are useful for different purposes.' },
     { question: 'How is this study different from other GEO research?', answer: 'This is a three-phase study that tested and refined its own methodology. Phase 1 used equal-weight scoring and discovered which pillars matter. Phase 2 rebalanced weights based on Phase 1 findings. Phase 3 built and validated a focused Citation Readiness Score. Most GEO research stops at Phase 1 and presents correlations as conclusions. We ran 540+ citation checks across 3 AI platforms to validate our findings.' },
     { question: 'How were websites selected for this study?', answer: 'We selected websites across 17 industries, mixing large brands (Salesforce, Airbnb), mid-size companies (Linear, Whoop), and content publishers (Investopedia, Wirecutter). 61 sites were successfully scanned with the full 12-pillar analysis and included in the final dataset for Phase 3.' },
     { question: 'Can small companies compete with big brands in AI search?', answer: 'It depends on the query type. For informational queries ("how to find a doctor"), brand matters less — content quality can win. For recommendation queries ("what is the best CRM"), brand recognition dominates. Our data shows large sites are cited 49.2% vs 25% for medium sites, despite medium sites having higher average GEO scores (84.6 vs 79.2). Mid-size companies should focus on informational, educational content where content quality outweighs brand recognition.' },
-    { question: 'Which AI platform cites most frequently?', answer: 'In our v3 study, ChatGPT cited 27 domains, Claude cited 24, and Perplexity cited 23 out of 61 total. The rates are close enough to suggest that optimizing for one platform effectively optimizes for all of them. The content signals AI looks for are converging.' },
-    { question: 'What should I focus on to get cited by AI?', answer: 'Based on our research, prioritize three things: (1) Answerability — write direct, declarative content that answers questions without making the reader dig; (2) Citation Quality — cite authoritative external sources in your content; (3) Definitions — include explicit "X is Y" statements. These three pillars drive the Citation Readiness Score and show a +67% citation lift for high scorers. Beyond content, your industry and brand recognition matter enormously — focus on informational content where content quality can differentiate you.' },
+    { question: 'Which AI platform cites most frequently?', answer: 'In this study, ChatGPT cited 27 domains, Claude cited 24, and Perplexity cited 23 out of 61 total. The rates are close enough to suggest that optimizing for one platform effectively optimizes for all of them. The content signals AI looks for are converging.' },
+    { question: 'What should I focus on to get cited by AI?', answer: 'Based on our research, prioritize three things: (1) Answerability — write direct, declarative content that answers questions without making the reader dig; (2) Citation Quality — cite authoritative external sources in your content; (3) Definitions — include explicit "X is Y" statements. These three pillars drive the Citation Readiness Score and materially raise citation likelihood for high scorers. Beyond content, your industry and brand recognition matter enormously — focus on informational content where content quality can differentiate you.' },
 ];
 
 const faqJsonLd = computed(() =>
@@ -237,68 +242,6 @@ const industryChartOptions = computed(() => ({
         },
         y: {
             ticks: { color: chartColors.value.text, font: { size: 11 } },
-            grid: { display: false },
-        },
-    },
-}));
-
-const pillarChartData = computed(() => {
-    const topPillars = studyData.pillarAnalysis.highVsLow.filter((p) => p.highRate > 0);
-    return {
-        labels: studyData.pillarAnalysis.highVsLow.map((p) => p.pillar),
-        datasets: [
-            {
-                label: 'Citation Lift (%)',
-                data: studyData.pillarAnalysis.highVsLow.map((p) => p.lift),
-                backgroundColor: studyData.pillarAnalysis.highVsLow.map((p) =>
-                    p.lift > 30 ? chartColors.value.green + 'cc'
-                    : p.lift > 0 ? chartColors.value.blue + 'cc'
-                    : chartColors.value.red + '99'
-                ),
-                borderRadius: 4,
-                borderSkipped: false,
-            },
-        ],
-    };
-});
-
-const pillarChartOptions = computed(() => ({
-    responsive: true,
-    maintainAspectRatio: true,
-    aspectRatio: 2,
-    plugins: {
-        legend: { display: false },
-        tooltip: {
-            backgroundColor: chartColors.value.tooltipBg,
-            titleColor: chartColors.value.tooltipText,
-            bodyColor: chartColors.value.tooltipText,
-            borderColor: chartColors.value.tooltipBorder,
-            borderWidth: 1,
-            padding: 12,
-            cornerRadius: 8,
-            callbacks: {
-                label: (ctx: any) => {
-                    const p = studyData.pillarAnalysis.highVsLow[ctx.dataIndex];
-                    const sign = p.lift > 0 ? '+' : '';
-                    return `Lift: ${sign}${p.lift}%`;
-                },
-                afterLabel: (ctx: any) => {
-                    const p = studyData.pillarAnalysis.highVsLow[ctx.dataIndex];
-                    if (p.highRate > 0) {
-                        return `High: ${p.highRate}% | Low: ${p.lowRate}%`;
-                    }
-                    return '';
-                },
-            },
-        },
-    },
-    scales: {
-        y: {
-            ticks: { color: chartColors.value.text, callback: (v: number) => v + '%' },
-            grid: { color: chartColors.value.grid },
-        },
-        x: {
-            ticks: { color: chartColors.value.text, font: { size: 10 }, maxRotation: 45, minRotation: 45 },
             grid: { display: false },
         },
     },
@@ -519,7 +462,7 @@ const articleJsonLd = computed(() =>
                     <Card class="border-l-4 border-l-primary">
                         <CardContent class="p-6">
                             <p class="text-muted-foreground leading-relaxed">
-                                This three-phase study examines what content signals predict AI citations across ChatGPT, Perplexity AI, and Claude — and uses those findings to build a more accurate scoring tool. Phase 1 scanned 61 websites across 17 industries and identified three pillars that strongly predict citations: <strong class="text-foreground">Answerability (+109% lift)</strong>, <strong class="text-foreground">Citation Quality (+65%)</strong>, and <strong class="text-foreground">Definitions (+33%)</strong>. Phase 2 rebalanced our scoring algorithm to weight these pillars more heavily. Phase 3 validated a new <strong class="text-foreground">Citation Readiness Score</strong> built from these three pillars — high CR sites are cited 55.6% of the time vs 33.3% for low CR sites, a +67% lift. The study also revealed that informational content gets cited at dramatically higher rates than product pages, giving smaller companies a clear path to competing with larger brands through educational content.
+                                This three-phase study examines what content signals predict AI citations across ChatGPT, Perplexity AI, and Claude — and uses those findings to build a more accurate scoring tool. Phase 1 scanned 61 websites across 17 industries and identified three pillars that strongly predict citations: <strong class="text-foreground">Answerability</strong>, <strong class="text-foreground">Citation Quality</strong>, and <strong class="text-foreground">Definitions</strong>. Phase 2 rebalanced our scoring algorithm to weight these pillars more heavily. Phase 3 validated a new <strong class="text-foreground">Citation Readiness Score</strong> built from these three pillars; high CR sites are cited substantially more often than low CR sites. The study also revealed that informational content gets cited at dramatically higher rates than product pages, giving smaller companies a clear path to competing with larger brands through educational content.
                             </p>
                         </CardContent>
                     </Card>
@@ -554,7 +497,7 @@ const articleJsonLd = computed(() =>
                         <div>
                             <h3 class="text-lg font-semibold mb-2">Three-phase design</h3>
                             <p class="text-muted-foreground leading-relaxed">
-                                <strong class="text-foreground">Phase 1 (Discovery)</strong> used the original equally-weighted scoring algorithm to scan all sites and run citation checks. The findings identified which pillars most strongly predict citations — and revealed that the overall GEO score was not a good predictor. <strong class="text-foreground">Phase 2 (Algorithm Update)</strong> rebalanced the pillar weights based on Phase 1 data, increasing weight for Answerability (20 to 30), Citations Quality (12 to 20), and Readability (10 to 18) while reducing Structure (20 to 12) and Machine Readability (15 to 10). <strong class="text-foreground">Phase 3 (Validation)</strong> built a focused Citation Readiness Score using only the three proven pillars (Answerability 40%, Citation Quality 35%, Definitions 25%) and ran a fresh round of 180+ citation checks to validate it against real-world AI behavior.
+                                <strong class="text-foreground">Phase 1 (Discovery)</strong> used the original equally-weighted scoring algorithm to scan all sites and run citation checks. The findings identified which pillars most strongly predict citations — and revealed that the overall GEO score was not a good predictor. <strong class="text-foreground">Phase 2 (Algorithm Update)</strong> rebalanced the pillar weights based on Phase 1 data, increasing weight for the pillars that predicted citation and reducing weight for those that did not. <strong class="text-foreground">Phase 3 (Validation)</strong> built a focused Citation Readiness Score using only the three proven pillars (Answerability, Citation Quality, and Definitions) and ran a fresh round of 180+ citation checks to validate it against real-world AI behavior.
                             </p>
                         </div>
                         <div>
@@ -584,8 +527,8 @@ const articleJsonLd = computed(() =>
                                 <div class="flex items-start gap-4">
                                     <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-500/10 text-sm font-bold text-green-600 dark:text-green-400">1</div>
                                     <div>
-                                        <div class="font-semibold">Content quality — the pillars you can control <span class="text-green-600 dark:text-green-400 font-bold">(+67% lift with CR Score)</span></div>
-                                        <p class="text-sm text-muted-foreground mt-1">Three specific pillars — Answerability (+109%), Citation Quality (+65%), and Definitions (+33%) — have the strongest measurable impact on citation likelihood. Sites scoring high on these three are cited 55.6% of the time vs 33.3% for low scorers. This is what GeoSource optimizes and what you can directly improve.</p>
+                                        <div class="font-semibold">Content quality — the pillars you can control <span class="text-green-600 dark:text-green-400 font-bold">(meaningful lift with CR Score)</span></div>
+                                        <p class="text-sm text-muted-foreground mt-1">Three specific pillars — Answerability, Citation Quality, and Definitions — have the strongest measurable impact on citation likelihood. Sites scoring high on these three are cited substantially more often than low scorers. This is what GeoSource optimizes and what you can directly improve.</p>
                                     </div>
                                 </div>
                                 <div class="flex items-start gap-4">
@@ -675,23 +618,14 @@ const articleJsonLd = computed(() =>
                 <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
                     <h2 class="text-2xl font-bold tracking-tight sm:text-3xl mb-2">Finding 2: Which of the 12 GEO pillars predict citations?</h2>
                     <p class="text-muted-foreground mb-8 leading-relaxed">
-                        We evaluated all 12 GEO pillars to identify which ones most strongly predict AI citation likelihood. For each pillar, we split sites into "high" (score &ge;50%) and "low" (&lt;50%) groups and compared citation rates. Three pillars emerged as clear winners: <strong class="text-foreground">Answerability</strong> (+109% lift), <strong class="text-foreground">Citation Quality</strong> (+65% lift), and <strong class="text-foreground">Definitions</strong> (+33% lift). The remaining pillars showed weak, neutral, or even negative correlations.
+                        We evaluated all 12 GEO pillars to identify which ones most strongly predict AI citation likelihood. For each pillar, we split sites into "high" (score &ge;50%) and "low" (&lt;50%) groups and compared citation rates. Three pillars emerged as clear winners: <strong class="text-foreground">Answerability</strong>, <strong class="text-foreground">Citation Quality</strong>, and <strong class="text-foreground">Definitions</strong>. The remaining pillars showed weak, neutral, or even negative correlations.
                     </p>
-                    <Card>
-                        <CardContent class="p-6">
-                            <Bar :data="pillarChartData" :options="pillarChartOptions" />
-                        </CardContent>
-                    </Card>
-                    <p class="mt-4 text-sm text-muted-foreground italic">
-                        Figure 2. Citation lift by GEO pillar. Positive values (green/blue) indicate that scoring high on this pillar correlates with more citations. Negative values (red) indicate inverse correlation. Answerability (+109%) is the dominant predictor.
-                    </p>
-
-                    <div class="mt-8 overflow-x-auto rounded-lg border">
+                    <div class="overflow-x-auto rounded-lg border">
                         <table class="w-full text-left text-sm">
                             <thead>
                                 <tr class="border-b bg-muted/50">
                                     <th class="px-4 py-3 font-semibold">GEO Pillar</th>
-                                    <th class="px-4 py-3 font-semibold text-center">Citation Lift</th>
+                                    <th class="px-4 py-3 font-semibold text-center">Direction</th>
                                     <th class="px-4 py-3 font-semibold">Interpretation</th>
                                 </tr>
                             </thead>
@@ -699,7 +633,7 @@ const articleJsonLd = computed(() =>
                                 <tr v-for="p in studyData.pillarAnalysis.highVsLow" :key="p.pillar" class="border-b last:border-b-0 transition-colors hover:bg-muted/30">
                                     <td class="px-4 py-3 font-medium">{{ p.pillar }}</td>
                                     <td class="px-4 py-3 text-center font-bold" :class="p.lift > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
-                                        {{ p.lift > 0 ? '+' : '' }}{{ p.lift }}%
+                                        {{ p.lift > 0 ? 'Positive' : (p.lift < 0 ? 'Negative' : 'Neutral') }}
                                     </td>
                                     <td class="px-4 py-3 text-sm text-muted-foreground">{{ p.insight }}</td>
                                 </tr>
@@ -709,6 +643,28 @@ const articleJsonLd = computed(() =>
                     <p class="mt-4 text-sm text-muted-foreground italic">
                         Table 2. Citation lift by pillar. The top three pillars (Answerability, Citation Quality, Definitions) show consistent, meaningful positive lift. The bottom five pillars show no positive signal.
                     </p>
+                    <Card class="mt-6 border-l-4 border-l-amber-500 bg-amber-50/30 dark:bg-amber-950/10">
+                        <CardContent class="p-5 space-y-2">
+                            <p class="text-sm leading-relaxed">
+                                <strong class="text-foreground">Follow-up 1:</strong> The negative E-E-A-T finding above was worth isolating from possible content-type confounds. We ran a controlled 2×2 study to test it.
+                                <Link href="/blog/eeat-content-type-study" class="font-medium text-primary hover:underline">
+                                    Read the E-E-A-T &amp; content type follow-up &rarr;
+                                </Link>
+                            </p>
+                            <p class="text-sm leading-relaxed">
+                                <strong class="text-foreground">Follow-up 2:</strong> Single-turn citation isn't the same as commercial outcome. We ran a 4-stage shopping-journey study across 40 ecommerce brands and updated the algorithm with a Recommendation Readiness Score.
+                                <Link href="/blog/ecommerce-recommendation-survival" class="font-medium text-primary hover:underline">
+                                    Read the ecommerce recommendation-survival study &rarr;
+                                </Link>
+                            </p>
+                            <p class="text-sm leading-relaxed">
+                                <strong class="text-foreground">Cross-study synthesis:</strong> Six findings that held across all of our research, with practical implications for what to optimize.
+                                <Link href="/blog/what-predicts-ai-citations" class="font-medium text-primary hover:underline">
+                                    Read the synthesis &rarr;
+                                </Link>
+                            </p>
+                        </CardContent>
+                    </Card>
                 </div>
             </section>
 
@@ -769,7 +725,7 @@ const articleJsonLd = computed(() =>
                 <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
                     <h2 class="text-2xl font-bold tracking-tight sm:text-3xl mb-2">Finding 4: Algorithm rebalancing results</h2>
                     <p class="text-muted-foreground mb-8 leading-relaxed">
-                        Based on Phase 1 findings, we adjusted pillar weights to amplify proven predictors and dampen noise. Answerability was increased from 20 to 30 points. Citations Quality went from 12 to 20. Readability from 10 to 18. Structure was reduced from 20 to 12, and Machine Readability from 15 to 10. The rebalanced algorithm was then used to re-scan all sites and re-run citation checks.
+                        Based on Phase 1 findings, we rebalanced the GEO scoring algorithm — increasing weight on the pillars that demonstrably predict citations and reducing weight on those that don't. The rebalanced algorithm was then used to re-scan all sites and re-run citation checks. The change preserved the same set of pillars; only the weights moved, and the directional changes are summarized below.
                     </p>
 
                     <div class="overflow-x-auto rounded-lg border mb-6">
@@ -777,23 +733,15 @@ const articleJsonLd = computed(() =>
                             <thead>
                                 <tr class="border-b bg-muted/50">
                                     <th class="px-4 py-3 font-semibold">Pillar</th>
-                                    <th class="px-4 py-3 font-semibold text-center">v1 Weight</th>
-                                    <th class="px-4 py-3 font-semibold text-center">v2 Weight</th>
-                                    <th class="px-4 py-3 font-semibold text-center">v1 Lift</th>
-                                    <th class="px-4 py-3 font-semibold text-center">v2 Lift</th>
-                                    <th class="px-4 py-3 font-semibold text-center">Direction</th>
+                                    <th class="px-4 py-3 font-semibold text-center">Weight change (first → second algorithm version)</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr v-for="p in v1VsV2Pillars" :key="p.pillar" class="border-b last:border-b-0 transition-colors hover:bg-muted/30">
                                     <td class="px-4 py-3 font-medium">{{ p.pillar }}</td>
-                                    <td class="px-4 py-3 text-center text-muted-foreground">{{ p.v1Weight }}</td>
-                                    <td class="px-4 py-3 text-center font-semibold" :class="p.v2Weight > p.v1Weight ? 'text-green-600 dark:text-green-400' : p.v2Weight < p.v1Weight ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'">{{ p.v2Weight }}</td>
-                                    <td class="px-4 py-3 text-center text-muted-foreground">{{ p.v1Lift }}</td>
-                                    <td class="px-4 py-3 text-center font-semibold" :class="p.v2Lift.startsWith('+') ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">{{ p.v2Lift }}</td>
                                     <td class="px-4 py-3 text-center">
-                                        <span v-if="p.v2Weight > p.v1Weight" class="text-green-600 dark:text-green-400">Increased</span>
-                                        <span v-else-if="p.v2Weight < p.v1Weight" class="text-amber-600 dark:text-amber-400">Decreased</span>
+                                        <span v-if="p.v2Weight > p.v1Weight" class="text-green-600 dark:text-green-400 font-semibold">Increased</span>
+                                        <span v-else-if="p.v2Weight < p.v1Weight" class="text-amber-600 dark:text-amber-400 font-semibold">Decreased</span>
                                         <span v-else class="text-muted-foreground">Unchanged</span>
                                     </td>
                                 </tr>
@@ -801,7 +749,7 @@ const articleJsonLd = computed(() =>
                         </table>
                     </div>
                     <p class="text-sm text-muted-foreground italic mb-8">
-                        Table 3. Comparison of pillar weights and citation lift between v1 (equal weights) and v2 (evidence-based weights). Answerability lift increased from +71% to +109% with higher weight. Citations Quality improved from +47% to +65%. Structure's negative signal was reduced from -22% to -7%.
+                        Table 3. Direction of each pillar's weight change between the first and second versions of the GEO scoring algorithm. Specific weight values are not published.
                     </p>
 
                     <Card class="bg-muted/50">
@@ -855,29 +803,11 @@ const articleJsonLd = computed(() =>
                         </Card>
                     </div>
 
-                    <div class="grid gap-4 sm:grid-cols-2 mb-8">
-                        <Card>
-                            <CardContent class="p-6 text-center">
-                                <div class="text-sm font-semibold text-muted-foreground mb-2">High CR Score (&ge;50)</div>
-                                <div class="text-4xl font-bold text-green-600 dark:text-green-400">55.6%</div>
-                                <div class="text-sm text-muted-foreground mt-2">citation rate</div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent class="p-6 text-center">
-                                <div class="text-sm font-semibold text-muted-foreground mb-2">Low CR Score (&lt;50)</div>
-                                <div class="text-4xl font-bold text-amber-600 dark:text-amber-400">33.3%</div>
-                                <div class="text-sm text-muted-foreground mt-2">citation rate</div>
-                            </CardContent>
-                        </Card>
-                    </div>
-
                     <Card class="border-l-4 border-l-primary mb-8">
                         <CardContent class="p-6">
-                            <div class="text-center mb-4">
-                                <div class="text-sm font-semibold text-muted-foreground">CR Score Lift</div>
-                                <div class="text-5xl font-bold text-primary mt-1">+67%</div>
-                                <div class="text-sm text-muted-foreground mt-2">High CR sites are cited 67% more often than low CR sites</div>
+                            <div class="text-center">
+                                <div class="text-sm font-semibold text-muted-foreground mb-2">CR Score Validation</div>
+                                <div class="text-base text-foreground">Sites with a higher Citation Readiness Score were cited substantially more often than sites with a lower score across the validation round of checks.</div>
                             </div>
                         </CardContent>
                     </Card>
@@ -1185,7 +1115,7 @@ const articleJsonLd = computed(() =>
                                 <BarChart3 class="h-8 w-8 text-primary mb-3" aria-hidden="true" />
                                 <h3 class="font-semibold mb-2">Citation Readiness Score</h3>
                                 <p class="text-sm text-muted-foreground leading-relaxed">
-                                    A focused metric calculated from only the three empirically-proven predictive pillars: Answerability (40%), Citation Quality (35%), and Definitions (25%). High CR sites are cited 55.6% of the time vs 33.3% for low CR — a +67% lift. The score gap is +4.6 (correct direction) vs -3.1 for overall GEO (wrong direction). This is now prominently displayed alongside your overall GEO score.
+                                    A focused metric calculated from only the three empirically-proven predictive pillars: Answerability, Citation Quality, and Definitions. High CR sites are cited substantially more often than low CR sites, and unlike the overall GEO score the CR Score gap points in the correct direction. This is now prominently displayed alongside your overall GEO score.
                                 </p>
                             </CardContent>
                         </Card>
@@ -1254,7 +1184,7 @@ const articleJsonLd = computed(() =>
                         <Card>
                             <CardContent class="p-5">
                                 <h3 class="font-semibold text-primary mb-1">Lift</h3>
-                                <p class="text-sm text-muted-foreground leading-relaxed">The relative percentage improvement in citation rate when a pillar scores high (&ge;50%) vs low (&lt;50%). A +109% lift means the high-scoring group's citation rate is 109% better than the low-scoring group's.</p>
+                                <p class="text-sm text-muted-foreground leading-relaxed">The relative direction in citation rate when a pillar scores high (&ge;50%) vs low (&lt;50%). Positive means high-scoring sites are cited more often than low-scoring sites.</p>
                             </CardContent>
                         </Card>
                     </div>

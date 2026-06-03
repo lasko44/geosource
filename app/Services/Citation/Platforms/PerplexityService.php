@@ -19,8 +19,10 @@ class PerplexityService
 
     /**
      * Perform a citation check using Perplexity API.
+     *
+     * @param  array  $messageHistory  Optional prior conversation turns (user/assistant) for multi-turn.
      */
-    public function check(CitationQuery $query, CitationCheck $check): array
+    public function check(CitationQuery $query, CitationCheck $check, array $messageHistory = []): array
     {
         $apiKey = config('citations.perplexity.api_key');
         $model = config('citations.perplexity.model');
@@ -34,6 +36,18 @@ class PerplexityService
         // Build the prompt
         $prompt = $this->buildPrompt($query);
 
+        // System message is always first; prior user/assistant turns follow; new user turn last.
+        $messages = array_merge(
+            [
+                [
+                    'role' => 'system',
+                    'content' => 'You are a helpful research assistant. Provide comprehensive, accurate information with sources when available. Always cite your sources with URLs.',
+                ],
+            ],
+            $messageHistory,
+            [['role' => 'user', 'content' => $prompt]],
+        );
+
         // Make the API request
         $response = Http::timeout($timeout)
             ->withoutRedirecting()
@@ -43,16 +57,7 @@ class PerplexityService
             ])
             ->post($baseUrl.'/chat/completions', [
                 'model' => $model,
-                'messages' => [
-                    [
-                        'role' => 'system',
-                        'content' => 'You are a helpful research assistant. Provide comprehensive, accurate information with sources when available. Always cite your sources with URLs.',
-                    ],
-                    [
-                        'role' => 'user',
-                        'content' => $prompt,
-                    ],
-                ],
+                'messages' => $messages,
                 'temperature' => 0.2,
                 'top_p' => 0.9,
                 'web_search_options' => [
@@ -94,7 +99,7 @@ class PerplexityService
         $citations = $data['citations'] ?? [];
 
         // Analyze the response for domain/brand mentions
-        $analysis = $this->analyzer->analyze($content, $citations, $query->domain, $query->brand);
+        $analysis = $this->analyzer->analyze($content, $citations, $query->domain, $query->getBrandIdentifiers());
 
         return [
             'ai_response' => $content,

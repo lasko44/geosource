@@ -9,8 +9,13 @@ class CitationAnalyzerService
 {
     /**
      * Analyze AI response for domain/brand citations.
+     *
+     * @param  string|array|null  $brand  A single brand name string OR an array of brand
+     *                                    name aliases (display variants). Both are supported
+     *                                    for backwards compatibility; when an array is
+     *                                    passed, any matching alias counts as a brand mention.
      */
-    public function analyze(string $content, array $citations, string $domain, ?string $brand): array
+    public function analyze(string $content, array $citations, string $domain, $brand = null): array
     {
         $results = [
             'is_cited' => false,
@@ -28,50 +33,58 @@ class CitationAnalyzerService
         $domainMentions = $this->findDomainMentions($content, $domainVariants);
         $results['domain_mentioned'] = count($domainMentions) > 0;
 
-        // Check content for brand mentions
+        // Check content for brand mentions across any provided alias
+        $brandNames = is_array($brand) ? $brand : (is_string($brand) && $brand !== '' ? [$brand] : []);
         $brandMentions = [];
-        if ($brand) {
-            $brandMentions = $this->findBrandMentions($content, $brand);
-            $results['brand_mentioned'] = count($brandMentions) > 0;
+        foreach ($brandNames as $brandName) {
+            if (! is_string($brandName) || $brandName === '') {
+                continue;
+            }
+            foreach ($this->findBrandMentions($content, $brandName) as $mention) {
+                $brandMentions[] = $mention;
+            }
         }
+        $results['brand_mentioned'] = count($brandMentions) > 0;
 
         // Check citations/URLs for domain
         $citationMatches = $this->checkCitationsForDomain($citations, $domainVariants);
 
-        // Build citation details
-        if ($results['domain_mentioned'] || count($citationMatches) > 0) {
+        // A page counts as cited if the domain appears, a source URL points at
+        // it, OR a configured brand name appears in the response. The v6
+        // ecommerce study showed brand-name detection catches a large fraction
+        // of mentions that domain-only matching misses, so it must contribute
+        // to is_cited — not just decorate the citations array.
+        if ($results['domain_mentioned'] || count($citationMatches) > 0 || $results['brand_mentioned']) {
             $results['is_cited'] = true;
-
-            // Add domain citation details
-            foreach ($domainMentions as $mention) {
-                $results['citations'][] = [
-                    'type' => 'domain_mention',
-                    'match' => $mention['match'],
-                    'context' => $mention['context'],
-                    'position' => $mention['position'],
-                ];
-            }
-
-            // Add URL citation details
-            foreach ($citationMatches as $match) {
-                $results['citations'][] = [
-                    'type' => 'url_citation',
-                    'url' => $match['url'],
-                    'domain' => $match['domain'],
-                ];
-            }
         }
 
-        // Add brand mentions if found
-        if ($results['brand_mentioned']) {
-            foreach ($brandMentions as $mention) {
-                $results['citations'][] = [
-                    'type' => 'brand_mention',
-                    'match' => $mention['match'],
-                    'context' => $mention['context'],
-                    'position' => $mention['position'],
-                ];
-            }
+        // Add domain citation details
+        foreach ($domainMentions as $mention) {
+            $results['citations'][] = [
+                'type' => 'domain_mention',
+                'match' => $mention['match'],
+                'context' => $mention['context'],
+                'position' => $mention['position'],
+            ];
+        }
+
+        // Add URL citation details
+        foreach ($citationMatches as $match) {
+            $results['citations'][] = [
+                'type' => 'url_citation',
+                'url' => $match['url'],
+                'domain' => $match['domain'],
+            ];
+        }
+
+        // Add brand mentions to the citation details
+        foreach ($brandMentions as $mention) {
+            $results['citations'][] = [
+                'type' => 'brand_mention',
+                'match' => $mention['match'],
+                'context' => $mention['context'],
+                'position' => $mention['position'],
+            ];
         }
 
         // Calculate confidence score

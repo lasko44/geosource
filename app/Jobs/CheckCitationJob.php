@@ -121,6 +121,17 @@ class CheckCitationJob implements ShouldQueue
             // Process completion and create alerts if needed
             $citationService->processCheckCompletion($this->check);
 
+            // Dispatch the recommendation-strength follow-up classifier so the
+            // UI can show users not just "you were cited" but "you were cited
+            // at position #3 in a top-3 list with a buy link." Async via queue
+            // so the main citation check returns immediately.
+            if (! empty($aiResponse) && $result['is_cited'] ?? false) {
+                \App\Jobs\AnalyzeRecommendationStrengthJob::dispatch(
+                    $this->check->id,
+                    $query->getBrandIdentifiers(),
+                );
+            }
+
             // Record correlation data for continuous algorithm improvement
             try {
                 app(\App\Services\Analytics\CorrelationService::class)->recordFromCitation($query);

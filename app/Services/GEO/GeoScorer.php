@@ -192,15 +192,40 @@ class GeoScorer
         $overallScore = round($totalScore, 1);
         $overallPercentage = round(($totalScore / $maxPossible) * 100, 1);
 
+        $contentType = $this->detectContentType($content, $context);
+        $categoryFit = (new CategoryFitService)->classify($content);
+
+        // Query Intent Analysis: identifies the queries this page is
+        // positioned to compete for. v4/v5 research showed query phrasing
+        // (whether the query names the brand) is the biggest lever for
+        // citation rate, so this analyzer helps users see what they can
+        // realistically expect to be cited for.
+        $queryIntent = null;
+        try {
+            $queryIntent = (new QueryIntentAnalyzer)->analyze(
+                $content,
+                $context['url'] ?? null,
+                $context['brand'] ?? null,
+            );
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Query intent analyzer threw', [
+                'error' => $e->getMessage(),
+                'url' => $context['url'] ?? null,
+            ]);
+        }
+
         return [
             'score' => $overallScore,
             'max_score' => $maxPossible,
             'percentage' => $overallPercentage,
             'grade' => $this->getGrade($overallPercentage),
             'citation_readiness' => $this->calculateCitationReadiness($pillarResults),
-            'content_type' => $this->detectContentType($content, $context),
+            'recommendation_readiness' => $this->calculateRecommendationReadiness($pillarResults),
+            'content_type' => $contentType,
+            'category_fit' => $categoryFit,
+            'query_intent' => $queryIntent,
             'pillars' => $pillarResults,
-            'recommendations' => $this->generateRecommendations($pillarResults),
+            'recommendations' => $this->generateRecommendations($pillarResults, $contentType),
             'summary' => $this->generateSummary($overallPercentage, $pillarResults),
             'scored_at' => now()->toISOString(),
         ];
@@ -301,6 +326,96 @@ class GeoScorer
             'summary' => $this->getCitationReadinessSummary($score, $factors),
             'benchmark' => $this->getCitationBenchmark($score),
         ];
+    }
+
+    /**
+     * Calculate Recommendation Readiness Score from the empirically-strongest
+     * predictors of ecommerce recommendation survival.
+     *
+     * Based on the v6-ecommerce study (40 brands × 12 categories × 4 journey
+     * stages × 3 platforms = 480 citation checks). Authority and Answerability
+     * negatively correlated with survival; AI Accessibility positively. We use
+     * signed weights derived from each pillar's Pearson r with per-brand
+     * survival rate: high authority/answerability *reduces* the score because
+     * the data shows over-optimized DTC landing pages get recommended less
+     * than utility-focused brand pages in AI shopping flows.
+     *
+     * This score is intended specifically for ecommerce / transactional pages.
+     * For informational content, use citation_readiness instead.
+     */
+    private function calculateRecommendationReadiness(array $pillarResults): array
+    {
+        // Top 3 pillars by |Pearson r| with survival rate from the v6-ecommerce
+        // study. All three are *inversely* correlated — higher pillar score
+        // predicts LOWER survival in AI shopping flows. AI Accessibility was
+        // saturated near max for every brand in the sample, so its positive r
+        // had no real variance to exploit and was excluded.
+        $predictivePillars = [
+            'authority' => ['weight' => 0.311, 'negative' => true, 'label' => 'Topic Authority'],
+            'answerability' => ['weight' => 0.280, 'negative' => true, 'label' => 'Answerability'],
+            'multimedia' => ['weight' => 0.263, 'negative' => true, 'label' => 'Multimedia'],
+        ];
+
+        $weightedScore = 0;
+        $totalWeight = 0;
+        $factors = [];
+
+        foreach ($predictivePillars as $key => $config) {
+            if (! isset($pillarResults[$key])) {
+                continue;
+            }
+            $pct = $pillarResults[$key]['percentage'];
+            $effectivePct = $config['negative'] ? (100 - $pct) : $pct;
+            $weightedScore += $effectivePct * $config['weight'];
+            $totalWeight += $config['weight'];
+            $factors[$key] = [
+                'label' => $config['label'],
+                'score' => $pct,
+                'weight' => $config['weight'],
+                'direction' => $config['negative'] ? 'inverse' : 'direct',
+                'contribution' => round($effectivePct * $config['weight'], 1),
+            ];
+        }
+
+        $score = $totalWeight > 0 ? round($weightedScore / $totalWeight, 1) : 0;
+
+        return [
+            'score' => $score,
+            'grade' => $this->getRecommendationReadinessGrade($score),
+            'factors' => $factors,
+            'summary' => $this->getRecommendationReadinessSummary($score),
+            'study_basis' => 'Based on v6-ecommerce study: 40 brands × 12 categories × 480 citation checks. Weights = |Pearson r| with per-brand survival rate. For ecommerce / DTC pages only.',
+        ];
+    }
+
+    /**
+     * Grade recommendation readiness on a simpler scale.
+     */
+    private function getRecommendationReadinessGrade(float $score): string
+    {
+        return match (true) {
+            $score >= 70 => 'High',
+            $score >= 50 => 'Moderate',
+            $score >= 30 => 'Low',
+            default => 'Very Low',
+        };
+    }
+
+    /**
+     * Generate a summary for recommendation readiness.
+     */
+    private function getRecommendationReadinessSummary(float $score): string
+    {
+        if ($score >= 70) {
+            return 'Strong recommendation potential in AI shopping flows. Pages with this profile (clean, utility-focused, accessible) tend to be recommended at narrowing and purchase-intent stages of the shopping journey.';
+        }
+        if ($score >= 50) {
+            return 'Moderate recommendation potential. Over-optimization on authority and answerability signals may be reducing your odds of being recommended in AI shopping flows — the v6-ecommerce data shows utility-focused pages outperform heavily-SEO-optimized landing pages.';
+        }
+        if ($score >= 30) {
+            return 'Low recommendation potential. Heavy authority/answerability signaling is correlated with NOT being recommended in AI shopping flows. Consider simpler product pages and stronger AI Accessibility (robots.txt, structured data).';
+        }
+        return 'Very low recommendation potential. Page reads like an SEO landing page rather than a clean product/utility page — pattern that the v6 data shows AI shopping flows skip past.';
     }
 
     /**
@@ -477,15 +592,42 @@ class GeoScorer
 
     /**
      * Generate actionable recommendations based on scores.
+     *
+     * Content-type-aware: for transactional/ecommerce pages, the v6 study
+     * showed Authority, Answerability, and Multimedia are *inversely*
+     * correlated with recommendation survival. Pushing users to add more
+     * of those signals would be the wrong advice. For transactional pages
+     * we suppress the "add more" advice on those pillars and surface an
+     * inverted message instead.
      */
-    private function generateRecommendations(array $pillarResults): array
+    private function generateRecommendations(array $pillarResults, ?array $contentType = null): array
     {
         $recommendations = [];
+        $isTransactional = ($contentType['primary_type'] ?? null) === 'transactional';
+        // Pillars where higher-is-worse for ecommerce (per v6 study)
+        $inversePillarsForEcommerce = ['authority', 'answerability', 'multimedia'];
 
         foreach ($pillarResults as $key => $pillar) {
             $percentage = $pillar['percentage'];
 
-            // Only recommend for pillars scoring below 70%
+            // For transactional pages, recommend *reducing* the inverse pillars
+            // if they're high (>= 70%) rather than adding more.
+            if ($isTransactional && in_array($key, $inversePillarsForEcommerce, true)) {
+                if ($percentage >= 70) {
+                    $recommendations[$key] = [
+                        'pillar' => $pillar['name'],
+                        'current_score' => $percentage.'%',
+                        'priority' => $percentage >= 85 ? 'medium' : 'low',
+                        'actions' => $this->getInversePillarRecommendations($key),
+                        'tier' => $pillar['tier'] ?? self::TIER_FREE,
+                        'resources' => self::PILLAR_RESOURCES[$key] ?? [],
+                    ];
+                }
+                // For transactional, we don't recommend adding more of these even if low.
+                continue;
+            }
+
+            // Default behaviour: only recommend for pillars scoring below 70%
             if ($percentage >= 70) {
                 continue;
             }
@@ -526,6 +668,33 @@ class GeoScorer
         });
 
         return $recommendations;
+    }
+
+    /**
+     * For transactional pages where a pillar is empirically inverse-correlated
+     * with recommendation survival, advise reducing rather than increasing.
+     * Based on the v6-ecommerce study.
+     */
+    private function getInversePillarRecommendations(string $pillarKey): array
+    {
+        return match ($pillarKey) {
+            'authority' => [
+                'For ecommerce pages, heavy topic-authority signaling (long-form authority pages, dense internal link clusters) correlates with *fewer* AI shopping recommendations',
+                'Consider simplifying — utility-focused product pages outperform authority-heavy landing pages in AI shopping flows',
+                'This is based on our v6-ecommerce study (40 brands × 12 categories). The finding does not apply to informational content.',
+            ],
+            'answerability' => [
+                'For ecommerce pages, high answerability density (FAQ accordions, long explanatory copy, definitional intros) is inversely correlated with AI shopping recommendations',
+                'Keep product copy concise — AI shopping flows tend to skip past pages that read like SEO landing pages',
+                'This recommendation only applies to transactional/ecommerce pages. For informational content, high answerability is positive.',
+            ],
+            'multimedia' => [
+                'For ecommerce pages, heavy multimedia (video carousels, large media galleries, image-stacked layouts) shows a negative correlation with AI shopping recommendations',
+                'Lean toward text-first product pages with clean image placement; AI assistants parse the textual signal',
+                'Based on v6-ecommerce study. Multimedia is content-neutral or positive for informational content.',
+            ],
+            default => [],
+        };
     }
 
     private function getDefinitionRecommendations(array $pillar): array
@@ -670,6 +839,14 @@ class GeoScorer
 
     // Pro tier recommendations
 
+    /**
+     * E-E-A-T recommendations. We are deliberately conservative here because
+     * three independent rounds of our research (v3 homepage study, v4/v5
+     * controlled 2×2, v6 ecommerce survival) all showed this pillar does
+     * NOT positively predict AI citations — it correlates negatively in
+     * ecommerce contexts. The advice below is framed as Google-SERP /
+     * general-credibility guidance, not as a citation lever.
+     */
     private function getEEATRecommendations(array $pillar): array
     {
         $recs = [];
@@ -677,25 +854,20 @@ class GeoScorer
 
         $author = $details['author'] ?? [];
         if (! ($author['has_author'] ?? false)) {
-            $recs[] = 'Add author attribution with name and link to author bio';
+            $recs[] = 'Add author attribution if your content type benefits from named authorship (editorial, expert-reviewed). Note: our research did not find this pillar to be a positive predictor of AI citations specifically.';
         }
         if (! ($author['has_author_bio'] ?? false)) {
-            $recs[] = 'Include an author bio section with credentials and expertise';
+            $recs[] = 'For editorial / how-to content, an author bio with relevant background can support reader trust — though AI assistants in our studies rarely surfaced these signals as citation drivers.';
         }
 
         $trust = $details['trust_signals'] ?? [];
         if (! ($trust['has_reviews'] ?? false) && ! ($trust['has_testimonials'] ?? false)) {
-            $recs[] = 'Add social proof like reviews, testimonials, or case studies';
+            $recs[] = 'Social proof (reviews, testimonials) helps human readers evaluate trust; its direct effect on AI citation rate is weak in our data.';
         }
 
         $contact = $details['contact'] ?? [];
         if (! ($contact['has_contact_page_link'] ?? false)) {
-            $recs[] = 'Ensure visible contact information or link to contact page';
-        }
-
-        $credentials = $details['credentials'] ?? [];
-        if (! ($credentials['has_expertise_claims'] ?? false)) {
-            $recs[] = 'Highlight relevant expertise, experience, or qualifications';
+            $recs[] = 'Ensure visible contact information or link to contact page — baseline-credibility signal, not a citation lever.';
         }
 
         return $recs;

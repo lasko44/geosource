@@ -82,7 +82,8 @@ class CitationQueryController extends Controller
             $request->input('frequency'),
             $request->getTeam(),
             $request->input('scheduled_platforms', []),
-            $request->input('monthly_token_budget')
+            $request->input('monthly_token_budget'),
+            $request->input('brand_aliases')
         );
 
         return redirect()->route('citations.queries.show', $citationQuery)

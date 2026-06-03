@@ -2,7 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Jobs\AnalyzeRecommendationStrengthJob;
 use App\Jobs\CheckCitationJob;
+use App\Jobs\RunConversationCitationJob;
 use App\Jobs\ScanWebsiteJob;
 use App\Models\CitationCheck;
 use App\Models\CitationQuery;
@@ -18,8 +20,9 @@ use Illuminate\Support\Facades\Log;
 class RunGeoStudy extends Command
 {
     protected $signature = 'study:run
-                            {phase=seed : Phase to run: seed, scan, cite, collect, report}
+                            {phase=seed : Phase to run: seed, scan, cite, cite-conversation, collect, analyze-strength, report}
                             {--study=v2 : Study version identifier}
+                            {--config=geo-study : Config file to seed from (without .php)}
                             {--user= : Email of user to attribute scans to (defaults to first admin)}
                             {--limit=0 : Max entries to process (0 = all)}
                             {--delay=10 : Seconds between dispatched jobs}
@@ -38,7 +41,9 @@ class RunGeoStudy extends Command
             'seed' => $this->seed(),
             'scan' => $this->scan(),
             'cite' => $this->cite(),
+            'cite-conversation' => $this->citeConversation(),
             'collect' => $this->collect(),
+            'analyze-strength' => $this->analyzeStrength(),
             'report' => $this->report(),
             default => $this->error("Unknown phase: {$phase}") ?? Command::FAILURE,
         };
@@ -70,10 +75,11 @@ class RunGeoStudy extends Command
      */
     private function seed(): int
     {
-        $entries = config('geo-study.entries', []);
+        $configFile = $this->option('config');
+        $entries = config("{$configFile}.entries", []);
 
         if (empty($entries)) {
-            $this->error('No entries found in config/geo-study.php');
+            $this->error("No entries found in config/{$configFile}.php");
 
             return Command::FAILURE;
         }
@@ -99,6 +105,8 @@ class RunGeoStudy extends Command
                     'domain' => $entry['domain'],
                     'industry' => $entry['industry'],
                     'site_size' => $entry['site_size'],
+                    'content_type' => $entry['content_type'] ?? null,
+                    'category' => $entry['category'] ?? null,
                     'query' => $entry['query'],
                     'status' => 'pending',
                 ]);
@@ -182,6 +190,153 @@ class RunGeoStudy extends Command
         $this->newLine(2);
         $this->info("Dispatched {$dispatched} scan jobs. They will process in the background.");
         $this->info("Run 'php artisan study:run collect' after scans complete to gather results.");
+
+        return Command::SUCCESS;
+    }
+
+    /**
+     * Dispatch recommendation-strength analysis jobs for every completed
+     * CitationCheck in the study. Reuses already-stored ai_response text;
+     * one cheap Haiku classification per check.
+     */
+    private function analyzeStrength(): int
+    {
+        $brandMap = config('ecommerce-brands', []);
+        $limit = (int) $this->option('limit');
+        $delay = (int) $this->option('delay');
+
+        $entries = GeoStudyEntry::where('study_version', $this->version)
+            ->whereNotNull('citation_query_id')
+            ->get();
+
+        if ($entries->isEmpty()) {
+            $this->info("No entries for {$this->version}.");
+            return Command::SUCCESS;
+        }
+
+        // Build (checkId → brandNames) map by joining via citation_query_id → entry.domain
+        $queryIds = $entries->pluck('citation_query_id')->unique();
+        $checksQuery = CitationCheck::whereIn('citation_query_id', $queryIds)
+            ->where('status', CitationCheck::STATUS_COMPLETED)
+            ->whereNull('recommendation_strength');
+        if ($limit > 0) {
+            $checksQuery->limit($limit);
+        }
+        $checks = $checksQuery->get();
+
+        if ($checks->isEmpty()) {
+            $this->info("No unanalyzed completed checks for {$this->version}.");
+            return Command::SUCCESS;
+        }
+
+        $entriesByQueryId = $entries->keyBy('citation_query_id');
+        $this->info("Dispatching strength analysis for {$checks->count()} checks...");
+        $bar = $this->output->createProgressBar($checks->count());
+        $bar->start();
+
+        $i = 0;
+        foreach ($checks as $check) {
+            $entry = $entriesByQueryId->get($check->citation_query_id);
+            $brandNames = $entry ? ($brandMap[$entry->domain] ?? []) : [];
+            AnalyzeRecommendationStrengthJob::dispatch($check->id, $brandNames)
+                ->delay(now()->addSeconds($delay * $i));
+            $i++;
+            $bar->advance();
+        }
+
+        $bar->finish();
+        $this->newLine(2);
+        $this->info("Dispatched {$i} strength-analysis jobs.");
+        return Command::SUCCESS;
+    }
+
+    /**
+     * Run multi-turn conversation citation checks. Groups entries by
+     * (domain, category) — each group becomes one conversation per platform,
+     * with one CitationCheck per (entry, platform) tagged with conversation_id
+     * and turn_index. Stage order is the order of entries in the DB.
+     */
+    private function citeConversation(): int
+    {
+        $admin = $this->resolveUser();
+        if (! $admin) {
+            $this->error('No user found. Use --user=email@example.com to specify.');
+            return Command::FAILURE;
+        }
+        $this->info("Running as: {$admin->name} ({$admin->email})");
+
+        $platforms = explode(',', $this->option('platforms'));
+        $limit = (int) $this->option('limit');
+        $delay = (int) $this->option('delay');
+
+        $entries = GeoStudyEntry::where('study_version', $this->version)
+            ->where('status', 'scanned')
+            ->orderBy('domain')
+            ->orderBy('category')
+            ->orderBy('id') // turn order = id order = config order
+            ->get();
+
+        if ($entries->isEmpty()) {
+            $this->info("No scanned entries ready for conversation checks for {$this->version}.");
+            return Command::SUCCESS;
+        }
+
+        $conversations = $entries->groupBy(fn ($e) => $e->domain.'|'.($e->category ?? '-'));
+        $this->info("Dispatching {$conversations->count()} conversations × ".count($platforms).' platforms = '.($conversations->count() * count($platforms)).' jobs.');
+
+        $bar = $this->output->createProgressBar($conversations->count());
+        $bar->start();
+
+        $jobIndex = 0;
+        foreach ($conversations as $key => $turns) {
+            foreach ($platforms as $platform) {
+                $platform = trim($platform);
+                $conversationId = (string) \Illuminate\Support\Str::uuid();
+                $checkIds = [];
+                $turnIndex = 1;
+
+                foreach ($turns as $entry) {
+                    $citationQuery = $entry->citation_query_id
+                        ? CitationQuery::find($entry->citation_query_id)
+                        : null;
+
+                    if (! $citationQuery) {
+                        $citationQuery = CitationQuery::create([
+                            'user_id' => $admin->id,
+                            'query' => $entry->query,
+                            'domain' => $entry->domain,
+                            'frequency' => CitationQuery::FREQUENCY_MANUAL,
+                            'is_active' => false,
+                        ]);
+                        $entry->update(['citation_query_id' => $citationQuery->id]);
+                    }
+
+                    $check = CitationCheck::create([
+                        'citation_query_id' => $citationQuery->id,
+                        'user_id' => $admin->id,
+                        'platform' => $platform,
+                        'conversation_id' => $conversationId,
+                        'turn_index' => $turnIndex,
+                        'status' => CitationCheck::STATUS_PENDING,
+                    ]);
+                    $checkIds[] = $check->id;
+                    $turnIndex++;
+                }
+
+                // Mark every entry in the conversation as checking_citations,
+                // not just the last one — collect() filters on this status.
+                $turns->each(fn ($e) => $e->update(['status' => 'checking_citations']));
+                RunConversationCitationJob::dispatch($checkIds, $platform)
+                    ->delay(now()->addSeconds($delay * $jobIndex));
+                $jobIndex++;
+            }
+
+            $bar->advance();
+        }
+
+        $bar->finish();
+        $this->newLine(2);
+        $this->info("Dispatched {$jobIndex} conversation jobs. Run 'study:run collect' after checks complete.");
 
         return Command::SUCCESS;
     }

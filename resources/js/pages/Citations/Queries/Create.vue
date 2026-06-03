@@ -43,6 +43,7 @@ const form = useForm({
     query: '',
     domain: '',
     brand: '',
+    brand_aliases: '' as string,
     frequency: 'manual',
     scheduled_platforms: [] as string[],
     monthly_token_budget: null as number | null,
@@ -177,7 +178,21 @@ const getPlatformCost = (platform: string) => {
                                 :disabled="!usage.can_create_query"
                             />
                             <p class="text-xs text-muted-foreground">
-                                We'll also check for brand name mentions.
+                                We'll count mentions of this brand name as a citation, not just URL matches.
+                            </p>
+                        </div>
+
+                        <!-- Brand aliases -->
+                        <div class="space-y-2">
+                            <Label for="brand_aliases">Brand aliases (optional)</Label>
+                            <Input
+                                id="brand_aliases"
+                                v-model="form.brand_aliases"
+                                placeholder="e.g., Hoka One One, Hoka Running, AG1"
+                                :disabled="!usage.can_create_query"
+                            />
+                            <p class="text-xs text-muted-foreground">
+                                Comma-separated alternate names AI assistants might use for your brand. Our v6 ecommerce research found AI shopping responses often mention brands without including URLs — listing aliases here prevents undercounting.
                             </p>
                         </div>
 

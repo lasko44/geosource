@@ -1,0 +1,1818 @@
+{
+    "brands": [
+        {
+            "domain": "atlascoffeeclub.com",
+            "category": "coffee-subscription",
+            "geo_score": 77,
+            "pillars": {
+                "definitions": 0,
+                "structure": 83.3,
+                "authority": 38.6,
+                "machine_readable": 67.5,
+                "answerability": 45,
+                "eeat": 37.5,
+                "citations": 50,
+                "ai_accessibility": 95,
+                "freshness": 45,
+                "readability": 66.7,
+                "question_coverage": 19.7,
+                "multimedia": 35
+            },
+            "stage_rates": {
+                "discovery": 100,
+                "filter": 100,
+                "compare": 100,
+                "purchase": 100
+            },
+            "stage_strengths": {
+                "discovery": 69,
+                "filter": 86.3,
+                "compare": 83.7,
+                "purchase": 64
+            },
+            "survival_rate": 100,
+            "strength_score": 77.1,
+            "top_pick_rate": 90,
+            "recommended_rate": 90,
+            "survived_to_purchase": true,
+            "survived_discovery": true,
+            "survived_all_stages": true
+        },
+        {
+            "domain": "dollarshaveclub.com",
+            "category": "razors",
+            "geo_score": 74,
+            "pillars": {
+                "definitions": 0,
+                "structure": 100,
+                "authority": 38.6,
+                "machine_readable": 80,
+                "answerability": 35,
+                "eeat": 37.5,
+                "citations": 50,
+                "ai_accessibility": 95,
+                "freshness": 20,
+                "readability": 61.1,
+                "question_coverage": 17.3,
+                "multimedia": 40
+            },
+            "stage_rates": {
+                "discovery": 100,
+                "filter": 66.67,
+                "compare": 100,
+                "purchase": 66.67
+            },
+            "stage_strengths": {
+                "discovery": 83.7,
+                "filter": 25.7,
+                "compare": 66.3,
+                "purchase": 33.3
+            },
+            "survival_rate": 83.3,
+            "strength_score": 52.3,
+            "top_pick_rate": 58.3,
+            "recommended_rate": 50,
+            "survived_to_purchase": true,
+            "survived_discovery": true,
+            "survived_all_stages": true
+        },
+        {
+            "domain": "cerave.com",
+            "category": "minimalist-skincare",
+            "geo_score": 100,
+            "pillars": {
+                "definitions": 50,
+                "structure": 75,
+                "authority": 52.3,
+                "machine_readable": 62.5,
+                "answerability": 82.5,
+                "eeat": 77.5,
+                "citations": 55,
+                "ai_accessibility": 95,
+                "freshness": 0,
+                "readability": 47.2,
+                "question_coverage": 49.1,
+                "multimedia": 60
+            },
+            "stage_rates": {
+                "discovery": 100,
+                "filter": 33.33,
+                "compare": 100,
+                "purchase": 66.67
+            },
+            "stage_strengths": {
+                "discovery": 85,
+                "filter": 23.7,
+                "compare": 88.3,
+                "purchase": 21.7
+            },
+            "survival_rate": 75,
+            "strength_score": 54.7,
+            "top_pick_rate": 58.3,
+            "recommended_rate": 58.3,
+            "survived_to_purchase": true,
+            "survived_discovery": true,
+            "survived_all_stages": true
+        },
+        {
+            "domain": "chewy.com",
+            "category": "pet-supplies",
+            "geo_score": 14,
+            "pillars": {
+                "definitions": 0,
+                "structure": 8.3,
+                "authority": 0,
+                "machine_readable": 5,
+                "answerability": 20,
+                "eeat": 0,
+                "citations": 0,
+                "ai_accessibility": 85,
+                "freshness": 0,
+                "readability": 13.9,
+                "question_coverage": 0,
+                "multimedia": 0
+            },
+            "stage_rates": {
+                "discovery": 100,
+                "filter": 33.33,
+                "compare": 66.67,
+                "purchase": 100
+            },
+            "stage_strengths": {
+                "discovery": 74.7,
+                "filter": 28.3,
+                "compare": 30.3,
+                "purchase": 60
+            },
+            "survival_rate": 75,
+            "strength_score": 48.3,
+            "top_pick_rate": 41.7,
+            "recommended_rate": 50,
+            "survived_to_purchase": true,
+            "survived_discovery": true,
+            "survived_all_stages": true
+        },
+        {
+            "domain": "drinktrade.com",
+            "category": "coffee-subscription",
+            "geo_score": 93,
+            "pillars": {
+                "definitions": 10,
+                "structure": 75,
+                "authority": 36.4,
+                "machine_readable": 75,
+                "answerability": 65,
+                "eeat": 45,
+                "citations": 50,
+                "ai_accessibility": 95,
+                "freshness": 50,
+                "readability": 91.7,
+                "question_coverage": 37,
+                "multimedia": 60
+            },
+            "stage_rates": {
+                "discovery": 100,
+                "filter": 33.33,
+                "compare": 100,
+                "purchase": 66.67
+            },
+            "stage_strengths": {
+                "discovery": 91.7,
+                "filter": 47.7,
+                "compare": 85,
+                "purchase": 29
+            },
+            "survival_rate": 75,
+            "strength_score": 63.3,
+            "top_pick_rate": 58.3,
+            "recommended_rate": 75,
+            "survived_to_purchase": true,
+            "survived_discovery": true,
+            "survived_all_stages": true
+        },
+        {
+            "domain": "hellofresh.com",
+            "category": "meal-kits",
+            "geo_score": 61,
+            "pillars": {
+                "definitions": 0,
+                "structure": 83.3,
+                "authority": 15.9,
+                "machine_readable": 30,
+                "answerability": 27.5,
+                "eeat": 52.5,
+                "citations": 45,
+                "ai_accessibility": 95,
+                "freshness": 62.5,
+                "readability": 33.3,
+                "question_coverage": 43.8,
+                "multimedia": 30
+            },
+            "stage_rates": {
+                "discovery": 66.67,
+                "filter": 100,
+                "compare": 33.33,
+                "purchase": 100
+            },
+            "stage_strengths": {
+                "discovery": 56.7,
+                "filter": 91.7,
+                "compare": 9.7,
+                "purchase": 83.3
+            },
+            "survival_rate": 75,
+            "strength_score": 60.3,
+            "top_pick_rate": 58.3,
+            "recommended_rate": 66.7,
+            "survived_to_purchase": true,
+            "survived_discovery": true,
+            "survived_all_stages": true
+        },
+        {
+            "domain": "homechef.com",
+            "category": "meal-kits",
+            "geo_score": 106,
+            "pillars": {
+                "definitions": 50,
+                "structure": 83.3,
+                "authority": 52.3,
+                "machine_readable": 62.5,
+                "answerability": 77.5,
+                "eeat": 42.5,
+                "citations": 60,
+                "ai_accessibility": 95,
+                "freshness": 15,
+                "readability": 86.1,
+                "question_coverage": 71.1,
+                "multimedia": 35
+            },
+            "stage_rates": {
+                "discovery": 100,
+                "filter": 33.33,
+                "compare": 66.67,
+                "purchase": 66.67
+            },
+            "stage_strengths": {
+                "discovery": 35.3,
+                "filter": 25.7,
+                "compare": 21.7,
+                "purchase": 49.3
+            },
+            "survival_rate": 66.7,
+            "strength_score": 33,
+            "top_pick_rate": 25,
+            "recommended_rate": 33.3,
+            "survived_to_purchase": true,
+            "survived_discovery": true,
+            "survived_all_stages": true
+        },
+        {
+            "domain": "hoka.com",
+            "category": "running-shoes",
+            "geo_score": 25,
+            "pillars": {
+                "definitions": 0,
+                "structure": 8.3,
+                "authority": 0,
+                "machine_readable": 5,
+                "answerability": 20,
+                "eeat": 7.5,
+                "citations": 12.5,
+                "ai_accessibility": 95,
+                "freshness": 0,
+                "readability": 50,
+                "question_coverage": 0,
+                "multimedia": 0
+            },
+            "stage_rates": {
+                "discovery": 100,
+                "filter": 33.33,
+                "compare": 66.67,
+                "purchase": 66.67
+            },
+            "stage_strengths": {
+                "discovery": 40.3,
+                "filter": 23.3,
+                "compare": 32,
+                "purchase": 51.3
+            },
+            "survival_rate": 66.7,
+            "strength_score": 36.8,
+            "top_pick_rate": 41.7,
+            "recommended_rate": 41.7,
+            "survived_to_purchase": true,
+            "survived_discovery": true,
+            "survived_all_stages": true
+        },
+        {
+            "domain": "saucony.com",
+            "category": "running-shoes",
+            "geo_score": 97,
+            "pillars": {
+                "definitions": 50,
+                "structure": 75,
+                "authority": 40.9,
+                "machine_readable": 65,
+                "answerability": 60,
+                "eeat": 32.5,
+                "citations": 60,
+                "ai_accessibility": 95,
+                "freshness": 45,
+                "readability": 80.6,
+                "question_coverage": 49.1,
+                "multimedia": 40
+            },
+            "stage_rates": {
+                "discovery": 66.67,
+                "filter": 100,
+                "compare": 100,
+                "purchase": 0
+            },
+            "stage_strengths": {
+                "discovery": 25,
+                "filter": 65.3,
+                "compare": 46,
+                "purchase": 0
+            },
+            "survival_rate": 66.7,
+            "strength_score": 34.1,
+            "top_pick_rate": 25,
+            "recommended_rate": 50,
+            "survived_to_purchase": false,
+            "survived_discovery": true,
+            "survived_all_stages": false
+        },
+        {
+            "domain": "burrow.com",
+            "category": "dtc-furniture",
+            "geo_score": 55,
+            "pillars": {
+                "definitions": 0,
+                "structure": 75,
+                "authority": 15.9,
+                "machine_readable": 35,
+                "answerability": 27.5,
+                "eeat": 30,
+                "citations": 55,
+                "ai_accessibility": 95,
+                "freshness": 35,
+                "readability": 27.8,
+                "question_coverage": 9.4,
+                "multimedia": 60
+            },
+            "stage_rates": {
+                "discovery": 100,
+                "filter": 33.33,
+                "compare": 100,
+                "purchase": 0
+            },
+            "stage_strengths": {
+                "discovery": 65.7,
+                "filter": 23.7,
+                "compare": 82.3,
+                "purchase": 0
+            },
+            "survival_rate": 58.3,
+            "strength_score": 42.9,
+            "top_pick_rate": 33.3,
+            "recommended_rate": 50,
+            "survived_to_purchase": false,
+            "survived_discovery": true,
+            "survived_all_stages": false
+        },
+        {
+            "domain": "brooklinen.com",
+            "category": "bedsheets",
+            "geo_score": 59,
+            "pillars": {
+                "definitions": 0,
+                "structure": 83.3,
+                "authority": 15.9,
+                "machine_readable": 75,
+                "answerability": 27.5,
+                "eeat": 50,
+                "citations": 45,
+                "ai_accessibility": 95,
+                "freshness": 15,
+                "readability": 33.3,
+                "question_coverage": 10,
+                "multimedia": 55
+            },
+            "stage_rates": {
+                "discovery": 0,
+                "filter": 100,
+                "compare": 100,
+                "purchase": 33.33
+            },
+            "stage_strengths": {
+                "discovery": 0,
+                "filter": 70.7,
+                "compare": 71.3,
+                "purchase": 27.3
+            },
+            "survival_rate": 58.3,
+            "strength_score": 42.3,
+            "top_pick_rate": 33.3,
+            "recommended_rate": 58.3,
+            "survived_to_purchase": true,
+            "survived_discovery": false,
+            "survived_all_stages": false
+        },
+        {
+            "domain": "bollandbranch.com",
+            "category": "bedsheets",
+            "geo_score": 62,
+            "pillars": {
+                "definitions": 0,
+                "structure": 75,
+                "authority": 31.8,
+                "machine_readable": 50,
+                "answerability": 35,
+                "eeat": 30,
+                "citations": 45,
+                "ai_accessibility": 95,
+                "freshness": 35,
+                "readability": 30.6,
+                "question_coverage": 22,
+                "multimedia": 50
+            },
+            "stage_rates": {
+                "discovery": 66.67,
+                "filter": 33.33,
+                "compare": 100,
+                "purchase": 33.33
+            },
+            "stage_strengths": {
+                "discovery": 45.3,
+                "filter": 23.7,
+                "compare": 50.3,
+                "purchase": 25.7
+            },
+            "survival_rate": 58.3,
+            "strength_score": 36.3,
+            "top_pick_rate": 16.7,
+            "recommended_rate": 50,
+            "survived_to_purchase": true,
+            "survived_discovery": true,
+            "survived_all_stages": true
+        },
+        {
+            "domain": "helixsleep.com",
+            "category": "memory-foam-mattresses",
+            "geo_score": 20,
+            "pillars": {
+                "definitions": 0,
+                "structure": 8.3,
+                "authority": 0,
+                "machine_readable": 5,
+                "answerability": 27.5,
+                "eeat": 0,
+                "citations": 12.5,
+                "ai_accessibility": 72.5,
+                "freshness": 0,
+                "readability": 22.2,
+                "question_coverage": 0,
+                "multimedia": 0
+            },
+            "stage_rates": {
+                "discovery": 100,
+                "filter": 33.33,
+                "compare": 66.67,
+                "purchase": 0
+            },
+            "stage_strengths": {
+                "discovery": 84,
+                "filter": 28.3,
+                "compare": 48.7,
+                "purchase": 0
+            },
+            "survival_rate": 50,
+            "strength_score": 40.3,
+            "top_pick_rate": 50,
+            "recommended_rate": 50,
+            "survived_to_purchase": false,
+            "survived_discovery": true,
+            "survived_all_stages": false
+        },
+        {
+            "domain": "everlane.com",
+            "category": "sustainable-apparel",
+            "geo_score": 77,
+            "pillars": {
+                "definitions": 0,
+                "structure": 62.5,
+                "authority": 38.6,
+                "machine_readable": 75,
+                "answerability": 65,
+                "eeat": 22.5,
+                "citations": 45,
+                "ai_accessibility": 95,
+                "freshness": 35,
+                "readability": 52.8,
+                "question_coverage": 41.4,
+                "multimedia": 30
+            },
+            "stage_rates": {
+                "discovery": 0,
+                "filter": 0,
+                "compare": 100,
+                "purchase": 100
+            },
+            "stage_strengths": {
+                "discovery": 0,
+                "filter": 0,
+                "compare": 65.3,
+                "purchase": 41.3
+            },
+            "survival_rate": 50,
+            "strength_score": 26.7,
+            "top_pick_rate": 25,
+            "recommended_rate": 41.7,
+            "survived_to_purchase": true,
+            "survived_discovery": false,
+            "survived_all_stages": false
+        },
+        {
+            "domain": "cetaphil.com",
+            "category": "minimalist-skincare",
+            "geo_score": 83,
+            "pillars": {
+                "definitions": 10,
+                "structure": 91.7,
+                "authority": 52.3,
+                "machine_readable": 65,
+                "answerability": 67.5,
+                "eeat": 25,
+                "citations": 50,
+                "ai_accessibility": 95,
+                "freshness": 7.5,
+                "readability": 41.7,
+                "question_coverage": 36.7,
+                "multimedia": 65
+            },
+            "stage_rates": {
+                "discovery": 100,
+                "filter": 0,
+                "compare": 66.67,
+                "purchase": 33.33
+            },
+            "stage_strengths": {
+                "discovery": 64.3,
+                "filter": 0,
+                "compare": 39.7,
+                "purchase": 21.3
+            },
+            "survival_rate": 50,
+            "strength_score": 31.3,
+            "top_pick_rate": 33.3,
+            "recommended_rate": 41.7,
+            "survived_to_purchase": true,
+            "survived_discovery": true,
+            "survived_all_stages": false
+        },
+        {
+            "domain": "theordinary.com",
+            "category": "minimalist-skincare",
+            "geo_score": 87,
+            "pillars": {
+                "definitions": 60,
+                "structure": 66.7,
+                "authority": 40.9,
+                "machine_readable": 30,
+                "answerability": 55,
+                "eeat": 37.5,
+                "citations": 50,
+                "ai_accessibility": 95,
+                "freshness": 27.5,
+                "readability": 66.7,
+                "question_coverage": 31.4,
+                "multimedia": 55
+            },
+            "stage_rates": {
+                "discovery": 33.33,
+                "filter": 33.33,
+                "compare": 100,
+                "purchase": 33.33
+            },
+            "stage_strengths": {
+                "discovery": 7.7,
+                "filter": 20.3,
+                "compare": 56.7,
+                "purchase": 23.3
+            },
+            "survival_rate": 50,
+            "strength_score": 27,
+            "top_pick_rate": 8.3,
+            "recommended_rate": 33.3,
+            "survived_to_purchase": true,
+            "survived_discovery": true,
+            "survived_all_stages": true
+        },
+        {
+            "domain": "sunbasket.com",
+            "category": "meal-kits",
+            "geo_score": 84,
+            "pillars": {
+                "definitions": 0,
+                "structure": 100,
+                "authority": 63.6,
+                "machine_readable": 65,
+                "answerability": 60,
+                "eeat": 25,
+                "citations": 42.5,
+                "ai_accessibility": 95,
+                "freshness": 32.5,
+                "readability": 47.2,
+                "question_coverage": 34.4,
+                "multimedia": 55
+            },
+            "stage_rates": {
+                "discovery": 100,
+                "filter": 33.33,
+                "compare": 66.67,
+                "purchase": 0
+            },
+            "stage_strengths": {
+                "discovery": 56,
+                "filter": 6.7,
+                "compare": 8.7,
+                "purchase": 0
+            },
+            "survival_rate": 50,
+            "strength_score": 17.8,
+            "top_pick_rate": 8.3,
+            "recommended_rate": 16.7,
+            "survived_to_purchase": false,
+            "survived_discovery": true,
+            "survived_all_stages": false
+        },
+        {
+            "domain": "saatva.com",
+            "category": "memory-foam-mattresses",
+            "geo_score": 91,
+            "pillars": {
+                "definitions": 70,
+                "structure": 100,
+                "authority": 43.2,
+                "machine_readable": 47.5,
+                "answerability": 72.5,
+                "eeat": 42.5,
+                "citations": 32.5,
+                "ai_accessibility": 95,
+                "freshness": 0,
+                "readability": 47.2,
+                "question_coverage": 22.3,
+                "multimedia": 60
+            },
+            "stage_rates": {
+                "discovery": 100,
+                "filter": 33.33,
+                "compare": 33.33,
+                "purchase": 0
+            },
+            "stage_strengths": {
+                "discovery": 51.7,
+                "filter": 20.3,
+                "compare": 6.7,
+                "purchase": 0
+            },
+            "survival_rate": 41.7,
+            "strength_score": 19.7,
+            "top_pick_rate": 8.3,
+            "recommended_rate": 25,
+            "survived_to_purchase": false,
+            "survived_discovery": true,
+            "survived_all_stages": false
+        },
+        {
+            "domain": "patagonia.com",
+            "category": "sustainable-apparel",
+            "geo_score": 80,
+            "pillars": {
+                "definitions": 0,
+                "structure": 100,
+                "authority": 52.3,
+                "machine_readable": 70,
+                "answerability": 60,
+                "eeat": 25,
+                "citations": 45,
+                "ai_accessibility": 85,
+                "freshness": 15,
+                "readability": 47.2,
+                "question_coverage": 39.7,
+                "multimedia": 55
+            },
+            "stage_rates": {
+                "discovery": 100,
+                "filter": 0,
+                "compare": 33.33,
+                "purchase": 33.33
+            },
+            "stage_strengths": {
+                "discovery": 79.7,
+                "filter": 0,
+                "compare": 0,
+                "purchase": 0
+            },
+            "survival_rate": 41.7,
+            "strength_score": 19.9,
+            "top_pick_rate": 25,
+            "recommended_rate": 25,
+            "survived_to_purchase": true,
+            "survived_discovery": true,
+            "survived_all_stages": false
+        },
+        {
+            "domain": "thereformation.com",
+            "category": "sustainable-apparel",
+            "geo_score": 78,
+            "pillars": {
+                "definitions": 10,
+                "structure": 100,
+                "authority": 45.5,
+                "machine_readable": 65,
+                "answerability": 45,
+                "eeat": 37.5,
+                "citations": 50,
+                "ai_accessibility": 95,
+                "freshness": 15,
+                "readability": 52.8,
+                "question_coverage": 31.7,
+                "multimedia": 40
+            },
+            "stage_rates": {
+                "discovery": 33.33,
+                "filter": 66.67,
+                "compare": 33.33,
+                "purchase": 33.33
+            },
+            "stage_strengths": {
+                "discovery": 25.7,
+                "filter": 27,
+                "compare": 0,
+                "purchase": 0
+            },
+            "survival_rate": 41.7,
+            "strength_score": 13.2,
+            "top_pick_rate": 8.3,
+            "recommended_rate": 16.7,
+            "survived_to_purchase": true,
+            "survived_discovery": true,
+            "survived_all_stages": true
+        },
+        {
+            "domain": "harrys.com",
+            "category": "razors",
+            "geo_score": 53,
+            "pillars": {
+                "definitions": 0,
+                "structure": 75,
+                "authority": 15.9,
+                "machine_readable": 30,
+                "answerability": 27.5,
+                "eeat": 25,
+                "citations": 37.5,
+                "ai_accessibility": 95,
+                "freshness": 45,
+                "readability": 27.8,
+                "question_coverage": 36.7,
+                "multimedia": 50
+            },
+            "stage_rates": {
+                "discovery": 66.67,
+                "filter": 33.33,
+                "compare": 66.67,
+                "purchase": 0
+            },
+            "stage_strengths": {
+                "discovery": 85,
+                "filter": 44.7,
+                "compare": 64.7,
+                "purchase": 6.7
+            },
+            "survival_rate": 41.7,
+            "strength_score": 50.3,
+            "top_pick_rate": 50,
+            "recommended_rate": 58.3,
+            "survived_to_purchase": false,
+            "survived_discovery": true,
+            "survived_all_stages": false
+        },
+        {
+            "domain": "blueapron.com",
+            "category": "meal-kits",
+            "geo_score": 64,
+            "pillars": {
+                "definitions": 0,
+                "structure": 75,
+                "authority": 31.8,
+                "machine_readable": 27.5,
+                "answerability": 52.5,
+                "eeat": 17.5,
+                "citations": 42.5,
+                "ai_accessibility": 78.8,
+                "freshness": 45,
+                "readability": 41.7,
+                "question_coverage": 4.7,
+                "multimedia": 50
+            },
+            "stage_rates": {
+                "discovery": 100,
+                "filter": 0,
+                "compare": 33.33,
+                "purchase": 0
+            },
+            "stage_strengths": {
+                "discovery": 69.7,
+                "filter": 0,
+                "compare": 6.7,
+                "purchase": 0
+            },
+            "survival_rate": 33.3,
+            "strength_score": 19.1,
+            "top_pick_rate": 16.7,
+            "recommended_rate": 16.7,
+            "survived_to_purchase": false,
+            "survived_discovery": true,
+            "survived_all_stages": false
+        },
+        {
+            "domain": "gillette.com",
+            "category": "razors",
+            "geo_score": 87,
+            "pillars": {
+                "definitions": 0,
+                "structure": 100,
+                "authority": 68.2,
+                "machine_readable": 67.5,
+                "answerability": 50,
+                "eeat": 50,
+                "citations": 57.5,
+                "ai_accessibility": 95,
+                "freshness": 45,
+                "readability": 52.8,
+                "question_coverage": 15,
+                "multimedia": 40
+            },
+            "stage_rates": {
+                "discovery": 100,
+                "filter": 0,
+                "compare": 33.33,
+                "purchase": 0
+            },
+            "stage_strengths": {
+                "discovery": 29.7,
+                "filter": 0,
+                "compare": 0,
+                "purchase": 0
+            },
+            "survival_rate": 33.3,
+            "strength_score": 7.4,
+            "top_pick_rate": 0,
+            "recommended_rate": 0,
+            "survived_to_purchase": false,
+            "survived_discovery": true,
+            "survived_all_stages": false
+        },
+        {
+            "domain": "humnutrition.com",
+            "category": "wellness-supplements",
+            "geo_score": 83,
+            "pillars": {
+                "definitions": 0,
+                "structure": 83.3,
+                "authority": 59.1,
+                "machine_readable": 57.5,
+                "answerability": 65,
+                "eeat": 50,
+                "citations": 50,
+                "ai_accessibility": 85,
+                "freshness": 47.5,
+                "readability": 41.7,
+                "question_coverage": 10,
+                "multimedia": 45
+            },
+            "stage_rates": {
+                "discovery": 0,
+                "filter": 100,
+                "compare": 0,
+                "purchase": 33.33
+            },
+            "stage_strengths": {
+                "discovery": 0,
+                "filter": 85,
+                "compare": 0,
+                "purchase": 10.7
+            },
+            "survival_rate": 33.3,
+            "strength_score": 23.9,
+            "top_pick_rate": 25,
+            "recommended_rate": 25,
+            "survived_to_purchase": true,
+            "survived_discovery": false,
+            "survived_all_stages": false
+        },
+        {
+            "domain": "joybird.com",
+            "category": "dtc-furniture",
+            "geo_score": 44,
+            "pillars": {
+                "definitions": 0,
+                "structure": 91.7,
+                "authority": 15.9,
+                "machine_readable": 15.8,
+                "answerability": 27.5,
+                "eeat": 20,
+                "citations": 32.5,
+                "ai_accessibility": 95,
+                "freshness": 0,
+                "readability": 25,
+                "question_coverage": 10,
+                "multimedia": 30
+            },
+            "stage_rates": {
+                "discovery": 0,
+                "filter": 0,
+                "compare": 66.67,
+                "purchase": 33.33
+            },
+            "stage_strengths": {
+                "discovery": 0,
+                "filter": 0,
+                "compare": 42.3,
+                "purchase": 0
+            },
+            "survival_rate": 25,
+            "strength_score": 10.6,
+            "top_pick_rate": 8.3,
+            "recommended_rate": 16.7,
+            "survived_to_purchase": true,
+            "survived_discovery": false,
+            "survived_all_stages": false
+        },
+        {
+            "domain": "purple.com",
+            "category": "memory-foam-mattresses",
+            "geo_score": 101,
+            "pillars": {
+                "definitions": 30,
+                "structure": 91.7,
+                "authority": 61.4,
+                "machine_readable": 55,
+                "answerability": 75,
+                "eeat": 50,
+                "citations": 55,
+                "ai_accessibility": 95,
+                "freshness": 20,
+                "readability": 77.8,
+                "question_coverage": 36.7,
+                "multimedia": 65
+            },
+            "stage_rates": {
+                "discovery": 0,
+                "filter": 100,
+                "compare": 0,
+                "purchase": 0
+            },
+            "stage_strengths": {
+                "discovery": 0,
+                "filter": 7.7,
+                "compare": 0,
+                "purchase": 0
+            },
+            "survival_rate": 25,
+            "strength_score": 1.9,
+            "top_pick_rate": 0,
+            "recommended_rate": 0,
+            "survived_to_purchase": false,
+            "survived_discovery": false,
+            "survived_all_stages": false
+        },
+        {
+            "domain": "bark.co",
+            "category": "pet-supplies",
+            "geo_score": 115,
+            "pillars": {
+                "definitions": 70,
+                "structure": 75,
+                "authority": 63.6,
+                "machine_readable": 85,
+                "answerability": 87.5,
+                "eeat": 57.5,
+                "citations": 50,
+                "ai_accessibility": 95,
+                "freshness": 20,
+                "readability": 86.1,
+                "question_coverage": 39.1,
+                "multimedia": 40
+            },
+            "stage_rates": {
+                "discovery": 0,
+                "filter": 0,
+                "compare": 0,
+                "purchase": 100
+            },
+            "stage_strengths": {
+                "discovery": 0,
+                "filter": 0,
+                "compare": 0,
+                "purchase": 88
+            },
+            "survival_rate": 25,
+            "strength_score": 22,
+            "top_pick_rate": 25,
+            "recommended_rate": 25,
+            "survived_to_purchase": true,
+            "survived_discovery": false,
+            "survived_all_stages": false
+        },
+        {
+            "domain": "ritual.com",
+            "category": "wellness-supplements",
+            "geo_score": 94,
+            "pillars": {
+                "definitions": 10,
+                "structure": 66.7,
+                "authority": 36.4,
+                "machine_readable": 75,
+                "answerability": 65,
+                "eeat": 42.5,
+                "citations": 62.5,
+                "ai_accessibility": 95,
+                "freshness": 70,
+                "readability": 75,
+                "question_coverage": 46.7,
+                "multimedia": 60
+            },
+            "stage_rates": {
+                "discovery": 0,
+                "filter": 0,
+                "compare": 100,
+                "purchase": 0
+            },
+            "stage_strengths": {
+                "discovery": 0,
+                "filter": 47.3,
+                "compare": 48.3,
+                "purchase": 6.7
+            },
+            "survival_rate": 25,
+            "strength_score": 25.6,
+            "top_pick_rate": 41.7,
+            "recommended_rate": 16.7,
+            "survived_to_purchase": false,
+            "survived_discovery": false,
+            "survived_all_stages": false
+        },
+        {
+            "domain": "parachutehome.com",
+            "category": "bedsheets",
+            "geo_score": 85,
+            "pillars": {
+                "definitions": 0,
+                "structure": 83.3,
+                "authority": 43.2,
+                "machine_readable": 40,
+                "answerability": 60,
+                "eeat": 50,
+                "citations": 45,
+                "ai_accessibility": 95,
+                "freshness": 45,
+                "readability": 88.9,
+                "question_coverage": 25,
+                "multimedia": 35
+            },
+            "stage_rates": {
+                "discovery": 0,
+                "filter": 0,
+                "compare": 0,
+                "purchase": 0
+            },
+            "stage_strengths": {
+                "discovery": 0,
+                "filter": 68,
+                "compare": 18.3,
+                "purchase": 0
+            },
+            "survival_rate": 0,
+            "strength_score": 21.6,
+            "top_pick_rate": 16.7,
+            "recommended_rate": 33.3,
+            "survived_to_purchase": false,
+            "survived_discovery": false,
+            "survived_all_stages": false
+        },
+        {
+            "domain": "nectarsleep.com",
+            "category": "memory-foam-mattresses",
+            "geo_score": 69,
+            "pillars": {
+                "definitions": 0,
+                "structure": 75,
+                "authority": 47.7,
+                "machine_readable": 45,
+                "answerability": 60,
+                "eeat": 37.5,
+                "citations": 42.5,
+                "ai_accessibility": 95,
+                "freshness": 15,
+                "readability": 30.6,
+                "question_coverage": 0,
+                "multimedia": 50
+            },
+            "stage_rates": {
+                "discovery": 0,
+                "filter": 0,
+                "compare": 0,
+                "purchase": 0
+            },
+            "stage_strengths": {
+                "discovery": 47,
+                "filter": 82,
+                "compare": 56.7,
+                "purchase": 77.3
+            },
+            "survival_rate": 0,
+            "strength_score": 65.8,
+            "top_pick_rate": 66.7,
+            "recommended_rate": 83.3,
+            "survived_to_purchase": false,
+            "survived_discovery": false,
+            "survived_all_stages": false
+        },
+        {
+            "domain": "liingoeyewear.com",
+            "category": "eyewear",
+            "geo_score": 63,
+            "pillars": {
+                "definitions": 0,
+                "structure": 75,
+                "authority": 31.8,
+                "machine_readable": 47.5,
+                "answerability": 40,
+                "eeat": 45,
+                "citations": 55,
+                "ai_accessibility": 72.5,
+                "freshness": 15,
+                "readability": 36.1,
+                "question_coverage": 7,
+                "multimedia": 45
+            },
+            "stage_rates": {
+                "discovery": 0,
+                "filter": 0,
+                "compare": 0,
+                "purchase": 0
+            },
+            "stage_strengths": {
+                "discovery": 0,
+                "filter": 0,
+                "compare": 0,
+                "purchase": 0
+            },
+            "survival_rate": 0,
+            "strength_score": 0,
+            "top_pick_rate": 0,
+            "recommended_rate": 0,
+            "survived_to_purchase": false,
+            "survived_discovery": false,
+            "survived_all_stages": false
+        },
+        {
+            "domain": "on.com",
+            "category": "running-shoes",
+            "geo_score": 69,
+            "pillars": {
+                "definitions": 0,
+                "structure": 91.7,
+                "authority": 40.9,
+                "machine_readable": 55,
+                "answerability": 47.5,
+                "eeat": 17.5,
+                "citations": 50,
+                "ai_accessibility": 85,
+                "freshness": 40,
+                "readability": 25,
+                "question_coverage": 36.4,
+                "multimedia": 30
+            },
+            "stage_rates": {
+                "discovery": 0,
+                "filter": 0,
+                "compare": 0,
+                "purchase": 0
+            },
+            "stage_strengths": {
+                "discovery": 0,
+                "filter": 0,
+                "compare": 0,
+                "purchase": 0
+            },
+            "survival_rate": 0,
+            "strength_score": 0,
+            "top_pick_rate": 0,
+            "recommended_rate": 0,
+            "survived_to_purchase": false,
+            "survived_discovery": false,
+            "survived_all_stages": false
+        },
+        {
+            "domain": "cuyana.com",
+            "category": "sustainable-apparel",
+            "geo_score": 87,
+            "pillars": {
+                "definitions": 40,
+                "structure": 100,
+                "authority": 50,
+                "machine_readable": 80,
+                "answerability": 60,
+                "eeat": 25,
+                "citations": 45,
+                "ai_accessibility": 95,
+                "freshness": 0,
+                "readability": 52.8,
+                "question_coverage": 27.3,
+                "multimedia": 50
+            },
+            "stage_rates": {
+                "discovery": 0,
+                "filter": 0,
+                "compare": 0,
+                "purchase": 0
+            },
+            "stage_strengths": {
+                "discovery": 0,
+                "filter": 0,
+                "compare": 0,
+                "purchase": 0
+            },
+            "survival_rate": 0,
+            "strength_score": 0,
+            "top_pick_rate": 0,
+            "recommended_rate": 0,
+            "survived_to_purchase": false,
+            "survived_discovery": false,
+            "survived_all_stages": false
+        },
+        {
+            "domain": "bluebottlecoffee.com",
+            "category": "coffee-subscription",
+            "geo_score": 57,
+            "pillars": {
+                "definitions": 0,
+                "structure": 83.3,
+                "authority": 15.9,
+                "machine_readable": 22.5,
+                "answerability": 27.5,
+                "eeat": 50,
+                "citations": 45,
+                "ai_accessibility": 72.5,
+                "freshness": 50,
+                "readability": 27.8,
+                "question_coverage": 39.1,
+                "multimedia": 50
+            },
+            "stage_rates": {
+                "discovery": 0,
+                "filter": 0,
+                "compare": 0,
+                "purchase": 0
+            },
+            "stage_strengths": {
+                "discovery": null,
+                "filter": 0,
+                "compare": 0,
+                "purchase": 0
+            },
+            "survival_rate": 0,
+            "strength_score": 0,
+            "top_pick_rate": 0,
+            "recommended_rate": 0,
+            "survived_to_purchase": false,
+            "survived_discovery": false,
+            "survived_all_stages": false
+        },
+        {
+            "domain": "article.com",
+            "category": "dtc-furniture",
+            "geo_score": 63,
+            "pillars": {
+                "definitions": 0,
+                "structure": 75,
+                "authority": 31.8,
+                "machine_readable": 70,
+                "answerability": 35,
+                "eeat": 40,
+                "citations": 42.5,
+                "ai_accessibility": 95,
+                "freshness": 45,
+                "readability": 30.6,
+                "question_coverage": 0,
+                "multimedia": 50
+            },
+            "stage_rates": {
+                "discovery": 0,
+                "filter": 0,
+                "compare": 0,
+                "purchase": 0
+            },
+            "stage_strengths": {
+                "discovery": 55.3,
+                "filter": 0,
+                "compare": 25.7,
+                "purchase": 0
+            },
+            "survival_rate": 0,
+            "strength_score": 20.3,
+            "top_pick_rate": 16.7,
+            "recommended_rate": 25,
+            "survived_to_purchase": false,
+            "survived_discovery": false,
+            "survived_all_stages": false
+        },
+        {
+            "domain": "athleticgreens.com",
+            "category": "wellness-supplements",
+            "geo_score": 108,
+            "pillars": {
+                "definitions": 40,
+                "structure": 75,
+                "authority": 56.8,
+                "machine_readable": 70,
+                "answerability": 87.5,
+                "eeat": 77.5,
+                "citations": 55,
+                "ai_accessibility": 85,
+                "freshness": 55,
+                "readability": 55.6,
+                "question_coverage": 41.1,
+                "multimedia": 75
+            },
+            "stage_rates": {
+                "discovery": 0,
+                "filter": 0,
+                "compare": 0,
+                "purchase": 0
+            },
+            "stage_strengths": {
+                "discovery": 0,
+                "filter": 0,
+                "compare": 0,
+                "purchase": 0
+            },
+            "survival_rate": 0,
+            "strength_score": 0,
+            "top_pick_rate": 0,
+            "recommended_rate": 0,
+            "survived_to_purchase": false,
+            "survived_discovery": false,
+            "survived_all_stages": false
+        },
+        {
+            "domain": "floydhome.com",
+            "category": "dtc-furniture",
+            "geo_score": 79,
+            "pillars": {
+                "definitions": 0,
+                "structure": 83.3,
+                "authority": 56.8,
+                "machine_readable": 75,
+                "answerability": 60,
+                "eeat": 37.5,
+                "citations": 32.5,
+                "ai_accessibility": 95,
+                "freshness": 0,
+                "readability": 72.2,
+                "question_coverage": 2.3,
+                "multimedia": 55
+            },
+            "stage_rates": {
+                "discovery": 0,
+                "filter": 0,
+                "compare": 0,
+                "purchase": 0
+            },
+            "stage_strengths": {
+                "discovery": 63,
+                "filter": 0,
+                "compare": 27,
+                "purchase": 0
+            },
+            "survival_rate": 0,
+            "strength_score": 22.5,
+            "top_pick_rate": 25,
+            "recommended_rate": 25,
+            "survived_to_purchase": false,
+            "survived_discovery": false,
+            "survived_all_stages": false
+        },
+        {
+            "domain": "allbirds.com",
+            "category": "running-shoes",
+            "geo_score": 112,
+            "pillars": {
+                "definitions": 100,
+                "structure": 83.3,
+                "authority": 54.5,
+                "machine_readable": 40,
+                "answerability": 87.5,
+                "eeat": 37.5,
+                "citations": 50,
+                "ai_accessibility": 95,
+                "freshness": 55,
+                "readability": 58.3,
+                "question_coverage": 44.1,
+                "multimedia": 35
+            },
+            "stage_rates": {
+                "discovery": 0,
+                "filter": 0,
+                "compare": 0,
+                "purchase": 0
+            },
+            "stage_strengths": {
+                "discovery": 0,
+                "filter": 0,
+                "compare": 0,
+                "purchase": 0
+            },
+            "survival_rate": 0,
+            "strength_score": 0,
+            "top_pick_rate": 0,
+            "recommended_rate": 0,
+            "survived_to_purchase": false,
+            "survived_discovery": false,
+            "survived_all_stages": false
+        },
+        {
+            "domain": "casper.com",
+            "category": "memory-foam-mattresses",
+            "geo_score": 117,
+            "pillars": {
+                "definitions": 40,
+                "structure": 91.7,
+                "authority": 61.4,
+                "machine_readable": 95,
+                "answerability": 80,
+                "eeat": 77.5,
+                "citations": 55,
+                "ai_accessibility": 95,
+                "freshness": 35,
+                "readability": 86.1,
+                "question_coverage": 65.8,
+                "multimedia": 60
+            },
+            "stage_rates": {
+                "discovery": 0,
+                "filter": 0,
+                "compare": 0,
+                "purchase": 0
+            },
+            "stage_strengths": {
+                "discovery": 0,
+                "filter": 0,
+                "compare": 0,
+                "purchase": 0
+            },
+            "survival_rate": 0,
+            "strength_score": 0,
+            "top_pick_rate": 0,
+            "recommended_rate": 0,
+            "survived_to_purchase": false,
+            "survived_discovery": false,
+            "survived_all_stages": false
+        },
+        {
+            "domain": "glossier.com",
+            "category": "minimalist-skincare",
+            "geo_score": 82,
+            "pillars": {
+                "definitions": 10,
+                "structure": 83.3,
+                "authority": 40.9,
+                "machine_readable": 70,
+                "answerability": 60,
+                "eeat": 50,
+                "citations": 50,
+                "ai_accessibility": 95,
+                "freshness": 15,
+                "readability": 47.2,
+                "question_coverage": 41.7,
+                "multimedia": 50
+            },
+            "stage_rates": {
+                "discovery": 0,
+                "filter": 0,
+                "compare": 0,
+                "purchase": 0
+            },
+            "stage_strengths": {
+                "discovery": 0,
+                "filter": 0,
+                "compare": 0,
+                "purchase": 0
+            },
+            "survival_rate": 0,
+            "strength_score": 0,
+            "top_pick_rate": 0,
+            "recommended_rate": 0,
+            "survived_to_purchase": false,
+            "survived_discovery": false,
+            "survived_all_stages": false
+        }
+    ],
+    "headline": {
+        "total_brands": 40,
+        "total_entries": 160,
+        "total_checks": 475,
+        "categories": 12,
+        "avg_survival_rate": 36.9,
+        "avg_strength_score": 26.7,
+        "survived_purchase_pct": 45,
+        "survived_all_stages_pct": 27.5,
+        "strength_analyzed": 32
+    },
+    "categorySummaries": [
+        {
+            "category": "coffee-subscription",
+            "n": 3,
+            "avg_survival": 58.3,
+            "avg_geo": 75.7,
+            "purchase_survival_pct": 66.7
+        },
+        {
+            "category": "meal-kits",
+            "n": 4,
+            "avg_survival": 56.3,
+            "avg_geo": 78.8,
+            "purchase_survival_pct": 50
+        },
+        {
+            "category": "razors",
+            "n": 3,
+            "avg_survival": 52.8,
+            "avg_geo": 71.3,
+            "purchase_survival_pct": 33.3
+        },
+        {
+            "category": "pet-supplies",
+            "n": 2,
+            "avg_survival": 50,
+            "avg_geo": 64.5,
+            "purchase_survival_pct": 100
+        },
+        {
+            "category": "minimalist-skincare",
+            "n": 4,
+            "avg_survival": 43.8,
+            "avg_geo": 88,
+            "purchase_survival_pct": 75
+        },
+        {
+            "category": "bedsheets",
+            "n": 3,
+            "avg_survival": 38.9,
+            "avg_geo": 68.7,
+            "purchase_survival_pct": 66.7
+        },
+        {
+            "category": "running-shoes",
+            "n": 4,
+            "avg_survival": 33.4,
+            "avg_geo": 75.8,
+            "purchase_survival_pct": 25
+        },
+        {
+            "category": "sustainable-apparel",
+            "n": 4,
+            "avg_survival": 33.4,
+            "avg_geo": 80.5,
+            "purchase_survival_pct": 75
+        },
+        {
+            "category": "memory-foam-mattresses",
+            "n": 5,
+            "avg_survival": 23.3,
+            "avg_geo": 79.6,
+            "purchase_survival_pct": 0
+        },
+        {
+            "category": "dtc-furniture",
+            "n": 4,
+            "avg_survival": 20.8,
+            "avg_geo": 60.3,
+            "purchase_survival_pct": 25
+        },
+        {
+            "category": "wellness-supplements",
+            "n": 3,
+            "avg_survival": 19.4,
+            "avg_geo": 95,
+            "purchase_survival_pct": 33.3
+        },
+        {
+            "category": "eyewear",
+            "n": 1,
+            "avg_survival": 0,
+            "avg_geo": 63,
+            "purchase_survival_pct": 0
+        }
+    ],
+    "stageSummaries": [
+        {
+            "stage": "discovery",
+            "n": 40,
+            "avg_citation_rate": 45.8,
+            "cited_count": 21
+        },
+        {
+            "stage": "filter",
+            "n": 40,
+            "avg_citation_rate": 28.3,
+            "cited_count": 20
+        },
+        {
+            "stage": "compare",
+            "n": 40,
+            "avg_citation_rate": 45.8,
+            "cited_count": 25
+        },
+        {
+            "stage": "purchase",
+            "n": 40,
+            "avg_citation_rate": 27.5,
+            "cited_count": 18
+        }
+    ],
+    "stageStrengthDecay": [
+        {
+            "stage": "discovery",
+            "avg_strength": 35.1,
+            "n_checks": 115
+        },
+        {
+            "stage": "filter",
+            "avg_strength": 24.3,
+            "n_checks": 120
+        },
+        {
+            "stage": "compare",
+            "avg_strength": 29.6,
+            "n_checks": 120
+        },
+        {
+            "stage": "purchase",
+            "avg_strength": 18,
+            "n_checks": 120
+        }
+    ],
+    "mentionTypeByStage": [
+        {
+            "stage": "discovery",
+            "recommended": 46,
+            "neutral": 16,
+            "negative": 0,
+            "absent": 53,
+            "total": 115
+        },
+        {
+            "stage": "filter",
+            "recommended": 36,
+            "neutral": 7,
+            "negative": 0,
+            "absent": 77,
+            "total": 120
+        },
+        {
+            "stage": "compare",
+            "recommended": 41,
+            "neutral": 17,
+            "negative": 2,
+            "absent": 60,
+            "total": 120
+        },
+        {
+            "stage": "purchase",
+            "recommended": 25,
+            "neutral": 9,
+            "negative": 0,
+            "absent": 86,
+            "total": 120
+        }
+    ],
+    "strengthByCategory": [
+        {
+            "category": "coffee-subscription",
+            "n": 3,
+            "avg_strength": 46.8,
+            "avg_survival": 58.3
+        },
+        {
+            "category": "razors",
+            "n": 3,
+            "avg_strength": 36.7,
+            "avg_survival": 52.8
+        },
+        {
+            "category": "pet-supplies",
+            "n": 2,
+            "avg_strength": 35.2,
+            "avg_survival": 50
+        },
+        {
+            "category": "bedsheets",
+            "n": 3,
+            "avg_strength": 33.4,
+            "avg_survival": 38.9
+        },
+        {
+            "category": "meal-kits",
+            "n": 4,
+            "avg_strength": 32.6,
+            "avg_survival": 56.3
+        },
+        {
+            "category": "minimalist-skincare",
+            "n": 4,
+            "avg_strength": 28.3,
+            "avg_survival": 43.8
+        },
+        {
+            "category": "memory-foam-mattresses",
+            "n": 5,
+            "avg_strength": 25.5,
+            "avg_survival": 23.3
+        },
+        {
+            "category": "dtc-furniture",
+            "n": 4,
+            "avg_strength": 24.1,
+            "avg_survival": 20.8
+        },
+        {
+            "category": "running-shoes",
+            "n": 4,
+            "avg_strength": 17.7,
+            "avg_survival": 33.4
+        },
+        {
+            "category": "wellness-supplements",
+            "n": 3,
+            "avg_strength": 16.5,
+            "avg_survival": 19.4
+        },
+        {
+            "category": "sustainable-apparel",
+            "n": 4,
+            "avg_strength": 15,
+            "avg_survival": 33.4
+        },
+        {
+            "category": "eyewear",
+            "n": 1,
+            "avg_strength": 0,
+            "avg_survival": 0
+        }
+    ],
+    "platformAgreement": {
+        "unanimousYes": 12,
+        "unanimousNo": 126,
+        "split": 20,
+        "total": 158
+    },
+    "strengthDistribution": [
+        {
+            "range": "0-19",
+            "count": 13,
+            "min": 0,
+            "max": 19
+        },
+        {
+            "range": "20-39",
+            "count": 13,
+            "min": 20,
+            "max": 39
+        },
+        {
+            "range": "40-59",
+            "count": 7,
+            "min": 40,
+            "max": 59
+        },
+        {
+            "range": "60-79",
+            "count": 4,
+            "min": 60,
+            "max": 79
+        },
+        {
+            "range": "80-100",
+            "count": 0,
+            "min": 80,
+            "max": 100
+        }
+    ],
+    "pillarRecommendation": {
+        "available": true
+    }
+}

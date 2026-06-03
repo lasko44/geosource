@@ -10,6 +10,9 @@ use App\Http\Controllers\Experiments\GuestScanController;
 use App\Http\Controllers\Experiments\GuestScanShowController;
 use App\Http\Controllers\Experiments\GuestScanStatusController;
 use App\Http\Controllers\BenchmarkController;
+use App\Http\Controllers\CitationSynthesisController;
+use App\Http\Controllers\EcommerceJourneyController;
+use App\Http\Controllers\EeatStudyController;
 use App\Http\Controllers\GeoStudyController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\SuggestedContentController;
@@ -40,6 +43,9 @@ Route::get('/pricing', function () {
 // Research & Benchmarks
 Route::get('/research/geo-citation-study', fn () => redirect('/blog/geo-citation-study', 301));
 Route::get('/blog/geo-citation-study', GeoStudyController::class)->name('blog.geo-citation-study');
+Route::get('/blog/eeat-content-type-study', EeatStudyController::class)->name('blog.eeat-content-type-study');
+Route::get('/blog/ecommerce-recommendation-survival', EcommerceJourneyController::class)->name('blog.ecommerce-recommendation-survival');
+Route::get('/blog/what-predicts-ai-citations', CitationSynthesisController::class)->name('blog.citation-synthesis');
 Route::get('/benchmarks', BenchmarkController::class)->name('benchmarks');
 
 // Sitemap
