@@ -10,10 +10,7 @@ import {
     UserCheck,
     Lightbulb,
     CheckCircle,
-    Award,
-    Shield,
-    BookOpen,
-    Target,
+    XCircle,
     Calendar,
 } from 'lucide-vue-next';
 import SkipNav from '@/components/resources/SkipNav.vue';
@@ -29,43 +26,28 @@ const breadcrumbItems = [
     { label: 'E-E-A-T and GEO' },
 ];
 
-const eeatSignals = [
-    {
-        icon: BookOpen,
-        title: 'Experience',
-        description: 'First-hand explanations, real-world examples, practical guidance, and domain-specific language.',
-    },
-    {
-        icon: Award,
-        title: 'Expertise',
-        description: 'Consistent topic focus, clear definitions, factual tone, and repeatable terminology.',
-    },
-    {
-        icon: Target,
-        title: 'Authoritativeness',
-        description: 'Topic cluster coverage, defined terminology, canonical resources, and explained relationships.',
-    },
-    {
-        icon: Shield,
-        title: 'Trustworthiness',
-        description: 'Stable information, updated content, predictable structure, and minimal contradictions.',
-    },
+const didNotMove = [
+    'Author byline blocks with credentials',
+    '"Reviewed by Dr. X" headers',
+    '"About the author" sidebars and bio cards',
+    'Trust badges, certifications, and award logos',
+    'Editorial-policy and fact-checking disclosure pages',
+    'Schema markup for author and reviewer roles',
 ];
 
-const llmSignals = [
-    'Consistent topic focus',
-    'Clear definitions',
-    'Factual tone',
-    'Structured explanations',
-    'Repeatable terminology',
-    'Citation history',
-];
-
-const experienceIndicators = [
-    'First-hand explanations',
-    'Real-world examples',
-    'Practical guidance',
-    'Domain-specific language',
+const whatDidPredict = [
+    {
+        title: 'Answerability',
+        description: 'Direct, declarative content that answers the question without making the reader dig for it.',
+    },
+    {
+        title: 'Citation Quality',
+        description: 'Pointing to authoritative external sources from inside your own content, with enough context that AI can verify the claim.',
+    },
+    {
+        title: 'Definitions',
+        description: 'Explicit "X is Y" statements near the top of the page, in the same vocabulary the reader is likely to use.',
+    },
 ];
 
 const relatedDefinitions = [
@@ -75,20 +57,20 @@ const relatedDefinitions = [
 
 const relatedResources = [
     { slug: 'ai-citations-and-geo', title: 'Citations and GEO: How AI Chooses Sources' },
-    { slug: 'ai-accessibility-for-geo', title: 'AI Accessibility and GEO' },
     { slug: 'how-llms-cite-sources', title: 'How Large Language Models Choose Which Sources to Cite' },
     { slug: 'content-freshness-for-geo', title: 'Content Freshness and GEO' },
     { slug: 'readability-and-geo', title: 'Readability and GEO' },
+    { slug: 'ai-accessibility-for-geo', title: 'AI Accessibility and GEO' },
 ];
 
 const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Article',
-    headline: 'E-E-A-T and Generative Engine Optimization (GEO)',
-    description: 'Learn how Experience, Expertise, Authoritativeness, and Trustworthiness (E-E-A-T) signals impact AI citation decisions and how to optimize for them in GEO.',
+    headline: 'E-E-A-T and AI Citation: What Our Research Actually Found',
+    description: 'E-E-A-T was Google\'s rubric for human quality raters. Across three of our studies, visible E-E-A-T signals did not positively predict whether AI assistants cite a page. Here is what did.',
     url: 'https://geosource.ai/resources/e-e-a-t-and-geo',
     datePublished: '2026-01-20',
-    dateModified: '2026-01-20',
+    dateModified: '2026-06-03',
     author: {
         '@type': 'Organization',
         name: 'GeoSource.ai',
@@ -106,7 +88,7 @@ const jsonLd = {
     about: {
         '@type': 'DefinedTerm',
         name: 'E-E-A-T',
-        description: 'Experience, Expertise, Authoritativeness, and Trustworthiness - signals that help AI systems determine source reliability.',
+        description: 'Experience, Expertise, Authoritativeness, and Trustworthiness — a framework originally designed for Google\'s human quality raters, not for AI assistant citation behavior.',
     },
 };
 
@@ -116,26 +98,26 @@ const faqJsonLd = {
     mainEntity: [
         {
             '@type': 'Question',
-            name: 'What is E-E-A-T in the context of GEO?',
+            name: 'Does E-E-A-T help with AI citations?',
             acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'E-E-A-T stands for Experience, Expertise, Authoritativeness, and Trustworthiness. In GEO, these signals help AI systems determine whether a source is reliable enough to reference in generated answers. Unlike traditional SEO, LLMs infer E-E-A-T through content signals rather than credentials.',
+                text: 'In our research, visible E-E-A-T signals — author bylines, "reviewed by" headers, credential boxes, trust badges — did not positively predict whether AI assistants cite a page. In our ecommerce study, heavy E-E-A-T optimization was inversely correlated with being recommended. AI assistants infer credibility from content (clear definitions, direct answers, citing authoritative sources), not from signaling artifacts.',
             },
         },
         {
             '@type': 'Question',
-            name: 'How do LLMs interpret E-E-A-T signals?',
+            name: 'Should I remove E-E-A-T signals from my site?',
             acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'LLMs infer E-E-A-T through signals such as consistent topic focus, clear definitions, factual tone, structured explanations, repeatable terminology, and citation history. GEO strengthens these signals by reducing ambiguity in content.',
+                text: 'No. E-E-A-T still serves a purpose in traditional search and for human readers who want to evaluate whether to trust a page. If you already have author bios, reviewer credits, and editorial disclosures, leave them. Just do not expect them to move AI citation rates.',
             },
         },
         {
             '@type': 'Question',
-            name: 'Why does E-E-A-T matter for AI citations?',
+            name: 'What does predict AI citation if not E-E-A-T?',
             acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'E-E-A-T in GEO is about confidence, not credentials. The easier your content is to understand and reuse, the more likely AI systems are to cite it. Trust emerges when information is stable, content is updated, structure is predictable, and contradictions are minimal.',
+                text: 'Three things showed up consistently in our research: Answerability (direct answers to the question), Citation Quality (citing authoritative external sources from inside your content), and Definitions (explicit "X is Y" statements). Brand recognition and the exact phrasing of the user\'s query also matter — often more than any page-level signal.',
             },
         },
     ],
@@ -143,21 +125,21 @@ const faqJsonLd = {
 </script>
 
 <template>
-    <Head title="E-E-A-T and Generative Engine Optimization (GEO) - GeoSource.ai">
-        <meta name="description" content="Learn how Experience, Expertise, Authoritativeness, and Trustworthiness (E-E-A-T) signals impact AI citation decisions and how to optimize for them in GEO." />
-        <meta property="og:title" content="E-E-A-T and Generative Engine Optimization (GEO)" />
-        <meta property="og:description" content="Learn how E-E-A-T signals impact AI citation decisions and how to optimize for them." />
+    <Head title="E-E-A-T and AI Citation: What Our Research Actually Found - GeoSource.ai">
+        <meta name="description" content="E-E-A-T was Google's rubric for human quality raters. Across three of our studies, visible E-E-A-T signals did not positively predict AI citation. Here is what did." />
+        <meta property="og:title" content="E-E-A-T and AI Citation: What Our Research Actually Found" />
+        <meta property="og:description" content="Visible E-E-A-T signals did not move AI citation rates in our research. Here is what AI assistants actually reward." />
         <meta property="og:type" content="article" />
         <meta property="og:url" content="https://geosource.ai/resources/e-e-a-t-and-geo" />
         <meta property="og:site_name" content="GeoSource.ai" />
         <meta property="article:published_time" content="2026-01-20" />
-        <meta property="article:modified_time" content="2026-01-20" />
+        <meta property="article:modified_time" content="2026-06-03" />
         <meta property="article:author" content="GeoSource.ai" />
         <meta property="article:section" content="Trust Signals" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="E-E-A-T and Generative Engine Optimization (GEO)" />
-        <meta name="twitter:description" content="Learn how E-E-A-T signals impact AI citation decisions." />
-        <meta name="twitter:site" content="@geaborce" />
+        <meta name="twitter:title" content="E-E-A-T and AI Citation: What Our Research Actually Found" />
+        <meta name="twitter:description" content="Visible E-E-A-T signals did not move AI citation rates in our research." />
+        <meta name="twitter:site" content="@geosource_ai" />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href="https://geosource.ai/resources/e-e-a-t-and-geo" />
         <component :is="'script'" type="application/ld+json">{{ JSON.stringify(jsonLd) }}</component>
@@ -182,13 +164,13 @@ const faqJsonLd = {
                     <header class="mb-12">
                         <Badge variant="secondary" class="mb-4">
                             <UserCheck class="mr-1 h-3 w-3" aria-hidden="true" />
-                            GEO Pillar
+                            Trust Signals
                         </Badge>
                         <h1 class="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
-                            E-E-A-T and Generative Engine Optimization (GEO)
+                            E-E-A-T and AI citation: what our research actually found
                         </h1>
                         <p class="mt-4 text-lg text-muted-foreground">
-                            How Experience, Expertise, Authoritativeness, and Trustworthiness signals help AI systems determine citation confidence.
+                            E-E-A-T was Google's framework for human quality raters. It is not the rubric AI assistants use when they decide which page to quote. Here is what our three studies showed — and what to do about it.
                         </p>
                         <div class="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
                             <Calendar class="h-4 w-4" aria-hidden="true" />
@@ -196,50 +178,88 @@ const faqJsonLd = {
                         </div>
                     </header>
 
-                    <!-- Intro with required links -->
+                    <!-- Intro -->
                     <section class="mb-12" aria-labelledby="intro-heading">
                         <h2 id="intro-heading" class="sr-only">Introduction</h2>
                         <p class="text-muted-foreground mb-4">
-                            E-E-A-T plays a critical role in <Link href="/resources/what-is-geo" class="text-primary hover:underline">Generative Engine Optimization (GEO)</Link> because LLMs must determine whether a source is reliable enough to reference in generated answers. Understanding these signals is key to improving your <Link href="/resources/what-is-a-geo-score" class="text-primary hover:underline">GEO Score</Link> and AI visibility through the <Link href="/" class="text-primary hover:underline">GeoSource.ai Platform</Link>.
+                            If you have done any SEO in the last five years, you know E-E-A-T: Experience, Expertise, Authoritativeness, Trustworthiness. It is the rubric Google's human search quality raters use when grading pages, and over time the SEO industry collapsed it into a set of visible artifacts — author bylines, "reviewed by" headers, credential sidebars, editorial-policy pages, trust badges.
                         </p>
-                    </section>
-
-                    <!-- Definition Section -->
-                    <section class="mb-12" aria-labelledby="definition">
-                        <h2 id="definition" class="text-2xl font-bold mb-6">What Is E-E-A-T?</h2>
-                        <Card class="border-primary/50 bg-primary/5">
-                            <CardContent class="pt-6">
-                                <p class="text-lg leading-relaxed">
-                                    <dfn class="font-semibold not-italic"><strong>E-E-A-T</strong></dfn> stands for <strong>Experience, Expertise, Authoritativeness, and Trustworthiness</strong>. While originally associated with traditional SEO, E-E-A-T plays a critical role in Generative Engine Optimization (GEO) because LLMs must determine whether a source is reliable enough to reference in generated answers.
-                                </p>
-                            </CardContent>
-                        </Card>
+                        <p class="text-muted-foreground mb-4">
+                            When generative engines arrived, the natural assumption was that the same signals would transfer. They did not.
+                        </p>
+                        <p class="text-muted-foreground">
+                            Across our <Link href="/research" class="text-primary hover:underline">research line</Link> — the original GEO citation study, an E-E-A-T-focused follow-up, and an ecommerce recommendation-survival study — the visible E-E-A-T signals did not positively predict whether AI assistants cite a page. In the ecommerce study, brands that leaned hard on E-E-A-T styling were recommended <em>less</em>, not more.
+                        </p>
                     </section>
 
                     <Separator class="my-12" />
 
-                    <!-- How LLMs Interpret E-E-A-T -->
-                    <section class="mb-12" aria-labelledby="llm-interpretation">
-                        <h2 id="llm-interpretation" class="text-2xl font-bold mb-6">How LLMs Interpret E-E-A-T</h2>
+                    <!-- Key findings -->
+                    <section class="mb-12" aria-labelledby="key-findings">
+                        <h2 id="key-findings" class="text-2xl font-bold mb-6">Key findings</h2>
+                        <ul class="space-y-4">
+                            <li class="flex items-start gap-3">
+                                <CheckCircle class="h-5 w-5 text-primary shrink-0 mt-1" aria-hidden="true" />
+                                <span><strong>E-E-A-T was built for human reviewers, not AI assistants.</strong> The framework was designed so that contractors rating Google search results would converge on similar judgments. AI assistants choosing which source to quote do not run the same checklist.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <CheckCircle class="h-5 w-5 text-primary shrink-0 mt-1" aria-hidden="true" />
+                                <span><strong>Visible E-E-A-T signals did not move AI citation rates in our research.</strong> Author bylines, "Reviewed by Dr. X" labels, credential boxes, and trust badges showed no positive relationship with whether a page was cited.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <CheckCircle class="h-5 w-5 text-primary shrink-0 mt-1" aria-hidden="true" />
+                                <span><strong>In ecommerce, heavy E-E-A-T optimization was actively counterproductive.</strong> The brands AI assistants kept recommending through a shopping conversation were the ones with simple, direct pages — not the ones plastered with editorial credentials.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <CheckCircle class="h-5 w-5 text-primary shrink-0 mt-1" aria-hidden="true" />
+                                <span><strong>Credibility still matters — but AI infers it from content, not signaling.</strong> Clear definitions, direct answers, and references to authoritative external sources are how AI assistants gauge whether a page is worth quoting.</span>
+                            </li>
+                        </ul>
+                    </section>
+
+                    <Separator class="my-12" />
+
+                    <!-- Why E-E-A-T does not transfer -->
+                    <section class="mb-12" aria-labelledby="why-not">
+                        <h2 id="why-not" class="text-2xl font-bold mb-6">Why E-E-A-T does not transfer to AI search</h2>
+                        <p class="text-muted-foreground mb-4">
+                            E-E-A-T is a <em>human rubric</em>. It was written so that a contractor rating "is this page trustworthy?" would notice the same things a thoughtful reader would: who wrote this, what are their qualifications, does the site take its own publishing seriously, has anyone vouched for the information.
+                        </p>
+                        <p class="text-muted-foreground mb-4">
+                            That is a reasonable set of questions for a human evaluator. It is not how a generative engine assembles an answer. AI assistants are looking for passages that are directly relevant to the user's query, cleanly stated, internally consistent, and corroborated by other sources the model has already weighted as credible. None of that requires reading a byline.
+                        </p>
+                        <p class="text-muted-foreground">
+                            The result: a page can be loaded with editorial signals and still be invisible to AI, and a page with no byline at all can be the one quoted — because what AI cares about is whether the answer is <em>on the page</em>, not whether the page <em>looks</em> trustworthy.
+                        </p>
+                    </section>
+
+                    <Separator class="my-12" />
+
+                    <!-- What did not move citation -->
+                    <section class="mb-12" aria-labelledby="did-not-move">
+                        <h2 id="did-not-move" class="text-2xl font-bold mb-6">What did not move AI citation</h2>
                         <p class="text-muted-foreground mb-6">
-                            LLMs do not evaluate trust the way humans do. Instead, they infer E-E-A-T through signals such as:
+                            These are the artifacts the SEO industry built up around E-E-A-T. In our research, none of them positively predicted whether a page was cited by AI assistants:
                         </p>
                         <Card>
                             <CardContent class="pt-6">
                                 <ul class="space-y-3">
-                                    <li v-for="signal in llmSignals" :key="signal" class="flex items-start gap-3">
-                                        <CheckCircle class="h-5 w-5 text-green-500 shrink-0 mt-0.5" aria-hidden="true" />
-                                        <span>{{ signal }}</span>
+                                    <li v-for="item in didNotMove" :key="item" class="flex items-start gap-3">
+                                        <XCircle class="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" aria-hidden="true" />
+                                        <span>{{ item }}</span>
                                     </li>
                                 </ul>
                             </CardContent>
                         </Card>
+                        <p class="mt-6 text-muted-foreground">
+                            This is not a claim that these elements hurt — for most informational content they were neutral. The point is that adding them is not how you increase AI citation rate. Investing more in this layer is investing in the wrong layer.
+                        </p>
                         <Card class="mt-6 border-amber-500/50 bg-amber-500/5">
                             <CardContent class="pt-6">
                                 <div class="flex items-start gap-3">
                                     <Lightbulb class="h-6 w-6 text-amber-500 shrink-0 mt-0.5" aria-hidden="true" />
                                     <p class="text-muted-foreground">
-                                        <strong class="text-foreground">GEO strengthens these signals by reducing ambiguity.</strong> Clear, structured content makes it easier for AI to assess reliability.
+                                        <strong class="text-foreground">Ecommerce is the exception that is not really an exception.</strong> In our ecommerce study, heavy E-E-A-T styling on product and category pages correlated with <em>fewer</em> recommendations through a shopping conversation. The pages that survived the funnel were the ones that read like a clear product description, not a journalistic feature with editorial credits. Shoppers — and the AI assistants helping them — wanted product facts, not bylines.
                                     </p>
                                 </div>
                             </CardContent>
@@ -248,135 +268,75 @@ const faqJsonLd = {
 
                     <Separator class="my-12" />
 
-                    <!-- Four Pillars -->
-                    <section class="mb-12" aria-labelledby="four-pillars">
-                        <h2 id="four-pillars" class="text-2xl font-bold mb-6">The Four Pillars of E-E-A-T in GEO</h2>
-                        <div class="grid gap-6 sm:grid-cols-2">
-                            <Card v-for="pillar in eeatSignals" :key="pillar.title" class="h-full">
+                    <!-- What did predict citation -->
+                    <section class="mb-12" aria-labelledby="what-did">
+                        <h2 id="what-did" class="text-2xl font-bold mb-6">What did predict AI citation</h2>
+                        <p class="text-muted-foreground mb-6">
+                            Three on-page signals showed up as positive predictors across our studies. They are content-level signals, not signaling artifacts — they live in the words on the page, not in a sidebar or a badge.
+                        </p>
+                        <div class="grid gap-6 sm:grid-cols-3">
+                            <Card v-for="pillar in whatDidPredict" :key="pillar.title" class="h-full">
                                 <CardContent class="pt-6">
-                                    <div class="flex items-start gap-4">
-                                        <div class="rounded-lg bg-primary/10 p-2">
-                                            <component :is="pillar.icon" class="h-5 w-5 text-primary" aria-hidden="true" />
-                                        </div>
-                                        <div>
-                                            <h3 class="font-semibold">{{ pillar.title }}</h3>
-                                            <p class="mt-1 text-sm text-muted-foreground">{{ pillar.description }}</p>
-                                        </div>
-                                    </div>
+                                    <h3 class="font-semibold mb-2">{{ pillar.title }}</h3>
+                                    <p class="text-sm text-muted-foreground">{{ pillar.description }}</p>
                                 </CardContent>
                             </Card>
+                        </div>
+                        <p class="mt-6 text-muted-foreground">
+                            Two other factors mattered more than any individual page-level signal — and neither is something a content team can fully control:
+                        </p>
+                        <ul class="mt-4 space-y-3">
+                            <li class="flex items-start gap-3 text-muted-foreground">
+                                <CheckCircle class="h-5 w-5 text-primary shrink-0 mt-0.5" aria-hidden="true" />
+                                <span><strong class="text-foreground">Brand recognition.</strong> Well-known brands got cited even with thin pages; lesser-known brands struggled even with strong content.</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-muted-foreground">
+                                <CheckCircle class="h-5 w-5 text-primary shrink-0 mt-0.5" aria-hidden="true" />
+                                <span><strong class="text-foreground">Query phrasing.</strong> The same page could be cited or invisible depending on how the user's question was worded. This was the largest single factor we measured for informational queries.</span>
+                            </li>
+                        </ul>
+                        <p class="mt-6 text-muted-foreground">
+                            The full picture — including why citation rate alone is the wrong top-line metric and why platforms agree more than they disagree — is in our <Link href="/blog/what-predicts-ai-citations" class="text-primary hover:underline">cross-study synthesis</Link>.
+                        </p>
+                    </section>
+
+                    <Separator class="my-12" />
+
+                    <!-- What to do -->
+                    <section class="mb-12" aria-labelledby="what-to-do">
+                        <h2 id="what-to-do" class="text-2xl font-bold mb-6">What to do with this</h2>
+                        <div class="space-y-6">
+                            <div>
+                                <h3 class="font-semibold mb-2">If you already invested in E-E-A-T for Google</h3>
+                                <p class="text-muted-foreground">
+                                    Leave it. Author bios, editorial policies, and reviewer credits still play a role in traditional search and they give human readers something to evaluate. The mistake would be doubling down on them as your AI citation strategy. Treat the existing layer as a hygiene investment, not a growth lever.
+                                </p>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold mb-2">If you are planning new content</h3>
+                                <p class="text-muted-foreground">
+                                    Skip the credential theater. Spend your effort on the parts of the page AI assistants actually read: a clear definition near the top, a direct answer to the question the page exists to answer, and references to authoritative external sources where claims need backing. That is where the citation lift comes from in our research.
+                                </p>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold mb-2">If you sell things</h3>
+                                <p class="text-muted-foreground">
+                                    Be careful about importing editorial conventions onto product pages. The brands that survived a multi-turn shopping conversation in our ecommerce study were the ones that read like clean product pages, not magazine articles. State what the product is, who it is for, and how it compares — not who reviewed the page.
+                                </p>
+                            </div>
                         </div>
                     </section>
 
                     <Separator class="my-12" />
 
-                    <!-- Experience in GEO -->
-                    <section class="mb-12" aria-labelledby="experience">
-                        <h2 id="experience" class="text-2xl font-bold mb-6">Experience in GEO</h2>
-                        <p class="text-muted-foreground mb-6">
-                            AI systems look for demonstrated experience, not claims. Content written from lived experience improves citation confidence.
-                        </p>
-                        <Card>
-                            <CardContent class="pt-6">
-                                <h3 class="font-semibold mb-4">Experience Indicators</h3>
-                                <ul class="space-y-3">
-                                    <li v-for="indicator in experienceIndicators" :key="indicator" class="flex items-start gap-3">
-                                        <CheckCircle class="h-5 w-5 text-green-500 shrink-0 mt-0.5" aria-hidden="true" />
-                                        <span>{{ indicator }}</span>
-                                    </li>
-                                </ul>
-                            </CardContent>
-                        </Card>
-                    </section>
-
-                    <Separator class="my-12" />
-
-                    <!-- Expertise and Authority -->
-                    <section class="mb-12" aria-labelledby="expertise">
-                        <h2 id="expertise" class="text-2xl font-bold mb-6">Expertise and Authority</h2>
-                        <p class="text-muted-foreground mb-6">
-                            Authority is reinforced when a site:
-                        </p>
-                        <div class="grid gap-4 sm:grid-cols-2">
-                            <Card>
-                                <CardContent class="pt-6">
-                                    <ul class="space-y-2 text-sm">
-                                        <li class="flex items-start gap-2">
-                                            <CheckCircle class="h-4 w-4 text-green-500 shrink-0 mt-0.5" aria-hidden="true" />
-                                            <span>Consistently covers a topic cluster</span>
-                                        </li>
-                                        <li class="flex items-start gap-2">
-                                            <CheckCircle class="h-4 w-4 text-green-500 shrink-0 mt-0.5" aria-hidden="true" />
-                                            <span>Defines terminology clearly</span>
-                                        </li>
-                                    </ul>
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardContent class="pt-6">
-                                    <ul class="space-y-2 text-sm">
-                                        <li class="flex items-start gap-2">
-                                            <CheckCircle class="h-4 w-4 text-green-500 shrink-0 mt-0.5" aria-hidden="true" />
-                                            <span>Explains relationships between concepts</span>
-                                        </li>
-                                        <li class="flex items-start gap-2">
-                                            <CheckCircle class="h-4 w-4 text-green-500 shrink-0 mt-0.5" aria-hidden="true" />
-                                            <span>Publishes canonical resources</span>
-                                        </li>
-                                    </ul>
-                                </CardContent>
-                            </Card>
-                        </div>
-                        <p class="mt-6 text-muted-foreground">
-                            This is why <Link href="/definitions" class="text-primary hover:underline">definition hubs</Link> matter in GEO.
-                        </p>
-                    </section>
-
-                    <Separator class="my-12" />
-
-                    <!-- Trust and AI Confidence -->
-                    <section class="mb-12" aria-labelledby="trust">
-                        <h2 id="trust" class="text-2xl font-bold mb-6">Trust and AI Confidence</h2>
-                        <p class="text-muted-foreground mb-6">
-                            Trust emerges when:
-                        </p>
-                        <Card>
-                            <CardContent class="pt-6">
-                                <ul class="space-y-3">
-                                    <li class="flex items-start gap-3">
-                                        <CheckCircle class="h-5 w-5 text-green-500 shrink-0 mt-0.5" aria-hidden="true" />
-                                        <span>Information is stable</span>
-                                    </li>
-                                    <li class="flex items-start gap-3">
-                                        <CheckCircle class="h-5 w-5 text-green-500 shrink-0 mt-0.5" aria-hidden="true" />
-                                        <span>Content is updated regularly</span>
-                                    </li>
-                                    <li class="flex items-start gap-3">
-                                        <CheckCircle class="h-5 w-5 text-green-500 shrink-0 mt-0.5" aria-hidden="true" />
-                                        <span>Structure is predictable</span>
-                                    </li>
-                                    <li class="flex items-start gap-3">
-                                        <CheckCircle class="h-5 w-5 text-green-500 shrink-0 mt-0.5" aria-hidden="true" />
-                                        <span>Contradictions are minimal</span>
-                                    </li>
-                                </ul>
-                            </CardContent>
-                        </Card>
-                        <p class="mt-6 text-muted-foreground">
-                            <strong class="text-foreground">GEO increases trust by making meaning explicit.</strong>
-                        </p>
-                    </section>
-
-                    <Separator class="my-12" />
-
-                    <!-- Key Takeaway -->
+                    <!-- Key takeaway -->
                     <section class="mb-12" aria-labelledby="takeaway">
-                        <h2 id="takeaway" class="text-2xl font-bold mb-6">Key Takeaway</h2>
+                        <h2 id="takeaway" class="text-2xl font-bold mb-6">Key takeaway</h2>
                         <Card class="border-primary bg-primary/5">
                             <CardContent class="pt-6">
                                 <p class="text-xl font-medium text-center">
-                                    E-E-A-T in GEO is about confidence, not credentials.<br />
-                                    The easier your content is to understand and reuse, the more likely AI systems are to cite it.
+                                    E-E-A-T is a framework for human reviewers, not a recipe for AI citation.<br />
+                                    AI assistants reward clarity, direct answers, and good sourcing — not bylines, badges, or credential boxes.
                                 </p>
                             </CardContent>
                         </Card>
@@ -386,7 +346,7 @@ const faqJsonLd = {
 
                     <!-- Related Definitions -->
                     <section class="mb-12" aria-labelledby="related-definitions">
-                        <h2 id="related-definitions" class="text-2xl font-bold mb-6">Related Definitions</h2>
+                        <h2 id="related-definitions" class="text-2xl font-bold mb-6">Related definitions</h2>
                         <div class="grid gap-4 sm:grid-cols-2">
                             <Link
                                 v-for="article in relatedDefinitions"
@@ -413,7 +373,7 @@ const faqJsonLd = {
 
                     <!-- Related Resources -->
                     <section aria-labelledby="related">
-                        <h2 id="related" class="text-2xl font-bold mb-6">Related Resources</h2>
+                        <h2 id="related" class="text-2xl font-bold mb-6">Related resources</h2>
                         <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-label="Related resources list">
                             <li v-for="article in relatedResources" :key="article.slug">
                                 <Link
@@ -443,8 +403,8 @@ const faqJsonLd = {
                             <ArrowLeft class="mr-2 h-4 w-4" aria-hidden="true" />
                             Back to Resources
                         </Link>
-                        <Link href="/resources/ai-citations-and-geo" class="inline-flex items-center text-primary hover:underline">
-                            Next: Citations and GEO
+                        <Link href="/blog/what-predicts-ai-citations" class="inline-flex items-center text-primary hover:underline">
+                            Read the cross-study synthesis
                             <ArrowRight class="ml-2 h-4 w-4" aria-hidden="true" />
                         </Link>
                     </div>
@@ -454,12 +414,12 @@ const faqJsonLd = {
             <!-- CTA Section -->
             <section class="border-t bg-muted/30 py-12" aria-labelledby="cta-heading">
                 <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
-                    <h2 id="cta-heading" class="text-2xl font-bold">Ready to optimize for AI?</h2>
-                    <p class="mt-2 text-muted-foreground">Get your GEO Score and start improving your AI visibility.</p>
+                    <h2 id="cta-heading" class="text-2xl font-bold">See what AI assistants actually reward on your pages</h2>
+                    <p class="mt-2 text-muted-foreground">Get a free read on the signals our research validated as drivers of AI citation.</p>
                     <div class="mt-6">
                         <Link href="/register">
                             <Button size="lg" class="gap-2">
-                                Get Your GEO Score
+                                Get your Citation Readiness Score
                                 <ArrowRight class="h-4 w-4" aria-hidden="true" />
                             </Button>
                         </Link>

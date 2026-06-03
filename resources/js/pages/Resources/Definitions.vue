@@ -34,7 +34,7 @@ const definitions = [
         definition: 'Generative Engine Optimization (GEO) is the process of structuring and publishing digital content so that generative AI systems — such as ChatGPT, Google AI Overviews, Perplexity, and Claude — can clearly understand, trust, and cite it when generating answers.',
         details: [
             'Unlike traditional SEO, which optimizes pages to rank in search results, GEO optimizes content for AI comprehension and citation selection.',
-            'GEO focuses on clarity, structure, topical authority, and machine-readable formatting rather than keywords or backlinks.',
+            'GEO focuses on clarity, direct answerability, citation quality, and machine-readable formatting rather than keywords or backlinks.',
         ],
         related: [
             { title: 'What Is GEO', href: '/resources/what-is-geo' },

@@ -9,24 +9,15 @@ import {
     ArrowRight,
     ArrowLeft,
     CheckSquare,
-    FileText,
-    Database,
-    Target,
-    Code,
-    Link as LinkIcon,
-    HelpCircle,
     Quote,
-    Layers,
-    CheckCircle,
-    Circle,
-    Award,
     MessageSquare,
-    UserCheck,
     Bot,
     Clock,
     Type,
-    Image,
     Calendar,
+    AlertTriangle,
+    XCircle,
+    Circle,
 } from 'lucide-vue-next';
 import SkipNav from '@/components/resources/SkipNav.vue';
 import ResourceHeader from '@/components/resources/ResourceHeader.vue';
@@ -34,7 +25,7 @@ import ResourceFooter from '@/components/resources/ResourceFooter.vue';
 import ResourceBreadcrumb from '@/components/resources/ResourceBreadcrumb.vue';
 
 const publishedDate = '2026-01-18';
-const modifiedDate = '2026-01-20';
+const modifiedDate = '2026-06-03';
 const formattedPublishedDate = new Date(publishedDate).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
 const breadcrumbItems = [
@@ -42,225 +33,127 @@ const breadcrumbItems = [
     { label: 'GEO Optimization Checklist' },
 ];
 
-// Free Tier Pillars (94 points) — ordered by citation impact
-const freePillars = [
-    {
-        id: 'clear-definitions',
-        title: 'Clear Definitions',
-        icon: BookOpen,
-        points: 20,
-        description: 'Explicit definitions that AI can quote directly (+33% citation lift)',
-        link: '/definitions',
-        items: [
-            { task: 'Start with a clear "X is..." definition in the first paragraph', priority: 'High' },
-            { task: 'Include your main topic/entity name in the definition', priority: 'High' },
-            { task: 'Use definitional patterns: "X refers to...", "X is defined as..."', priority: 'High' },
-            { task: 'Define technical terms inline or link to a glossary', priority: 'Medium' },
-            { task: 'Avoid vague or circular definitions', priority: 'Medium' },
-        ],
-    },
-    {
-        id: 'structured-knowledge',
-        title: 'Structured Knowledge',
-        icon: Layers,
-        points: 12,
-        description: 'Organized content hierarchy — a baseline requirement for AI access',
-        items: [
-            { task: 'Use exactly one H1 heading per page', priority: 'High' },
-            { task: 'Add multiple H2 subheadings to break up content', priority: 'High' },
-            { task: 'Follow proper heading hierarchy (H1 → H2 → H3)', priority: 'High' },
-            { task: 'Use bullet points and numbered lists for multi-item content', priority: 'Medium' },
-            { task: 'Add tables for comparisons and structured data', priority: 'Medium' },
-            { task: 'Avoid skipping heading levels (e.g., H1 → H3)', priority: 'Medium' },
-        ],
-    },
-    {
-        id: 'topic-authority',
-        title: 'Topic Authority',
-        icon: Award,
-        points: 22,
-        description: 'Depth of coverage and expertise indicators (+19% citation lift)',
-        items: [
-            { task: 'Write comprehensive content (800-1500+ words for key topics)', priority: 'High' },
-            { task: 'Include examples, explanations, and evidence', priority: 'High' },
-            { task: 'Add 3+ internal links to related content on your site', priority: 'High' },
-            { task: 'Focus each page on a single, specific topic', priority: 'Medium' },
-            { task: 'Create topic clusters with pillar pages and supporting content', priority: 'Medium' },
-            { task: 'Use descriptive anchor text for links (not "click here")', priority: 'Low' },
-        ],
-    },
-    {
-        id: 'machine-readable',
-        title: 'Machine-Readable Formatting',
-        icon: Code,
-        points: 10,
-        description: 'Technical markup — a baseline requirement, not a citation driver',
-        link: '/resources/why-llms-txt-matters',
-        items: [
-            { task: 'Add JSON-LD Article schema to content pages', priority: 'High' },
-            { task: 'Implement FAQPage schema for FAQ sections', priority: 'High' },
-            { task: 'Use semantic HTML elements (<article>, <section>, <dfn>)', priority: 'High' },
-            { task: 'Add descriptive alt text to all images', priority: 'High' },
-            { task: 'Create an llms.txt file at your site root', priority: 'Medium' },
-            { task: 'Add Organization schema on your homepage', priority: 'Medium' },
-        ],
-    },
+// Pillars in priority order based on what our citation research actually validated.
+const pillars = [
     {
         id: 'answerability',
-        title: 'High-Confidence Answerability',
+        title: 'Answerability',
         icon: MessageSquare,
-        points: 30,
-        description: 'The #1 citation predictor (+109% lift) — direct, declarative answers',
+        summary: 'Answer the question directly, near the top, in clear declarative sentences. This was the strongest predictor of AI citation in our research.',
         items: [
-            { task: 'Use declarative sentences: "X is Y" instead of questions', priority: 'High' },
-            { task: 'Start with the answer, not preamble ("In this article...")', priority: 'High' },
-            { task: 'Include quotable snippets (50-150 characters) that answer questions', priority: 'High' },
-            { task: 'Reduce hedging words: "maybe", "perhaps", "possibly"', priority: 'Medium' },
-            { task: 'State facts confidently with supporting evidence', priority: 'Medium' },
-            { task: 'Avoid marketing fluff and promotional language', priority: 'Low' },
-        ],
-    },
-];
-
-// Pro Tier Pillars (+35 points)
-const proPillars = [
-    {
-        id: 'eeat-signals',
-        title: 'E-E-A-T Signals',
-        icon: UserCheck,
-        points: 15,
-        description: 'Experience, Expertise, Authoritativeness, Trustworthiness',
-        link: '/resources/e-e-a-t-and-geo',
-        items: [
-            { task: 'Add author attribution with name and link to bio', priority: 'High' },
-            { task: 'Include author bio with credentials and expertise', priority: 'High' },
-            { task: 'Add reviews, testimonials, or case studies', priority: 'Medium' },
-            { task: 'Ensure visible contact information or link to contact page', priority: 'Medium' },
-            { task: 'Highlight relevant qualifications and experience', priority: 'Medium' },
+            { task: 'Put the direct answer in the first sentence of each major section', priority: 'High' },
+            { task: 'Lead with the answer, not preamble like "In this article we\'ll explore..."', priority: 'High' },
+            { task: 'Write in declarative sentences: "X is Y" rather than rhetorical questions', priority: 'High' },
+            { task: 'Include self-contained quotable snippets that stand on their own without surrounding context', priority: 'High' },
+            { task: 'Cut hedging language ("maybe," "perhaps," "might possibly") when you can state a fact', priority: 'Medium' },
+            { task: 'Replace marketing copy with concrete claims that a reader can verify', priority: 'Medium' },
         ],
     },
     {
-        id: 'citations-sources',
-        title: 'Citations & Sources',
+        id: 'citation-quality',
+        title: 'Citation Quality',
         icon: Quote,
-        points: 12,
-        description: 'Authoritative external references',
-        link: '/resources/ai-citations-and-geo',
+        summary: 'Pages that cite authoritative outside sources are more likely to be cited themselves by AI assistants. Treat citations as load-bearing, not decorative.',
         items: [
-            { task: 'Link to authoritative sources (.gov, .edu, research papers)', priority: 'High' },
-            { task: 'Use inline citations: "according to [source]..."', priority: 'High' },
-            { task: 'Include relevant statistics with sources', priority: 'Medium' },
-            { task: 'Add a References or Sources section for credibility', priority: 'Medium' },
-            { task: 'Cite recent, reputable publications', priority: 'Low' },
+            { task: 'Link out to primary sources: .gov, .edu, peer-reviewed research, original studies', priority: 'High' },
+            { task: 'Use inline attribution ("according to the Pew Research Center...") next to the claim it supports', priority: 'High' },
+            { task: 'Cite the original source, not a blog summarizing the original source', priority: 'High' },
+            { task: 'Include a References or Sources section on long-form pages', priority: 'Medium' },
+            { task: 'Quote statistics with the source and year next to the number', priority: 'Medium' },
+            { task: 'Audit existing pages and replace dead or downgraded links', priority: 'Low' },
         ],
     },
     {
-        id: 'ai-crawler-access',
-        title: 'AI Crawler Access',
-        icon: Bot,
-        points: 8,
-        description: 'Technical accessibility for AI systems',
-        link: '/resources/ai-accessibility-for-geo',
+        id: 'definitions',
+        title: 'Definitions',
+        icon: BookOpen,
+        summary: 'AI assistants pull definitional sentences disproportionately often. Give them clean, explicit "X is Y" statements to lift.',
+        link: '/definitions',
         items: [
-            { task: 'Allow AI crawlers in robots.txt (GPTBot, ClaudeBot, etc.)', priority: 'High' },
-            { task: 'Remove noindex/nosnippet meta directives', priority: 'High' },
-            { task: 'Add Sitemap reference to robots.txt', priority: 'Medium' },
-            { task: 'Ensure pages load without JavaScript for crawlers', priority: 'Medium' },
-        ],
-    },
-];
-
-// Agency Tier Pillars (+40 points)
-const agencyPillars = [
-    {
-        id: 'content-freshness',
-        title: 'Content Freshness',
-        icon: Clock,
-        points: 10,
-        description: 'Recency signals and update indicators',
-        link: '/resources/content-freshness-for-geo',
-        items: [
-            { task: 'Add visible publication date to content', priority: 'High' },
-            { task: 'Show "Last updated" date for evergreen content', priority: 'High' },
-            { task: 'Add datePublished/dateModified to Schema.org data', priority: 'Medium' },
-            { task: 'Include current year references where appropriate', priority: 'Medium' },
-            { task: 'Review and update outdated content regularly', priority: 'Low' },
+            { task: 'Open each topic page with an explicit definition in the first paragraph', priority: 'High' },
+            { task: 'Use definitional patterns crawlers recognize: "X is...", "X refers to...", "X is defined as..."', priority: 'High' },
+            { task: 'Include the topic\'s canonical name (not just a pronoun) inside the definition sentence', priority: 'High' },
+            { task: 'Define each technical term the first time it appears, inline or via glossary link', priority: 'Medium' },
+            { task: 'Avoid circular definitions ("AI search is search powered by AI")', priority: 'Medium' },
+            { task: 'Mark definitional sentences with semantic HTML (<dfn>) where it fits naturally', priority: 'Low' },
         ],
     },
     {
         id: 'readability',
         title: 'Readability',
         icon: Type,
-        points: 10,
-        description: 'Clear, accessible writing for AI parsing',
-        link: '/resources/readability-and-geo',
+        summary: 'Plain, well-structured prose is easier for both readers and LLMs to parse and quote. Tight sentences, clear sectioning, no walls of text.',
         items: [
-            { task: 'Write at 8th-9th grade reading level', priority: 'High' },
-            { task: 'Keep sentences to 15-20 words on average', priority: 'High' },
-            { task: 'Break paragraphs into 50-100 words', priority: 'Medium' },
-            { task: 'Reduce complex words (3+ syllables) where possible', priority: 'Medium' },
-            { task: 'Avoid very long sentences (35+ words)', priority: 'Low' },
+            { task: 'Keep sentences short — aim for around 15 to 20 words on average', priority: 'High' },
+            { task: 'Use one H1, then H2s for major sections, then H3s under those. Don\'t skip levels', priority: 'High' },
+            { task: 'Break content into short paragraphs (roughly 50 to 100 words)', priority: 'Medium' },
+            { task: 'Use bullet lists and numbered lists for anything that\'s actually a list', priority: 'Medium' },
+            { task: 'Add tables for comparisons, specs, or structured data', priority: 'Medium' },
+            { task: 'Cut compound-complex sentences. Two short sentences beats one long one', priority: 'Low' },
         ],
     },
     {
-        id: 'question-coverage',
-        title: 'Question Coverage',
-        icon: HelpCircle,
-        points: 10,
-        description: 'Direct answers to user queries',
-        link: '/resources/question-coverage-for-geo',
+        id: 'ai-accessibility',
+        title: 'AI Accessibility',
+        icon: Bot,
+        summary: 'If crawlers and LLMs can\'t reach or parse the page, nothing else matters. Treat this as the floor, not the ceiling.',
         items: [
-            { task: 'Add an FAQ section on key pages', priority: 'High' },
-            { task: 'Use question-format headings ("What is X?", "How do I Y?")', priority: 'High' },
-            { task: 'Add FAQPage schema markup to FAQ sections', priority: 'High' },
-            { task: 'Cover "what is", "how to", and "why" question types', priority: 'Medium' },
-            { task: 'Provide direct, complete answers after each question', priority: 'Medium' },
+            { task: 'Render content server-side. If the main text only exists after JS executes, most AI crawlers will miss it', priority: 'High' },
+            { task: 'Allow major AI crawlers in robots.txt (GPTBot, ClaudeBot, PerplexityBot, OAI-SearchBot)', priority: 'High' },
+            { task: 'Remove noindex, nosnippet, and noarchive directives from pages you want cited', priority: 'High' },
+            { task: 'Add an llms.txt file at the site root pointing to your most quotable canonical content', priority: 'Medium' },
+            { task: 'Use Article and FAQPage schema (JSON-LD) where appropriate', priority: 'Medium' },
+            { task: 'Reference your sitemap in robots.txt', priority: 'Medium' },
+            { task: 'Audit Cloudflare, WAF, and bot-mitigation rules — aggressive blocking quietly excludes AI crawlers', priority: 'Medium' },
         ],
     },
     {
-        id: 'multimedia-content',
-        title: 'Multimedia Content',
-        icon: Image,
-        points: 10,
-        description: 'Visual elements that enhance understanding',
-        link: '/resources/multimedia-and-geo',
+        id: 'freshness',
+        title: 'Content Freshness',
+        icon: Clock,
+        summary: 'A mild but real positive signal. Visible recency cues help AI assistants prefer your version of an answer over a competitor\'s older one.',
         items: [
-            { task: 'Add 2+ relevant images to break up text', priority: 'High' },
-            { task: 'Include descriptive alt text on all images', priority: 'High' },
-            { task: 'Use <figure> and <figcaption> for image captions', priority: 'Medium' },
-            { task: 'Add tables for comparative or structured data', priority: 'Medium' },
-            { task: 'Include diagrams, charts, or code blocks where appropriate', priority: 'Low' },
+            { task: 'Show a visible "Last updated" date on evergreen pages', priority: 'High' },
+            { task: 'Keep datePublished and dateModified accurate in your schema', priority: 'High' },
+            { task: 'Re-check statistics and claims annually — replace anything stale rather than letting it rot', priority: 'Medium' },
+            { task: 'Use current-year references where the fact actually changes year to year', priority: 'Medium' },
+            { task: 'Add a brief changelog line on substantive updates ("Updated June 2026: refreshed data")', priority: 'Low' },
         ],
     },
 ];
 
-// Combine all pillars for JSON-LD
-const allPillars = [...freePillars, ...proPillars, ...agencyPillars];
+const dontBother = [
+    'Building "topical authority" by linking related articles into clusters. We didn\'t see this drive citation.',
+    'Adding E-E-A-T badges, "expert reviewed by" labels, or author credential boxes for the sake of AI. Visible E-E-A-T signaling didn\'t predict whether AI assistants cited the page.',
+    'Padding pages with images, infographics, or video for "AI visibility." Heavy multimedia was associated with worse recommendation survival, not better.',
+    'Trying to answer every related question on a single page. Question Coverage was flat in our data — depth on the actual question beats breadth across adjacent ones.',
+    'Chasing word-count thresholds. Length without answers doesn\'t buy you anything.',
+];
+
+const allItems = pillars.flatMap((p) => p.items);
 
 const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'HowTo',
     name: 'GEO Optimization Checklist',
-    description: 'A step-by-step checklist for optimizing your website for generative AI systems and improving your GEO Score across 12 scoring pillars.',
+    description: 'A research-backed checklist for optimizing your website for citation by AI assistants, organized around the signals our studies validated as drivers.',
     url: 'https://geosource.ai/geo-optimization-checklist',
-    step: allPillars.flatMap((pillar, pillarIndex) =>
-        pillar.items.map((item, itemIndex) => ({
-            '@type': 'HowToStep',
-            position: pillarIndex * 10 + itemIndex + 1,
-            name: item.task,
-            itemListElement: {
-                '@type': 'HowToDirection',
-                text: item.task,
-            },
-        }))
-    ),
+    step: allItems.map((item, index) => ({
+        '@type': 'HowToStep',
+        position: index + 1,
+        name: item.task,
+        itemListElement: {
+            '@type': 'HowToDirection',
+            text: item.task,
+        },
+    })),
 };
 
 const articleJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Article',
-    headline: 'GEO Optimization Checklist - Step-by-Step Guide',
-    description: 'A comprehensive checklist for optimizing your website for generative AI systems. Improve your GEO Score across 12 pillars with actionable steps.',
+    headline: 'GEO Optimization Checklist - What Actually Drives AI Citation',
+    description: 'A research-backed checklist for optimizing your website for citation by AI assistants. Organized around the signals our studies validated as drivers.',
     url: 'https://geosource.ai/geo-optimization-checklist',
     datePublished: publishedDate,
     dateModified: modifiedDate,
@@ -282,34 +175,34 @@ const faqJsonLd = {
     mainEntity: [
         {
             '@type': 'Question',
-            name: 'How do I optimize my website for AI search?',
+            name: 'What actually drives AI citation?',
             acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'Based on our three-phase citation study, prioritize these in order of proven impact: 1) Answerability — write direct, answer-first content (+109% citation lift), 2) Citation Quality — reference authoritative external sources (+65% lift), 3) Clear Definitions — use explicit "X is Y" patterns (+33% lift). Structure and schema markup are important baselines but not the primary drivers of AI citations.',
+                text: 'Across our four-study research line, the signals that consistently predicted AI citation were: Answerability (direct, declarative answers near the top of the page), Citation Quality (linking out to authoritative sources), Definitions (explicit "X is Y" statements), Readability (plain, well-structured prose), AI Accessibility (server-rendered content that crawlers can actually reach), and Content Freshness (visible recency cues).',
             },
         },
         {
             '@type': 'Question',
-            name: 'What are the GEO scoring pillars?',
+            name: 'Does E-E-A-T improve AI citation?',
             acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'GEO scores are based on 12 evidence-weighted pillars across 3 tiers. Free tier (94 pts): Answerability (30 pts — strongest predictor), Topic Authority (22), Clear Definitions (20), Structured Knowledge (12), Machine-Readable (10). Pro tier (+35 pts): Citations & Sources (20 — second strongest), E-E-A-T (10), AI Access (5). Full tier (+41 pts): Readability (18), Freshness (10), Question Coverage (8), Multimedia (5). Weights are calibrated from our empirical citation study.',
+                text: 'In our research, visible E-E-A-T signals — author bios, credential badges, "expert reviewed by" labels — did not predict whether AI assistants cited the page. Build trust because it matters to readers, not because it will lift AI citation.',
             },
         },
         {
             '@type': 'Question',
-            name: 'What is the most important GEO optimization?',
+            name: 'Should I add more multimedia to improve AI visibility?',
             acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'The highest-weighted pillar is Answerability (30 points), the strongest empirical predictor of AI citations (+109% citation lift in our v3 study). This is followed by Topic Authority (22 points), Citations & Sources (20 points — +65% lift), and Clear Definitions (20 points — +33% lift). Focus on writing direct, answer-first content that cites authoritative sources.',
+                text: 'No. In our ecommerce study, heavy multimedia was associated with worse recommendation survival, not better. Add images when they help the reader. Don\'t add them as an AI optimization tactic.',
             },
         },
         {
             '@type': 'Question',
-            name: 'What is the maximum GEO Score?',
+            name: 'Where should I start?',
             acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'The maximum GEO Score depends on your plan tier: Free tier = 94 points (5 pillars), Pro tier = 129 points (8 pillars), Full tier = 170 points (12 pillars). Your score is shown as a percentage of the maximum possible for your tier. Pillar weights are calibrated from our empirical citation research.',
+                text: 'Start with Answerability: put the direct answer in the first sentence of each major section, write in declarative form, and include self-contained quotable snippets. Then layer in Citation Quality (cite authoritative outside sources inline) and Definitions (open each topic page with an explicit "X is Y" statement).',
             },
         },
     ],
@@ -317,10 +210,10 @@ const faqJsonLd = {
 </script>
 
 <template>
-    <Head title="GEO Optimization Checklist - Step-by-Step Guide | GeoSource.ai">
-        <meta name="description" content="A comprehensive checklist for optimizing your website for generative AI systems. Improve your GEO Score with actionable steps for content structure, definitions, FAQ coverage, and technical optimization." />
-        <meta property="og:title" content="GEO Optimization Checklist - Step-by-Step Guide" />
-        <meta property="og:description" content="Actionable checklist for improving your GEO Score and AI citation readiness." />
+    <Head title="GEO Optimization Checklist - What Actually Drives AI Citation | GeoSource.ai">
+        <meta name="description" content="A research-backed checklist for getting cited by AI assistants. Organized around the signals our four-study research line validated as drivers — answerability, citation quality, definitions, readability, AI accessibility, and freshness." />
+        <meta property="og:title" content="GEO Optimization Checklist - What Actually Drives AI Citation" />
+        <meta property="og:description" content="A research-backed checklist organized around the signals we validated as drivers of AI citation." />
         <meta property="og:type" content="article" />
         <meta property="og:url" content="https://geosource.ai/geo-optimization-checklist" />
         <meta property="og:site_name" content="GeoSource.ai" />
@@ -329,9 +222,9 @@ const faqJsonLd = {
         <meta property="article:author" content="GeoSource.ai" />
         <meta property="article:section" content="Checklist" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:site" content="@geosourceai" />
-        <meta name="twitter:title" content="GEO Optimization Checklist - Step-by-Step Guide" />
-        <meta name="twitter:description" content="Actionable checklist for improving your GEO Score and AI citation readiness." />
+        <meta name="twitter:site" content="@geosource_ai" />
+        <meta name="twitter:title" content="GEO Optimization Checklist - What Actually Drives AI Citation" />
+        <meta name="twitter:description" content="A research-backed checklist organized around the signals we validated as drivers of AI citation." />
         <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
         <link rel="canonical" href="https://geosource.ai/geo-optimization-checklist" />
         <component :is="'script'" type="application/ld+json">{{ JSON.stringify(jsonLd) }}</component>
@@ -354,7 +247,7 @@ const faqJsonLd = {
             <article class="py-12">
                 <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
                     <!-- Header -->
-                    <header class="mb-12">
+                    <header class="mb-10">
                         <Badge variant="secondary" class="mb-4">
                             <CheckSquare class="mr-1 h-3 w-3" aria-hidden="true" />
                             Practical Guide
@@ -363,103 +256,101 @@ const faqJsonLd = {
                             GEO Optimization Checklist
                         </h1>
                         <p class="mt-4 text-lg text-muted-foreground">
-                            A step-by-step guide to optimizing your website for generative AI systems.
+                            What actually drives AI citation — and what doesn't. Organized around the signals our four-study research line validated as drivers.
                         </p>
                         <div class="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
                             <Calendar class="h-4 w-4" aria-hidden="true" />
                             <time :datetime="publishedDate">{{ formattedPublishedDate }}</time>
+                            <span aria-hidden="true">·</span>
+                            <span>Updated June 2026</span>
                         </div>
                     </header>
 
-                    <!-- Introduction -->
-                    <section class="mb-12" aria-labelledby="intro-heading">
-                        <h2 id="intro-heading" class="sr-only">Introduction</h2>
-                        <Card class="border-primary/50 bg-primary/5">
+                    <!-- What changed -->
+                    <section class="mb-10" aria-labelledby="what-changed-heading">
+                        <Card class="border-amber-500/40 bg-amber-500/5">
                             <CardContent class="pt-6">
-                                <p class="text-lg">
-                                    This checklist covers all 12 <Link href="/geo-score-explained" class="text-primary hover:underline font-medium">GEO Score</Link> pillars organized by plan tier. Work through each pillar systematically to improve your AI citation readiness. Learn more about <Link href="/resources/what-is-geo" class="text-primary hover:underline font-medium">Generative Engine Optimization (GEO)</Link> and get started with the <Link href="/" class="text-primary hover:underline font-medium">GeoSource.ai platform</Link>.
-                                </p>
-                            </CardContent>
-                        </Card>
-                    </section>
-
-                    <!-- Scoring Summary -->
-                    <section class="mb-8" aria-labelledby="scoring-summary-heading">
-                        <h2 id="scoring-summary-heading" class="sr-only">Scoring Summary</h2>
-                        <Card>
-                            <CardContent class="pt-6">
-                                <div class="grid gap-4 sm:grid-cols-3 text-center">
-                                    <div class="p-4 rounded-lg bg-muted/50">
-                                        <Badge variant="secondary" class="mb-2">Free</Badge>
-                                        <p class="text-2xl font-bold">100 pts</p>
-                                        <p class="text-sm text-muted-foreground">5 pillars</p>
-                                    </div>
-                                    <div class="p-4 rounded-lg bg-blue-500/10">
-                                        <Badge class="bg-blue-500 mb-2">Pro</Badge>
-                                        <p class="text-2xl font-bold">135 pts</p>
-                                        <p class="text-sm text-muted-foreground">8 pillars</p>
-                                    </div>
-                                    <div class="p-4 rounded-lg bg-purple-500/10">
-                                        <Badge class="bg-purple-500 mb-2">Agency</Badge>
-                                        <p class="text-2xl font-bold">175 pts</p>
-                                        <p class="text-sm text-muted-foreground">12 pillars</p>
+                                <div class="flex items-start gap-3">
+                                    <AlertTriangle class="h-5 w-5 text-amber-600 dark:text-amber-500 shrink-0 mt-1" aria-hidden="true" />
+                                    <div>
+                                        <h2 id="what-changed-heading" class="text-lg font-semibold mb-2">What changed in this checklist</h2>
+                                        <p class="text-muted-foreground">
+                                            Previous versions of this guide told you to build topical authority, add E-E-A-T signals like credential badges and expert-reviewed labels, and load pages with multimedia. Our research did not validate any of those as drivers of AI citation. This version is rebuilt around the signals that did predict citation. See the supporting work on the <Link href="/research" class="text-primary hover:underline font-medium">research page</Link> and the cross-study summary on <Link href="/blog/what-predicts-ai-citations" class="text-primary hover:underline font-medium">what predicts AI citations</Link>.
+                                        </p>
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
                     </section>
 
+                    <!-- How to use this -->
+                    <section class="mb-10" aria-labelledby="how-to-use-heading">
+                        <h2 id="how-to-use-heading" class="sr-only">How to use this checklist</h2>
+                        <Card class="border-primary/50 bg-primary/5">
+                            <CardContent class="pt-6 space-y-3">
+                                <p>
+                                    This is a single unified checklist. There's no Free/Pro/Agency split anymore — these signals are the signals, regardless of which plan you're on.
+                                </p>
+                                <p class="text-muted-foreground">
+                                    Pillars are ordered by the strength of evidence in our research. Work top-down. Within each pillar, items are tagged <strong>High</strong>, <strong>Medium</strong>, or <strong>Low</strong> — priority reflects what mattered in the data, not what's quickest to ship. If you only do the High items, you've done the work that counts.
+                                </p>
+                            </CardContent>
+                        </Card>
+                    </section>
+
                     <!-- Priority Legend -->
-                    <section class="mb-8" aria-labelledby="priority-legend-heading">
+                    <section class="mb-10" aria-labelledby="priority-legend-heading">
                         <h2 id="priority-legend-heading" class="sr-only">Priority Legend</h2>
                         <div class="flex flex-wrap items-center gap-4 text-sm">
                             <span class="font-medium">Priority:</span>
-                            <span class="flex items-center gap-1">
+                            <span class="flex items-center gap-1.5">
                                 <Badge variant="destructive" class="text-xs">High</Badge>
-                                <span class="text-muted-foreground">Essential for AI visibility</span>
+                                <span class="text-muted-foreground">Strong evidence this drives citation</span>
                             </span>
-                            <span class="flex items-center gap-1">
+                            <span class="flex items-center gap-1.5">
                                 <Badge variant="default" class="text-xs">Medium</Badge>
-                                <span class="text-muted-foreground">Recommended</span>
+                                <span class="text-muted-foreground">Supports the High items</span>
                             </span>
-                            <span class="flex items-center gap-1">
+                            <span class="flex items-center gap-1.5">
                                 <Badge variant="secondary" class="text-xs">Low</Badge>
-                                <span class="text-muted-foreground">Nice to have</span>
+                                <span class="text-muted-foreground">Polish, do last</span>
                             </span>
                         </div>
                     </section>
 
-                    <!-- Free Tier Pillars -->
-                    <section class="mb-12" aria-labelledby="free-tier-heading">
-                        <div class="flex items-center gap-3 mb-6">
-                            <h2 id="free-tier-heading" class="text-2xl font-bold">Free Tier Pillars</h2>
-                            <Badge variant="secondary">94 points</Badge>
-                        </div>
-                        <p class="text-muted-foreground mb-6">Core pillars available to all users. These fundamentals are essential for AI visibility.</p>
-
+                    <!-- Pillars -->
+                    <section class="mb-12" aria-labelledby="pillars-heading">
+                        <h2 id="pillars-heading" class="sr-only">Checklist by pillar</h2>
                         <div class="space-y-6">
-                            <Card v-for="(pillar, index) in freePillars" :key="pillar.id" :aria-labelledby="`pillar-${pillar.id}`">
+                            <Card
+                                v-for="(pillar, index) in pillars"
+                                :key="pillar.id"
+                                :aria-labelledby="`pillar-${pillar.id}`"
+                            >
                                 <CardHeader>
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                                    <div class="flex items-start justify-between gap-4">
+                                        <div class="flex items-start gap-3">
+                                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
                                                 <component :is="pillar.icon" class="h-5 w-5 text-primary" aria-hidden="true" />
                                             </div>
                                             <div>
-                                                <CardTitle :id="`pillar-${pillar.id}`" class="text-xl flex items-center gap-2">
+                                                <CardTitle :id="`pillar-${pillar.id}`" class="text-xl">
                                                     {{ index + 1 }}. {{ pillar.title }}
-                                                    <Badge variant="outline">{{ pillar.points }} pts</Badge>
                                                 </CardTitle>
-                                                <CardDescription>{{ pillar.description }}</CardDescription>
+                                                <CardDescription class="mt-1.5">{{ pillar.summary }}</CardDescription>
                                             </div>
                                         </div>
-                                        <Link v-if="pillar.link" :href="pillar.link" class="text-primary hover:underline text-sm hidden sm:block">
+                                        <Link
+                                            v-if="pillar.link"
+                                            :href="pillar.link"
+                                            class="text-primary hover:underline text-sm hidden sm:block shrink-0"
+                                        >
                                             Learn more <span aria-hidden="true">→</span>
                                         </Link>
                                     </div>
                                 </CardHeader>
                                 <CardContent>
-                                    <ul class="space-y-3" :aria-label="`${pillar.title} checklist items`">
+                                    <ul class="space-y-2.5" :aria-label="`${pillar.title} checklist items`">
                                         <li
                                             v-for="item in pillar.items"
                                             :key="item.task"
@@ -480,187 +371,62 @@ const faqJsonLd = {
                         </div>
                     </section>
 
-                    <!-- Pro Tier Pillars -->
-                    <section class="mb-12" aria-labelledby="pro-tier-heading">
-                        <div class="flex items-center gap-3 mb-6">
-                            <h2 id="pro-tier-heading" class="text-2xl font-bold">Pro Tier Pillars</h2>
-                            <Badge class="bg-blue-500 hover:bg-blue-600">+35 points</Badge>
-                        </div>
-                        <p class="text-muted-foreground mb-6">Advanced pillars for Pro subscribers. These add trust signals and technical accessibility.</p>
-
-                        <div class="space-y-6">
-                            <Card v-for="(pillar, index) in proPillars" :key="pillar.id" class="border-blue-500/30" :aria-labelledby="`pillar-${pillar.id}`">
-                                <CardHeader>
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500/10">
-                                                <component :is="pillar.icon" class="h-5 w-5 text-blue-500" aria-hidden="true" />
-                                            </div>
-                                            <div>
-                                                <CardTitle :id="`pillar-${pillar.id}`" class="text-xl flex items-center gap-2">
-                                                    {{ index + 6 }}. {{ pillar.title }}
-                                                    <Badge class="bg-blue-500">{{ pillar.points }} pts</Badge>
-                                                </CardTitle>
-                                                <CardDescription>{{ pillar.description }}</CardDescription>
-                                            </div>
-                                        </div>
-                                        <Link v-if="pillar.link" :href="pillar.link" class="text-blue-500 hover:underline text-sm hidden sm:block">
-                                            Learn more <span aria-hidden="true">→</span>
-                                        </Link>
-                                    </div>
-                                </CardHeader>
-                                <CardContent>
-                                    <ul class="space-y-3" :aria-label="`${pillar.title} checklist items`">
-                                        <li
-                                            v-for="item in pillar.items"
-                                            :key="item.task"
-                                            class="flex items-start gap-3 p-3 rounded-lg border border-blue-500/20 bg-card hover:bg-blue-500/5 transition-colors"
-                                        >
-                                            <Circle class="h-5 w-5 text-blue-500/50 shrink-0 mt-0.5" aria-hidden="true" />
-                                            <span class="flex-1">{{ item.task }}</span>
-                                            <Badge
-                                                :variant="item.priority === 'High' ? 'destructive' : item.priority === 'Medium' ? 'default' : 'secondary'"
-                                                class="shrink-0 text-xs"
-                                            >
-                                                {{ item.priority }}
-                                            </Badge>
-                                        </li>
-                                    </ul>
-                                </CardContent>
-                            </Card>
-                        </div>
-                    </section>
-
-                    <!-- Agency Tier Pillars -->
-                    <section class="mb-12" aria-labelledby="agency-tier-heading">
-                        <div class="flex items-center gap-3 mb-6">
-                            <h2 id="agency-tier-heading" class="text-2xl font-bold">Agency Tier Pillars</h2>
-                            <Badge class="bg-purple-500 hover:bg-purple-600">+40 points</Badge>
-                        </div>
-                        <p class="text-muted-foreground mb-6">Enterprise pillars for Agency subscribers. These provide comprehensive optimization insights.</p>
-
-                        <div class="space-y-6">
-                            <Card v-for="(pillar, index) in agencyPillars" :key="pillar.id" class="border-purple-500/30" :aria-labelledby="`pillar-${pillar.id}`">
-                                <CardHeader>
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center gap-3">
-                                            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-purple-500/10">
-                                                <component :is="pillar.icon" class="h-5 w-5 text-purple-500" aria-hidden="true" />
-                                            </div>
-                                            <div>
-                                                <CardTitle :id="`pillar-${pillar.id}`" class="text-xl flex items-center gap-2">
-                                                    {{ index + 9 }}. {{ pillar.title }}
-                                                    <Badge class="bg-purple-500">{{ pillar.points }} pts</Badge>
-                                                </CardTitle>
-                                                <CardDescription>{{ pillar.description }}</CardDescription>
-                                            </div>
-                                        </div>
-                                        <Link v-if="pillar.link" :href="pillar.link" class="text-purple-500 hover:underline text-sm hidden sm:block">
-                                            Learn more <span aria-hidden="true">→</span>
-                                        </Link>
-                                    </div>
-                                </CardHeader>
-                                <CardContent>
-                                    <ul class="space-y-3" :aria-label="`${pillar.title} checklist items`">
-                                        <li
-                                            v-for="item in pillar.items"
-                                            :key="item.task"
-                                            class="flex items-start gap-3 p-3 rounded-lg border border-purple-500/20 bg-card hover:bg-purple-500/5 transition-colors"
-                                        >
-                                            <Circle class="h-5 w-5 text-purple-500/50 shrink-0 mt-0.5" aria-hidden="true" />
-                                            <span class="flex-1">{{ item.task }}</span>
-                                            <Badge
-                                                :variant="item.priority === 'High' ? 'destructive' : item.priority === 'Medium' ? 'default' : 'secondary'"
-                                                class="shrink-0 text-xs"
-                                            >
-                                                {{ item.priority }}
-                                            </Badge>
-                                        </li>
-                                    </ul>
-                                </CardContent>
-                            </Card>
-                        </div>
-                    </section>
-
                     <Separator class="my-12" />
 
-                    <!-- Quick Wins -->
-                    <section class="mb-12" aria-labelledby="quick-wins">
-                        <h2 id="quick-wins" class="text-2xl font-bold mb-6">Quick Wins: Start Here</h2>
-                        <Card class="border-green-500/50 bg-green-500/5">
+                    <!-- Don't bother -->
+                    <section class="mb-12" aria-labelledby="dont-bother-heading">
+                        <div class="mb-6">
+                            <h2 id="dont-bother-heading" class="text-2xl font-bold">Don't bother</h2>
+                            <p class="text-muted-foreground mt-2">
+                                Tactics you'll be told to do that didn't move the needle in our research. Spend your time on the pillars above instead.
+                            </p>
+                        </div>
+                        <Card class="border-destructive/30 bg-destructive/5">
                             <CardContent class="pt-6">
-                                <p class="font-medium mb-4">If you can only do 5 things, focus on the highest-impact items from each Free pillar:</p>
-                                <ol class="space-y-3">
-                                    <li class="flex items-start gap-3">
-                                        <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-500 text-white text-sm font-bold" aria-hidden="true">1</span>
-                                        <div>
-                                            <span class="font-medium">Clear Definitions (20 pts):</span>
-                                            <span class="text-muted-foreground"> Start every page with "X is..." in the first paragraph</span>
-                                        </div>
+                                <ul class="space-y-3">
+                                    <li
+                                        v-for="item in dontBother"
+                                        :key="item"
+                                        class="flex items-start gap-3"
+                                    >
+                                        <XCircle class="h-5 w-5 text-destructive shrink-0 mt-0.5" aria-hidden="true" />
+                                        <span>{{ item }}</span>
                                     </li>
-                                    <li class="flex items-start gap-3">
-                                        <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-500 text-white text-sm font-bold" aria-hidden="true">2</span>
-                                        <div>
-                                            <span class="font-medium">Structured Knowledge (20 pts):</span>
-                                            <span class="text-muted-foreground"> Use one H1, multiple H2s, proper hierarchy</span>
-                                        </div>
-                                    </li>
-                                    <li class="flex items-start gap-3">
-                                        <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-500 text-white text-sm font-bold" aria-hidden="true">3</span>
-                                        <div>
-                                            <span class="font-medium">Topic Authority (25 pts):</span>
-                                            <span class="text-muted-foreground"> Write 800+ words with 3+ internal links</span>
-                                        </div>
-                                    </li>
-                                    <li class="flex items-start gap-3">
-                                        <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-500 text-white text-sm font-bold" aria-hidden="true">4</span>
-                                        <div>
-                                            <span class="font-medium">Machine-Readable (15 pts):</span>
-                                            <span class="text-muted-foreground"> Add JSON-LD Article schema and alt text</span>
-                                        </div>
-                                    </li>
-                                    <li class="flex items-start gap-3">
-                                        <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-500 text-white text-sm font-bold" aria-hidden="true">5</span>
-                                        <div>
-                                            <span class="font-medium">Answerability (20 pts):</span>
-                                            <span class="text-muted-foreground"> Use declarative statements AI can quote</span>
-                                        </div>
-                                    </li>
-                                </ol>
+                                </ul>
                             </CardContent>
                         </Card>
                     </section>
 
                     <Separator class="my-12" />
 
-                    <!-- Internal Linking Block -->
+                    <!-- Related -->
                     <section class="mb-12" aria-labelledby="related-resources-heading">
                         <Card class="border-primary/50">
                             <CardContent class="pt-6">
-                                <h3 id="related-resources-heading" class="text-lg font-bold mb-4">Related Resources</h3>
+                                <h2 id="related-resources-heading" class="text-lg font-bold mb-4">Read the research behind this</h2>
                                 <p class="text-muted-foreground mb-4">
-                                    Understand the fundamentals with our guide to <Link href="/resources/what-is-geo" class="text-primary hover:underline font-medium">Generative Engine Optimization (GEO)</Link>, learn how the <Link href="/geo-score-explained" class="text-primary hover:underline font-medium">GEO Score</Link> is calculated, and explore <Link href="/definitions" class="text-primary hover:underline font-medium">official GEO definitions</Link>.
+                                    This checklist is downstream of our four-study research line. The <Link href="/research" class="text-primary hover:underline font-medium">research page</Link> covers methodology and findings. <Link href="/blog/what-predicts-ai-citations" class="text-primary hover:underline font-medium">What predicts AI citations</Link> summarizes the cross-study takeaways in one place. The <Link href="/definitions" class="text-primary hover:underline font-medium">definitions reference</Link> covers the terminology used throughout.
                                 </p>
                                 <nav aria-label="Related resources">
                                     <ul class="flex flex-wrap gap-2" role="list">
+                                        <li>
+                                            <Link href="/research">
+                                                <Button variant="outline" size="sm">Research</Button>
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <Link href="/blog/what-predicts-ai-citations">
+                                                <Button variant="outline" size="sm">What predicts AI citations</Button>
+                                            </Link>
+                                        </li>
                                         <li>
                                             <Link href="/resources/what-is-geo">
                                                 <Button variant="outline" size="sm">What Is GEO?</Button>
                                             </Link>
                                         </li>
                                         <li>
-                                            <Link href="/geo-score-explained">
-                                                <Button variant="outline" size="sm">GEO Score Explained</Button>
-                                            </Link>
-                                        </li>
-                                        <li>
                                             <Link href="/definitions">
                                                 <Button variant="outline" size="sm">GEO Definitions</Button>
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link href="/ai-search-visibility-guide">
-                                                <Button variant="outline" size="sm">AI Visibility Guide</Button>
                                             </Link>
                                         </li>
                                     </ul>
@@ -687,11 +453,11 @@ const faqJsonLd = {
             <section class="border-t bg-muted/30 py-12" aria-labelledby="cta-heading">
                 <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
                     <h2 id="cta-heading" class="text-2xl font-bold">Ready to measure your progress?</h2>
-                    <p class="mt-2 text-muted-foreground">Get your GEO Score and see which optimizations will have the biggest impact.</p>
+                    <p class="mt-2 text-muted-foreground">Get your Citation Readiness Score and see which of these pillars need the most work on your site.</p>
                     <div class="mt-6">
                         <Link href="/register">
                             <Button size="lg" class="gap-2">
-                                Get Your GEO Score
+                                Get your Citation Readiness Score
                                 <ArrowRight class="h-4 w-4" aria-hidden="true" />
                             </Button>
                         </Link>

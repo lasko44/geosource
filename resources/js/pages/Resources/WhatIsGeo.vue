@@ -30,7 +30,7 @@ const coreGoals = [
     'Improve AI comprehension',
     'Increase likelihood of citation',
     'Reduce ambiguity in content',
-    'Strengthen topical authority signals',
+    'Answer questions directly with clear definitions',
     'Structure information for machine consumption',
 ];
 
@@ -102,7 +102,7 @@ const faqJsonLd = {
             name: 'What are the core goals of GEO?',
             acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'The core goals of GEO are: improve AI comprehension, increase likelihood of citation, reduce ambiguity in content, strengthen topical authority signals, and structure information for machine consumption.',
+                text: 'The core goals of GEO are: improve AI comprehension, increase likelihood of citation, reduce ambiguity in content, answer questions directly with clear definitions, and structure information for machine consumption.',
             },
         },
     ],
@@ -171,7 +171,7 @@ const faqJsonLd = {
                         </Card>
                         <div class="mt-6 space-y-4 text-muted-foreground">
                             <p>
-                                Unlike traditional search engines, generative engines do not rank web pages by backlinks or keyword density. Instead, they <strong class="text-foreground">synthesize answers</strong> by selecting high-confidence sources based on clarity, structure, topical authority, and factual consistency.
+                                Unlike traditional search engines, generative engines do not rank web pages by backlinks or keyword density. Instead, they <strong class="text-foreground">synthesize answers</strong> by selecting high-confidence sources based on clarity, direct answerability, citation quality, and factual consistency.
                             </p>
                             <p class="text-lg font-medium text-foreground">
                                 GEO focuses on making content AI-readable and citation-ready.

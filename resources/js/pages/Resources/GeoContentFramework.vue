@@ -166,6 +166,9 @@ const faqJsonLd = {
             <!-- Article -->
             <article class="py-12">
                 <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+                    <UnderReviewBanner
+                        reason="This framework treats Topic Authority as a primary pillar. Across our research line, Topic Authority was a weak or negative predictor of AI citation. We're revising the framework around the pillars our studies actually validated."
+                    />
                     <!-- Header -->
                     <header class="mb-12">
                         <Badge variant="secondary" class="mb-4">

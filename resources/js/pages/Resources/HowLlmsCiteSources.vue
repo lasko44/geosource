@@ -31,7 +31,7 @@ const publishedDate = new Date('2026-01-18').toLocaleDateString('en-US', { month
 const citationSignals = [
     { signal: 'Direct definitions', description: '"X is defined as…"' },
     { signal: 'Structured formatting', description: 'Clear headings, lists, tables' },
-    { signal: 'Topic depth', description: 'Comprehensive coverage of subject' },
+    { signal: 'Citation quality', description: 'Links to authoritative external sources' },
     { signal: 'Entity consistency', description: 'Same terms used throughout' },
     { signal: 'Low contradiction risk', description: 'Factually consistent statements' },
     { signal: 'Alignment across sources', description: 'Matches other authoritative content' },
@@ -88,7 +88,7 @@ const faqJsonLd = {
             name: 'How do LLMs choose which sources to cite?',
             acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'LLMs look for high-confidence answer sources using signals like direct definitions, structured formatting, topic depth, entity consistency, low contradiction risk, and alignment across multiple sources.',
+                text: 'LLMs look for high-confidence answer sources using signals like direct definitions, structured formatting, citation quality (linking to authoritative external sources), entity consistency, low contradiction risk, and alignment across multiple sources.',
             },
         },
         {

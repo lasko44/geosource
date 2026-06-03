@@ -34,6 +34,7 @@ import SkipNav from '@/components/resources/SkipNav.vue';
 import ResourceHeader from '@/components/resources/ResourceHeader.vue';
 import ResourceFooter from '@/components/resources/ResourceFooter.vue';
 import ResourceBreadcrumb from '@/components/resources/ResourceBreadcrumb.vue';
+import UnderReviewBanner from '@/components/resources/UnderReviewBanner.vue';
 
 const publishedDate = '2026-01-18';
 const modifiedDate = '2026-01-18';
@@ -268,6 +269,9 @@ const faqJsonLd = {
             <!-- Article -->
             <article class="py-12">
                 <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+                    <UnderReviewBanner
+                        reason="Some pillar weights described here predate our research line. The scoring engine now uses two separate scores — Citation Readiness for informational queries and Recommendation Readiness for ecommerce — with different pillar weights for each. We're rewriting this page to match the current behaviour."
+                    />
                     <!-- Header -->
                     <header class="mb-12">
                         <Badge variant="secondary" class="mb-4">

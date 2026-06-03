@@ -112,10 +112,8 @@ const tools: ToolItem[] = [
     {
         href: '/geo-optimization-checklist',
         title: 'Optimization Checklist',
-        description: 'Page-by-page checklist for getting your content cite-ready.',
+        description: 'Page-by-page checklist for getting your content cite-ready, rebuilt around the signals our research validated.',
         icon: CheckSquare,
-        underReview: true,
-        reviewNote: 'Several recommendations here predate our recent research and are being revised.',
     },
     {
         href: '/ai-search-visibility-guide',
@@ -180,31 +178,31 @@ const technicalPillars: PillarItem[] = [
     },
 ];
 
-const underReviewPillars: PillarItem[] = [
+// Research-backed reframings — pages where our studies overturned the
+// conventional wisdom. Kept as their own group so readers see them as
+// findings, not as "deprecated."
+const reframedPillars: PillarItem[] = [
     {
         slug: 'e-e-a-t-and-geo',
         title: 'E-E-A-T and GEO',
-        description: 'How experience and expertise signals interact with AI citation behaviour.',
+        description: 'Why visible E-E-A-T signals did not predict AI citation in our research, and what AI assistants reward instead.',
         icon: UserCheck,
-        underReview: true,
-        reviewNote: 'Three of our studies found E-E-A-T signals do not positively predict citation; in ecommerce they were inversely correlated. This page is being rewritten.',
     },
     {
         slug: 'multimedia-and-geo',
         title: 'Multimedia and GEO',
-        description: 'How images, video, and rich media relate to AI visibility.',
+        description: 'Neutral for informational content, a drag on commercial pages. Accessibility-driven media still earns its keep.',
         icon: Image,
-        underReview: true,
-        reviewNote: 'Our ecommerce study found Multimedia was inversely correlated with recommendation survival. This page is being rewritten.',
     },
     {
         slug: 'question-coverage-for-geo',
-        title: 'Question coverage for GEO',
-        description: 'Answering user questions directly within your content.',
+        title: 'Question Coverage and GEO',
+        description: 'Listing questions does not get you cited. Answering them clearly, at the top, does. Reframed around Answerability.',
         icon: HelpCircle,
-        underReview: true,
-        reviewNote: 'Question Coverage was a weak/flat predictor in our studies — Answerability is the stronger signal. This page is being rewritten.',
     },
+];
+
+const underReviewPillars: PillarItem[] = [
     {
         slug: 'geo-content-framework',
         title: 'GEO Content Framework',
@@ -431,8 +429,36 @@ const jsonLd = {
                         </ul>
                     </div>
 
+                    <!-- Research-backed reframings -->
+                    <div v-if="reframedPillars.length" class="mb-10">
+                        <h3 class="text-sm font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400 mb-3 flex items-center gap-2">
+                            <Microscope class="h-3.5 w-3.5" aria-hidden="true" />
+                            Research-backed corrections
+                        </h3>
+                        <p class="text-sm text-muted-foreground mb-4 max-w-3xl">
+                            These pages explain what our studies found about pillars where the conventional advice doesn't match the data. Read these to learn what to do <em>instead</em>.
+                        </p>
+                        <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" role="list">
+                            <li v-for="p in reframedPillars" :key="p.slug">
+                                <Link
+                                    :href="`/resources/${p.slug}`"
+                                    class="block group h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg"
+                                    :aria-label="`${p.title}: ${p.description}`"
+                                >
+                                    <Card class="h-full border-l-2 border-l-blue-500/40 transition-colors hover:border-primary/50">
+                                        <CardContent class="p-5">
+                                            <component :is="p.icon" class="h-5 w-5 text-primary mb-3" aria-hidden="true" />
+                                            <h4 class="font-semibold leading-snug group-hover:text-primary transition-colors">{{ p.title }}</h4>
+                                            <p class="mt-2 text-sm text-muted-foreground leading-relaxed">{{ p.description }}</p>
+                                        </CardContent>
+                                    </Card>
+                                </Link>
+                            </li>
+                        </ul>
+                    </div>
+
                     <!-- Under review -->
-                    <div>
+                    <div v-if="underReviewPillars.length">
                         <h3 class="text-sm font-semibold uppercase tracking-wide text-amber-600 dark:text-amber-400 mb-3 flex items-center gap-2">
                             <AlertCircle class="h-3.5 w-3.5" aria-hidden="true" />
                             Under review — being rewritten
