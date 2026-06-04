@@ -132,10 +132,10 @@ class BlogPost extends Resource
                 ->filterable()
                 ->nullable()
                 ->default(function () {
-                    return \App\Models\User::where('email', 'matthew.laszkiewicz@gmail.com')->first()?->id;
+                    return \App\Models\User::where('email', config('admin.email'))->first()?->id;
                 })
                 ->relatableQueryUsing(function (NovaRequest $request, $query) {
-                    $query->where('email', 'matthew.laszkiewicz@gmail.com');
+                    $query->where('email', config('admin.email'));
                 })
                 ->hideFromIndex(),
 

@@ -13,10 +13,12 @@ class AdminUserSeeder extends Seeder
      */
     public function run(): void
     {
+        $email = config('admin.email');
+
         User::updateOrCreate(
-            ['email' => 'matthew.laszkiewicz@gmail.com'],
+            ['email' => $email],
             [
-                'name' => 'Matthew Laszkiewicz',
+                'name' => 'GeoSource Admin',
                 'password' => Hash::make('PasswordPassword1!'),
                 'is_admin' => true,
                 'token_balance' => 1000,
@@ -24,6 +26,6 @@ class AdminUserSeeder extends Seeder
             ]
         );
 
-        $this->command->info('Admin user created: matthew.laszkiewicz@gmail.com');
+        $this->command->info('Admin user created.');
     }
 }
