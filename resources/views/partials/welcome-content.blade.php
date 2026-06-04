@@ -12,10 +12,10 @@
             <p>Unlike traditional SEO, GEO focuses on:</p>
             <ul>
                 <li>Clear definitions</li>
-                <li>Structured knowledge</li>
-                <li>Topic authority</li>
+                <li>Direct answerability</li>
+                <li>Citation quality (referencing authoritative external sources)</li>
                 <li>Machine-readable formatting</li>
-                <li>High-confidence answerability</li>
+                <li>Readability and structure</li>
             </ul>
             <p><strong>AI systems do not rank pages. They select sources.</strong> GeoSource.ai helps your site become one of them.</p>
         </section>
@@ -44,12 +44,12 @@
             <h3>GeoSource.ai evaluates:</h3>
             <ul>
                 <li>Definition clarity</li>
-                <li>Topic structure and hierarchy</li>
-                <li>FAQ and answer density</li>
+                <li>Answerability and answer placement</li>
+                <li>Citation quality and outbound source authority</li>
+                <li>Readability and structure</li>
                 <li>Schema and structured data</li>
-                <li>Internal concept linking</li>
-                <li>Topical consistency</li>
-                <li>AI answerability likelihood</li>
+                <li>Content freshness</li>
+                <li>AI crawler accessibility</li>
             </ul>
             <p><strong>No guesswork. No vague recommendations. Just measurable GEO readiness.</strong></p>
         </section>
@@ -63,7 +63,7 @@
                 <li>Use it as a trusted source</li>
                 <li>Cite or reference your site in generated answers</li>
             </ul>
-            <p>A higher GEO score means your content is structured for AI comprehension. Within your industry, higher scores correlate with better citation rates — backed by our <a href="/blog/geo-citation-study">empirical citation study</a> of 61 websites across 17 industries. Our research, consistent with <a href="https://arxiv.org/abs/2311.09735">academic GEO research</a>, found that answerability, citation quality, and clear definitions are the strongest predictors of AI citations. According to our data, sites with high Citation Readiness Scores are cited 55.6% of the time by AI platforms like <a href="https://openai.com/index/searchgpt-prototype/">ChatGPT</a> and <a href="https://www.perplexity.ai/">Perplexity</a>.</p>
+            <p>A higher GEO score means your content is structured for AI comprehension. Pages with strong scores on the validated pillars tend to be cited more often by AI platforms like <a href="https://openai.com/index/searchgpt-prototype/">ChatGPT</a> and <a href="https://www.perplexity.ai/">Perplexity</a>. Our <a href="/research">research line</a> validated answerability, citation quality, and clear definitions as the strongest predictors of AI citation, and the Citation Readiness Score weights those signals accordingly.</p>
         </section>
 
         <section>
@@ -125,7 +125,7 @@
             <h2>Frequently Asked Questions</h2>
             <dl>
                 <dt>What is GEO (Generative Engine Optimization)?</dt>
-                <dd>Generative Engine Optimization (GEO) is the practice of structuring website content so it can be accurately retrieved, understood, and cited by AI-powered search engines. Unlike traditional SEO, GEO focuses on clear definitions, structured knowledge, topic authority, machine-readable formatting, and high-confidence answerability.</dd>
+                <dd>Generative Engine Optimization (GEO) is the practice of structuring website content so it can be accurately retrieved, understood, and cited by AI-powered search engines. Unlike traditional SEO, GEO focuses on clear definitions, direct answerability, citation quality, readability, and machine-readable formatting.</dd>
 
                 <dt>Why does GEO matter now?</dt>
                 <dd>Search behavior is changing fast. Users ask AI instead of Google, AI summarizes instead of listing links, and only a few trusted sources are referenced. If your site is not optimized for GEO, your content may exist but never be cited, your expertise may be invisible to AI, and your traffic may decline even with strong SEO rankings.</dd>
@@ -134,7 +134,7 @@
                 <dd>GeoSource.ai analyzes your website the same way AI systems do. We scan your pages, extract structured knowledge, and evaluate how easily AI models can retrieve and trust your content. You receive a clear GEO Score (0-100) with actionable insights.</dd>
 
                 <dt>What is a GEO Score?</dt>
-                <dd>Your GEO Score measures how well your content is optimized for AI comprehension across 12 evidence-weighted pillars. Your Citation Readiness Score — based on the three pillars our research proved predict citations — shows how likely AI platforms are to cite your content within your competitive category.</dd>
+                <dd>Your GEO Score measures how well your content is optimized for AI comprehension across multiple research-grounded pillars. Your Citation Readiness Score focuses on the signals our research validated as drivers of AI citation: answerability, citation quality, and clear definitions. Ecommerce pages also receive a Recommendation Readiness Score, which weights pillars differently because AI assistants behave differently on commercial queries.</dd>
 
                 <dt>How does GEO relate to SEO?</dt>
                 <dd>GeoSource.ai does not replace SEO — it complements it. SEO optimizes for rankings, while GEO optimizes for answers. Sites that combine both gain traditional search traffic, AI visibility, long-term discoverability, and authority across platforms.</dd>
@@ -143,7 +143,7 @@
 
         <section>
             <h2>About GeoSource.ai</h2>
-            <p>GeoSource.ai was built by Matt Laszkiewicz. Our scoring algorithm is calibrated from a <a href="/blog/geo-citation-study">three-phase empirical citation study</a> of 61 websites across 17 industries with 540+ citation checks on <a href="https://openai.com/index/searchgpt-prototype/">ChatGPT</a>, <a href="https://www.perplexity.ai/">Perplexity AI</a>, and <a href="https://www.anthropic.com/claude">Claude</a>. Our approach is informed by <a href="https://arxiv.org/abs/2311.09735">emerging academic research on Generative Engine Optimization</a>.</p>
+            <p>GeoSource.ai is a research-grounded GEO platform. Our scoring is informed by an original <a href="/research">four-study research line</a> on what actually predicts AI citation and recommendation across <a href="https://openai.com/index/searchgpt-prototype/">ChatGPT</a>, <a href="https://www.perplexity.ai/">Perplexity</a>, <a href="https://www.anthropic.com/claude">Claude</a>, and <a href="https://blog.google/products/search/generative-ai-google-search-may-2024/">Google AI Overviews</a>.</p>
         </section>
 
         <footer>
